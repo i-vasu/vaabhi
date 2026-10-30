@@ -42,6 +42,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
           source: "infra/docker-compose.prod.yml,infra/deploy.sh"
           target: /opt/vaabhi
           strip_components: 1
@@ -52,5 +53,6 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
           envs: IMAGE_TAG
           script: IMAGE_TAG="$IMAGE_TAG" sh /opt/vaabhi/deploy.sh
