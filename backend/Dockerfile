@@ -1,10 +1,10 @@
 # Built by CI after `./mvnw package`; the jar is never built on the VPS.
-FROM eclipse-temurin:21-jre-alpine AS extract
+FROM eclipse-temurin:24-jre-alpine AS extract
 WORKDIR /build
 COPY target/app.jar app.jar
 RUN java -Djarmode=tools -jar app.jar extract --layers --launcher --destination extracted
 
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:24-jre-alpine
 RUN addgroup -S app && adduser -S app -G app
 USER app
 WORKDIR /app
