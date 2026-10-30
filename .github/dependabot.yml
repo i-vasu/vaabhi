@@ -4,6 +4,16 @@ updates:
     directory: /backend
     schedule:
       interval: weekly
+    groups:
+      spring:
+        patterns: ["org.springframework*", "org.springdoc*"]
+    ignore:
+      # Must match the OpenTelemetry SDK version managed by Spring Boot; bump together with Boot.
+      - dependency-name: "io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0"
+      # Stay on Spring Boot 4.x until a deliberate major upgrade.
+      - dependency-name: "org.springframework.boot:spring-boot-starter-parent"
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: npm
     directory: /frontend
     schedule:
@@ -11,11 +21,36 @@ updates:
     groups:
       next-react:
         patterns: ["next", "react", "react-dom", "eslint-config-next", "@types/react*"]
+    ignore:
+      # Node 22 runtime: keep type definitions on the same major.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # eslint-config-next supports ESLint 9; move to 10 together with Next.js.
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
   - package-ecosystem: docker
     directory: /backend
     schedule:
       interval: weekly
+    ignore:
+      # Java 21 is the LTS target; non-LTS majors (22-24) and the next LTS are opt-in.
+      - dependency-name: "eclipse-temurin"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: docker
+    directory: /frontend/storefront
+    schedule:
+      interval: weekly
+    ignore:
+      # Node 22 LTS runtime.
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]

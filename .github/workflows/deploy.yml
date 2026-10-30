@@ -26,11 +26,17 @@ jobs:
     environment: production
     env:
       IMAGE_TAG: ${{ inputs.image_tag || github.event.workflow_run.head_sha }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
     steps:
+      - name: Skip when the VPS is not configured
+        if: env.VPS_HOST == ''
+        run: echo "::notice::VPS_HOST secret is not set; skipping deploy."
       - uses: actions/checkout@v5
+        if: env.VPS_HOST != ''
         with:
           ref: ${{ env.IMAGE_TAG }}
       - name: Copy compose file and deploy script
+        if: env.VPS_HOST != ''
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -40,6 +46,7 @@ jobs:
           target: /opt/vaabhi
           strip_components: 1
       - name: Deploy
+        if: env.VPS_HOST != ''
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
