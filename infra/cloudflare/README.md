@@ -15,9 +15,9 @@
 
 ## Pages (admin dashboard)
 
-- Project name: `vaabhi-admin`, custom domain `admin.vaabhi.com`.
-- Deployed by `.github/workflows/deploy-admin.yml` with `wrangler pages deploy`.
-- Protect it with Cloudflare Access (free for up to 50 users) in addition to app login.
+Created automatically by `.github/workflows/deploy-admin.yml` (`ensure-pages.sh`) on the first
+push to `main` or a manual run: project `vaabhi-admin`, custom domain `admin.vaabhi.com`, and
+the proxied CNAME `admin → vaabhi-admin.pages.dev`. Each run then uploads the static export.
 
 ## Images and Stream (media)
 
@@ -28,5 +28,8 @@
 
 ## Required GitHub secrets for Pages
 
-- `CLOUDFLARE_API_TOKEN` — permission `Cloudflare Pages:Edit`
-- `CLOUDFLARE_ACCOUNT_ID`
+- `CLOUDFLARE_API_TOKEN` — My Profile → API Tokens → Create Token → Custom token:
+  - Account → **Cloudflare Pages** → Edit
+  - Zone → **Zone** → Read (zone `vaabhi.com`)
+  - Zone → **DNS** → Edit (zone `vaabhi.com`)
+- `CLOUDFLARE_ACCOUNT_ID` — dashboard → Workers & Pages → right sidebar (or the dashboard URL).

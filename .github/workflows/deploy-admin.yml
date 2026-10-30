@@ -49,6 +49,13 @@ jobs:
       - name: Skip when Cloudflare is not configured
         if: env.CLOUDFLARE_API_TOKEN == ''
         run: echo "::notice::CLOUDFLARE_API_TOKEN secret is not set; built but not deployed."
+      - name: Ensure Pages project, custom domain and DNS
+        if: env.CLOUDFLARE_API_TOKEN != '' && github.event_name != 'pull_request'
+        working-directory: .
+        run: bash infra/cloudflare/ensure-pages.sh
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          ADMIN_DOMAIN: ${{ vars.ADMIN_DOMAIN || 'admin.vaabhi.com' }}
       - uses: cloudflare/wrangler-action@v3
         if: env.CLOUDFLARE_API_TOKEN != ''
         with:
