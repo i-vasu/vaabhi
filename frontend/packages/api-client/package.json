@@ -1,0 +1,22 @@
+{
+  "name": "@vaabhi/api-client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "generate": "openapi-typescript ${OPENAPI_URL:-http://localhost:8080/v3/api-docs} -o src/schema.d.ts && curl -sf ${OPENAPI_URL:-http://localhost:8080/v3/api-docs} -o openapi.json",
+    "generate:offline": "openapi-typescript openapi.json -o src/schema.d.ts",
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@vaabhi/config": "workspace:*",
+    "openapi-typescript": "7.13.0",
+    "typescript": "5.9.3",
+    "vitest": "5.0.5"
+  }
+}

@@ -1,0 +1,15 @@
+# Local development only. Production uses Neon Postgres.
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: vaabhi
+      POSTGRES_USER: vaabhi
+      POSTGRES_PASSWORD: vaabhi
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

@@ -1,0 +1,49 @@
+name: Deploy admin (Cloudflare Pages)
+
+on:
+  push:
+    branches: [main]
+    paths: ["frontend/admin/**", "frontend/packages/**", "frontend/pnpm-lock.yaml", ".github/workflows/deploy-admin.yml"]
+  pull_request:
+    paths: ["frontend/admin/**", "frontend/packages/**", "frontend/pnpm-lock.yaml", ".github/workflows/deploy-admin.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: deploy-admin-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    # Fork PRs have no access to secrets.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'pull_request' && 'preview' || 'production' }}
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter admin build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL }}
+          NEXT_PUBLIC_FARO_URL: ${{ vars.FARO_URL_ADMIN }}
+          NEXT_PUBLIC_APP_VERSION: ${{ github.sha }}
+          NEXT_PUBLIC_DEPLOY_ENV: ${{ github.event_name == 'pull_request' && 'preview' || 'production' }}
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy frontend/admin/out --project-name=vaabhi-admin --branch=${{ github.head_ref || github.ref_name }}

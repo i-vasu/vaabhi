@@ -1,0 +1,50 @@
+# Runs on the 1 GB VPS. Images are built and published by GitHub Actions.
+# Usage (on the VPS): IMAGE_TAG=<sha> docker compose -f docker-compose.prod.yml --env-file .env up -d
+services:
+  backend:
+    image: ghcr.io/i-vasu/vaabhi-backend:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DEPLOY_ENV: production
+      SWAGGER_UI_ENABLED: "false"
+    mem_limit: 400m
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health/readiness"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    ports:
+      - "127.0.0.1:8080:8080"
+
+  storefront:
+    image: ghcr.io/i-vasu/vaabhi-storefront:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      API_URL: http://backend:8080
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${GRAFANA_OTLP_ENDPOINT:-}
+      OTEL_EXPORTER_OTLP_HEADERS: ${GRAFANA_OTLP_HEADERS:-}
+    mem_limit: 220m
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "127.0.0.1:3000:3000"
+
+  # Cloudflare Tunnel: outbound-only connection, no inbound ports open on the VPS.
+  # Public hostnames are configured in the Cloudflare dashboard (see infra/cloudflare/README.md).
+  cloudflared:
+    image: cloudflare/cloudflared:${CLOUDFLARED_VERSION:-latest}
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CF_TUNNEL_TOKEN}
+    mem_limit: 64m
+    depends_on:
+      - storefront

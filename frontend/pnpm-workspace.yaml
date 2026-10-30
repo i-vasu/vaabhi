@@ -1,0 +1,7 @@
+packages:
+  - storefront
+  - admin
+  - packages/*
+
+ignoredBuiltDependencies:
+  - unrs-resolver
