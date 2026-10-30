@@ -31,7 +31,7 @@ jobs:
       - name: Skip when the VPS is not configured
         if: env.VPS_HOST == ''
         run: echo "::notice::VPS_HOST secret is not set; skipping deploy."
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         if: env.VPS_HOST != ''
         with:
           ref: ${{ env.IMAGE_TAG }}
