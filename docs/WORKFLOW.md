@@ -60,23 +60,35 @@ rollback points and the changelog for humans.
 
 ## Deployment
 
+Everything runs in **one workflow run** ("CI/CD", `.github/workflows/pipeline.yml`):
+
 ```
-merge to main ─▶ Publish images (tests + Docker → GHCR, tagged with the commit SHA)
-              ─▶ Deploy to VPS  ── approval (production environment) ──▶ deploy.sh ─▶ smoke tests
-              ─▶ Deploy admin   ── approval ──▶ Cloudflare Pages ─▶ smoke tests
+changes ─┬─ backend ─┐
+         ├─ frontend ┼─ sonar ─┐
+         └─ e2e ─────┘         │
+                  (main only)  └─ publish ─┬─ deploy-vps   ─┬─ smoke
+                                           └─ deploy-admin ─┘
+         release-please (main only, in parallel)
 ```
 
+- `changes` decides what to run from the files changed. A job for an untouched part is skipped (skipped counts as
+  passed for required checks). Docs-only changes run no tests and deploy nothing.
+- Deploys start only after **all** checks pass. `publish` reuses the jar built by `backend` and pushes both images,
+  tagged with the commit SHA.
+- `deploy-vps` and `deploy-admin` both use the `production` environment and start together, so one
+  **Review deployments → Approve** covers both. The admin is deployed only when the frontend changed.
 - `deploy.sh` pulls the new images, restarts the containers and waits for health checks. If they fail, it redeploys
   the previous image automatically.
-- The smoke workflow runs the read-only `@smoke` Playwright tests against production after every deploy and daily.
-- Changes to docs only (`**/*.md`, `docs/**`) do not build or deploy anything.
+- `smoke` runs the read-only `@smoke` Playwright tests against production and checks that the API reports the
+  deployed commit. It also runs daily on its own.
 - There is no staging server (the 1 GB VPS cannot run a second copy). Instead: the full stack in CI (`e2e`),
   admin preview URLs on Cloudflare Pages, and smoke tests in production.
+- CodeQL (security analysis) and the PR-title check are separate workflows.
 
 ### Rollback
 
 1. Actions → **Deploy to VPS** → **Run workflow** → `image_tag` = the commit SHA of the last good version (find it on the
-   release/tag or in the Publish run).
+   release/tag or in the CI/CD run).
 2. For the admin: Cloudflare dashboard → Pages → `vaabhi-admin` → Deployments → **Rollback** on the last good one, or
    revert the PR and merge.
 3. Prefer a revert PR (`git revert`) for anything that stays rolled back, so `main` matches production again.
