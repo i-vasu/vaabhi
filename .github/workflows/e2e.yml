@@ -5,7 +5,6 @@ name: E2E
 on:
   workflow_dispatch:
   pull_request:
-    paths: ["backend/**", "frontend/**", ".github/workflows/e2e.yml"]
   push:
     branches: [main]
     paths: ["backend/**", "frontend/**", ".github/workflows/e2e.yml"]
@@ -18,7 +17,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Required check on every PR: runs always, but skips the heavy job when nothing relevant changed
+  # (a path-filtered workflow that never starts would block the PR forever).
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      relevant: ${{ steps.diff.outputs.relevant }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: diff
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          elif git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -qE '^(backend/|frontend/|\.github/workflows/e2e\.yml)'; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+          fi
+
   e2e:
+    name: e2e
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     services:
