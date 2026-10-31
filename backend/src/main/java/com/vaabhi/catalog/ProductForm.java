@@ -23,7 +23,7 @@ public record ProductForm(
         @NotBlank @Size(max = 160) String name,
 
         @Nullable
-        @Pattern(regexp = "^[a-z0-9]+(-[a-z0-9]+)*$", message = "use lowercase letters, digits and dashes")
+        @Pattern(regexp = "^[a-z0-9]++(?:-[a-z0-9]++)*+$", message = "use lowercase letters, digits and dashes")
         @Size(max = 160)
         String slug,
 

@@ -41,6 +41,11 @@ public class AdminProductService {
 
     @Transactional(readOnly = true)
     public AdminProduct get(long id) {
+        return load(id);
+    }
+
+    /** Non-transactional read used inside the write methods' own transactions. */
+    private AdminProduct load(long id) {
         return store.find(id).orElseThrow(() -> notFound(id));
     }
 
@@ -69,7 +74,7 @@ public class AdminProductService {
         var prepared = prepare(form, null);
         var id = store.insert(form, prepared.slug(), prepared.categoryId());
         store.replaceChildren(id, prepared.variants(), prepared.facetValues(), form.addons());
-        return get(id);
+        return load(id);
     }
 
     /** Replaces everything but the status; a published product stays published with the new details. */
@@ -83,7 +88,7 @@ public class AdminProductService {
         if (store.find(id).map(AdminProduct::status).orElseThrow() == ProductStatus.PUBLISHED) {
             requirePublishable(id);
         }
-        return get(id);
+        return load(id);
     }
 
     @Transactional
@@ -94,11 +99,11 @@ public class AdminProductService {
         if (!store.setStatus(id, status)) {
             throw notFound(id);
         }
-        return get(id);
+        return load(id);
     }
 
     private void requirePublishable(long id) {
-        get(id);
+        load(id);
         if (store.activeVariantCount(id) == 0) {
             throw new CatalogValidationException(
                     HttpStatus.BAD_REQUEST, "variants", "Add at least one active variant before publishing");
@@ -224,11 +229,24 @@ public class AdminProductService {
     /** "Kanjeevaram Silk Saree – Rani Pink" → "kanjeevaram-silk-saree-rani-pink". */
     static String slugify(String name) {
         var ascii = Normalizer.normalize(name, Normalizer.Form.NFD).replaceAll("\\p{M}", "");
-        var slug = ascii.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "-").replaceAll("(^-|-$)", "");
+        var slug = ascii.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "-");
+        slug = trimDashes(slug);
         if (slug.length() > 150) {
-            slug = slug.substring(0, 150).replaceAll("-$", "");
+            slug = trimDashes(slug.substring(0, 150));
         }
         return slug.isEmpty() ? "product" : slug;
+    }
+
+    private static String trimDashes(String value) {
+        var start = 0;
+        var end = value.length();
+        while (start < end && value.charAt(start) == '-') {
+            start++;
+        }
+        while (end > start && value.charAt(end - 1) == '-') {
+            end--;
+        }
+        return value.substring(start, end);
     }
 
     /** e.g. VB-K7M2QX-M; random, so it never collides with a deleted variant's SKU in practice. */

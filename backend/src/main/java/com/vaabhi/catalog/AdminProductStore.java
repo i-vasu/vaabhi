@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 @Component
 class AdminProductStore {
 
+    private static final String PRODUCT_ID = "productId";
+
     private final JdbcClient jdbc;
 
     AdminProductStore(JdbcClient jdbc) {
@@ -277,7 +279,7 @@ class AdminProductStore {
                                 active = EXCLUDED.active, position = EXCLUDED.position
                             WHERE product_variant.product_id = EXCLUDED.product_id
                             """)
-                    .param("productId", productId)
+                    .param(PRODUCT_ID, productId)
                     .param("sku", v.sku())
                     .param("colourName", v.colourName().trim())
                     .param("colourHex", v.colourHex().toUpperCase(java.util.Locale.ROOT))
@@ -298,7 +300,7 @@ class AdminProductStore {
                         INSERT INTO product_facet_value (product_id, facet_value_id)
                         SELECT :productId, fv.id FROM facet_value fv WHERE fv.facet_id = :facetId AND fv.code IN (:codes)
                         """)
-                .param("productId", productId)
+                .param(PRODUCT_ID, productId)
                 .param("facetId", facetId)
                 .param("codes", codes)
                 .update());
@@ -313,7 +315,7 @@ class AdminProductStore {
                                                        active, position)
                             VALUES (:productId, :kind, :code, :name, :description, :price, :input, :active, :position)
                             """)
-                    .param("productId", productId)
+                    .param(PRODUCT_ID, productId)
                     .param("kind", a.kind().name())
                     .param("code", a.code())
                     .param("name", a.name().trim())

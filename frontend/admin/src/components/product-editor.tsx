@@ -187,14 +187,8 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
         </div>
       </header>
 
-      {message && (
-        <div
-          role={message.tone === "error" ? "alert" : "status"}
-          className={cn(
-            "rounded-md px-4 py-3 text-sm",
-            message.tone === "error" ? "bg-red-50 text-red-800" : "bg-green-50 text-green-800",
-          )}
-        >
+      {message?.tone === "error" && (
+        <div role="alert" className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-800">
           <p>{message.text}</p>
           {errors.length > 1 && (
             <ul className="mt-2 list-disc pl-5">
@@ -206,6 +200,9 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
             </ul>
           )}
         </div>
+      )}
+      {message?.tone === "ok" && (
+        <output className="block rounded-md bg-green-50 px-4 py-3 text-sm text-green-800">{message.text}</output>
       )}
 
       <section className={card} aria-labelledby="basics">
@@ -291,7 +288,7 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
                 checked={state.blouseIncluded}
                 onChange={(e) => update({ blouseIncluded: e.target.checked })}
               />
-              Blouse piece included
+              <span>Blouse piece included</span>
             </label>
             {state.blouseIncluded && (
               <Field label="Blouse length (m)" error={fieldError("blouseLengthM")}>
@@ -391,7 +388,7 @@ function Field({
 }: Readonly<{ label: string; hint?: string; error?: string; className?: string; children: React.ReactNode }>) {
   return (
     <label className={cn(label, className)}>
-      {text}
+      <span>{text}</span>
       {children}
       {hint && !error && <span className="text-xs font-normal text-neutral-500">{hint}</span>}
       <FieldMessage message={error} />
@@ -445,7 +442,7 @@ function Variants({
       <fieldset className="mb-5 grid gap-3 rounded-md bg-neutral-50 p-4 md:grid-cols-6">
         <legend className="sr-only">Add a colour</legend>
         <label className={cn(label, "md:col-span-2")}>
-          Colour name
+          <span>Colour name</span>
           <input
             className={input}
             value={colour.colourName}
@@ -454,7 +451,7 @@ function Variants({
           />
         </label>
         <label className={label}>
-          Swatch
+          <span>Swatch</span>
           <input
             type="color"
             className="h-9 w-full rounded-md border border-neutral-300"
@@ -463,7 +460,7 @@ function Variants({
           />
         </label>
         <label className={label}>
-          Colour group
+          <span>Colour group</span>
           <select
             className={input}
             value={colour.colourFamily}
@@ -477,7 +474,7 @@ function Variants({
           </select>
         </label>
         <label className={label}>
-          Price ₹
+          <span>Price ₹</span>
           <input
             className={input}
             inputMode="decimal"
@@ -486,7 +483,7 @@ function Variants({
           />
         </label>
         <label className={label}>
-          MRP ₹
+          <span>MRP ₹</span>
           <input
             className={input}
             inputMode="decimal"
@@ -546,7 +543,7 @@ function Variants({
             <tbody>
               {rows.map((row, i) => {
                 const rowErrors = errorsFor(errors, `variants[${i}]`);
-                const name = `${row.colourName}${row.size ? ` ${row.size}` : ""}`;
+                const name = [row.colourName, row.size].filter(Boolean).join(" ");
                 return (
                   <tr key={row.key} className="border-t border-neutral-100 align-top">
                     <td className="py-2 pr-2">
@@ -673,11 +670,11 @@ function Addons({
           <fieldset key={row.key} className="mb-3 grid gap-3 border-t border-neutral-100 pt-3 md:grid-cols-12">
             <legend className="sr-only">Option {n}</legend>
             <label className={cn(label, "md:col-span-3")}>
-              Name
+              <span>Name</span>
               <input className={input} value={row.name} onChange={(e) => set(i, { name: e.target.value })} />
             </label>
             <label className={cn(label, "md:col-span-2")}>
-              Code
+              <span>Code</span>
               <input
                 className={cn(input, "font-mono text-xs")}
                 value={row.code}
@@ -686,7 +683,7 @@ function Addons({
               />
             </label>
             <label className={cn(label, "md:col-span-3")}>
-              Note
+              <span>Note</span>
               <input
                 className={input}
                 value={row.description}
@@ -694,7 +691,7 @@ function Addons({
               />
             </label>
             <label className={cn(label, "md:col-span-1")}>
-              Price ₹
+              <span>Price ₹</span>
               <input
                 className={input}
                 inputMode="decimal"
@@ -703,7 +700,7 @@ function Addons({
               />
             </label>
             <label className={cn(label, "md:col-span-2")}>
-              Ask for
+              <span>Ask for</span>
               <select
                 className={input}
                 value={row.input}
@@ -717,7 +714,7 @@ function Addons({
             <div className="flex items-end justify-between gap-2 pb-1.5 md:col-span-1">
               <label className="flex items-center gap-1 text-sm">
                 <input type="checkbox" checked={row.active} onChange={(e) => set(i, { active: e.target.checked })} />
-                On
+                <span>On</span>
               </label>
               <button
                 type="button"

@@ -74,7 +74,8 @@ export default function ProductsPage() {
       </header>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div role="group" aria-label="Status" className="flex rounded-md border border-neutral-300 p-0.5 text-sm">
+        <fieldset className="flex rounded-md border border-neutral-300 p-0.5 text-sm">
+          <legend className="sr-only">Status</legend>
           {TABS.map((tab) => (
             <button
               key={tab.label}
@@ -89,7 +90,7 @@ export default function ProductsPage() {
               {tab.label}
             </button>
           ))}
-        </div>
+        </fieldset>
         <select
           aria-label="Category"
           className="rounded-md border border-neutral-300 px-2 py-1.5 text-sm"

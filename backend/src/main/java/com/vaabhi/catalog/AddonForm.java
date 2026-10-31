@@ -10,7 +10,7 @@ import org.jspecify.annotations.Nullable;
 /** An optional extra (e.g. blouse stitching) as the admin edits it. {@code pricePaise} 0 means included. */
 public record AddonForm(
         @NotBlank
-        @Pattern(regexp = "^[a-z0-9]+(-[a-z0-9]+)*$", message = "use lowercase letters, digits and dashes")
+        @Pattern(regexp = "^[a-z0-9]++(?:-[a-z0-9]++)*+$", message = "use lowercase letters, digits and dashes")
         @Size(max = 40)
         String code,
 
