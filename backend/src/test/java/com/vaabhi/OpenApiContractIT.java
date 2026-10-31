@@ -36,11 +36,13 @@ class OpenApiContractIT {
 
     @Test
     void committedSpecMatchesTheRunningApi() throws Exception {
-        var body = mockMvc.perform(get("/v3/api-docs")).andReturn().getResponse().getContentAsString();
+        var body =
+                mockMvc.perform(get("/v3/api-docs")).andReturn().getResponse().getContentAsString();
         var actual = withoutServers(JSON.readTree(body));
 
         if (Boolean.getBoolean("openapi.update")) {
-            Files.writeString(COMMITTED_SPEC, JSON.writerWithDefaultPrettyPrinter().writeValueAsString(actual) + "\n");
+            Files.writeString(
+                    COMMITTED_SPEC, JSON.writerWithDefaultPrettyPrinter().writeValueAsString(actual) + "\n");
         }
 
         var committed = withoutServers(JSON.readTree(Files.readString(COMMITTED_SPEC)));

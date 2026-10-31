@@ -1,0 +1,69 @@
+name: Quality (SonarQube Cloud)
+
+# Builds both halves with coverage and sends everything to SonarQube Cloud. The quality gate
+# ("Sonar way": no new bugs/vulnerabilities, reviewed hotspots, coverage and duplication on new
+# code) fails this job. Skipped until the SONAR_TOKEN secret exists (also skipped for forks/Dependabot).
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sonar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - name: Skip when SonarQube Cloud is not configured
+        if: env.SONAR_TOKEN == ''
+        run: echo "::notice::SONAR_TOKEN secret is not set; skipping analysis."
+
+      - uses: actions/checkout@v7
+        if: env.SONAR_TOKEN != ''
+        with:
+          fetch-depth: 0 # full history: needed to detect new code and blame
+      - uses: actions/setup-java@v6
+        if: env.SONAR_TOKEN != ''
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - uses: pnpm/action-setup@v6
+        if: env.SONAR_TOKEN != ''
+        with:
+          package_json_file: frontend/package.json
+      - uses: actions/setup-node@v7
+        if: env.SONAR_TOKEN != ''
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Backend tests with coverage
+        if: env.SONAR_TOKEN != ''
+        run: ./mvnw -B verify
+        working-directory: backend
+      - name: Frontend tests with coverage
+        if: env.SONAR_TOKEN != ''
+        working-directory: frontend
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm turbo run test
+          # lcov paths are relative to each package; make them relative to the repo root.
+          for pkg in storefront admin packages/api-client; do
+            sed -i "s#^SF:#SF:frontend/$pkg/#" "$pkg/coverage/lcov.info"
+          done
+
+      - name: SonarQube Cloud scan
+        if: env.SONAR_TOKEN != ''
+        uses: SonarSource/sonarqube-scan-action@v8

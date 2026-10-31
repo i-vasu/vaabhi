@@ -34,23 +34,34 @@ class ArchitectureTests {
 
     @Test
     void controllersAreNamedAccordingly() {
-        classes().that().areAnnotatedWith(RestController.class)
-                .should().haveSimpleNameEndingWith("Controller")
+        classes()
+                .that()
+                .areAnnotatedWith(RestController.class)
+                .should()
+                .haveSimpleNameEndingWith("Controller")
                 .check(CLASSES);
     }
 
     @Test
     void controllersGoThroughServices() {
-        noClasses().that().areAnnotatedWith(RestController.class)
-                .should().dependOnClassesThat().areAssignableTo(Repository.class)
+        noClasses()
+                .that()
+                .areAnnotatedWith(RestController.class)
+                .should()
+                .dependOnClassesThat()
+                .areAssignableTo(Repository.class)
                 .because("controllers call services, which own transactions and caching")
                 .check(CLASSES);
     }
 
     @Test
     void controllersExposeDtosNotEntities() {
-        noClasses().that().areAnnotatedWith(RestController.class)
-                .should().dependOnClassesThat().areAnnotatedWith(Entity.class)
+        noClasses()
+                .that()
+                .areAnnotatedWith(RestController.class)
+                .should()
+                .dependOnClassesThat()
+                .areAnnotatedWith(Entity.class)
                 .because("JPA entities are internal; the API returns records/DTOs")
                 .check(CLASSES);
     }

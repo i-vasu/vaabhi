@@ -9,5 +9,19 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.test.{ts,tsx}"],
+    coverage: {
+      provider: "v8",
+      include: ["src/**/*.{ts,tsx}"],
+      // Framework wiring (root layout, OTel registration) is exercised by the Playwright suite instead.
+      exclude: [
+        "src/test/**",
+        "src/**/*.test.{ts,tsx}",
+        "src/**/*.d.ts",
+        "src/app/layout.tsx",
+        "src/instrumentation.ts",
+      ],
+      reporter: ["text-summary", "lcov", "json-summary"],
+      thresholds: { lines: 70 },
+    },
   },
 });

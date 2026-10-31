@@ -11,10 +11,11 @@
     "generate:offline": "openapi-typescript openapi.json -o src/schema.d.ts",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run --coverage"
   },
   "devDependencies": {
     "@vaabhi/config": "workspace:*",
+    "@vitest/coverage-v8": "5.0.5",
     "openapi-typescript": "7.13.0",
     "typescript": "5.9.3",
     "vitest": "5.0.5"

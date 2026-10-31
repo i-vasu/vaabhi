@@ -11,9 +11,12 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "generate:api": "pnpm --filter @vaabhi/api-client generate"
+    "generate:api": "pnpm --filter @vaabhi/api-client generate",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "prettier": "3.9.10",
     "turbo": "2.11.10"
   }
 }

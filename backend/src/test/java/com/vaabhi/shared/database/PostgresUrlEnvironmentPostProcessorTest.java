@@ -15,13 +15,16 @@ class PostgresUrlEnvironmentPostProcessorTest {
     @Test
     void translatesNeonUrlsIntoDatasourceAndFlywayProperties() {
         var environment = environmentWith(Map.of(
-                "DATABASE_URL", "postgresql://neondb_owner:p%40ss@ep-x-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require",
-                "DATABASE_URL_UNPOOLED", "postgresql://neondb_owner:p%40ss@ep-x.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"));
+                "DATABASE_URL",
+                        "postgresql://neondb_owner:p%40ss@ep-x-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require",
+                "DATABASE_URL_UNPOOLED",
+                        "postgresql://neondb_owner:p%40ss@ep-x.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"));
 
         processor.postProcessEnvironment(environment, new SpringApplication());
 
         assertThat(environment.getProperty("spring.datasource.url"))
-                .isEqualTo("jdbc:postgresql://ep-x-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channelBinding=require");
+                .isEqualTo(
+                        "jdbc:postgresql://ep-x-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channelBinding=require");
         assertThat(environment.getProperty("spring.datasource.username")).isEqualTo("neondb_owner");
         assertThat(environment.getProperty("spring.datasource.password")).isEqualTo("p@ss");
         assertThat(environment.getProperty("spring.flyway.url"))

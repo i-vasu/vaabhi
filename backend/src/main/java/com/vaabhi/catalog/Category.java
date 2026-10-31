@@ -24,8 +24,7 @@ public class Category {
     @Column(nullable = false)
     private int position;
 
-    protected Category() {
-    }
+    protected Category() {}
 
     public Category(String slug, String name, int position) {
         this.slug = slug;
