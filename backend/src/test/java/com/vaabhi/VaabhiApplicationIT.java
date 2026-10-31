@@ -49,7 +49,8 @@ class VaabhiApplicationIT {
     void listsSeededCategories() throws Exception {
         mockMvc.perform(get("/api/v1/store/categories"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].slug").value("dresses"));
+                .andExpect(jsonPath("$[0].slug").value("sarees"))
+                .andExpect(jsonPath("$.length()").value(5));
     }
 
     @Test

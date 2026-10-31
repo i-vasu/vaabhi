@@ -1,0 +1,60 @@
+/*
+ * Vaabhi design tokens: mirror of the Figma variables (palette "Ivory Neutral").
+ * Names match the Figma code syntax, e.g. Figma color/brand/primary = var(--color-brand-primary)
+ * = Tailwind utilities bg-brand-primary, text-brand-primary, border-brand-primary.
+ * Balance: ~60-70% ivory/linen, 20-30% rosewood maroon, 10% antique gold + olive.
+ */
+@theme static {
+  /* primitives */
+  --color-maroon-900: #4e1a24;
+  --color-maroon-700: #6e2a35;
+  --color-maroon-500: #8e4450;
+  --color-maroon-100: #f1e3e4;
+  --color-gold-600: #a88b5a;
+  --color-gold-400: #c2a878;
+  --color-gold-100: #f3ebdd;
+  --color-olive-700: #5e6b3a;
+  --color-olive-100: #e8ebdc;
+  --color-rani-600: #c2185b;
+  --color-rani-100: #fbe3ec;
+  --color-ivory-50: #faf7f2;
+  --color-ivory-100: #f2ece3;
+  --color-sand-200: #e4dcd0;
+  --color-ink-900: #2b2622;
+  --color-ink-700: #5e554e;
+  --color-ink-500: #70665e;
+  --color-ink-300: #c9bfb2;
+
+  /* semantic */
+  --color-bg-page: var(--color-ivory-50);
+  --color-bg-surface: #ffffff;
+  --color-bg-muted: var(--color-ivory-100);
+  --color-text-primary: var(--color-ink-900);
+  --color-text-secondary: var(--color-ink-700);
+  --color-text-muted: var(--color-ink-500);
+  --color-text-on-brand: var(--color-ivory-50);
+  --color-brand-primary: var(--color-maroon-700);
+  --color-brand-primary-hover: var(--color-maroon-900);
+  --color-brand-primary-soft: var(--color-maroon-100);
+  --color-brand-accent: var(--color-gold-600);
+  --color-brand-accent-soft: var(--color-gold-100);
+  --color-brand-olive: var(--color-olive-700);
+  --color-brand-olive-soft: var(--color-olive-100);
+  --color-brand-festive: var(--color-rani-600);
+  --color-brand-festive-soft: var(--color-rani-100);
+  --color-border-default: var(--color-sand-200);
+  --color-border-strong: var(--color-ink-300);
+  --color-feedback-success: #2e7d4f;
+  --color-feedback-error: #b3261e;
+
+  /* radius (spacing uses Tailwind's 4px scale, same as Figma spacing/N = N × 4px) */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+}
+
+/* Fonts are loaded with next/font in each app, which sets --font-cormorant and --font-inter. */
+@theme inline {
+  --font-serif: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  --font-sans: var(--font-inter), Inter, system-ui, sans-serif;
+}

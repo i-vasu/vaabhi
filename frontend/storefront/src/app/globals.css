@@ -1,12 +1,9 @@
 @import "tailwindcss";
+@import "@vaabhi/ui/theme.css";
 @source "../../../packages/ui/src";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
+@layer base {
+  html {
+    @apply bg-bg-page font-sans text-text-primary antialiased;
+  }
 }

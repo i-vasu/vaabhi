@@ -4,8 +4,9 @@ import { setupServer } from "msw/node";
 export const API = "http://localhost:8080";
 
 export const categories = [
-  { id: 1, slug: "dresses", name: "Dresses" },
-  { id: 2, slug: "tops", name: "Tops" },
+  { id: 1, slug: "sarees", name: "Sarees" },
+  { id: 2, slug: "lehengas", name: "Lehengas" },
+  { id: 3, slug: "unknown-new-category", name: "Dupattas" },
 ];
 
 export const server = setupServer(http.get(`${API}/api/v1/store/categories`, () => HttpResponse.json(categories)));
