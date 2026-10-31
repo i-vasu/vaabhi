@@ -48,6 +48,16 @@ test.describe("Admin products", () => {
     expect(body.pricePaise).toBe(1425000);
     expect(body.addons).toHaveLength(3);
 
+    // Photos (a 6×8 maroon PNG): the browser resizes to WebP, then the API answers 503 because CI has no R2 credentials.
+    const png = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAYAAAAICAIAAABVpBlvAAAAEUlEQVR4nGPI0zJFQwyDQQgAdS0mcc+VYwAAAAAASUVORK5CYII=",
+      "base64",
+    );
+    await page.getByLabel("Add photos").setInputFiles({ name: "front.png", mimeType: "image/png", buffer: png });
+    await expect(
+      page.getByRole("list", { name: "Uploads" }).getByText(/front.png: failed. Photo storage is not configured/),
+    ).toBeVisible();
+
     await page.getByRole("button", { name: "Unpublish" }).click();
     await expect(page.getByText("Draft.")).toBeVisible();
     expect((await request.get(`${urls.api}/api/v1/store/products/${slug}`)).status()).toBe(404);

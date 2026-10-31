@@ -185,9 +185,20 @@ export function shade(hex: string, factor = 0.55): string {
 
 const PLACEHOLDER: [string, string] = ["#E4DCD0", "#A88B5A"];
 
-export function mediaUrl(key: string, width: 400 | 800 | 1600 = 800): string | undefined {
-  const base = process.env.NEXT_PUBLIC_MEDIA_URL;
+const RENDITIONS = [400, 800, 1600] as const;
+const CARD_SIZES = "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw";
+
+/**
+ * Photo URL on the R2 media domain. MEDIA_URL is read on the server at runtime (set in docker-compose);
+ * without it (local development without photos) cards fall back to colour placeholders.
+ */
+export function mediaUrl(key: string, width: (typeof RENDITIONS)[number] = 800): string | undefined {
+  const base = process.env.MEDIA_URL || process.env.NEXT_PUBLIC_MEDIA_URL;
   return base ? `${base.replace(/\/$/, "")}/${key}/${width}.webp` : undefined;
+}
+
+function srcSet(key: string): string {
+  return RENDITIONS.map((width) => `${mediaUrl(key, width)} ${width}w`).join(", ");
 }
 
 function stockNote(product: ProductSummary): string | undefined {
@@ -211,7 +222,7 @@ export function productCardProps(product: ProductSummary): ProductCardProps {
     badge: product.badge ? { label: product.badge.toLowerCase(), tone: badgeTones[product.badge] } : undefined,
     image:
       src && product.image
-        ? { src, alt: product.image.alt }
+        ? { src, alt: product.image.alt, srcSet: srcSet(product.image.key), sizes: CARD_SIZES }
         : { placeholder: colour ? [colour, shade(colour)] : PLACEHOLDER },
   };
 }

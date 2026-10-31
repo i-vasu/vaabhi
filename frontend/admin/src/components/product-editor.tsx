@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { ApiError, type AdminProduct, type CatalogOptions, type FieldError } from "@vaabhi/api-client";
 import { Button, cn } from "@vaabhi/ui";
 import { api } from "@/lib/api";
+import { ProductPhotos } from "./product-photos";
 import {
   BADGES,
   emptyState,
@@ -360,6 +361,14 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
       />
 
       <Addons rows={state.addons} errors={errors} onChange={(addons) => update({ addons })} />
+
+      <ProductPhotos
+        productId={product?.id}
+        productName={state.name}
+        colours={[...new Set(state.variants.map((v) => v.colourName))]}
+        media={product?.media ?? []}
+        onChange={(media) => setProduct((p) => (p ? { ...p, media } : p))}
+      />
     </form>
   );
 }

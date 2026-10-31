@@ -23,6 +23,6 @@ public record AdminProduct(
         Map<String, List<String>> attributes,
         List<VariantForm> variants,
         List<AddonForm> addons,
-        List<MediaResponse> media,
+        List<AdminMedia> media,
         @Nullable OffsetDateTime publishedAt,
         OffsetDateTime updatedAt) {}
