@@ -118,7 +118,7 @@ jobs:
       - run: pnpm turbo run lint typecheck test build
       - name: Coverage paths relative to the repo root (for SonarQube Cloud)
         run: |
-          for pkg in storefront admin packages/api-client packages/observability; do
+          for pkg in storefront admin packages/api-client packages/observability packages/ui; do
             sed -i "s#^SF:#SF:frontend/$pkg/#" "$pkg/coverage/lcov.info"
           done
       - uses: actions/upload-artifact@v7
@@ -130,6 +130,7 @@ jobs:
             frontend/admin/coverage/lcov.info
             frontend/packages/api-client/coverage/lcov.info
             frontend/packages/observability/coverage/lcov.info
+            frontend/packages/ui/coverage/lcov.info
 
   e2e:
     name: e2e

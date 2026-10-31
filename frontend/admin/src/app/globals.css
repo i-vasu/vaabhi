@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@vaabhi/ui/theme.css";
 @source "../../../packages/ui/src";
 
 :root {
