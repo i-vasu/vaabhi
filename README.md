@@ -52,6 +52,8 @@ cd frontend && pnpm generate:api                       # regenerate API types fr
 | `deploy-admin.yml` | builds the admin static export and deploys it to Cloudflare Pages (previews on PRs) |
 | `e2e.yml` | full stack in CI (Postgres, backend, storefront, admin) + Playwright and accessibility checks |
 | `quality.yml` | tests with coverage for both halves, then SonarQube Cloud analysis and quality gate |
+| `pr-title.yml` | PR titles must follow Conventional Commits (squash-merge message, drives versioning) |
+| `release.yml` | release-please: release PR → version bump, `CHANGELOG.md`, GitHub Release + tag |
 | `smoke.yml` | read-only Playwright `@smoke` tests against production: after each deploy, daily, on demand |
 | `codeql.yml` | CodeQL for Java and TypeScript |
 
@@ -65,7 +67,8 @@ Repository **variables**: `PUBLIC_API_URL` (e.g. `https://api.vaabhi.com`), `CF_
 Runtime configuration for the VPS lives in `/opt/vaabhi/.env` — see `infra/.env.example`
 and `infra/vps-setup.md`.
 
-See [docs/TESTING.md](docs/TESTING.md) for the test layers and how to run them.
+See [docs/TESTING.md](docs/TESTING.md) for the test layers and how to run them, and
+[docs/WORKFLOW.md](docs/WORKFLOW.md) for branching, releases, deployment and rollback.
 
 ## Observability
 

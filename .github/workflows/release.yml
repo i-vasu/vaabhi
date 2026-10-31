@@ -1,0 +1,20 @@
+name: Release
+
+# Keeps a release PR up to date with the changes merged to main. Merging it bumps the version,
+# updates CHANGELOG.md and creates a GitHub Release + tag (rollback reference points).
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v5
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
