@@ -42,7 +42,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter admin build
         env:
-          NEXT_PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL }}
+          NEXT_PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL || 'https://api.vaabhi.com' }}
           NEXT_PUBLIC_FARO_URL: ${{ vars.FARO_URL_ADMIN }}
           NEXT_PUBLIC_APP_VERSION: ${{ github.sha }}
           NEXT_PUBLIC_DEPLOY_ENV: ${{ github.event_name == 'pull_request' && 'preview' || 'production' }}
