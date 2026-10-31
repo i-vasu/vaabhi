@@ -9,7 +9,7 @@
     "start": "next start --port 3000",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run --coverage"
   },
   "dependencies": {
     "@grafana/faro-web-sdk": "2.13.0",
@@ -30,6 +30,7 @@
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vaabhi/config": "workspace:*",
+    "@vitest/coverage-v8": "5.0.5",
     "eslint": "9.39.5",
     "eslint-config-next": "16.4.3",
     "jsdom": "29.1.1",

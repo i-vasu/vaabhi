@@ -46,7 +46,6 @@ class VaabhiApplicationIT {
 
     @Test
     void adminApiRequiresAuthentication() throws Exception {
-        mockMvc.perform(get("/api/v1/admin/anything"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/admin/anything")).andExpect(status().isUnauthorized());
     }
 }

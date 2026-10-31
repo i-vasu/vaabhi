@@ -37,8 +37,7 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
   return {
     request,
     store: {
-      listCategories: (init?: Parameters<typeof request>[1]) =>
-        request<Category[]>("/api/v1/store/categories", init),
+      listCategories: (init?: Parameters<typeof request>[1]) => request<Category[]>("/api/v1/store/categories", init),
     },
   };
 }

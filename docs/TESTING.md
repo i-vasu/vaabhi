@@ -49,3 +49,18 @@ cd frontend/e2e && STOREFRONT_URL=https://vaabhi.com ADMIN_URL=https://admin.vaa
   `pnpm generate:api` in `frontend/` to refresh the TypeScript types. CI fails if they drift.
 - Component tests declare every API call with MSW; an unmocked request fails the test.
 - Tag Playwright tests `@smoke` only if they are read-only and safe to run against production.
+
+## Coverage and quality gates
+
+| Gate | Tool | Threshold | Fix locally |
+|---|---|---|---|
+| Java coverage | JaCoCo (unit + integration merged) | 70% lines; enforced in CI (`CI=true`) | Report: `backend/target/site/jacoco/index.html` |
+| Frontend coverage | Vitest V8 coverage, per package | 70% lines | `pnpm turbo run test`; report in `<pkg>/coverage/` |
+| Java formatting | Spotless + Palantir Java Format | must be formatted | `cd backend && ./mvnw spotless:apply` |
+| Frontend formatting | Prettier (`printWidth` 120) | must be formatted | `cd frontend && pnpm format` |
+| Java bug patterns | Error Prone (compile time) | errors fail the build; fix warnings too | `./mvnw compile` |
+| Lint / types | ESLint (Next.js rules), `tsc` | no errors | `pnpm turbo run lint typecheck` |
+| Overall quality | SonarQube Cloud, "Sonar way" gate on **new code** (no new bugs/vulnerabilities, hotspots reviewed, ≥80% coverage, ≤3% duplication) | gate must pass | see the SonarQube Cloud report linked from the PR |
+
+Coverage excludes framework wiring that the Playwright suite covers instead: `VaabhiApplication`, the Next.js root
+`layout.tsx` and `instrumentation.ts`. Raise the 70% floors as the codebase grows; never lower them to make a build pass.

@@ -54,7 +54,8 @@ class PostgresUrlEnvironmentPostProcessor implements EnvironmentPostProcessor {
             var password = separator < 0 ? "" : decode(userInfo.substring(separator + 1));
             var port = uri.getPort() < 0 ? "" : ":" + uri.getPort();
             var query = jdbcQuery(uri.getRawQuery());
-            var url = "jdbc:postgresql://" + uri.getHost() + port + uri.getRawPath() + (query.isEmpty() ? "" : "?" + query);
+            var url = "jdbc:postgresql://" + uri.getHost() + port + uri.getRawPath()
+                    + (query.isEmpty() ? "" : "?" + query);
             return new JdbcConnection(url, username, password);
         }
 
@@ -64,14 +65,17 @@ class PostgresUrlEnvironmentPostProcessor implements EnvironmentPostProcessor {
                 return "";
             }
             Map<String, String> params = new LinkedHashMap<>();
-            for (var pair : rawQuery.split("&")) {
+            for (var pair : rawQuery.split("&", -1)) {
                 var eq = pair.indexOf('=');
                 var key = eq < 0 ? pair : pair.substring(0, eq);
                 var value = eq < 0 ? "" : pair.substring(eq + 1);
                 params.put(key.equals("channel_binding") ? "channelBinding" : key, value);
             }
             var joined = new StringBuilder();
-            params.forEach((key, value) -> joined.append(joined.isEmpty() ? "" : "&").append(key).append('=').append(value));
+            params.forEach((key, value) -> joined.append(joined.isEmpty() ? "" : "&")
+                    .append(key)
+                    .append('=')
+                    .append(value));
             return joined.toString();
         }
 

@@ -51,12 +51,13 @@ cd frontend && pnpm generate:api                       # regenerate API types fr
 | `deploy.yml` | after publish: SSH to the VPS, `infra/deploy.sh` (health check + automatic rollback) |
 | `deploy-admin.yml` | builds the admin static export and deploys it to Cloudflare Pages (previews on PRs) |
 | `e2e.yml` | full stack in CI (Postgres, backend, storefront, admin) + Playwright and accessibility checks |
+| `quality.yml` | tests with coverage for both halves, then SonarQube Cloud analysis and quality gate |
 | `smoke.yml` | read-only Playwright `@smoke` tests against production: after each deploy, daily, on demand |
 | `codeql.yml` | CodeQL for Java and TypeScript |
 
 ### Secrets and variables
 
-Repository **secrets**: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `VPS_PORT` (SSH port, default 22), `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
+Repository **secrets**: `SONAR_TOKEN` (SonarQube Cloud), `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `VPS_PORT` (SSH port, default 22), `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
 
 Repository **variables**: `PUBLIC_API_URL` (e.g. `https://api.vaabhi.com`), `CF_IMAGES_ACCOUNT_HASH`,
 `FARO_URL_STOREFRONT`, `FARO_URL_ADMIN`.

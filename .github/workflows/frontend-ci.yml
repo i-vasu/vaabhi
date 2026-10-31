@@ -36,4 +36,7 @@ jobs:
           cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      - name: Formatting (Prettier)
+        run: pnpm format:check
+      # test = Vitest with coverage; fails below the per-package line threshold.
       - run: pnpm turbo run lint typecheck test build
