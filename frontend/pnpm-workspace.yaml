@@ -6,3 +6,8 @@ packages:
 
 ignoredBuiltDependencies:
   - unrs-resolver
+
+# One OpenTelemetry API version across the workspace (@vercel/otel requires <1.10). Otherwise pnpm
+# installs two vitest variants and the jest-dom matcher types attach to only one of them.
+overrides:
+  "@opentelemetry/api": "1.9.1"

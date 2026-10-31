@@ -1,6 +1,6 @@
 {
   "name": "admin",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,8 +11,8 @@
     "test": "vitest run --coverage"
   },
   "dependencies": {
-    "@grafana/faro-web-sdk": "2.13.0",
     "@vaabhi/api-client": "workspace:*",
+    "@vaabhi/observability": "workspace:*",
     "@vaabhi/ui": "workspace:*",
     "next": "16.4.3",
     "react": "19.3.1",

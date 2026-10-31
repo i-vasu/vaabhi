@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { getWebInstrumentations, initializeFaro } from "@grafana/faro-web-sdk";
+import { appVersion } from "./version";
 
 let initialized = false;
 
@@ -15,7 +16,7 @@ export function Faro({ appName }: { appName: string }) {
       url,
       app: {
         name: appName,
-        version: process.env.NEXT_PUBLIC_APP_VERSION ?? "dev",
+        version: appVersion().label,
         environment: process.env.NEXT_PUBLIC_DEPLOY_ENV ?? "local",
       },
       instrumentations: getWebInstrumentations(),

@@ -28,3 +28,17 @@ test.describe("API", () => {
     });
   }
 });
+
+test("reports the release version and the deployed commit @smoke", async ({ request }) => {
+  const response = await request.get(`${urls.api}/actuator/info`);
+  expect(response.ok()).toBeTruthy();
+  const info = await response.json();
+  expect(info.build.version).toMatch(/^\d+\.\d+\.\d+/);
+  expect(info.git.commit.id).toBeTruthy();
+
+  // After a deploy, the API must be running exactly the commit that was deployed.
+  const expected = process.env.EXPECTED_COMMIT;
+  if (expected) {
+    expect(expected.startsWith(info.git.commit.id)).toBeTruthy();
+  }
+});

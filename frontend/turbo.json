@@ -3,7 +3,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "env": ["NEXT_PUBLIC_*"],
+      "env": ["NEXT_PUBLIC_*", "COMMIT_SHA", "GITHUB_SHA"],
       "outputs": [".next/**", "!.next/cache/**", "out/**"]
     },
     "lint": {},

@@ -12,7 +12,7 @@
 
     <groupId>com.vaabhi</groupId>
     <artifactId>vaabhi-backend</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.1.0</version><!-- x-release-please-version -->
     <name>vaabhi-backend</name>
     <description>Vaabhi fashion e-commerce backend (modular monolith)</description>
 
@@ -181,6 +181,23 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <!-- build.version etc. for /actuator/info -->
+                    <execution>
+                        <goals>
+                            <goal>build-info</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- git.commit.id etc. for /actuator/info (configured by the Spring Boot parent) -->
+            <plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <configuration>
+                    <verbose>false</verbose>
+                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

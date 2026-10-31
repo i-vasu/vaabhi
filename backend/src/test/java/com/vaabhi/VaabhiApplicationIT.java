@@ -38,6 +38,14 @@ class VaabhiApplicationIT {
     }
 
     @Test
+    void infoReportsReleaseVersionAndCommit() throws Exception {
+        mockMvc.perform(get("/actuator/info"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.build.version").isNotEmpty())
+                .andExpect(jsonPath("$.git.commit.id").isNotEmpty());
+    }
+
+    @Test
     void listsSeededCategories() throws Exception {
         mockMvc.perform(get("/api/v1/store/categories"))
                 .andExpect(status().isOk())
