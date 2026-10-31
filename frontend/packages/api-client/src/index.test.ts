@@ -39,6 +39,53 @@ describe("createApiClient", () => {
   });
 });
 
+describe("admin client", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("sends JSON with the right method and path", async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(new Response("{}")));
+    vi.stubGlobal("fetch", fetchMock);
+    const api = createApiClient({ baseUrl: "https://api.example.com", getToken: () => "t" });
+    const form = { name: "Saree" } as never;
+
+    await api.admin.catalogOptions();
+    await api.admin.listProducts({ status: "DRAFT", q: "silk" });
+    await api.admin.listProducts();
+    await api.admin.getProduct(7);
+    await api.admin.createProduct(form);
+    await api.admin.updateProduct(7, form);
+    await api.admin.setStatus(7, "publish");
+
+    const calls = fetchMock.mock.calls.map(([url, init]) => `${init.method ?? "GET"} ${url}`);
+    expect(calls).toEqual([
+      "GET https://api.example.com/api/v1/admin/catalog/options",
+      "GET https://api.example.com/api/v1/admin/products?q=silk&status=DRAFT",
+      "GET https://api.example.com/api/v1/admin/products",
+      "GET https://api.example.com/api/v1/admin/products/7",
+      "POST https://api.example.com/api/v1/admin/products",
+      "PUT https://api.example.com/api/v1/admin/products/7",
+      "POST https://api.example.com/api/v1/admin/products/7/publish",
+    ]);
+    expect(fetchMock.mock.calls[4]![1].body).toBe('{"name":"Saree"}');
+    expect(fetchMock.mock.calls[4]![1].headers["Content-Type"]).toBe("application/json");
+    expect(fetchMock.mock.calls[6]![1].body).toBeUndefined();
+  });
+
+  it("exposes field errors from problem details", async () => {
+    const problem = {
+      detail: "Unknown category",
+      errors: [{ field: "categorySlug", message: "Unknown category" }, { x: 1 }],
+    };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(problem), { status: 400 })));
+    const api = createApiClient({ baseUrl: "https://api.example.com" });
+
+    const error = await api.admin.getProduct(1).catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(ApiError);
+    expect((error as ApiError).detail).toBe("Unknown category");
+    expect((error as ApiError).errors).toEqual([{ field: "categorySlug", message: "Unknown category" }]);
+  });
+});
+
 describe("listingQueryString", () => {
   it("drops empty values and sorts keys", () => {
     expect(listingQueryString({ work: "zari", colour: "", size: null, inStock: false, page: 1 })).toBe(
