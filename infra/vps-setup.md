@@ -25,3 +25,16 @@ echo "<github-token-with-read:packages>" | docker login ghcr.io -u <github-user>
 ```
 
 Memory budget: OS + Docker ~210 MB, cloudflared ~30 MB, backend ~320 MB, storefront ~150 MB.
+
+## Admin access (until the auth module adds a login)
+
+The admin app's **Sign in** page takes an access token. Create one on your computer, from the repository root; it
+reads the production `JWT_SECRET` over SSH and expires after 12 hours:
+
+```bash
+JWT_SECRET=$(ssh -p 20036 deploy@148.113.17.68 "grep '^JWT_SECRET=' /opt/vaabhi/.env | cut -d= -f2-") bash infra/admin-token.sh vasu 12
+```
+
+Paste the printed token into admin.vaabhi.com → Sign in. It is kept only for that browser tab's session. Anyone with
+the token can edit the catalogue until it expires, so do not share it; rotating `JWT_SECRET` (and redeploying)
+invalidates every token.
