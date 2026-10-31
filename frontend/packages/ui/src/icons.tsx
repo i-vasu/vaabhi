@@ -78,3 +78,8 @@ export const CashIcon = icon(
   </>,
 );
 export const ChatIcon = icon("Chat", <path d="M4 18.5 5.3 15A7.5 7.5 0 1 1 8.6 18l-4.6.5Z" />);
+export const FilterIcon = icon("Filter", <path d="M4 6h16M7 12h10M10 18h4" />);
+export const SortIcon = icon("Sort", <path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3" />);
+export const CloseIcon = icon("Close", <path d="M6 6l12 12M18 6 6 18" />);
+export const ChevronDownIcon = icon("ChevronDown", <path d="m6 9 6 6 6-6" />);
+export const CheckIcon = icon("Check", <path d="m5 12.5 4.5 4.5L19 7.5" />);
