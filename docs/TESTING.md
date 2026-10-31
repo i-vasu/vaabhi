@@ -2,15 +2,15 @@
 
 | Layer | Tooling | Where | Runs in |
 |---|---|---|---|
-| Backend unit | JUnit 5, AssertJ, Mockito | `backend/src/test/**/*Test.java` | Backend CI |
-| Backend web slice | `@WebMvcTest` + MockMvc (incl. security rules) | `*ControllerTest.java` | Backend CI |
-| Backend integration | `@SpringBootTest` + Testcontainers Postgres (Flyway, JPA, security, CORS) | `*IT.java` | Backend CI (skipped locally without Docker) |
-| Architecture | Spring Modulith (`ModularityTests`) + ArchUnit (`ArchitectureTests`) | `backend/src/test/java/com/vaabhi` | Backend CI |
-| API contract | `OpenApiContractIT`: live spec must equal `frontend/packages/api-client/openapi.json` | backend IT | Backend CI |
-| Frontend unit | Vitest | `frontend/**/src/**/*.test.ts` | Frontend CI |
-| Frontend component | Vitest + React Testing Library + MSW (mocked API, unhandled requests fail) | `frontend/{storefront,admin}/src/**/*.test.tsx` | Frontend CI |
-| End-to-end | Playwright against the full stack started in CI | `frontend/e2e/tests` | E2E workflow (PRs, `main`) |
-| Accessibility | axe-core inside Playwright (no serious/critical violations) | `frontend/e2e/tests` | E2E workflow |
+| Backend unit | JUnit 5, AssertJ, Mockito | `backend/src/test/**/*Test.java` | CI/CD `backend` job |
+| Backend web slice | `@WebMvcTest` + MockMvc (incl. security rules) | `*ControllerTest.java` | CI/CD `backend` job |
+| Backend integration | `@SpringBootTest` + Testcontainers Postgres (Flyway, JPA, security, CORS) | `*IT.java` | CI/CD `backend` job (skipped locally without Docker) |
+| Architecture | Spring Modulith (`ModularityTests`) + ArchUnit (`ArchitectureTests`) | `backend/src/test/java/com/vaabhi` | CI/CD `backend` job |
+| API contract | `OpenApiContractIT`: live spec must equal `frontend/packages/api-client/openapi.json` | backend IT | CI/CD `backend` job |
+| Frontend unit | Vitest | `frontend/**/src/**/*.test.ts` | CI/CD `frontend` job |
+| Frontend component | Vitest + React Testing Library + MSW (mocked API, unhandled requests fail) | `frontend/{storefront,admin}/src/**/*.test.tsx` | CI/CD `frontend` job |
+| End-to-end | Playwright against the full stack started in CI | `frontend/e2e/tests` | CI/CD `e2e` job (PRs, `main`) |
+| Accessibility | axe-core inside Playwright (no serious/critical violations) | `frontend/e2e/tests` | CI/CD `e2e` job |
 | Production smoke | Playwright `@smoke` tests, read-only, against the live sites | `frontend/e2e/tests` | After each deploy, daily, on demand |
 
 Later: PIT mutation testing, Playwright visual snapshots, k6 load tests (results to Grafana Cloud).

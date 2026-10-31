@@ -1,29 +1,32 @@
 name: Deploy admin (Cloudflare Pages)
 
+# Called by the CI/CD pipeline (preview on PRs, production on main) and runnable manually.
 on:
-  push:
-    branches: [main]
-    paths: ["frontend/admin/**", "frontend/packages/**", "frontend/pnpm-lock.yaml", ".github/workflows/deploy-admin.yml"]
-  pull_request:
-    paths: ["frontend/admin/**", "frontend/packages/**", "frontend/pnpm-lock.yaml", ".github/workflows/deploy-admin.yml"]
+  workflow_call:
+    inputs:
+      environment:
+        description: "preview or production"
+        type: string
+        required: true
   workflow_dispatch:
+    inputs:
+      environment:
+        description: "preview or production"
+        type: choice
+        options: [production, preview]
+        default: production
 
 permissions:
   contents: read
   deployments: write
 
-concurrency:
-  group: deploy-admin-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   deploy:
-    # Fork and Dependabot PRs have no access to secrets.
-    if: >-
-      github.actor != 'dependabot[bot]' &&
-      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
-    environment: ${{ github.event_name == 'pull_request' && 'preview' || 'production' }}
+    environment: ${{ inputs.environment }}
+    concurrency:
+      group: deploy-${{ inputs.environment }}-admin-${{ github.ref }}
+      cancel-in-progress: ${{ inputs.environment == 'preview' }}
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     defaults:
@@ -44,12 +47,12 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL || 'https://api.vaabhi.com' }}
           NEXT_PUBLIC_FARO_URL: ${{ vars.FARO_URL_ADMIN }}
-          NEXT_PUBLIC_DEPLOY_ENV: ${{ github.event_name == 'pull_request' && 'preview' || 'production' }}
+          NEXT_PUBLIC_DEPLOY_ENV: ${{ inputs.environment }}
       - name: Skip when Cloudflare is not configured
         if: env.CLOUDFLARE_API_TOKEN == ''
         run: echo "::notice::CLOUDFLARE_API_TOKEN secret is not set; built but not deployed."
       - name: Ensure Pages project, custom domain and DNS
-        if: env.CLOUDFLARE_API_TOKEN != '' && github.event_name != 'pull_request'
+        if: env.CLOUDFLARE_API_TOKEN != '' && inputs.environment == 'production'
         working-directory: .
         run: bash infra/cloudflare/ensure-pages.sh
         env:
@@ -62,7 +65,8 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy frontend/admin/out --project-name=vaabhi-admin --branch=${{ github.head_ref || github.ref_name }}
 
+  # The pipeline runs its own smoke job after both deploys; manual production runs check here.
   smoke:
     needs: deploy
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'workflow_dispatch' && inputs.environment == 'production'
     uses: ./.github/workflows/smoke.yml

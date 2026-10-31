@@ -45,17 +45,12 @@ cd frontend && pnpm generate:api                       # regenerate API types fr
 
 | Workflow | Does |
 |---|---|
-| `backend-ci.yml` | `./mvnw verify` on backend changes |
-| `frontend-ci.yml` | lint, typecheck, test, build for all frontend packages |
-| `publish.yml` | on `main`/tags: builds and pushes `vaabhi-backend` and `vaabhi-storefront` images to GHCR |
-| `deploy.yml` | after publish: SSH to the VPS, `infra/deploy.sh` (health check + automatic rollback) |
-| `deploy-admin.yml` | builds the admin static export and deploys it to Cloudflare Pages (previews on PRs) |
-| `e2e.yml` | full stack in CI (Postgres, backend, storefront, admin) + Playwright and accessibility checks |
-| `quality.yml` | tests with coverage for both halves, then SonarQube Cloud analysis and quality gate |
-| `pr-title.yml` | PR titles must follow Conventional Commits (squash-merge message, drives versioning) |
-| `release.yml` | release-please: release PR → version bump, `CHANGELOG.md`, GitHub Release + tag |
+| `pipeline.yml` (**CI/CD**) | one run per PR and per push to `main`: `changes` → `backend` · `frontend` · `e2e` → `sonar`; PRs also get an admin preview; on `main` then `publish` (GHCR images) → `deploy-vps` + `deploy-admin` (one approval) → `smoke`, plus `release-please` |
+| `deploy.yml` | building block for the pipeline; run manually to roll back (`image_tag` = commit SHA) |
+| `deploy-admin.yml` | building block: admin static export to Cloudflare Pages (preview or production); runnable manually |
 | `smoke.yml` | read-only Playwright `@smoke` tests against production: after each deploy, daily, on demand |
-| `codeql.yml` | CodeQL for Java and TypeScript |
+| `pr-title.yml` | PR titles must follow Conventional Commits (squash-merge message, drives versioning) |
+| `codeql.yml` | CodeQL for Java and TypeScript (PRs, `main`, weekly) |
 
 ### Secrets and variables
 
