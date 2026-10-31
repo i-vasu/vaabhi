@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   BagIcon,
   Badge,
@@ -8,8 +8,16 @@ import {
   CashIcon,
   CategoryTile,
   ChatIcon,
+  CheckboxRow,
+  CheckIcon,
+  ChevronDownIcon,
   ChevronRightIcon,
+  chipClasses,
+  CloseIcon,
+  ColourSwatch,
   cn,
+  FilterIcon,
+  SortIcon,
   HandloomIcon,
   HeartIcon,
   MenuIcon,
@@ -123,6 +131,11 @@ describe("icons", () => {
       HandloomIcon,
       CashIcon,
       ChatIcon,
+      FilterIcon,
+      SortIcon,
+      CloseIcon,
+      ChevronDownIcon,
+      CheckIcon,
     ];
     const { container } = render(
       <>
@@ -136,5 +149,49 @@ describe("icons", () => {
     expect(svgs[0]).toHaveAttribute("width", "16");
     expect(svgs[1]).toHaveAttribute("width", "24");
     svgs.forEach((svg) => expect(svg).toHaveAttribute("aria-hidden", "true"));
+  });
+});
+
+describe("chipClasses", () => {
+  it.each([
+    ["default", "border-border-strong"],
+    ["selected", "bg-brand-primary"],
+    ["removable", "bg-brand-primary-soft"],
+  ] as const)("styles the %s chip", (state, expected) => {
+    expect(chipClasses(state, "extra")).toMatch(new RegExp(`${expected}.*extra`));
+  });
+
+  it("defaults to the quick-filter style", () => {
+    expect(chipClasses()).toContain("border-border-strong");
+  });
+});
+
+describe("CheckboxRow", () => {
+  it("is a labelled native checkbox with a count", () => {
+    const onChange = vi.fn();
+    render(<CheckboxRow label="Silk" count={42} checked={false} onChange={onChange} />);
+    const box = screen.getByRole("checkbox", { name: /Silk/ });
+    expect(screen.getByText("42")).toBeInTheDocument();
+    box.click();
+    expect(onChange).toHaveBeenCalledOnce();
+  });
+
+  it("can be a radio and disabled", () => {
+    render(<CheckboxRow kind="radio" label="Under ₹2,000" disabled name="price" />);
+    expect(screen.getByRole("radio", { name: "Under ₹2,000" })).toBeDisabled();
+  });
+});
+
+describe("ColourSwatch", () => {
+  it("shows the colour and announces the count", () => {
+    render(<ColourSwatch name="Maroon" hex="#6E2A35" count={3} defaultChecked />);
+    const box = screen.getByRole("checkbox", { name: "Maroon, 3 products" });
+    expect(box).toBeChecked();
+    expect(box.nextElementSibling?.firstElementChild).toHaveStyle({ backgroundColor: "#6E2A35" });
+  });
+
+  it("can be disabled", () => {
+    render(<ColourSwatch name="Gold" hex="#A88B5A" disabled />);
+    expect(screen.getByRole("checkbox", { name: "Gold" })).toBeDisabled();
   });
 });
