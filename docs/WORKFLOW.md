@@ -41,6 +41,20 @@ since the last release. Merging it:
 - updates `CHANGELOG.md`,
 - creates a GitHub Release and a `vX.Y.Z` tag.
 
+The version is kept in sync across the monorepo: release-please also bumps `backend/pom.xml` (the line marked
+`x-release-please-version`) and the `version` of `frontend/storefront/package.json` and `frontend/admin/package.json`.
+
+**Which release is live?** Every build carries the version plus the short commit SHA, e.g. `v0.2.0 (fc31d29)`:
+
+| Where | How |
+|---|---|
+| Backend | `https://api.vaabhi.com/actuator/info` → `build.version`, `git.commit.id` |
+| Admin | sidebar footer |
+| Storefront | page source → `<meta name="app-version">` |
+| Grafana Faro | app version on every frontend session |
+
+After each VPS deploy the smoke tests check that the API reports exactly the commit that was deployed.
+
 Deployment does not wait for releases: every merge to `main` goes to production (after approval). Tags are the named
 rollback points and the changelog for humans.
 

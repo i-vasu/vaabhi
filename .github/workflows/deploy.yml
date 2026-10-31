@@ -60,3 +60,5 @@ jobs:
   smoke:
     needs: deploy
     uses: ./.github/workflows/smoke.yml
+    with:
+      expected_commit: ${{ inputs.image_tag || github.event.workflow_run.head_sha }}

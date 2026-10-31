@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { Faro } from "@/components/faro";
+import { appVersion } from "@/lib/version";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: { default: "Vaabhi", template: "%s · Vaabhi" },
   description: "Vaabhi — fashion for every occasion.",
+  // Which release is live: view source → <meta name="app-version">.
+  other: { "app-version": appVersion().label },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

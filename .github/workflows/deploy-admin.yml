@@ -44,7 +44,6 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL || 'https://api.vaabhi.com' }}
           NEXT_PUBLIC_FARO_URL: ${{ vars.FARO_URL_ADMIN }}
-          NEXT_PUBLIC_APP_VERSION: ${{ github.sha }}
           NEXT_PUBLIC_DEPLOY_ENV: ${{ github.event_name == 'pull_request' && 'preview' || 'production' }}
       - name: Skip when Cloudflare is not configured
         if: env.CLOUDFLARE_API_TOKEN == ''

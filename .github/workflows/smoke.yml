@@ -3,6 +3,11 @@ name: Smoke (production)
 # Read-only checks against the live sites. Runs after every deploy, daily, and on demand.
 on:
   workflow_call:
+    inputs:
+      expected_commit:
+        description: "Commit SHA the API should report after a deploy"
+        type: string
+        default: ""
   workflow_dispatch:
   schedule:
     - cron: "23 2 * * *"
@@ -18,6 +23,7 @@ jobs:
       STOREFRONT_URL: ${{ vars.STOREFRONT_URL || 'https://vaabhi.com' }}
       ADMIN_URL: ${{ vars.ADMIN_URL || 'https://admin.vaabhi.com' }}
       API_URL: ${{ vars.PUBLIC_API_URL || 'https://api.vaabhi.com' }}
+      EXPECTED_COMMIT: ${{ inputs.expected_commit }}
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6

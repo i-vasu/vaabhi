@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Faro } from "@/components/faro";
+import { appVersion } from "@/lib/version";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,7 +20,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="min-h-screen antialiased">
         <Faro appName="vaabhi-admin" />
         <div className="flex min-h-screen">
-          <aside className="w-56 shrink-0 border-r border-neutral-200 bg-neutral-50 p-4">
+          <aside className="flex w-56 shrink-0 flex-col border-r border-neutral-200 bg-neutral-50 p-4">
             <p className="mb-6 font-semibold tracking-wide">VAABHI ADMIN</p>
             <nav className="flex flex-col gap-1 text-sm">
               {nav.map((item) => (
@@ -28,6 +29,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 </Link>
               ))}
             </nav>
+            <p className="mt-auto pt-6 text-xs text-neutral-500" data-testid="app-version">
+              {appVersion().label}
+            </p>
           </aside>
           <main className="flex-1 p-8">{children}</main>
         </div>
