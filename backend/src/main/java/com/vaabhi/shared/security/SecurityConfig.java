@@ -57,6 +57,8 @@ public class SecurityConfig {
         config.setMaxAge(3600L);
         var source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", config);
+        // The admin dashboard shows API status from the browser.
+        source.registerCorsConfiguration("/actuator/health/**", config);
         return source;
     }
 

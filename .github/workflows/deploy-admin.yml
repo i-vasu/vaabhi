@@ -62,3 +62,8 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy frontend/admin/out --project-name=vaabhi-admin --branch=${{ github.head_ref || github.ref_name }}
+
+  smoke:
+    needs: deploy
+    if: github.event_name != 'pull_request'
+    uses: ./.github/workflows/smoke.yml
