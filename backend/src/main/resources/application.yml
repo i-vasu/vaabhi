@@ -18,7 +18,7 @@ spring:
   flyway:
     enabled: true
   cache:
-    cache-names: categories
+    cache-names: categories,facets
     caffeine:
       spec: maximumSize=500,expireAfterWrite=10m,recordStats
   mvc:
@@ -80,5 +80,9 @@ management:
       probability: ${TRACING_SAMPLING:0.1}
 
 springdoc:
+  model-converters:
+    # Types @Nullable (JSpecify) properties as nullable in the API spec.
+    java-nullable-property-customizer:
+      enabled: true
   swagger-ui:
     enabled: ${SWAGGER_UI_ENABLED:true}

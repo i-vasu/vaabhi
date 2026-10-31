@@ -16,6 +16,26 @@ test.describe("API", () => {
     expect(categories[0]).toHaveProperty("slug");
   });
 
+  // Needs the demo catalogue (CI); not @smoke because production has no demo products.
+  test("lists products with filters and shows a product page", async ({ request }) => {
+    const listing = await request.get(`${urls.api}/api/v1/store/categories/sarees/products?fabric=silk&sort=price_asc`);
+    expect(listing.ok()).toBeTruthy();
+    const body = await listing.json();
+    expect(body.total).toBeGreaterThan(0);
+    const prices = body.items.map((item: { pricePaise: number }) => item.pricePaise);
+    expect(prices).toEqual([...prices].sort((a, b) => a - b));
+    expect(body.filters.find((group: { code: string }) => group.code === "fabric")).toBeTruthy();
+
+    const product = await request.get(`${urls.api}/api/v1/store/products/${body.items[0].slug}`);
+    expect(product.ok()).toBeTruthy();
+    expect((await product.json()).variants.length).toBeGreaterThan(0);
+  });
+
+  test("hides unknown products @smoke", async ({ request }) => {
+    const response = await request.get(`${urls.api}/api/v1/store/products/no-such-product`);
+    expect(response.status()).toBe(404);
+  });
+
   test("protects admin endpoints @smoke", async ({ request }) => {
     const response = await request.get(`${urls.api}/api/v1/admin/ping`);
     expect(response.status()).toBe(401);

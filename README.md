@@ -20,7 +20,7 @@ docker compose -f infra/docker-compose.dev.yml up -d   # Postgres on :5432
 ```
 
 ```bash
-cd backend && ./mvnw spring-boot:run                   # http://localhost:8080 (Swagger UI at /swagger-ui.html)
+cd backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=demo   # http://localhost:8080, with demo products (Swagger UI at /swagger-ui.html)
 ```
 
 ```bash

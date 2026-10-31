@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+    "/api/v1/store/products/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getProduct"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/store/categories": {
         parameters: {
             query?: never;
@@ -20,15 +36,159 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/store/categories/{slug}/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listProducts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AddonResponse: {
+            code: string;
+            /** @enum {string} */
+            kind: "BLOUSE";
+            name: string;
+            description: string | null;
+            /** Format: int32 */
+            pricePaise: number;
+            /** @enum {string} */
+            input: "NONE" | "SIZE" | "MEASUREMENTS";
+        };
+        AttributeResponse: {
+            code: string;
+            name: string;
+            values: components["schemas"]["AttributeValue"][];
+        };
+        AttributeValue: {
+            code: string;
+            name: string;
+        };
+        CategoryRef: {
+            slug: string;
+            name: string;
+        };
+        MediaResponse: {
+            /** @enum {string} */
+            kind: "IMAGE" | "VIDEO";
+            key: string;
+            alt: string;
+            colourName: string | null;
+            /** Format: int32 */
+            width: number | null;
+            /** Format: int32 */
+            height: number | null;
+        };
+        ProductDetailResponse: {
+            slug: string;
+            name: string;
+            subtitle: string | null;
+            description: string | null;
+            /** @enum {string|null} */
+            badge: "NEW" | "BESTSELLER" | "BRIDAL" | "HANDLOOM" | null;
+            category: components["schemas"]["CategoryRef"];
+            /** Format: int32 */
+            pricePaise: number;
+            /** Format: int32 */
+            mrpPaise: number;
+            /** Format: int32 */
+            discountPercent: number;
+            careInstructions: string | null;
+            sareeLengthM: number | null;
+            blouseIncluded: boolean;
+            blouseLengthM: number | null;
+            attributes: components["schemas"]["AttributeResponse"][];
+            variants: components["schemas"]["VariantResponse"][];
+            media: components["schemas"]["MediaResponse"][];
+            addons: components["schemas"]["AddonResponse"][];
+        };
+        VariantResponse: {
+            sku: string;
+            colourName: string;
+            colourHex: string;
+            size: string | null;
+            /** Format: int32 */
+            pricePaise: number;
+            /** Format: int32 */
+            mrpPaise: number;
+            inStock: boolean;
+            /** Format: int32 */
+            stockLeft: number | null;
+        };
         CategoryResponse: {
             /** Format: int64 */
-            id?: number;
-            slug?: string;
-            name?: string;
+            id: number;
+            slug: string;
+            name: string;
+            description: string | null;
+        };
+        ColourSwatch: {
+            name: string;
+            hex: string;
+        };
+        FilterGroup: {
+            code: string;
+            name: string;
+            /** @enum {string} */
+            type: "COLOUR" | "SIZE" | "FACET";
+            options: components["schemas"]["FilterOption"][];
+        };
+        FilterOption: {
+            code: string;
+            name: string;
+            hex: string | null;
+            /** Format: int64 */
+            count: number;
+            selected: boolean;
+        };
+        PriceRange: {
+            /** Format: int32 */
+            minPaise: number;
+            /** Format: int32 */
+            maxPaise: number;
+        };
+        ProductListingResponse: {
+            category: components["schemas"]["CategoryResponse"];
+            items: components["schemas"]["ProductSummary"][];
+            /** Format: int64 */
+            total: number;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+            sort: string;
+            filters: components["schemas"]["FilterGroup"][];
+            priceRange: components["schemas"]["PriceRange"] | null;
+        };
+        ProductSummary: {
+            slug: string;
+            name: string;
+            subtitle: string | null;
+            /** @enum {string|null} */
+            badge: "NEW" | "BESTSELLER" | "BRIDAL" | "HANDLOOM" | null;
+            /** Format: int32 */
+            pricePaise: number;
+            /** Format: int32 */
+            mrpPaise: number;
+            /** Format: int32 */
+            discountPercent: number;
+            colours: components["schemas"]["ColourSwatch"][];
+            inStock: boolean;
+            /** Format: int32 */
+            stockLeft: number | null;
+            image: components["schemas"]["MediaResponse"] | null;
         };
     };
     responses: never;
@@ -39,6 +199,28 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    getProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProductDetailResponse"];
+                };
+            };
+        };
+    };
     list: {
         parameters: {
             query?: never;
@@ -55,6 +237,70 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CategoryResponse"][];
+                };
+            };
+        };
+    };
+    listProducts: {
+        parameters: {
+            query?: {
+                /**
+                 * @description Comma-separated colour family codes
+                 * @example red,maroon
+                 */
+                colour?: string | null;
+                /**
+                 * @description Comma-separated sizes
+                 * @example M,L
+                 */
+                size?: string | null;
+                /** @description Only products with stock in the selected colour/size */
+                inStock?: boolean;
+                /** @description Minimum price in paise */
+                priceMin?: number | null;
+                /** @description Maximum price in paise */
+                priceMax?: number | null;
+                sort?: "popular" | "new" | "price_asc" | "price_desc" | "discount";
+                /** @description 1-based page number */
+                page?: number;
+                /** @description Products per page, at most 48 */
+                pageSize?: number;
+                /**
+                 * @description Comma-separated facet value codes (OR within the facet)
+                 * @example silk,cotton
+                 */
+                fabric?: string;
+                /**
+                 * @description Comma-separated facet value codes (OR within the facet)
+                 * @example wedding
+                 */
+                occasion?: string;
+                /**
+                 * @description Comma-separated facet value codes (OR within the facet)
+                 * @example banarasi
+                 */
+                weave?: string;
+                /**
+                 * @description Comma-separated facet value codes (OR within the facet)
+                 * @example zari
+                 */
+                work?: string;
+            };
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProductListingResponse"];
                 };
             };
         };

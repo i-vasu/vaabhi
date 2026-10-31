@@ -15,6 +15,17 @@
 
 Later: PIT mutation testing, Playwright visual snapshots, k6 load tests (results to Grafana Cloud).
 
+## Test data
+
+- Production never contains test products. Demo data lives in `backend/src/main/resources/db/demo`
+  (`R__demo_catalogue.sql`) and loads only with the `demo` Spring profile: locally, in the CI `e2e` job and on the
+  Neon `dev` branch. The backend refuses to start with `demo` when `DEPLOY_ENV=production`.
+- The demo catalogue covers the edge cases the UI must handle: a draft (never visible), an out-of-stock product, low
+  stock, one-size and sized products, several colours and blouse add-ons.
+- Real products go through the admin: create as **Draft**, check, then **Publish**. The storefront API only ever
+  returns published products.
+- Integration tests use a throwaway Testcontainers Postgres; `StoreCatalogueIT` runs with the `demo` profile.
+
 ## Running locally
 
 Backend — unit, slice, architecture (integration and contract tests need Docker):
@@ -29,7 +40,7 @@ Frontend — lint, types, unit and component tests:
 cd frontend && pnpm turbo run lint typecheck test
 ```
 
-End-to-end — start the stack (Postgres from `infra/docker-compose.dev.yml`, backend on :8080, storefront on
+End-to-end — start the stack (Postgres from `infra/docker-compose.dev.yml`, backend on :8080 with the `demo` profile, storefront on
 :3000, admin on :3001), then:
 
 ```bash
