@@ -56,3 +56,7 @@ jobs:
           port: ${{ secrets.VPS_PORT || 22 }}
           envs: IMAGE_TAG
           script: IMAGE_TAG="$IMAGE_TAG" sh /opt/vaabhi/deploy.sh
+
+  smoke:
+    needs: deploy
+    uses: ./.github/workflows/smoke.yml

@@ -50,17 +50,21 @@ cd frontend && pnpm generate:api                       # regenerate API types fr
 | `publish.yml` | on `main`/tags: builds and pushes `vaabhi-backend` and `vaabhi-storefront` images to GHCR |
 | `deploy.yml` | after publish: SSH to the VPS, `infra/deploy.sh` (health check + automatic rollback) |
 | `deploy-admin.yml` | builds the admin static export and deploys it to Cloudflare Pages (previews on PRs) |
+| `e2e.yml` | full stack in CI (Postgres, backend, storefront, admin) + Playwright and accessibility checks |
+| `smoke.yml` | read-only Playwright `@smoke` tests against production: after each deploy, daily, on demand |
 | `codeql.yml` | CodeQL for Java and TypeScript |
 
 ### Secrets and variables
 
-Repository **secrets**: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
+Repository **secrets**: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `VPS_PORT` (SSH port, default 22), `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
 
 Repository **variables**: `PUBLIC_API_URL` (e.g. `https://api.vaabhi.com`), `CF_IMAGES_ACCOUNT_HASH`,
 `FARO_URL_STOREFRONT`, `FARO_URL_ADMIN`.
 
 Runtime configuration for the VPS lives in `/opt/vaabhi/.env` — see `infra/.env.example`
 and `infra/vps-setup.md`.
+
+See [docs/TESTING.md](docs/TESTING.md) for the test layers and how to run them.
 
 ## Observability
 

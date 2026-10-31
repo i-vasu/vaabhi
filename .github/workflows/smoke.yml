@@ -1,0 +1,44 @@
+name: Smoke (production)
+
+# Read-only checks against the live sites. Runs after every deploy, daily, and on demand.
+on:
+  workflow_call:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 2 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      STOREFRONT_URL: ${{ vars.STOREFRONT_URL || 'https://vaabhi.com' }}
+      ADMIN_URL: ${{ vars.ADMIN_URL || 'https://admin.vaabhi.com' }}
+      API_URL: ${{ vars.PUBLIC_API_URL || 'https://api.vaabhi.com' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: frontend/package.json
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile --filter e2e
+        working-directory: frontend
+      - run: pnpm exec playwright install --with-deps chromium
+        working-directory: frontend/e2e
+      - name: Smoke tests
+        run: pnpm exec playwright test --grep @smoke
+        working-directory: frontend/e2e
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smoke-report
+          path: |
+            frontend/e2e/playwright-report
+            frontend/e2e/test-results

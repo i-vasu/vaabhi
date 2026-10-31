@@ -1,0 +1,100 @@
+name: E2E
+
+# Full stack in CI: Postgres service + backend jar + storefront server + admin static export,
+# then the whole Playwright suite (functional, smoke and accessibility checks).
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ["backend/**", "frontend/**", ".github/workflows/e2e.yml"]
+  push:
+    branches: [main]
+    paths: ["backend/**", "frontend/**", ".github/workflows/e2e.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: vaabhi
+          POSTGRES_USER: vaabhi
+          POSTGRES_PASSWORD: vaabhi
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U vaabhi"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      TURBO_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: frontend/package.json
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Build backend
+        run: ./mvnw -B -q package -DskipTests
+        working-directory: backend
+      - name: Start backend
+        run: nohup java -jar backend/target/app.jar > backend.log 2>&1 &
+
+      - run: pnpm install --frozen-lockfile
+        working-directory: frontend
+      - name: Build storefront and admin
+        run: pnpm turbo run build --filter=storefront --filter=admin
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8080
+      - name: Start storefront and admin
+        working-directory: frontend
+        run: |
+          cp -r storefront/.next/static storefront/.next/standalone/storefront/.next/
+          (cd storefront/.next/standalone && PORT=3000 HOSTNAME=127.0.0.1 API_URL=http://localhost:8080 \
+            nohup node storefront/server.js > ../../../../storefront.log 2>&1 &)
+          nohup python3 -m http.server 3001 --bind 127.0.0.1 --directory admin/out > ../admin.log 2>&1 &
+
+      - name: Wait for the stack
+        run: |
+          wait_for() { for _ in $(seq 1 60); do curl -fsS "$1" >/dev/null 2>&1 && return 0; sleep 2; done; echo "$1 did not come up"; return 1; }
+          wait_for http://localhost:8080/actuator/health/readiness
+          wait_for http://localhost:3000/api/health
+          wait_for http://localhost:3001/
+
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+        working-directory: frontend/e2e
+      - name: Run Playwright
+        run: pnpm exec playwright test
+        working-directory: frontend/e2e
+
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-report
+          path: |
+            frontend/e2e/playwright-report
+            frontend/e2e/test-results
+            backend.log
+            storefront.log
+            admin.log
