@@ -176,11 +176,11 @@ class AdminProductStore {
                         """).param("id", productId).query(AddonForm.class).list();
     }
 
-    private List<MediaResponse> media(long productId) {
+    private List<AdminMedia> media(long productId) {
         return jdbc.sql("""
-                        SELECT kind, storage_key AS key, alt_text AS alt, colour_name, width, height
+                        SELECT id, kind, storage_key AS key, alt_text AS alt, colour_name, width, height, status
                         FROM product_media WHERE product_id = :id ORDER BY position, id
-                        """).param("id", productId).query(MediaResponse.class).list();
+                        """).param("id", productId).query(AdminMedia.class).list();
     }
 
     // --- checks --------------------------------------------------------------------------------------------

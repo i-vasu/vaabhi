@@ -11,6 +11,53 @@
         }
     ],
     "paths": {
+        "/api/v1/admin/products/{productId}/media": {
+            "put": {
+                "tags": [
+                    "admin-media-controller"
+                ],
+                "operationId": "updateMedia",
+                "parameters": [
+                    {
+                        "name": "productId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/MediaUpdate"
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AdminMedia"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/products/{id}": {
             "get": {
                 "tags": [
@@ -184,6 +231,90 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/AdminProduct"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/products/{productId}/media/{mediaId}/complete": {
+            "post": {
+                "tags": [
+                    "admin-media-controller"
+                ],
+                "operationId": "completeMediaUpload",
+                "parameters": [
+                    {
+                        "name": "productId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "mediaId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AdminMedia"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/products/{productId}/media/uploads": {
+            "post": {
+                "tags": [
+                    "admin-media-controller"
+                ],
+                "operationId": "startMediaUpload",
+                "parameters": [
+                    {
+                        "name": "productId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MediaUploadRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MediaUpload"
                                 }
                             }
                         }
@@ -510,10 +641,139 @@
                     }
                 }
             }
+        },
+        "/api/v1/admin/products/{productId}/media/{mediaId}": {
+            "delete": {
+                "tags": [
+                    "admin-media-controller"
+                ],
+                "operationId": "deleteMedia",
+                "parameters": [
+                    {
+                        "name": "productId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "mediaId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AdminMedia"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
         "schemas": {
+            "MediaUpdate": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "alt": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "minLength": 0
+                    },
+                    "colourName": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 60,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "alt",
+                    "colourName",
+                    "id"
+                ]
+            },
+            "AdminMedia": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "IMAGE",
+                            "VIDEO"
+                        ]
+                    },
+                    "key": {
+                        "type": "string"
+                    },
+                    "alt": {
+                        "type": "string"
+                    },
+                    "colourName": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "width": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "height": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "PENDING",
+                            "READY"
+                        ]
+                    }
+                },
+                "required": [
+                    "alt",
+                    "colourName",
+                    "height",
+                    "id",
+                    "key",
+                    "kind",
+                    "status",
+                    "width"
+                ]
+            },
             "AddonForm": {
                 "type": "object",
                 "properties": {
@@ -844,7 +1104,7 @@
                     "media": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/MediaResponse"
+                            "$ref": "#/components/schemas/AdminMedia"
                         }
                     },
                     "publishedAt": {
@@ -880,49 +1140,78 @@
                     "variants"
                 ]
             },
-            "MediaResponse": {
+            "MediaUploadRequest": {
                 "type": "object",
                 "properties": {
-                    "kind": {
-                        "type": "string",
-                        "enum": [
-                            "IMAGE",
-                            "VIDEO"
-                        ]
-                    },
-                    "key": {
-                        "type": "string"
-                    },
                     "alt": {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 200,
+                        "minLength": 0
                     },
                     "colourName": {
                         "type": [
                             "string",
                             "null"
-                        ]
+                        ],
+                        "maxLength": 60,
+                        "minLength": 0
                     },
                     "width": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ],
-                        "format": "int32"
+                        "type": "integer",
+                        "format": "int32",
+                        "exclusiveMinimum": 0,
+                        "maximum": 10000
                     },
                     "height": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ],
-                        "format": "int32"
+                        "type": "integer",
+                        "format": "int32",
+                        "exclusiveMinimum": 0,
+                        "maximum": 10000
                     }
                 },
                 "required": [
                     "alt",
                     "colourName",
                     "height",
-                    "key",
-                    "kind",
+                    "width"
+                ]
+            },
+            "MediaUpload": {
+                "type": "object",
+                "properties": {
+                    "media": {
+                        "$ref": "#/components/schemas/AdminMedia"
+                    },
+                    "renditions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Rendition"
+                        }
+                    },
+                    "expiresAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "expiresAt",
+                    "media",
+                    "renditions"
+                ]
+            },
+            "Rendition": {
+                "type": "object",
+                "properties": {
+                    "width": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "uploadUrl": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "uploadUrl",
                     "width"
                 ]
             },
@@ -1019,6 +1308,52 @@
                 "required": [
                     "name",
                     "slug"
+                ]
+            },
+            "MediaResponse": {
+                "type": "object",
+                "properties": {
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "IMAGE",
+                            "VIDEO"
+                        ]
+                    },
+                    "key": {
+                        "type": "string"
+                    },
+                    "alt": {
+                        "type": "string"
+                    },
+                    "colourName": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "width": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "height": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    }
+                },
+                "required": [
+                    "alt",
+                    "colourName",
+                    "height",
+                    "key",
+                    "kind",
+                    "width"
                 ]
             },
             "ProductDetailResponse": {

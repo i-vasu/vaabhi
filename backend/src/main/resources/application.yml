@@ -35,6 +35,13 @@ vaabhi:
     jwt-secret: ${JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
     cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3001}
 
+  # Cloudflare R2 for product photos (credentials only on the VPS, in .env).
+  media:
+    account-id: ${R2_ACCOUNT_ID:}
+    access-key-id: ${R2_ACCESS_KEY_ID:}
+    secret-access-key: ${R2_SECRET_ACCESS_KEY:}
+    bucket: ${R2_BUCKET:vaabhi-media}
+
 management:
   endpoints:
     web:

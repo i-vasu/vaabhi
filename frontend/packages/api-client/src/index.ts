@@ -20,6 +20,10 @@ export type VariantForm = Schemas["VariantForm"];
 export type AddonForm = Schemas["AddonForm"];
 export type CatalogOptions = Schemas["CatalogOptions"];
 export type ProductStatus = AdminProduct["status"];
+export type AdminMedia = Schemas["AdminMedia"];
+export type MediaUpload = Schemas["MediaUpload"];
+export type MediaUploadRequest = Schemas["MediaUploadRequest"];
+export type MediaUpdate = Schemas["MediaUpdate"];
 export type AdminListParams = NonNullable<operations["listAdminProducts"]["parameters"]["query"]>;
 
 /** Field-level message from the API, e.g. `{ field: "variants[0].pricePaise", message: "must be greater than 0" }`. */
@@ -96,7 +100,7 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
     return (await response.json()) as T;
   }
 
-  const send = <T>(method: "POST" | "PUT", path: string, body?: unknown) =>
+  const send = <T>(method: "POST" | "PUT" | "DELETE", path: string, body?: unknown) =>
     request<T>(path, {
       method,
       headers: body === undefined ? undefined : { "Content-Type": "application/json" },
@@ -124,6 +128,14 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
       updateProduct: (id: number, form: ProductForm) => send<AdminProduct>("PUT", `/api/v1/admin/products/${id}`, form),
       setStatus: (id: number, action: "publish" | "unpublish" | "archive") =>
         send<AdminProduct>("POST", `/api/v1/admin/products/${id}/${action}`),
+      startMediaUpload: (id: number, request: MediaUploadRequest) =>
+        send<MediaUpload>("POST", `/api/v1/admin/products/${id}/media/uploads`, request),
+      completeMediaUpload: (id: number, mediaId: number) =>
+        send<AdminMedia[]>("POST", `/api/v1/admin/products/${id}/media/${mediaId}/complete`),
+      updateMedia: (id: number, updates: MediaUpdate[]) =>
+        send<AdminMedia[]>("PUT", `/api/v1/admin/products/${id}/media`, updates),
+      deleteMedia: (id: number, mediaId: number) =>
+        send<AdminMedia[]>("DELETE", `/api/v1/admin/products/${id}/media/${mediaId}`),
     },
   };
 }

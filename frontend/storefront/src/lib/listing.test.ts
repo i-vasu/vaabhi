@@ -186,6 +186,11 @@ describe("product cards", () => {
     expect(productCardProps(product({ image })).image).toEqual({
       src: "https://media.vaabhi.com/products/k/1/800.webp",
       alt: "Saree",
+      srcSet:
+        "https://media.vaabhi.com/products/k/1/400.webp 400w, https://media.vaabhi.com/products/k/1/800.webp 800w, https://media.vaabhi.com/products/k/1/1600.webp 1600w",
+      sizes: "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw",
     });
+    vi.stubEnv("MEDIA_URL", "https://cdn.example");
+    expect(mediaUrl("k")).toBe("https://cdn.example/k/800.webp");
   });
 });

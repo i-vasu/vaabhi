@@ -23,6 +23,8 @@ services:
     restart: unless-stopped
     environment:
       API_URL: http://backend:8080
+      # Product photos in Cloudflare R2, served from the bucket's custom domain.
+      MEDIA_URL: ${MEDIA_URL:-https://media.vaabhi.com}
       OTEL_EXPORTER_OTLP_ENDPOINT: ${GRAFANA_OTLP_ENDPOINT:-}
       OTEL_EXPORTER_OTLP_HEADERS: ${GRAFANA_OTLP_HEADERS:-}
     mem_limit: 220m

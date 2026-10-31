@@ -11,7 +11,7 @@ export type ProductCardProps = {
   href: string;
   badge?: { label: string; tone: BadgeTone };
   /** Product photo; until photos exist, a two-colour placeholder gradient. */
-  image: { src: string; alt: string } | { placeholder: [string, string] };
+  image: { src: string; alt: string; srcSet?: string; sizes?: string } | { placeholder: [string, string] };
 };
 
 export function ProductCard({ name, detail, price, mrp, discount, href, badge, image }: ProductCardProps) {
@@ -21,7 +21,15 @@ export function ProductCard({ name, detail, price, mrp, discount, href, badge, i
         <a href={href} className="block h-full" aria-label={name}>
           {"src" in image ? (
             // eslint-disable-next-line @next/next/no-img-element -- package is framework-agnostic; apps pass optimised URLs
-            <img src={image.src} alt={image.alt} className="h-full w-full object-cover" />
+            <img
+              src={image.src}
+              srcSet={image.srcSet}
+              sizes={image.sizes}
+              alt={image.alt}
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover"
+            />
           ) : (
             <div
               role="img"

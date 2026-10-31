@@ -55,6 +55,10 @@ describe("admin client", () => {
     await api.admin.createProduct(form);
     await api.admin.updateProduct(7, form);
     await api.admin.setStatus(7, "publish");
+    await api.admin.startMediaUpload(7, { alt: "Front", colourName: null, width: 1600, height: 2133 });
+    await api.admin.completeMediaUpload(7, 3);
+    await api.admin.updateMedia(7, [{ id: 3, alt: "Front", colourName: null }]);
+    await api.admin.deleteMedia(7, 3);
 
     const calls = fetchMock.mock.calls.map(([url, init]) => `${init.method ?? "GET"} ${url}`);
     expect(calls).toEqual([
@@ -65,6 +69,10 @@ describe("admin client", () => {
       "POST https://api.example.com/api/v1/admin/products",
       "PUT https://api.example.com/api/v1/admin/products/7",
       "POST https://api.example.com/api/v1/admin/products/7/publish",
+      "POST https://api.example.com/api/v1/admin/products/7/media/uploads",
+      "POST https://api.example.com/api/v1/admin/products/7/media/3/complete",
+      "PUT https://api.example.com/api/v1/admin/products/7/media",
+      "DELETE https://api.example.com/api/v1/admin/products/7/media/3",
     ]);
     expect(fetchMock.mock.calls[4]![1].body).toBe('{"name":"Saree"}');
     expect(fetchMock.mock.calls[4]![1].headers["Content-Type"]).toBe("application/json");
