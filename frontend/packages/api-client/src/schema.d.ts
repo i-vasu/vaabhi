@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+    "/api/v1/admin/products/{productId}/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateMedia"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/products/{id}": {
         parameters: {
             query?: never;
@@ -30,6 +46,38 @@ export interface paths {
         get: operations["listAdminProducts"];
         put?: never;
         post: operations["createProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{productId}/media/{mediaId}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["completeMediaUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{productId}/media/uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["startMediaUpload"];
         delete?: never;
         options?: never;
         head?: never;
@@ -148,10 +196,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/products/{productId}/media/{mediaId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteMedia"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        MediaUpdate: {
+            /** Format: int64 */
+            id: number;
+            alt: string;
+            colourName: string | null;
+        };
+        AdminMedia: {
+            /** Format: int64 */
+            id: number;
+            /** @enum {string} */
+            kind: "IMAGE" | "VIDEO";
+            key: string;
+            alt: string;
+            colourName: string | null;
+            /** Format: int32 */
+            width: number | null;
+            /** Format: int32 */
+            height: number | null;
+            /** @enum {string} */
+            status: "PENDING" | "READY";
+        };
         AddonForm: {
             code: string;
             /** @enum {string} */
@@ -217,22 +302,30 @@ export interface components {
             };
             variants: components["schemas"]["VariantForm"][];
             addons: components["schemas"]["AddonForm"][];
-            media: components["schemas"]["MediaResponse"][];
+            media: components["schemas"]["AdminMedia"][];
             /** Format: date-time */
             publishedAt: string | null;
             /** Format: date-time */
             updatedAt: string;
         };
-        MediaResponse: {
-            /** @enum {string} */
-            kind: "IMAGE" | "VIDEO";
-            key: string;
+        MediaUploadRequest: {
             alt: string;
             colourName: string | null;
             /** Format: int32 */
-            width: number | null;
+            width: number;
             /** Format: int32 */
-            height: number | null;
+            height: number;
+        };
+        MediaUpload: {
+            media: components["schemas"]["AdminMedia"];
+            renditions: components["schemas"]["Rendition"][];
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        Rendition: {
+            /** Format: int32 */
+            width: number;
+            uploadUrl: string;
         };
         AddonResponse: {
             code: string;
@@ -257,6 +350,17 @@ export interface components {
         CategoryRef: {
             slug: string;
             name: string;
+        };
+        MediaResponse: {
+            /** @enum {string} */
+            kind: "IMAGE" | "VIDEO";
+            key: string;
+            alt: string;
+            colourName: string | null;
+            /** Format: int32 */
+            width: number | null;
+            /** Format: int32 */
+            height: number | null;
         };
         ProductDetailResponse: {
             slug: string;
@@ -408,6 +512,32 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    updateMedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaUpdate"][];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminMedia"][];
+                };
+            };
+        };
+    };
     getAdminProduct: {
         parameters: {
             query?: never;
@@ -504,6 +634,55 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AdminProduct"];
+                };
+            };
+        };
+    };
+    completeMediaUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+                mediaId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminMedia"][];
+                };
+            };
+        };
+    };
+    startMediaUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaUploadRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MediaUpload"];
                 };
             };
         };
@@ -696,6 +875,29 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CatalogOptions"];
+                };
+            };
+        };
+    };
+    deleteMedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+                mediaId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminMedia"][];
                 };
             };
         };

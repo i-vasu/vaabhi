@@ -26,6 +26,37 @@ echo "<github-token-with-read:packages>" | docker login ghcr.io -u <github-user>
 
 Memory budget: OS + Docker ~210 MB, cloudflared ~30 MB, backend ~320 MB, storefront ~150 MB.
 
+## Product photos (Cloudflare R2)
+
+Photos never pass through the VPS: the admin resizes them in the browser (400/800/1600 px WebP) and uploads them
+straight to R2 with short-lived signed URLs from the API; the storefront loads them from `media.vaabhi.com`.
+
+1. Cloudflare dashboard → **R2** → create bucket `vaabhi-media` (location: Automatic).
+2. Bucket → **Settings → Custom Domains** → connect `media.vaabhi.com`.
+3. Bucket → **Settings → CORS policy**:
+
+   ```json
+   [
+     {
+       "AllowedOrigins": ["https://admin.vaabhi.com", "http://localhost:3001"],
+       "AllowedMethods": ["PUT"],
+       "AllowedHeaders": ["content-type", "cache-control"],
+       "MaxAgeSeconds": 3600
+     }
+   ]
+   ```
+
+4. **R2 → Manage API tokens** → Object Read & Write, limited to `vaabhi-media`.
+5. Add to `/opt/vaabhi/.env` and redeploy (or `docker compose ... up -d`):
+
+   ```bash
+   R2_ACCOUNT_ID=9866817007578d38cd27b8bf64773774
+   R2_ACCESS_KEY_ID=...
+   R2_SECRET_ACCESS_KEY=...
+   ```
+
+Without these the site works normally; only photo upload answers "Photo storage is not configured".
+
 ## Admin access (until the auth module adds a login)
 
 The admin app's **Sign in** page takes an access token. Create one on your computer, from the repository root; it

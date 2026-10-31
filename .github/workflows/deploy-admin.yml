@@ -48,6 +48,7 @@ jobs:
           NEXT_PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL || 'https://api.vaabhi.com' }}
           NEXT_PUBLIC_FARO_URL: ${{ vars.FARO_URL_ADMIN }}
           NEXT_PUBLIC_DEPLOY_ENV: ${{ inputs.environment }}
+          NEXT_PUBLIC_MEDIA_URL: ${{ vars.MEDIA_URL || 'https://media.vaabhi.com' }}
       - name: Skip when Cloudflare is not configured
         if: env.CLOUDFLARE_API_TOKEN == ''
         run: echo "::notice::CLOUDFLARE_API_TOKEN secret is not set; built but not deployed."
