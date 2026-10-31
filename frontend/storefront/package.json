@@ -12,9 +12,9 @@
     "test": "vitest run --coverage"
   },
   "dependencies": {
-    "@grafana/faro-web-sdk": "2.13.0",
     "@opentelemetry/api": "1.9.1",
     "@vaabhi/api-client": "workspace:*",
+    "@vaabhi/observability": "workspace:*",
     "@vaabhi/ui": "workspace:*",
     "@vercel/otel": "2.2.0",
     "next": "16.4.3",

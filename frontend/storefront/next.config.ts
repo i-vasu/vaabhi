@@ -1,22 +1,14 @@
-import { readFileSync } from "node:fs";
 import path from "node:path";
 import type { NextConfig } from "next";
-
-// Release version from package.json (bumped by release-please) and the commit being built.
-const { version } = JSON.parse(readFileSync(path.join(import.meta.dirname, "package.json"), "utf8")) as {
-  version: string;
-};
-const commit = (process.env.COMMIT_SHA || process.env.GITHUB_SHA || "dev").slice(0, 7);
+import { buildInfoEnv } from "@vaabhi/config/build-info.mjs";
 
 const nextConfig: NextConfig = {
-  env: {
-    NEXT_PUBLIC_APP_VERSION: version,
-    NEXT_PUBLIC_COMMIT_SHA: commit,
-  },
+  // Release version + commit, shown in the app and reported to Grafana Faro.
+  env: buildInfoEnv(import.meta.dirname),
   // Self-contained server bundle for the Docker image on the VPS.
   output: "standalone",
   outputFileTracingRoot: path.join(import.meta.dirname, ".."),
-  transpilePackages: ["@vaabhi/ui", "@vaabhi/api-client"],
+  transpilePackages: ["@vaabhi/ui", "@vaabhi/api-client", "@vaabhi/observability"],
   images: {
     // Cloudflare Images does resizing at the edge; nothing is optimised on the VPS.
     loader: "custom",

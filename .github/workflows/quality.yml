@@ -60,7 +60,7 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm turbo run test
           # lcov paths are relative to each package; make them relative to the repo root.
-          for pkg in storefront admin packages/api-client; do
+          for pkg in storefront admin packages/api-client packages/observability; do
             sed -i "s#^SF:#SF:frontend/$pkg/#" "$pkg/coverage/lcov.info"
           done
 

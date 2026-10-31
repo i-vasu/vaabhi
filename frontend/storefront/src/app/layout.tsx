@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Faro } from "@/components/faro";
-import { appVersion } from "@/lib/version";
+import { Faro, appVersion } from "@vaabhi/observability";
 import "./globals.css";
 
 export const metadata: Metadata = {

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { getWebInstrumentations, initializeFaro } from "@grafana/faro-web-sdk";
-import { appVersion } from "@/lib/version";
+import { appVersion } from "./version";
 
 let initialized = false;
 
