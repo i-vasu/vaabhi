@@ -27,6 +27,10 @@ final class ListingFilters {
         record FacetDimension(String code) implements Dimension {}
     }
 
+    private static final String FACET_EXISTS = " AND EXISTS (SELECT 1 FROM product_facet_value pfv"
+            + " JOIN facet_value fv ON fv.id = pfv.facet_value_id"
+            + " WHERE pfv.product_id = l.id AND fv.facet_id = :";
+
     record SelectedFacet(FacetCatalog.Facet facet, Set<String> values, String idParam, String valuesParam) {}
 
     private final ListingQuery query;
@@ -74,9 +78,7 @@ final class ListingFilters {
         var sql = new StringBuilder("TRUE");
         for (var selected : selectedFacets) {
             if (!new Dimension.FacetDimension(selected.facet().code()).equals(excluded)) {
-                sql.append(" AND EXISTS (SELECT 1 FROM product_facet_value pfv"
-                                + " JOIN facet_value fv ON fv.id = pfv.facet_value_id"
-                                + " WHERE pfv.product_id = l.id AND fv.facet_id = :")
+                sql.append(FACET_EXISTS)
                         .append(selected.idParam())
                         .append(" AND fv.code IN (:")
                         .append(selected.valuesParam())

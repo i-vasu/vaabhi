@@ -37,6 +37,10 @@ class ProductListingQueries {
             )
             """;
 
+    private static final String AND = " AND ";
+    private static final String COLOUR = "colour";
+    private static final String SIZE = "size";
+
     private static final List<String> SIZE_ORDER = List.of("XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL");
 
     private final JdbcClient jdbc;
@@ -77,13 +81,16 @@ class ProductListingQueries {
         var params = new HashMap<>(filters.params());
         params.put("limit", query.pageSize());
         params.put("offset", query.offset());
-        var rows = jdbc.sql(LISTED
-                        + "SELECT l.id, l.slug, l.name, l.subtitle, l.badge, l.price_paise, l.mrp_paise,"
-                        + " l.stock_total, l.in_stock FROM listed l WHERE "
-                        + filters.where(null)
-                        + " ORDER BY "
-                        + query.sort().orderBy()
-                        + " LIMIT :limit OFFSET :offset")
+        // Reviewed for SQL injection (java:S2077): the SQL text is built only from constants, the ProductSort enum
+        // and generated parameter names (ListingFilters); every user-supplied value is a bind parameter.
+        var sql = LISTED
+                + "SELECT l.id, l.slug, l.name, l.subtitle, l.badge, l.price_paise, l.mrp_paise,"
+                + " l.stock_total, l.in_stock FROM listed l WHERE "
+                + filters.where(null)
+                + " ORDER BY "
+                + query.sort().orderBy()
+                + " LIMIT :limit OFFSET :offset";
+        var rows = jdbc.sql(sql) // NOSONAR
                 .params(params)
                 .query(ItemRow.class)
                 .list();
@@ -180,8 +187,8 @@ class ProductListingQueries {
         var priceWhere = filters.where(Dimension.PRICE);
         branches.add("SELECT 'price', 'min', MIN(l.price_paise)::bigint FROM listed l WHERE " + priceWhere);
         branches.add("SELECT 'price', 'max', MAX(l.price_paise)::bigint FROM listed l WHERE " + priceWhere);
-        branches.add(variantCountBranch("colour", "v.colour_family", filters, Dimension.COLOUR));
-        branches.add(variantCountBranch("size", "v.size", filters, Dimension.SIZE));
+        branches.add(variantCountBranch(COLOUR, "v.colour_family", filters, Dimension.COLOUR));
+        branches.add(variantCountBranch(SIZE, "v.size", filters, Dimension.SIZE));
 
         var facetJoin = "SELECT 'facet:' || f.code, fv.code, COUNT(DISTINCT l.id) FROM listed l"
                 + " JOIN product_facet_value pfv ON pfv.product_id = l.id"
@@ -190,7 +197,7 @@ class ProductListingQueries {
         // Facets with no selection share one branch with every filter applied.
         var unselected = new StringBuilder(facetJoin);
         for (var selected : filters.selectedFacets()) {
-            unselected.append("f.id <> :").append(selected.idParam()).append(" AND ");
+            unselected.append("f.id <> :").append(selected.idParam()).append(AND);
         }
         branches.add(unselected
                 .append(filters.where(null))
@@ -201,24 +208,32 @@ class ProductListingQueries {
             branches.add(facetJoin
                     + "f.id = :"
                     + selected.idParam()
-                    + " AND "
+                    + AND
                     + filters.where(
                             new Dimension.FacetDimension(selected.facet().code()))
                     + " GROUP BY f.code, fv.code");
         }
 
-        var rows = jdbc.sql(LISTED + String.join("\nUNION ALL\n", branches))
+        // Reviewed for SQL injection (java:S2077): constant fragments and generated parameter names only, as in
+        // items().
+        var sql = LISTED + String.join("\nUNION ALL\n", branches);
+        var rows = jdbc.sql(sql) // NOSONAR
                 .params(filters.params())
                 .query(CountRow.class)
                 .list();
 
+        return toCounts(rows);
+    }
+
+    private static Counts toCounts(List<CountRow> rows) {
         long total = 0;
         Long min = null;
         Long max = null;
         Map<String, Map<String, Long>> byDimension = new HashMap<>();
         for (var row : rows) {
+            var n = row.n() == null ? 0L : row.n();
             switch (row.dimension()) {
-                case "total" -> total = row.n() == null ? 0 : row.n();
+                case "total" -> total = n;
                 case "price" -> {
                     if ("min".equals(row.code())) {
                         min = row.n();
@@ -229,7 +244,7 @@ class ProductListingQueries {
                 default ->
                     byDimension
                             .computeIfAbsent(row.dimension(), d -> new HashMap<>())
-                            .put(row.code(), row.n() == null ? 0 : row.n());
+                            .put(row.code(), n);
             }
         }
         var priceRange = min == null || max == null ? null : new PriceRange(min.intValue(), max.intValue());
@@ -242,7 +257,7 @@ class ProductListingQueries {
         return "SELECT '" + dimension + "', " + column + ", COUNT(DISTINCT l.id) FROM listed l"
                 + " JOIN product_variant v ON v.product_id = l.id AND v.active"
                 + " WHERE " + column + " IS NOT NULL AND " + filters.where(excluded)
-                + (variant.isEmpty() ? "" : " AND " + variant)
+                + (variant.isEmpty() ? "" : AND + variant)
                 + " GROUP BY " + column;
     }
 
@@ -250,7 +265,7 @@ class ProductListingQueries {
             ListingQuery query, FacetCatalog.Definitions definitions, Counts counts) {
         var groups = new ArrayList<FilterGroup>();
 
-        var colourCounts = counts.of("colour");
+        var colourCounts = counts.of(COLOUR);
         var colours = definitions.colours().stream()
                 .filter(c ->
                         colourCounts.containsKey(c.code()) || query.colours().contains(c.code()))
@@ -261,9 +276,9 @@ class ProductListingQueries {
                         colourCounts.getOrDefault(c.code(), 0L),
                         query.colours().contains(c.code())))
                 .toList();
-        addIfNotEmpty(groups, new FilterGroup("colour", "Colour", FilterType.COLOUR, colours));
+        addIfNotEmpty(groups, new FilterGroup(COLOUR, "Colour", FilterType.COLOUR, colours));
 
-        var sizeCounts = counts.of("size");
+        var sizeCounts = counts.of(SIZE);
         var sizes = new LinkedHashMap<String, Long>(sizeCounts);
         query.sizes().forEach(size -> sizes.putIfAbsent(size, 0L));
         var sizeOptions = sizes.entrySet().stream()
@@ -276,7 +291,7 @@ class ProductListingQueries {
                         e.getValue(),
                         query.sizes().contains(e.getKey())))
                 .toList();
-        addIfNotEmpty(groups, new FilterGroup("size", "Size", FilterType.SIZE, sizeOptions));
+        addIfNotEmpty(groups, new FilterGroup(SIZE, "Size", FilterType.SIZE, sizeOptions));
 
         for (var facet : definitions.facets()) {
             if (!facet.filterable()) {

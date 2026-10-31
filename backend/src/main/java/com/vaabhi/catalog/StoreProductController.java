@@ -1,7 +1,6 @@
 package com.vaabhi.catalog;
 
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Arrays;
@@ -37,12 +36,10 @@ class StoreProductController {
     }
 
     @GetMapping("/categories/{slug}/products")
-    @Parameters({
-        @Parameter(name = "fabric", in = ParameterIn.QUERY, description = FACET_HELP, example = "silk,cotton"),
-        @Parameter(name = "occasion", in = ParameterIn.QUERY, description = FACET_HELP, example = "wedding"),
-        @Parameter(name = "weave", in = ParameterIn.QUERY, description = FACET_HELP, example = "banarasi"),
-        @Parameter(name = "work", in = ParameterIn.QUERY, description = FACET_HELP, example = "zari")
-    })
+    @Parameter(name = "fabric", in = ParameterIn.QUERY, description = FACET_HELP, example = "silk,cotton")
+    @Parameter(name = "occasion", in = ParameterIn.QUERY, description = FACET_HELP, example = "wedding")
+    @Parameter(name = "weave", in = ParameterIn.QUERY, description = FACET_HELP, example = "banarasi")
+    @Parameter(name = "work", in = ParameterIn.QUERY, description = FACET_HELP, example = "zari")
     ProductListingResponse listProducts(
             @PathVariable String slug,
             @Parameter(description = "Comma-separated colour family codes", example = "red,maroon")
@@ -68,17 +65,8 @@ class StoreProductController {
             @Parameter(description = "1-based page number") @RequestParam(defaultValue = "1") int page,
             @Parameter(description = "Products per page, at most 48") @RequestParam(defaultValue = "24") int pageSize,
             @Parameter(hidden = true) @RequestParam MultiValueMap<String, String> allParams) {
-        if (page < 1) {
-            throw badRequest("page must be 1 or more");
-        }
-        if (pageSize < 1 || pageSize > ListingQuery.MAX_PAGE_SIZE) {
-            throw badRequest("pageSize must be between 1 and " + ListingQuery.MAX_PAGE_SIZE);
-        }
-        if ((priceMin != null && priceMin < 0)
-                || (priceMax != null && priceMax < 0)
-                || (priceMin != null && priceMax != null && priceMin > priceMax)) {
-            throw badRequest("priceMin and priceMax must be positive and priceMin ≤ priceMax");
-        }
+        validatePaging(page, pageSize);
+        validatePrice(priceMin, priceMax);
         ProductSort productSort;
         try {
             productSort = ProductSort.fromParam(sort);
@@ -86,19 +74,9 @@ class StoreProductController {
             throw badRequest(e.getMessage());
         }
 
-        Map<String, Set<String>> facets = new HashMap<>();
-        allParams.forEach((name, values) -> {
-            if (!RESERVED.contains(name)) {
-                var codes = split(values);
-                if (!codes.isEmpty()) {
-                    facets.put(name, codes);
-                }
-            }
-        });
-
         return productService.listProducts(new ListingQuery(
                 slug,
-                facets,
+                facetFilters(allParams),
                 split(colour == null ? List.of() : List.of(colour)),
                 split(size == null ? List.of() : List.of(size)),
                 inStock,
@@ -112,6 +90,35 @@ class StoreProductController {
     @GetMapping("/products/{slug}")
     ProductDetailResponse getProduct(@PathVariable String slug) {
         return productService.getProduct(slug);
+    }
+
+    private static void validatePaging(int page, int pageSize) {
+        if (page < 1) {
+            throw badRequest("page must be 1 or more");
+        }
+        if (pageSize < 1 || pageSize > ListingQuery.MAX_PAGE_SIZE) {
+            throw badRequest("pageSize must be between 1 and " + ListingQuery.MAX_PAGE_SIZE);
+        }
+    }
+
+    private static void validatePrice(@Nullable Integer priceMin, @Nullable Integer priceMax) {
+        var negative = (priceMin != null && priceMin < 0) || (priceMax != null && priceMax < 0);
+        var inverted = priceMin != null && priceMax != null && priceMin > priceMax;
+        if (negative || inverted) {
+            throw badRequest("priceMin and priceMax must be positive and priceMin ≤ priceMax");
+        }
+    }
+
+    /** Every non-reserved parameter is a facet filter; unknown facet codes are ignored by the service. */
+    private static Map<String, Set<String>> facetFilters(MultiValueMap<String, String> allParams) {
+        Map<String, Set<String>> facets = new HashMap<>();
+        allParams.forEach((name, values) -> {
+            var codes = split(values);
+            if (!RESERVED.contains(name) && !codes.isEmpty()) {
+                facets.put(name, codes);
+            }
+        });
+        return facets;
     }
 
     /** Accepts both {@code fabric=silk,cotton} and {@code fabric=silk&fabric=cotton}. */
