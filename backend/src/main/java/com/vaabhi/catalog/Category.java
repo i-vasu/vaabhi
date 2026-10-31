@@ -24,6 +24,8 @@ public class Category {
     @Column(nullable = false)
     private int position;
 
+    private String description;
+
     protected Category() {}
 
     public Category(String slug, String name, int position) {
@@ -46,5 +48,9 @@ public class Category {
 
     public int getPosition() {
         return position;
+    }
+
+    public String getDescription() {
+        return description;
     }
 }

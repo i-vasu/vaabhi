@@ -26,10 +26,10 @@ class StoreCategoryControllerTest {
 
     @Test
     void listsCategoriesWithoutAuthentication() throws Exception {
-        given(categoryService.listCategories()).willReturn(List.of(new CategoryResponse(1L, "dresses", "Dresses")));
+        given(categoryService.listCategories()).willReturn(List.of(new CategoryResponse(1L, "sarees", "Sarees", null)));
 
         mockMvc.perform(get("/api/v1/store/categories"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].name").value("Dresses"));
+                .andExpect(jsonPath("$[0].name").value("Sarees"));
     }
 }

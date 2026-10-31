@@ -170,7 +170,8 @@ jobs:
       - name: Build and start backend
         run: |
           (cd backend && ./mvnw -B -q package -DskipTests)
-          nohup java -jar backend/target/app.jar > backend.log 2>&1 &
+          # The demo profile loads the demo catalogue (never used in production).
+          SPRING_PROFILES_ACTIVE=demo nohup java -jar backend/target/app.jar > backend.log 2>&1 &
       - run: pnpm install --frozen-lockfile
         working-directory: frontend
       - name: Build storefront and admin

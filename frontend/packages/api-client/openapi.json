@@ -11,6 +11,36 @@
         }
     ],
     "paths": {
+        "/api/v1/store/products/{slug}": {
+            "get": {
+                "tags": [
+                    "store-product-controller"
+                ],
+                "operationId": "getProduct",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductDetailResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/store/categories": {
             "get": {
                 "tags": [
@@ -33,10 +63,467 @@
                     }
                 }
             }
+        },
+        "/api/v1/store/categories/{slug}/products": {
+            "get": {
+                "tags": [
+                    "store-product-controller"
+                ],
+                "operationId": "listProducts",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "colour",
+                        "in": "query",
+                        "description": "Comma-separated colour family codes",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "example": "red,maroon"
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "Comma-separated sizes",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "example": "M,L"
+                    },
+                    {
+                        "name": "inStock",
+                        "in": "query",
+                        "description": "Only products with stock in the selected colour/size",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    {
+                        "name": "priceMin",
+                        "in": "query",
+                        "description": "Minimum price in paise",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "format": "int32"
+                        }
+                    },
+                    {
+                        "name": "priceMax",
+                        "in": "query",
+                        "description": "Maximum price in paise",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "format": "int32"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "popular",
+                            "enum": [
+                                "popular",
+                                "new",
+                                "price_asc",
+                                "price_desc",
+                                "discount"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "1-based page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "description": "Products per page, at most 48",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 24
+                        }
+                    },
+                    {
+                        "name": "fabric",
+                        "in": "query",
+                        "description": "Comma-separated facet value codes (OR within the facet)",
+                        "example": "silk,cotton"
+                    },
+                    {
+                        "name": "occasion",
+                        "in": "query",
+                        "description": "Comma-separated facet value codes (OR within the facet)",
+                        "example": "wedding"
+                    },
+                    {
+                        "name": "weave",
+                        "in": "query",
+                        "description": "Comma-separated facet value codes (OR within the facet)",
+                        "example": "banarasi"
+                    },
+                    {
+                        "name": "work",
+                        "in": "query",
+                        "description": "Comma-separated facet value codes (OR within the facet)",
+                        "example": "zari"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductListingResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
         "schemas": {
+            "AddonResponse": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "BLOUSE"
+                        ]
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "pricePaise": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "input": {
+                        "type": "string",
+                        "enum": [
+                            "NONE",
+                            "SIZE",
+                            "MEASUREMENTS"
+                        ]
+                    }
+                },
+                "required": [
+                    "code",
+                    "description",
+                    "input",
+                    "kind",
+                    "name",
+                    "pricePaise"
+                ]
+            },
+            "AttributeResponse": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "values": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AttributeValue"
+                        }
+                    }
+                },
+                "required": [
+                    "code",
+                    "name",
+                    "values"
+                ]
+            },
+            "AttributeValue": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "code",
+                    "name"
+                ]
+            },
+            "CategoryRef": {
+                "type": "object",
+                "properties": {
+                    "slug": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name",
+                    "slug"
+                ]
+            },
+            "MediaResponse": {
+                "type": "object",
+                "properties": {
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "IMAGE",
+                            "VIDEO"
+                        ]
+                    },
+                    "key": {
+                        "type": "string"
+                    },
+                    "alt": {
+                        "type": "string"
+                    },
+                    "colourName": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "width": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "height": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    }
+                },
+                "required": [
+                    "alt",
+                    "colourName",
+                    "height",
+                    "key",
+                    "kind",
+                    "width"
+                ]
+            },
+            "ProductDetailResponse": {
+                "type": "object",
+                "properties": {
+                    "slug": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "subtitle": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "badge": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "NEW",
+                            "BESTSELLER",
+                            "BRIDAL",
+                            "HANDLOOM"
+                        ]
+                    },
+                    "category": {
+                        "$ref": "#/components/schemas/CategoryRef"
+                    },
+                    "pricePaise": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "mrpPaise": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "discountPercent": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "careInstructions": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "sareeLengthM": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "blouseIncluded": {
+                        "type": "boolean"
+                    },
+                    "blouseLengthM": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "attributes": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AttributeResponse"
+                        }
+                    },
+                    "variants": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/VariantResponse"
+                        }
+                    },
+                    "media": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MediaResponse"
+                        }
+                    },
+                    "addons": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AddonResponse"
+                        }
+                    }
+                },
+                "required": [
+                    "addons",
+                    "attributes",
+                    "badge",
+                    "blouseIncluded",
+                    "blouseLengthM",
+                    "careInstructions",
+                    "category",
+                    "description",
+                    "discountPercent",
+                    "media",
+                    "mrpPaise",
+                    "name",
+                    "pricePaise",
+                    "sareeLengthM",
+                    "slug",
+                    "subtitle",
+                    "variants"
+                ]
+            },
+            "VariantResponse": {
+                "type": "object",
+                "properties": {
+                    "sku": {
+                        "type": "string"
+                    },
+                    "colourName": {
+                        "type": "string"
+                    },
+                    "colourHex": {
+                        "type": "string"
+                    },
+                    "size": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "pricePaise": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "mrpPaise": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "inStock": {
+                        "type": "boolean"
+                    },
+                    "stockLeft": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    }
+                },
+                "required": [
+                    "colourHex",
+                    "colourName",
+                    "inStock",
+                    "mrpPaise",
+                    "pricePaise",
+                    "size",
+                    "sku",
+                    "stockLeft"
+                ]
+            },
             "CategoryResponse": {
                 "type": "object",
                 "properties": {
@@ -49,8 +536,249 @@
                     },
                     "name": {
                         "type": "string"
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     }
-                }
+                },
+                "required": [
+                    "description",
+                    "id",
+                    "name",
+                    "slug"
+                ]
+            },
+            "ColourSwatch": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "hex": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "hex",
+                    "name"
+                ]
+            },
+            "FilterGroup": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "COLOUR",
+                            "SIZE",
+                            "FACET"
+                        ]
+                    },
+                    "options": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/FilterOption"
+                        }
+                    }
+                },
+                "required": [
+                    "code",
+                    "name",
+                    "options",
+                    "type"
+                ]
+            },
+            "FilterOption": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "hex": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "count": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "selected": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "code",
+                    "count",
+                    "hex",
+                    "name",
+                    "selected"
+                ]
+            },
+            "PriceRange": {
+                "type": "object",
+                "properties": {
+                    "minPaise": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "maxPaise": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                },
+                "required": [
+                    "maxPaise",
+                    "minPaise"
+                ]
+            },
+            "ProductListingResponse": {
+                "type": "object",
+                "properties": {
+                    "category": {
+                        "$ref": "#/components/schemas/CategoryResponse"
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ProductSummary"
+                        }
+                    },
+                    "total": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "page": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "type": "string"
+                    },
+                    "filters": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/FilterGroup"
+                        }
+                    },
+                    "priceRange": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/PriceRange"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "category",
+                    "filters",
+                    "items",
+                    "page",
+                    "pageSize",
+                    "priceRange",
+                    "sort",
+                    "total"
+                ]
+            },
+            "ProductSummary": {
+                "type": "object",
+                "properties": {
+                    "slug": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "subtitle": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "badge": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "NEW",
+                            "BESTSELLER",
+                            "BRIDAL",
+                            "HANDLOOM"
+                        ]
+                    },
+                    "pricePaise": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "mrpPaise": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "discountPercent": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "colours": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ColourSwatch"
+                        }
+                    },
+                    "inStock": {
+                        "type": "boolean"
+                    },
+                    "stockLeft": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "image": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/MediaResponse"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "badge",
+                    "colours",
+                    "discountPercent",
+                    "image",
+                    "inStock",
+                    "mrpPaise",
+                    "name",
+                    "pricePaise",
+                    "slug",
+                    "stockLeft",
+                    "subtitle"
+                ]
             }
         }
     }
