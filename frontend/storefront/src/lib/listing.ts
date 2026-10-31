@@ -70,12 +70,14 @@ export function parseListingState(params: SearchParams): ListingState {
   return { selected, inStock: first(params.inStock) === "true", priceMin, priceMax, sort, page };
 }
 
+const byCode = (a: string, b: string) => a.localeCompare(b, "en");
+
 /** Canonical query string for a state (sorted keys, defaults omitted), with a leading "?" or empty. */
 export function listingHref(pathname: string, state: ListingState): string {
   const search = new URLSearchParams();
-  for (const key of Object.keys(state.selected).sort()) {
+  for (const key of Object.keys(state.selected).sort(byCode)) {
     const codes = state.selected[key];
-    if (codes?.length) search.set(key, [...codes].sort().join(","));
+    if (codes?.length) search.set(key, [...codes].sort(byCode).join(","));
   }
   if (state.inStock) search.set("inStock", "true");
   if (state.priceMin !== undefined) search.set("priceMin", String(state.priceMin));
@@ -188,15 +190,15 @@ export function mediaUrl(key: string, width: 400 | 800 | 1600 = 800): string | u
   return base ? `${base.replace(/\/$/, "")}/${key}/${width}.webp` : undefined;
 }
 
+function stockNote(product: ProductSummary): string | undefined {
+  if (!product.inStock) return "Out of stock";
+  return product.stockLeft ? `Only ${product.stockLeft} left` : undefined;
+}
+
 export function productCardProps(product: ProductSummary): ProductCardProps {
   const price = product.pricePaise / 100;
   const mrp = product.mrpPaise / 100;
-  const detail = [
-    product.subtitle,
-    !product.inStock ? "Out of stock" : product.stockLeft ? `Only ${product.stockLeft} left` : undefined,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const detail = [product.subtitle, stockNote(product)].filter(Boolean).join(" · ");
   const src = product.image ? mediaUrl(product.image.key) : undefined;
   const colour = product.colours[0]?.hex;
   return {

@@ -16,11 +16,11 @@ export function ListingToolbar({
   state,
   groups,
   total,
-}: {
+}: Readonly<{
   state: ListingState;
   groups: FilterGroup[];
   total: number;
-}) {
+}>) {
   const [sheet, setSheet] = useState<"filters" | "sort" | null>(null);
   const { navigate, pending } = useListingNavigation();
   const count = activeFilterCount(state);

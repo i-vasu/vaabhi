@@ -6,6 +6,8 @@ import { Button, CheckboxRow, cn, ColourSwatch } from "@vaabhi/ui";
 import { clearFilters, PRICE_BANDS, toggleValue, withInStock, withPrice, type ListingState } from "@/lib/listing";
 import { Sheet } from "./sheet";
 
+const resultsLabel = (total: number) => `${total} ${total === 1 ? "result" : "results"}`;
+
 /** Group order from the Figma filter sheet; anything new from the API goes after these. */
 const ORDER = ["occasion", "fabric", "weave", "work", "colour", "size"];
 
@@ -19,7 +21,7 @@ export function FiltersSheet({
   total,
   pending,
   onChange,
-}: {
+}: Readonly<{
   open: boolean;
   onClose: () => void;
   state: ListingState;
@@ -27,7 +29,7 @@ export function FiltersSheet({
   total: number;
   pending: boolean;
   onChange: (state: ListingState) => void;
-}) {
+}>) {
   const rank = (code: string) => (ORDER.includes(code) ? ORDER.indexOf(code) : ORDER.length);
   const tabs: Tab[] = [
     ...[...groups]
@@ -60,7 +62,7 @@ export function FiltersSheet({
             Clear
           </Button>
           <Button className="grow" onClick={onClose} aria-live="polite" aria-busy={pending}>
-            {pending ? "Updating…" : `Show ${total} ${total === 1 ? "result" : "results"}`}
+            {pending ? "Updating…" : `Show ${resultsLabel(total)}`}
           </Button>
         </>
       }
@@ -115,7 +117,11 @@ export function FiltersSheet({
   );
 }
 
-function Panel({ tab, state, onChange }: { tab: Tab; state: ListingState; onChange: (state: ListingState) => void }) {
+function Panel({
+  tab,
+  state,
+  onChange,
+}: Readonly<{ tab: Tab; state: ListingState; onChange: (state: ListingState) => void }>) {
   if (tab.code === "price") {
     return (
       <fieldset>

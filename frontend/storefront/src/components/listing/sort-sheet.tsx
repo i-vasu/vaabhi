@@ -9,12 +9,12 @@ export function SortSheet({
   onClose,
   value,
   onChange,
-}: {
+}: Readonly<{
   open: boolean;
   onClose: () => void;
   value: SortValue;
   onChange: (sort: SortValue) => void;
-}) {
+}>) {
   return (
     <Sheet open={open} onClose={onClose} title="Sort by" size="short">
       <fieldset className="px-4 pt-1 pb-4">

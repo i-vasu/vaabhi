@@ -45,11 +45,11 @@ async function loadListing(slug: string, state: ListingState): Promise<ProductLi
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const name = slug.replace(/-/g, " ").replace(/^\w/, (c) => c.toUpperCase());
+  const name = slug.replaceAll("-", " ").replace(/^\w/, (c) => c.toUpperCase());
   return { title: `${name} | Vaabhi`, alternates: { canonical: `/c/${slug}` } };
 }
 
-export default async function CategoryPage({ params, searchParams }: Props) {
+export default async function CategoryPage({ params, searchParams }: Readonly<Props>) {
   const { slug } = await params;
   const state = parseListingState(await searchParams);
   const pathname = `/c/${slug}`;
@@ -167,11 +167,11 @@ function QuickFilters({
   state,
   listing,
   href,
-}: {
+}: Readonly<{
   state: ListingState;
   listing: ProductListing;
   href: (state: ListingState) => string;
-}) {
+}>) {
   const fabrics = (listing.filters.find((g) => g.code === "fabric")?.options ?? [])
     .filter((o) => o.count > 0 || o.selected)
     .sort((a, b) => b.count - a.count)

@@ -19,7 +19,7 @@ type SheetProps = {
  * Bottom sheet on mobile, right-hand drawer from md up. A native modal <dialog> gives focus trapping,
  * Escape to close and an inert page behind it; tapping the backdrop closes too.
  */
-export function Sheet({ open, onClose, title, action, footer, size = "tall", children }: SheetProps) {
+export function Sheet({ open, onClose, title, action, footer, size = "tall", children }: Readonly<SheetProps>) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
@@ -30,14 +30,22 @@ export function Sheet({ open, onClose, title, action, footer, size = "tall", chi
     if (!open && dialog.open) dialog.close();
   }, [open]);
 
+  // Light dismiss: a click on the dialog box itself (not its content) is a click on the backdrop.
+  // Keyboard users close with Escape, which the native dialog turns into a "close" event.
+  useEffect(() => {
+    const dialog = ref.current;
+    const onBackdrop = (event: MouseEvent) => {
+      if (event.target === dialog) onClose();
+    };
+    dialog?.addEventListener("click", onBackdrop);
+    return () => dialog?.removeEventListener("click", onBackdrop);
+  }, [onClose]);
+
   return (
     <dialog
       ref={ref}
       aria-labelledby={titleId}
       onClose={onClose}
-      onClick={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
       className={[
         "fixed inset-x-0 top-auto bottom-0 m-0 flex max-h-none w-full max-w-none flex-col overflow-hidden rounded-t-lg bg-bg-surface p-0 text-text-primary",
         "backdrop:bg-[#2B2622]/45 [&:not([open])]:hidden",
