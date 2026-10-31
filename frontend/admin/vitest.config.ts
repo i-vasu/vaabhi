@@ -8,6 +8,9 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
+    // The product editor tests fill in dozens of fields; on shared CI runners, with every package's tests
+    // running in parallel, they take 6–8 s. Assertions still fail fast; only the overall budget is longer.
+    testTimeout: 15_000,
     include: ["src/**/*.test.{ts,tsx}"],
     coverage: {
       provider: "v8",
