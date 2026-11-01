@@ -12,6 +12,8 @@ type SheetProps = {
   footer?: React.ReactNode;
   /** Bottom sheet height on mobile (from the Figma frames). */
   size?: "tall" | "short";
+  /** "start": a left-hand drawer at every width (site menu) instead of the bottom sheet / right drawer. */
+  side?: "end" | "start";
   children: React.ReactNode;
 };
 
@@ -19,7 +21,16 @@ type SheetProps = {
  * Bottom sheet on mobile, right-hand drawer from md up. A native modal <dialog> gives focus trapping,
  * Escape to close and an inert page behind it; tapping the backdrop closes too.
  */
-export function Sheet({ open, onClose, title, action, footer, size = "tall", children }: Readonly<SheetProps>) {
+export function Sheet({
+  open,
+  onClose,
+  title,
+  action,
+  footer,
+  size = "tall",
+  side = "end",
+  children,
+}: Readonly<SheetProps>) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
@@ -47,15 +58,22 @@ export function Sheet({ open, onClose, title, action, footer, size = "tall", chi
       aria-labelledby={titleId}
       onClose={onClose}
       className={[
-        "fixed inset-x-0 top-auto bottom-0 m-0 flex max-h-none w-full max-w-none flex-col overflow-hidden rounded-t-lg bg-bg-surface p-0 text-text-primary",
+        "fixed m-0 flex flex-col overflow-hidden bg-bg-surface p-0 text-text-primary",
         "backdrop:bg-[#2B2622]/45 [&:not([open])]:hidden",
-        size === "tall" ? "h-[88dvh]" : "h-auto max-h-[60dvh]",
-        "md:inset-y-0 md:right-0 md:left-auto md:h-dvh md:max-h-dvh md:w-[420px] md:rounded-none",
+        side === "start"
+          ? "inset-y-0 left-0 right-auto h-dvh max-h-dvh w-[85vw] max-w-[360px]"
+          : [
+              "inset-x-0 top-auto bottom-0 max-h-none w-full max-w-none rounded-t-lg",
+              size === "tall" ? "h-[88dvh]" : "h-auto max-h-[60dvh]",
+              "md:inset-y-0 md:right-0 md:left-auto md:h-dvh md:max-h-dvh md:w-[420px] md:rounded-none",
+            ].join(" "),
       ].join(" ")}
     >
-      <div aria-hidden="true" className="flex justify-center pt-2 md:hidden">
-        <span className="h-1 w-10 rounded-sm bg-border-strong" />
-      </div>
+      {side === "end" && (
+        <div aria-hidden="true" className="flex justify-center pt-2 md:hidden">
+          <span className="h-1 w-10 rounded-sm bg-border-strong" />
+        </div>
+      )}
       <header className="flex items-center justify-between border-b border-border-default px-4 py-3">
         <h2 id={titleId} className="font-serif text-2xl font-semibold">
           {title}

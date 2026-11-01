@@ -46,6 +46,13 @@ export const BagIcon = icon(
     <path d="M9 8a3 3 0 0 1 6 0" />
   </>,
 );
+export const UserIcon = icon(
+  "User",
+  <>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4.5 20a7.5 7.5 0 0 1 15 0" />
+  </>,
+);
 export const ChevronRightIcon = icon("ChevronRight", <path d="m9 6 6 6-6 6" />);
 export const TruckIcon = icon(
   "Truck",

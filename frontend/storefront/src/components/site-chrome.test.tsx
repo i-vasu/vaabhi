@@ -8,16 +8,19 @@ describe("SiteHeader", () => {
     render(<SiteHeader />);
     expect(screen.getByText(/Free shipping above ₹1,999/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "VAABHI" })).toHaveAttribute("href", "/");
-    for (const name of ["Open menu"]) expect(screen.getByRole("button", { name })).toBeInTheDocument();
-    for (const name of ["Search", "Wishlist", "Shopping bag"])
-      expect(screen.getByRole("link", { name })).toBeInTheDocument();
+    for (const name of ["Open menu", "Account"]) expect(screen.getByRole("button", { name })).toBeInTheDocument();
+    for (const name of ["Search", "Shopping bag"]) expect(screen.getByRole("link", { name })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Wishlist" })).not.toBeInTheDocument();
   });
 });
 
 describe("SiteFooter", () => {
   it("lists shop and help links", () => {
     render(<SiteFooter />);
-    expect(screen.getByRole("navigation", { name: "Shop" })).toBeInTheDocument();
+    for (const name of ["Shop", "Help", "Policies", "About"])
+      expect(screen.getByRole("navigation", { name })).toBeInTheDocument();
+    expect(screen.getByText(/Handwoven sarees, lehengas and kurta sets/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Privacy" })).toHaveAttribute("href", "/policies/privacy");
     expect(screen.getByRole("link", { name: "Track order" })).toHaveAttribute("href", "/track");
     expect(screen.getByText(/Made in India/)).toBeInTheDocument();
   });
