@@ -6,6 +6,7 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
+      SPRING_PROFILES_ACTIVE: prod
       DEPLOY_ENV: production
       SWAGGER_UI_ENABLED: "false"
     mem_limit: 400m

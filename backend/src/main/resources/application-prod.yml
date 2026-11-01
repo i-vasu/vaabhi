@@ -1,0 +1,33 @@
+# Production (VPS). Activated by SPRING_PROFILES_ACTIVE=prod, which the Docker image sets.
+# No fallbacks for connection details or secrets: the app refuses to start if any is missing.
+spring:
+  datasource:
+    # Neon postgres:// URLs are converted by PostgresUrlEnvironmentPostProcessor (it also sets the credentials).
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME:}
+    password: ${DATABASE_PASSWORD:}
+
+vaabhi:
+  security:
+    jwt-secret: ${JWT_SECRET}
+    cors-allowed-origins: ${CORS_ALLOWED_ORIGINS}
+
+management:
+  otlp:
+    metrics:
+      export:
+        enabled: ${OTEL_EXPORT_ENABLED:true}
+  logging:
+    export:
+      otlp:
+        enabled: ${OTEL_EXPORT_ENABLED:true}
+  opentelemetry:
+    resource-attributes:
+      deployment.environment: ${DEPLOY_ENV:production}
+  tracing:
+    export:
+      enabled: ${OTEL_EXPORT_ENABLED:true}
+
+springdoc:
+  swagger-ui:
+    enabled: ${SWAGGER_UI_ENABLED:false}

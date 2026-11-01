@@ -1,4 +1,4 @@
--- DEMO DATA: loaded only with the "demo" Spring profile (local, CI end-to-end tests, the Neon dev branch).
+-- DEMO DATA: loaded only with the "dev" Spring profile (local, CI end-to-end tests, the Neon dev branch).
 -- Never enable that profile in production. Re-runs whenever this file changes and touches only its own slugs.
 --
 -- Covers the listing and product page edge cases: one DRAFT product (never visible), one out of stock,

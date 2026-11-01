@@ -1,13 +1,15 @@
+# Settings shared by every profile. Profile files hold what differs:
+#   application-dev.yml   local development, CI and tests (the default when no profile is set)
+#   application-prod.yml  production (set SPRING_PROFILES_ACTIVE=prod; the Docker image does)
 spring:
   application:
     name: vaabhi-backend
+  profiles:
+    default: dev
   threads:
     virtual:
       enabled: true
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/vaabhi}
-    username: ${DATABASE_USERNAME:vaabhi}
-    password: ${DATABASE_PASSWORD:vaabhi}
     hikari:
       maximum-pool-size: 5
       minimum-idle: 1
@@ -30,11 +32,7 @@ server:
   forward-headers-strategy: framework
 
 vaabhi:
-  security:
-    # Dev-only default. Production sets JWT_SECRET (32+ random bytes).
-    jwt-secret: ${JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
-    cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3001}
-
+  # security.jwt-secret and security.cors-allowed-origins are set per profile.
   # Cloudflare R2 for product photos (credentials only on the VPS, in .env).
   media:
     account-id: ${R2_ACCOUNT_ID:}
@@ -61,8 +59,10 @@ management:
         step: 60s
         headers:
           Authorization: ${GRAFANA_OTLP_AUTH:}
-    logging:
-      export:
+  logging:
+    export:
+      otlp:
+        # Boot 4 name; the old management.otlp.logging.export.enabled is ignored (and this defaults to true).
         enabled: ${OTEL_EXPORT_ENABLED:false}
   opentelemetry:
     resource-attributes:

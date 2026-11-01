@@ -1,5 +1,0 @@
-# Demo catalogue for local development, CI end-to-end tests and the Neon dev branch.
-# NEVER activate this profile in production: it inserts demo products.
-spring:
-  flyway:
-    locations: classpath:db/migration,classpath:db/demo
