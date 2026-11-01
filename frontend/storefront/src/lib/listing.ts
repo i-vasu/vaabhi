@@ -166,7 +166,7 @@ export function appliedFilters(state: ListingState, listing: ProductListing): Ap
   return chips;
 }
 
-const badgeTones: Record<NonNullable<ProductSummary["badge"]>, BadgeTone> = {
+export const badgeTones: Record<NonNullable<ProductSummary["badge"]>, BadgeTone> = {
   NEW: "festive",
   BESTSELLER: "gold",
   BRIDAL: "gold",

@@ -2,7 +2,7 @@
 
 import { CheckIcon, cn } from "@vaabhi/ui";
 import { SORTS, type SortValue } from "@/lib/listing";
-import { Sheet } from "./sheet";
+import { Sheet } from "@/components/sheet";
 
 export function SortSheet({
   open,
