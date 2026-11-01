@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { BagIcon, HeartIcon, MenuIcon, SearchIcon } from "@vaabhi/ui";
+import { HeartIcon, MenuIcon, SearchIcon } from "@vaabhi/ui";
+import { BagLink } from "./bag-link";
 
 const iconButton = "rounded-sm p-0.5 text-text-primary hover:text-brand-primary";
 
@@ -26,9 +27,7 @@ export function SiteHeader() {
             <Link href="/wishlist" aria-label="Wishlist" className={iconButton}>
               <HeartIcon size={22} />
             </Link>
-            <Link href="/bag" aria-label="Shopping bag" className={iconButton}>
-              <BagIcon size={22} />
-            </Link>
+            <BagLink className={iconButton} />
           </div>
         </div>
       </header>

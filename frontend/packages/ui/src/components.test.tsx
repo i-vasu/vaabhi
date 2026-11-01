@@ -190,6 +190,11 @@ describe("ColourSwatch", () => {
     expect(box.nextElementSibling?.firstElementChild).toHaveStyle({ backgroundColor: "#6E2A35" });
   });
 
+  it("can be a radio", () => {
+    render(<ColourSwatch kind="radio" group="colour" name="Mustard" hex="#D4A017" />);
+    expect(screen.getByRole("radio", { name: "Mustard" })).toHaveAttribute("name", "colour");
+  });
+
   it("can be disabled", () => {
     render(<ColourSwatch name="Gold" hex="#A88B5A" disabled />);
     expect(screen.getByRole("checkbox", { name: "Gold" })).toBeDisabled();

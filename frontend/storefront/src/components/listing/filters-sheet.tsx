@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { FilterGroup } from "@vaabhi/api-client";
 import { Button, CheckboxRow, cn, ColourSwatch } from "@vaabhi/ui";
 import { clearFilters, PRICE_BANDS, toggleValue, withInStock, withPrice, type ListingState } from "@/lib/listing";
-import { Sheet } from "./sheet";
+import { Sheet } from "@/components/sheet";
 
 const resultsLabel = (total: number) => `${total} ${total === 1 ? "result" : "results"}`;
 
