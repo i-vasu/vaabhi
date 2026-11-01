@@ -9,7 +9,7 @@ describe("SiteHeader", () => {
     expect(screen.getByText(/Free shipping above ₹1,999/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "VAABHI" })).toHaveAttribute("href", "/");
     for (const name of ["Open menu"]) expect(screen.getByRole("button", { name })).toBeInTheDocument();
-    for (const name of ["Search", "Wishlist", "Shopping bag"])
+    for (const name of ["Search", "Wishlist", "Shopping bag", "Account"])
       expect(screen.getByRole("link", { name })).toBeInTheDocument();
   });
 });
