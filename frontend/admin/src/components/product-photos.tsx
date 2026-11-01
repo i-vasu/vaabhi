@@ -8,7 +8,14 @@ import { mediaUrl, uploadPhoto } from "@/lib/photo-upload";
 
 type Upload = { id: string; name: string; state: "working" | "failed"; message?: string };
 
-const ACCEPT = "image/jpeg,image/png,image/webp,image/heic,image/heif";
+const ACCEPT = "image/jpeg,image/png,image/webp";
+const HEIC_MESSAGE =
+  "This is an iPhone HEIC photo, which this browser cannot open. Upload it from the iPhone itself (it converts to JPEG), or export it as JPEG first.";
+
+/** iPhone photos; only Safari can decode them, so explain instead of showing a decoder error. */
+function isHeic(file: File): boolean {
+  return /^image\/hei[cf]/.test(file.type) || /\.hei[cf]$/i.test(file.name);
+}
 const MAX_INPUT_BYTES = 30 * 1024 * 1024;
 
 function problem(error: unknown): string {
@@ -67,7 +74,8 @@ export function ProductPhotos({
         onChange(await uploadPhoto(productId!, file, { alt, colourName: defaultColour }));
         setUploads((u) => u.filter((x) => x.id !== id));
       } catch (e) {
-        setUploads((u) => u.map((x) => (x.id === id ? { ...x, state: "failed", message: problem(e) } : x)));
+        const message = isHeic(file) ? HEIC_MESSAGE : problem(e);
+        setUploads((u) => u.map((x) => (x.id === id ? { ...x, state: "failed", message } : x)));
       }
     }
   }
@@ -122,7 +130,7 @@ export function ProductPhotos({
         onDrop={(e) => {
           e.preventDefault();
           setDragging(false);
-          void addFiles([...e.dataTransfer.files].filter((f) => f.type.startsWith("image/")));
+          void addFiles([...e.dataTransfer.files].filter((f) => f.type.startsWith("image/") || isHeic(f)));
         }}
         className={cn(
           "mb-4 flex cursor-pointer flex-col items-center gap-1 rounded-md border-2 border-dashed p-6 text-sm",
@@ -131,7 +139,7 @@ export function ProductPhotos({
         )}
       >
         <span className="font-medium">Drop photos here or choose files</span>
-        <span className="text-neutral-500">JPEG, PNG, WebP or HEIC, up to 30 MB each</span>
+        <span className="text-neutral-500">JPEG, PNG or WebP, up to 30 MB each</span>
         <input
           type="file"
           accept={ACCEPT}

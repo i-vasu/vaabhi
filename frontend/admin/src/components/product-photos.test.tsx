@@ -89,6 +89,32 @@ describe("ProductPhotos", () => {
     expect(uploadCalls).toEqual([[7, expect.anything(), { alt: "Silk saree", colourName: null }]]);
   });
 
+  it("explains iPhone HEIC photos the browser cannot open", async () => {
+    uploadImpl = async () => {
+      throw new Error("The source image could not be decoded.");
+    };
+    setup([]);
+    const dropZone = screen.getByText("Drop photos here or choose files").closest("label")!;
+    fireEvent.drop(dropZone, {
+      dataTransfer: {
+        files: [new File(["x"], "IMG_0001.HEIC", { type: "" }), new File(["x"], "b.heic", { type: "image/heic" })],
+      },
+    });
+    // An untyped .HEIC file is not an image to the drop filter; the typed one is tried and explained.
+    const list = await screen.findByRole("list", { name: "Uploads" });
+    await waitFor(() =>
+      expect(within(list).getByText(/b.heic: failed. This is an iPhone HEIC photo/)).toBeInTheDocument(),
+    );
+    expect(uploadCalls).toHaveLength(1);
+
+    fireEvent.change(screen.getByLabelText("Add photos"), {
+      target: { files: [new File(["x"], "IMG_0002.HEIC", { type: "" })] },
+    });
+    await waitFor(() =>
+      expect(within(list).getByText(/IMG_0002.HEIC: failed. This is an iPhone HEIC photo/)).toBeInTheDocument(),
+    );
+  });
+
   it("reorders, edits and deletes photos", async () => {
     const saved: unknown[] = [];
     server.use(

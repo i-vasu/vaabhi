@@ -47,7 +47,12 @@ straight to R2 with short-lived signed URLs from the API; the storefront loads t
    ```
 
 4. **R2 → Manage API tokens** → Object Read & Write, limited to `vaabhi-media`.
-5. Add to `/opt/vaabhi/.env` and redeploy (or `docker compose ... up -d`):
+5. Add the three values as **GitHub secrets** (repo → Settings → Environments → `production` → Add secret):
+   `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`. Every deploy writes them into `/opt/vaabhi/.env`
+   (only those lines; nothing else changes). Re-run **Deploy to VPS** or merge anything to apply them. Rotating a
+   key is the same: update the secret, redeploy.
+
+   Or, with SSH access, put them in `/opt/vaabhi/.env` yourself and run `docker compose ... up -d`:
 
    ```bash
    R2_ACCOUNT_ID=9866817007578d38cd27b8bf64773774

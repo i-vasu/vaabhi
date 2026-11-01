@@ -51,12 +51,17 @@ jobs:
       - name: Deploy
         if: env.VPS_HOST != ''
         uses: appleboy/ssh-action@v1
+        env:
+          # Optional: when set (production environment secrets), deploy.sh writes them into /opt/vaabhi/.env.
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
-          envs: IMAGE_TAG
+          envs: IMAGE_TAG,R2_ACCOUNT_ID,R2_ACCESS_KEY_ID,R2_SECRET_ACCESS_KEY
           script: IMAGE_TAG="$IMAGE_TAG" sh /opt/vaabhi/deploy.sh
 
   # The pipeline runs its own smoke job after both deploys; manual runs check here.
