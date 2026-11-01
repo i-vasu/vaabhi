@@ -1,5 +1,17 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { addToBag, bagCount, bagStore, MAX_QUANTITY, toggleWishlist, wishlistStore } from "./bag";
+import {
+  addToBag,
+  addToWishlist,
+  bagCount,
+  bagStore,
+  lineKey,
+  MAX_QUANTITY,
+  removeLine,
+  restoreLine,
+  setQuantity,
+  toggleWishlist,
+  wishlistStore,
+} from "./bag";
 
 const line = {
   sku: "VB-RANI",
@@ -32,7 +44,8 @@ describe("bag", () => {
       ["38", 1],
     ]);
     expect(bagCount(lines)).toBe(3);
-    for (let i = 0; i < 10; i++) addToBag(line);
+    expect(addToBag(line).capped).toBe(false);
+    expect(addToBag(line).capped).toBe(true);
     expect(bagStore.read()[0]!.quantity).toBe(MAX_QUANTITY);
   });
 
@@ -62,7 +75,27 @@ describe("bag", () => {
     expect(() => addToBag(line)).not.toThrow();
   });
 
+  it("changes quantities within 1–3, removes and restores lines", () => {
+    addToBag(line);
+    addToBag({ ...line, sku: "VB-MUST" });
+    const key = lineKey(line);
+    setQuantity(key, 9);
+    expect(bagStore.read()[0]!.quantity).toBe(3);
+    setQuantity(key, 0);
+    expect(bagStore.read()[0]!.quantity).toBe(1);
+    const removed = removeLine(key)!;
+    expect(removed.index).toBe(0);
+    expect(bagStore.read().map((l) => l.sku)).toEqual(["VB-MUST"]);
+    expect(removeLine("missing")).toBeUndefined();
+    restoreLine(removed);
+    expect(bagStore.read().map((l) => l.sku)).toEqual(["VB-RANI", "VB-MUST"]);
+  });
+
   it("toggles the wishlist", () => {
+    addToWishlist("kurta");
+    addToWishlist("kurta");
+    expect(wishlistStore.read()).toEqual(["kurta"]);
+    toggleWishlist("kurta");
     expect(toggleWishlist("saree")).toBe(true);
     expect(wishlistStore.read()).toEqual(["saree"]);
     expect(toggleWishlist("saree")).toBe(false);

@@ -128,6 +128,36 @@
                 }
             }
         },
+        "/api/v1/store/bag/quote": {
+            "post": {
+                "tags": [
+                    "store-bag-controller"
+                ],
+                "operationId": "quoteBag",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BagQuoteRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BagQuote"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/products": {
             "get": {
                 "tags": [
@@ -1138,6 +1168,207 @@
                     "subtitle",
                     "updatedAt",
                     "variants"
+                ]
+            },
+            "BagQuoteRequest": {
+                "type": "object",
+                "properties": {
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BagRequestLine"
+                        },
+                        "maxItems": 20,
+                        "minItems": 0
+                    }
+                },
+                "required": [
+                    "lines"
+                ]
+            },
+            "BagRequestLine": {
+                "type": "object",
+                "properties": {
+                    "sku": {
+                        "type": "string",
+                        "maxLength": 64,
+                        "minLength": 0
+                    },
+                    "addonCode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 40,
+                        "minLength": 0
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "format": "int32",
+                        "maximum": 3,
+                        "minimum": 1
+                    }
+                },
+                "required": [
+                    "addonCode",
+                    "quantity",
+                    "sku"
+                ]
+            },
+            "BagQuote": {
+                "type": "object",
+                "properties": {
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BagQuoteLine"
+                        }
+                    },
+                    "itemsPaise": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "addonsPaise": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "mrpPaise": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalPaise": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                },
+                "required": [
+                    "addonsPaise",
+                    "itemsPaise",
+                    "lines",
+                    "mrpPaise",
+                    "totalPaise"
+                ]
+            },
+            "BagQuoteLine": {
+                "type": "object",
+                "properties": {
+                    "sku": {
+                        "type": "string"
+                    },
+                    "addonCode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "AVAILABLE",
+                            "LIMITED",
+                            "OUT_OF_STOCK",
+                            "UNAVAILABLE"
+                        ]
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "maxQuantity": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "stockLeft": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "slug": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "name": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "colourName": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "colourHex": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "size": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "pricePaise": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "mrpPaise": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "addonName": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "addonPricePaise": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "addonInput": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "NONE",
+                            "SIZE",
+                            "MEASUREMENTS"
+                        ]
+                    },
+                    "imageKey": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "addonCode",
+                    "addonInput",
+                    "addonName",
+                    "addonPricePaise",
+                    "colourHex",
+                    "colourName",
+                    "imageKey",
+                    "maxQuantity",
+                    "mrpPaise",
+                    "name",
+                    "pricePaise",
+                    "quantity",
+                    "size",
+                    "sku",
+                    "slug",
+                    "status",
+                    "stockLeft"
                 ]
             },
             "MediaUploadRequest": {

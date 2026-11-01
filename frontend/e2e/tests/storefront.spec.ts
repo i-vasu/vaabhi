@@ -82,6 +82,27 @@ test.describe("Storefront", () => {
     await page.getByRole("textbox", { name: "Pincode" }).fill("600001");
     await page.getByRole("button", { name: "CHECK" }).click();
     await expect(page.getByText(/Estimated delivery .* to 600001/)).toBeVisible();
+    // The bag prices the line from the shop: saree ₹18,500 + standard blouse ₹1,200.
+    await page.getByRole("link", { name: "View bag" }).click();
+    await expect(page.getByRole("heading", { name: "Your bag" })).toBeVisible();
+    await expect(page.getByText("Stitched blouse, standard size, size 36")).toBeVisible();
+    const summary = page.getByRole("complementary");
+    await expect(summary.getByText("₹19,700")).toBeVisible();
+    await expect(summary.getByText("Calculated at checkout")).toBeVisible();
+
+    await page.getByRole("button", { name: "Remove" }).click();
+    await expect(page.getByRole("heading", { name: "Your bag is empty" })).toBeVisible();
+  });
+
+  test("bag page has no serious accessibility violations", async ({ page }) => {
+    await page.goto(`${urls.storefront}/p/velvet-bridal-lehenga-zardozi`);
+    await page.locator("label").filter({ hasText: /^S$/ }).click();
+    await page.getByRole("button", { name: "Add to bag" }).first().click();
+    await page.goto(`${urls.storefront}/bag`);
+    await expect(page.getByRole("complementary").getByText("Total")).toBeVisible();
+    const results = await new AxeBuilder({ page }).analyze();
+    const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+    expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);
   });
 
   test("product page has no serious accessibility violations", async ({ page }) => {

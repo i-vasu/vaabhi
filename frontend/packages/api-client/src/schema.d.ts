@@ -36,6 +36,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/store/bag/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["quoteBag"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/products": {
         parameters: {
             query?: never;
@@ -307,6 +323,53 @@ export interface components {
             publishedAt: string | null;
             /** Format: date-time */
             updatedAt: string;
+        };
+        BagQuoteRequest: {
+            lines: components["schemas"]["BagRequestLine"][];
+        };
+        BagRequestLine: {
+            sku: string;
+            addonCode: string | null;
+            /** Format: int32 */
+            quantity: number;
+        };
+        BagQuote: {
+            lines: components["schemas"]["BagQuoteLine"][];
+            /** Format: int32 */
+            itemsPaise: number;
+            /** Format: int32 */
+            addonsPaise: number;
+            /** Format: int32 */
+            mrpPaise: number;
+            /** Format: int32 */
+            totalPaise: number;
+        };
+        BagQuoteLine: {
+            sku: string;
+            addonCode: string | null;
+            /** @enum {string} */
+            status: "AVAILABLE" | "LIMITED" | "OUT_OF_STOCK" | "UNAVAILABLE";
+            /** Format: int32 */
+            quantity: number;
+            /** Format: int32 */
+            maxQuantity: number;
+            /** Format: int32 */
+            stockLeft: number | null;
+            slug: string | null;
+            name: string | null;
+            colourName: string | null;
+            colourHex: string | null;
+            size: string | null;
+            /** Format: int32 */
+            pricePaise: number;
+            /** Format: int32 */
+            mrpPaise: number;
+            addonName: string | null;
+            /** Format: int32 */
+            addonPricePaise: number;
+            /** @enum {string|null} */
+            addonInput: "NONE" | "SIZE" | "MEASUREMENTS" | null;
+            imageKey: string | null;
         };
         MediaUploadRequest: {
             alt: string;
@@ -582,6 +645,30 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AdminProduct"];
+                };
+            };
+        };
+    };
+    quoteBag: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BagQuoteRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BagQuote"];
                 };
             };
         };

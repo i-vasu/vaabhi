@@ -38,6 +38,9 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/store/**")
                         .permitAll()
+                        // Read-only bag pricing; POST only because the bag does not fit in a URL.
+                        .requestMatchers(HttpMethod.POST, "/api/v1/store/bag/quote")
+                        .permitAll()
                         .requestMatchers("/api/v1/webhooks/**")
                         .permitAll()
                         .requestMatchers("/api/v1/admin/**")

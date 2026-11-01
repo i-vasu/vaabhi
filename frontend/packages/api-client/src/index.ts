@@ -12,6 +12,10 @@ export type ProductVariant = Schemas["VariantResponse"];
 export type ProductAddon = Schemas["AddonResponse"];
 export type Media = Schemas["MediaResponse"];
 
+export type BagQuote = Schemas["BagQuote"];
+export type BagQuoteLine = Schemas["BagQuoteLine"];
+export type BagQuoteRequest = Schemas["BagQuoteRequest"];
+
 export type AdminProduct = Schemas["AdminProduct"];
 export type AdminProductSummary = Schemas["AdminProductSummary"];
 export type AdminProductPage = Schemas["AdminProductPage"];
@@ -118,6 +122,8 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         ),
       getProduct: (slug: string, init?: RequestOptions) =>
         request<ProductDetail>(`/api/v1/store/products/${encodeURIComponent(slug)}`, init),
+      /** Current prices and stock for the bag kept in the browser. */
+      quoteBag: (bag: BagQuoteRequest) => send<BagQuote>("POST", "/api/v1/store/bag/quote", bag),
     },
     admin: {
       catalogOptions: () => request<CatalogOptions>("/api/v1/admin/catalog/options"),
