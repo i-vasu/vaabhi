@@ -20,21 +20,46 @@ export type BagLine = {
   quantity: number;
 };
 
-export const MAX_QUANTITY = 5;
+/** Per line, as agreed with the shop (the API enforces the same limit). */
+export const MAX_QUANTITY = 3;
 const EMPTY: BagLine[] = [];
 export const bagStore = localStore<BagLine[]>("bag.v1", EMPTY);
 
-const sameLine = (a: BagLine, b: BagLine) =>
-  a.sku === b.sku && a.addonCode === b.addonCode && a.blouseSize === b.blouseSize;
+type LineIdentity = Pick<BagLine, "sku" | "addonCode" | "blouseSize">;
 
-export function addToBag(line: Omit<BagLine, "quantity">): BagLine[] {
+/** A line is one variant with one add-on choice and blouse size. */
+export const lineKey = (l: LineIdentity) => `${l.sku}|${l.addonCode ?? ""}|${l.blouseSize ?? ""}`;
+
+/** Adds one; `capped` when the line was already at the limit, so nothing changed. */
+export function addToBag(line: Omit<BagLine, "quantity">): { lines: BagLine[]; capped: boolean } {
   const lines = bagStore.read();
-  const existing = lines.find((l) => sameLine(l, { ...line, quantity: 1 }));
+  const existing = lines.find((l) => lineKey(l) === lineKey(line));
+  if (existing && existing.quantity >= MAX_QUANTITY) return { lines, capped: true };
   const next = existing
-    ? lines.map((l) => (l === existing ? { ...l, quantity: Math.min(l.quantity + 1, MAX_QUANTITY) } : l))
+    ? lines.map((l) => (l === existing ? { ...l, quantity: l.quantity + 1 } : l))
     : [...lines, { ...line, quantity: 1 }];
   bagStore.write(next);
-  return next;
+  return { lines: next, capped: false };
+}
+
+export function setQuantity(key: string, quantity: number): void {
+  const q = Math.max(1, Math.min(quantity, MAX_QUANTITY));
+  bagStore.write(bagStore.read().map((l) => (lineKey(l) === key ? { ...l, quantity: q } : l)));
+}
+
+/** Removes a line and returns it with its position, for Undo. */
+export function removeLine(key: string): { line: BagLine; index: number } | undefined {
+  const lines = bagStore.read();
+  const index = lines.findIndex((l) => lineKey(l) === key);
+  if (index < 0) return undefined;
+  bagStore.write(lines.filter((_, i) => i !== index));
+  return { line: lines[index]!, index };
+}
+
+export function restoreLine({ line, index }: { line: BagLine; index: number }): void {
+  const lines = bagStore.read().filter((l) => lineKey(l) !== lineKey(line));
+  lines.splice(Math.min(index, lines.length), 0, line);
+  bagStore.write(lines);
 }
 
 export function bagCount(lines: BagLine[]): number {
@@ -42,6 +67,11 @@ export function bagCount(lines: BagLine[]): number {
 }
 
 export const wishlistStore = localStore<string[]>("wishlist.v1", []);
+
+export function addToWishlist(slug: string): void {
+  const list = wishlistStore.read();
+  if (!list.includes(slug)) wishlistStore.write([...list, slug]);
+}
 
 export function toggleWishlist(slug: string): boolean {
   const list = wishlistStore.read();

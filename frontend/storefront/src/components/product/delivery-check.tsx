@@ -35,7 +35,7 @@ export function DeliveryCheck({ extraDays }: Readonly<{ extraDays: { min: number
           inputMode="numeric"
           autoComplete="postal-code"
           maxLength={6}
-          placeholder="Enter pincode for delivery date"
+          placeholder="Pincode for delivery date"
           value={pincode}
           onChange={(e) => setPincode(e.target.value.replaceAll(/\D/g, ""))}
           className="min-w-0 flex-1 bg-transparent py-2 tabular-nums outline-none"

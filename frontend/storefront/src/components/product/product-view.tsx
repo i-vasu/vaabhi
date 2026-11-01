@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { ProductDetail } from "@vaabhi/api-client";
 import { Badge, BagIcon, cn, ColourSwatch, HeartIcon } from "@vaabhi/ui";
 import { Sheet } from "@/components/sheet";
-import { addToBag, toggleWishlist, wishlistStore } from "@/lib/bag";
+import { addToBag, MAX_QUANTITY, toggleWishlist, wishlistStore } from "@/lib/bag";
 import { stitchingDays } from "@/lib/delivery";
 import { formatPrice, discountLabel } from "@/lib/format";
 import { badgeTones } from "@/lib/listing";
@@ -79,7 +79,7 @@ export function ProductView({ product, colour: requested }: Readonly<{ product: 
     if (choice?.input === "SIZE" && !blouseSize) return setProblem("Choose a blouse size.");
     setProblem(null);
     const photo = photosFor(product, colour)[0];
-    addToBag({
+    const { capped } = addToBag({
       sku: variant.sku,
       slug: product.slug,
       name: product.name,
@@ -93,6 +93,7 @@ export function ProductView({ product, colour: requested }: Readonly<{ product: 
       addonPricePaise: addonPrice,
       imageKey: photo?.key ?? null,
     });
+    if (capped) return setProblem(`You can add up to ${MAX_QUANTITY} of this item.`);
     setAdded(true);
   }
 
