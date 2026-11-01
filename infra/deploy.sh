@@ -7,6 +7,23 @@ cd "$(dirname "$0")"
 COMPOSE="docker compose -f docker-compose.prod.yml --env-file .env"
 PREVIOUS_TAG=$(cat .current-tag 2>/dev/null || echo "")
 
+# Settings kept as GitHub secrets (passed in by the deploy workflow) are written into .env, replacing any
+# existing line for the key. Unset or empty values leave .env untouched, so values set by hand still work.
+sync_env() {
+  key="$1"
+  value="$2"
+  [ -n "$value" ] || return 0
+  tmp=$(mktemp)
+  grep -v "^${key}=" .env > "$tmp" 2>/dev/null || true
+  printf '%s=%s\n' "$key" "$value" >> "$tmp"
+  cat "$tmp" > .env # rewrite in place: keeps the file's owner and 600 permissions
+  rm -f "$tmp"
+  echo "Updated $key in .env"
+}
+sync_env R2_ACCOUNT_ID "${R2_ACCOUNT_ID:-}"
+sync_env R2_ACCESS_KEY_ID "${R2_ACCESS_KEY_ID:-}"
+sync_env R2_SECRET_ACCESS_KEY "${R2_SECRET_ACCESS_KEY:-}"
+
 deploy() {
   IMAGE_TAG="$1" $COMPOSE pull backend storefront
   IMAGE_TAG="$1" $COMPOSE up -d --remove-orphans

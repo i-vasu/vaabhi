@@ -8,8 +8,27 @@ import { mediaUrl, uploadPhoto } from "@/lib/photo-upload";
 
 type Upload = { id: string; name: string; state: "working" | "failed"; message?: string };
 
-const ACCEPT = "image/jpeg,image/png,image/webp,image/heic,image/heif";
+const ACCEPT = "image/jpeg,image/png,image/webp";
+const HEIC_MESSAGE =
+  "This is an iPhone HEIC photo, which this browser cannot open. Upload it from the iPhone itself (it converts to JPEG), or export it as JPEG first.";
+
+/** iPhone photos; only Safari can decode them, so explain instead of showing a decoder error. */
+function isHeic(file: File): boolean {
+  return /^image\/hei[cf]/.test(file.type) || /\.hei[cf]$/i.test(file.name);
+}
 const MAX_INPUT_BYTES = 30 * 1024 * 1024;
+/** Same limit as the API (ProductMediaService.MAX_PHOTOS). */
+export const MAX_PHOTOS = 12;
+
+const GUIDELINES = [
+  "Formats: JPEG, PNG or WebP. iPhone (HEIC) photos: upload from the iPhone itself, or export as JPEG first.",
+  "Size: up to 30 MB per photo, at least 1600 px wide so zoom stays sharp.",
+  `Up to ${MAX_PHOTOS} photos per product. The first photo is shown in listings; use ← → to reorder.`,
+  "Portrait 3:4 works best (e.g. 1200 × 1600 px), product centred on a plain background.",
+  "Pick the colour each photo shows, so shoppers see the right photos when they choose a colour.",
+  "Write a short description of each photo (alt text); it helps search engines and screen readers.",
+  "Photos are resized in your browser to 400, 800 and 1600 px. Keep this tab open until uploads finish.",
+];
 
 function problem(error: unknown): string {
   if (error instanceof ApiError) return error.detail ?? error.message;
@@ -52,22 +71,33 @@ export function ProductPhotos({
   }
 
   const defaultColour = colours.length === 1 ? colours[0]! : null;
+  const full = media.length >= MAX_PHOTOS;
 
   async function addFiles(files: File[]) {
     setError(null);
+    let slots = MAX_PHOTOS - media.length;
     for (const file of files) {
       const id = `upload-${++uploadCounter}`;
+      if (slots <= 0) {
+        setUploads((u) => [
+          ...u,
+          { id, name: file.name, state: "failed", message: `Over the ${MAX_PHOTOS}-photo limit` },
+        ]);
+        continue;
+      }
       if (file.size > MAX_INPUT_BYTES) {
         setUploads((u) => [...u, { id, name: file.name, state: "failed", message: "Larger than 30 MB" }]);
         continue;
       }
+      slots--;
       setUploads((u) => [...u, { id, name: file.name, state: "working" }]);
       try {
         const alt = [productName, defaultColour].filter(Boolean).join(", ") || file.name;
         onChange(await uploadPhoto(productId!, file, { alt, colourName: defaultColour }));
         setUploads((u) => u.filter((x) => x.id !== id));
       } catch (e) {
-        setUploads((u) => u.map((x) => (x.id === id ? { ...x, state: "failed", message: problem(e) } : x)));
+        const message = isHeic(file) ? HEIC_MESSAGE : problem(e);
+        setUploads((u) => u.map((x) => (x.id === id ? { ...x, state: "failed", message } : x)));
       }
     }
   }
@@ -104,9 +134,17 @@ export function ProductPhotos({
       <h2 id="photos" className="mb-1 font-semibold">
         Photos
       </h2>
-      <p className="mb-4 text-sm text-neutral-500">
-        The first photo is the one shown in listings. Photos are resized to 400, 800 and 1600 px in your browser.
+      <p className="mb-2 text-sm text-neutral-500">
+        {media.length} of {MAX_PHOTOS} photos
       </p>
+      <div className="mb-4 rounded-md bg-neutral-50 p-4 text-sm">
+        <p className="mb-2 font-medium">Before you upload</p>
+        <ul aria-label="Photo guidelines" className="list-disc space-y-1 pl-5 text-neutral-600">
+          {GUIDELINES.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      </div>
       {error && (
         <p role="alert" className="mb-3 text-sm text-red-700">
           {error}
@@ -122,20 +160,27 @@ export function ProductPhotos({
         onDrop={(e) => {
           e.preventDefault();
           setDragging(false);
-          void addFiles([...e.dataTransfer.files].filter((f) => f.type.startsWith("image/")));
+          if (full) return;
+          void addFiles([...e.dataTransfer.files].filter((f) => f.type.startsWith("image/") || isHeic(f)));
         }}
         className={cn(
           "mb-4 flex cursor-pointer flex-col items-center gap-1 rounded-md border-2 border-dashed p-6 text-sm",
           "has-[:focus-visible]:outline-2",
           dragging ? "border-neutral-900 bg-neutral-50" : "border-neutral-300",
+          full && "cursor-not-allowed opacity-60",
         )}
       >
-        <span className="font-medium">Drop photos here or choose files</span>
-        <span className="text-neutral-500">JPEG, PNG, WebP or HEIC, up to 30 MB each</span>
+        <span className="font-medium">
+          {full
+            ? `This product has ${MAX_PHOTOS} photos. Delete one to add another.`
+            : "Drop photos here or choose files"}
+        </span>
+        <span className="text-neutral-500">JPEG, PNG or WebP · up to 30 MB each</span>
         <input
           type="file"
           accept={ACCEPT}
           multiple
+          disabled={full}
           className="sr-only"
           aria-label="Add photos"
           onChange={(e) => {
