@@ -1,5 +1,6 @@
 package com.vaabhi.shared.security;
 
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import java.nio.charset.StandardCharsets;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -12,7 +13,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -43,8 +46,13 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/api/v1/webhooks/**")
                         .permitAll()
+                        // Sign-in, refresh and logout: the caller has no access token yet (or it expired).
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/**")
+                        .permitAll()
                         .requestMatchers("/api/v1/admin/**")
                         .hasRole("ADMIN")
+                        .requestMatchers("/api/v1/customer/**")
+                        .hasRole("CUSTOMER")
                         .anyRequest()
                         .authenticated())
                 .oauth2ResourceServer(
@@ -57,6 +65,12 @@ public class SecurityConfig {
         return NimbusJwtDecoder.withSecretKey(secretKey(properties))
                 .macAlgorithm(MacAlgorithm.HS256)
                 .build();
+    }
+
+    /** Signs customer access tokens with the same HS256 secret the decoder verifies. */
+    @Bean
+    JwtEncoder jwtEncoder(SecurityProperties properties) {
+        return new NimbusJwtEncoder(new ImmutableSecret<>(secretKey(properties)));
     }
 
     @Bean

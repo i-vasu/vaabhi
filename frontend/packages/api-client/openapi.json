@@ -1,2171 +1,1911 @@
 {
-    "openapi": "3.1.0",
-    "info": {
-        "title": "OpenAPI definition",
-        "version": "v0"
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "OpenAPI definition",
+    "version" : "v0"
+  },
+  "paths" : {
+    "/api/v1/customer/me" : {
+      "get" : {
+        "tags" : [ "customer-controller" ],
+        "operationId" : "getProfile",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CustomerProfile"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "customer-controller" ],
+        "operationId" : "updateProfile",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ProfileUpdate"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CustomerProfile"
+                }
+              }
+            }
+          }
+        }
+      }
     },
-    "servers": [
-        {
-            "url": "http://localhost:8080",
-            "description": "Generated server url"
+    "/api/v1/admin/products/{productId}/media" : {
+      "put" : {
+        "tags" : [ "admin-media-controller" ],
+        "operationId" : "updateMedia",
+        "parameters" : [ {
+          "name" : "productId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/MediaUpdate"
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/AdminMedia"
+                  }
+                }
+              }
+            }
+          }
         }
-    ],
-    "paths": {
-        "/api/v1/admin/products/{productId}/media": {
-            "put": {
-                "tags": [
-                    "admin-media-controller"
-                ],
-                "operationId": "updateMedia",
-                "parameters": [
-                    {
-                        "name": "productId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/MediaUpdate"
-                                }
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/AdminMedia"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/admin/products/{id}": {
-            "get": {
-                "tags": [
-                    "admin-product-controller"
-                ],
-                "operationId": "getAdminProduct",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AdminProduct"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "tags": [
-                    "admin-product-controller"
-                ],
-                "operationId": "updateProduct",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ProductForm"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AdminProduct"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/store/bag/quote": {
-            "post": {
-                "tags": [
-                    "store-bag-controller"
-                ],
-                "operationId": "quoteBag",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/BagQuoteRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/BagQuote"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/admin/products": {
-            "get": {
-                "tags": [
-                    "admin-product-controller"
-                ],
-                "operationId": "listAdminProducts",
-                "parameters": [
-                    {
-                        "name": "status",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": [
-                                "string",
-                                "null"
-                            ],
-                            "enum": [
-                                "DRAFT",
-                                "PUBLISHED",
-                                "ARCHIVED"
-                            ]
-                        }
-                    },
-                    {
-                        "name": "category",
-                        "in": "query",
-                        "description": "Category slug",
-                        "required": false,
-                        "schema": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
-                    },
-                    {
-                        "name": "q",
-                        "in": "query",
-                        "description": "Search name, URL or SKU",
-                        "required": false,
-                        "schema": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int32",
-                            "default": 1
-                        }
-                    },
-                    {
-                        "name": "pageSize",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int32",
-                            "default": 50
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AdminProductPage"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "admin-product-controller"
-                ],
-                "operationId": "createProduct",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ProductForm"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AdminProduct"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/admin/products/{productId}/media/{mediaId}/complete": {
-            "post": {
-                "tags": [
-                    "admin-media-controller"
-                ],
-                "operationId": "completeMediaUpload",
-                "parameters": [
-                    {
-                        "name": "productId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    },
-                    {
-                        "name": "mediaId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/AdminMedia"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/admin/products/{productId}/media/uploads": {
-            "post": {
-                "tags": [
-                    "admin-media-controller"
-                ],
-                "operationId": "startMediaUpload",
-                "parameters": [
-                    {
-                        "name": "productId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/MediaUploadRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/MediaUpload"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/admin/products/{id}/unpublish": {
-            "post": {
-                "tags": [
-                    "admin-product-controller"
-                ],
-                "operationId": "unpublishProduct",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AdminProduct"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/admin/products/{id}/publish": {
-            "post": {
-                "tags": [
-                    "admin-product-controller"
-                ],
-                "operationId": "publishProduct",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AdminProduct"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/admin/products/{id}/archive": {
-            "post": {
-                "tags": [
-                    "admin-product-controller"
-                ],
-                "operationId": "archiveProduct",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AdminProduct"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/store/products/{slug}": {
-            "get": {
-                "tags": [
-                    "store-product-controller"
-                ],
-                "operationId": "getProduct",
-                "parameters": [
-                    {
-                        "name": "slug",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ProductDetailResponse"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/store/categories": {
-            "get": {
-                "tags": [
-                    "store-category-controller"
-                ],
-                "operationId": "list",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/CategoryResponse"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/store/categories/{slug}/products": {
-            "get": {
-                "tags": [
-                    "store-product-controller"
-                ],
-                "operationId": "listProducts",
-                "parameters": [
-                    {
-                        "name": "slug",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "colour",
-                        "in": "query",
-                        "description": "Comma-separated colour family codes",
-                        "required": false,
-                        "schema": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        },
-                        "example": "red,maroon"
-                    },
-                    {
-                        "name": "size",
-                        "in": "query",
-                        "description": "Comma-separated sizes",
-                        "required": false,
-                        "schema": {
-                            "type": [
-                                "string",
-                                "null"
-                            ]
-                        },
-                        "example": "M,L"
-                    },
-                    {
-                        "name": "inStock",
-                        "in": "query",
-                        "description": "Only products with stock in the selected colour/size",
-                        "required": false,
-                        "schema": {
-                            "type": "boolean",
-                            "default": false
-                        }
-                    },
-                    {
-                        "name": "priceMin",
-                        "in": "query",
-                        "description": "Minimum price in paise",
-                        "required": false,
-                        "schema": {
-                            "type": [
-                                "integer",
-                                "null"
-                            ],
-                            "format": "int32"
-                        }
-                    },
-                    {
-                        "name": "priceMax",
-                        "in": "query",
-                        "description": "Maximum price in paise",
-                        "required": false,
-                        "schema": {
-                            "type": [
-                                "integer",
-                                "null"
-                            ],
-                            "format": "int32"
-                        }
-                    },
-                    {
-                        "name": "sort",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "default": "popular",
-                            "enum": [
-                                "popular",
-                                "new",
-                                "price_asc",
-                                "price_desc",
-                                "discount"
-                            ]
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "description": "1-based page number",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int32",
-                            "default": 1
-                        }
-                    },
-                    {
-                        "name": "pageSize",
-                        "in": "query",
-                        "description": "Products per page, at most 48",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int32",
-                            "default": 24
-                        }
-                    },
-                    {
-                        "name": "fabric",
-                        "in": "query",
-                        "description": "Comma-separated facet value codes (OR within the facet)",
-                        "example": "silk,cotton"
-                    },
-                    {
-                        "name": "occasion",
-                        "in": "query",
-                        "description": "Comma-separated facet value codes (OR within the facet)",
-                        "example": "wedding"
-                    },
-                    {
-                        "name": "weave",
-                        "in": "query",
-                        "description": "Comma-separated facet value codes (OR within the facet)",
-                        "example": "banarasi"
-                    },
-                    {
-                        "name": "work",
-                        "in": "query",
-                        "description": "Comma-separated facet value codes (OR within the facet)",
-                        "example": "zari"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ProductListingResponse"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/admin/catalog/options": {
-            "get": {
-                "tags": [
-                    "admin-product-controller"
-                ],
-                "operationId": "catalogOptions",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/CatalogOptions"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/admin/products/{productId}/media/{mediaId}": {
-            "delete": {
-                "tags": [
-                    "admin-media-controller"
-                ],
-                "operationId": "deleteMedia",
-                "parameters": [
-                    {
-                        "name": "productId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    },
-                    {
-                        "name": "mediaId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int64"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/AdminMedia"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+      }
     },
-    "components": {
-        "schemas": {
-            "MediaUpdate": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "alt": {
-                        "type": "string",
-                        "maxLength": 200,
-                        "minLength": 0
-                    },
-                    "colourName": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "maxLength": 60,
-                        "minLength": 0
-                    }
-                },
-                "required": [
-                    "alt",
-                    "colourName",
-                    "id"
-                ]
-            },
-            "AdminMedia": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "kind": {
-                        "type": "string",
-                        "enum": [
-                            "IMAGE",
-                            "VIDEO"
-                        ]
-                    },
-                    "key": {
-                        "type": "string"
-                    },
-                    "alt": {
-                        "type": "string"
-                    },
-                    "colourName": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "width": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ],
-                        "format": "int32"
-                    },
-                    "height": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ],
-                        "format": "int32"
-                    },
-                    "status": {
-                        "type": "string",
-                        "enum": [
-                            "PENDING",
-                            "READY"
-                        ]
-                    }
-                },
-                "required": [
-                    "alt",
-                    "colourName",
-                    "height",
-                    "id",
-                    "key",
-                    "kind",
-                    "status",
-                    "width"
-                ]
-            },
-            "AddonForm": {
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "type": "string",
-                        "maxLength": 40,
-                        "minLength": 0,
-                        "pattern": "^[a-z0-9]++(?:-[a-z0-9]++)*+$"
-                    },
-                    "kind": {
-                        "type": "string",
-                        "enum": [
-                            "BLOUSE"
-                        ]
-                    },
-                    "name": {
-                        "type": "string",
-                        "maxLength": 80,
-                        "minLength": 0
-                    },
-                    "description": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "maxLength": 300,
-                        "minLength": 0
-                    },
-                    "pricePaise": {
-                        "type": "integer",
-                        "format": "int32",
-                        "minimum": 0
-                    },
-                    "input": {
-                        "type": "string",
-                        "enum": [
-                            "NONE",
-                            "SIZE",
-                            "MEASUREMENTS"
-                        ]
-                    },
-                    "active": {
-                        "type": "boolean"
-                    }
-                },
-                "required": [
-                    "active",
-                    "code",
-                    "description",
-                    "input",
-                    "kind",
-                    "name",
-                    "pricePaise"
-                ]
-            },
-            "ProductForm": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "maxLength": 160,
-                        "minLength": 0
-                    },
-                    "slug": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "maxLength": 160,
-                        "minLength": 0,
-                        "pattern": "^[a-z0-9]++(?:-[a-z0-9]++)*+$"
-                    },
-                    "subtitle": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "maxLength": 200,
-                        "minLength": 0
-                    },
-                    "description": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "maxLength": 5000,
-                        "minLength": 0
-                    },
-                    "categorySlug": {
-                        "type": "string",
-                        "minLength": 1
-                    },
-                    "badge": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "enum": [
-                            "NEW",
-                            "BESTSELLER",
-                            "BRIDAL",
-                            "HANDLOOM"
-                        ]
-                    },
-                    "careInstructions": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "maxLength": 2000,
-                        "minLength": 0
-                    },
-                    "sareeLengthM": {
-                        "type": [
-                            "number",
-                            "null"
-                        ],
-                        "maximum": 9.9,
-                        "minimum": 0.5
-                    },
-                    "blouseIncluded": {
-                        "type": "boolean"
-                    },
-                    "blouseLengthM": {
-                        "type": [
-                            "number",
-                            "null"
-                        ],
-                        "maximum": 2.0,
-                        "minimum": 0.1
-                    },
-                    "attributes": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "variants": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/VariantForm"
-                        },
-                        "maxItems": 200,
-                        "minItems": 0
-                    },
-                    "addons": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/AddonForm"
-                        },
-                        "maxItems": 10,
-                        "minItems": 0
-                    }
-                },
-                "required": [
-                    "addons",
-                    "attributes",
-                    "badge",
-                    "blouseIncluded",
-                    "blouseLengthM",
-                    "careInstructions",
-                    "categorySlug",
-                    "description",
-                    "name",
-                    "sareeLengthM",
-                    "slug",
-                    "subtitle",
-                    "variants"
-                ]
-            },
-            "VariantForm": {
-                "type": "object",
-                "properties": {
-                    "sku": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "pattern": "^[A-Z0-9][A-Z0-9-]{0,63}$"
-                    },
-                    "colourName": {
-                        "type": "string",
-                        "maxLength": 60,
-                        "minLength": 0
-                    },
-                    "colourHex": {
-                        "type": "string",
-                        "minLength": 1,
-                        "pattern": "^#[0-9A-Fa-f]{6}$"
-                    },
-                    "colourFamily": {
-                        "type": "string",
-                        "maxLength": 30,
-                        "minLength": 0
-                    },
-                    "size": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "maxLength": 10,
-                        "minLength": 0
-                    },
-                    "pricePaise": {
-                        "type": "integer",
-                        "format": "int32",
-                        "exclusiveMinimum": 0
-                    },
-                    "mrpPaise": {
-                        "type": "integer",
-                        "format": "int32",
-                        "exclusiveMinimum": 0
-                    },
-                    "stockQty": {
-                        "type": "integer",
-                        "format": "int32",
-                        "minimum": 0
-                    },
-                    "active": {
-                        "type": "boolean"
-                    }
-                },
-                "required": [
-                    "active",
-                    "colourFamily",
-                    "colourHex",
-                    "colourName",
-                    "mrpPaise",
-                    "pricePaise",
-                    "size",
-                    "sku",
-                    "stockQty"
-                ]
-            },
-            "AdminProduct": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "slug": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "subtitle": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "description": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "categorySlug": {
-                        "type": "string"
-                    },
-                    "status": {
-                        "type": "string",
-                        "enum": [
-                            "DRAFT",
-                            "PUBLISHED",
-                            "ARCHIVED"
-                        ]
-                    },
-                    "badge": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "enum": [
-                            "NEW",
-                            "BESTSELLER",
-                            "BRIDAL",
-                            "HANDLOOM"
-                        ]
-                    },
-                    "careInstructions": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "sareeLengthM": {
-                        "type": [
-                            "number",
-                            "null"
-                        ]
-                    },
-                    "blouseIncluded": {
-                        "type": "boolean"
-                    },
-                    "blouseLengthM": {
-                        "type": [
-                            "number",
-                            "null"
-                        ]
-                    },
-                    "attributes": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "variants": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/VariantForm"
-                        }
-                    },
-                    "addons": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/AddonForm"
-                        }
-                    },
-                    "media": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/AdminMedia"
-                        }
-                    },
-                    "publishedAt": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "format": "date-time"
-                    },
-                    "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                "required": [
-                    "addons",
-                    "attributes",
-                    "badge",
-                    "blouseIncluded",
-                    "blouseLengthM",
-                    "careInstructions",
-                    "categorySlug",
-                    "description",
-                    "id",
-                    "media",
-                    "name",
-                    "publishedAt",
-                    "sareeLengthM",
-                    "slug",
-                    "status",
-                    "subtitle",
-                    "updatedAt",
-                    "variants"
-                ]
-            },
-            "BagQuoteRequest": {
-                "type": "object",
-                "properties": {
-                    "lines": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/BagRequestLine"
-                        },
-                        "maxItems": 20,
-                        "minItems": 0
-                    }
-                },
-                "required": [
-                    "lines"
-                ]
-            },
-            "BagRequestLine": {
-                "type": "object",
-                "properties": {
-                    "sku": {
-                        "type": "string",
-                        "maxLength": 64,
-                        "minLength": 0
-                    },
-                    "addonCode": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "maxLength": 40,
-                        "minLength": 0
-                    },
-                    "quantity": {
-                        "type": "integer",
-                        "format": "int32",
-                        "maximum": 3,
-                        "minimum": 1
-                    }
-                },
-                "required": [
-                    "addonCode",
-                    "quantity",
-                    "sku"
-                ]
-            },
-            "BagQuote": {
-                "type": "object",
-                "properties": {
-                    "lines": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/BagQuoteLine"
-                        }
-                    },
-                    "itemsPaise": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "addonsPaise": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "mrpPaise": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "totalPaise": {
-                        "type": "integer",
-                        "format": "int32"
-                    }
-                },
-                "required": [
-                    "addonsPaise",
-                    "itemsPaise",
-                    "lines",
-                    "mrpPaise",
-                    "totalPaise"
-                ]
-            },
-            "BagQuoteLine": {
-                "type": "object",
-                "properties": {
-                    "sku": {
-                        "type": "string"
-                    },
-                    "addonCode": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "status": {
-                        "type": "string",
-                        "enum": [
-                            "AVAILABLE",
-                            "LIMITED",
-                            "OUT_OF_STOCK",
-                            "UNAVAILABLE"
-                        ]
-                    },
-                    "quantity": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "maxQuantity": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "stockLeft": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ],
-                        "format": "int32"
-                    },
-                    "slug": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "name": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "colourName": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "colourHex": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "size": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "pricePaise": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "mrpPaise": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "addonName": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "addonPricePaise": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "addonInput": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "enum": [
-                            "NONE",
-                            "SIZE",
-                            "MEASUREMENTS"
-                        ]
-                    },
-                    "imageKey": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    }
-                },
-                "required": [
-                    "addonCode",
-                    "addonInput",
-                    "addonName",
-                    "addonPricePaise",
-                    "colourHex",
-                    "colourName",
-                    "imageKey",
-                    "maxQuantity",
-                    "mrpPaise",
-                    "name",
-                    "pricePaise",
-                    "quantity",
-                    "size",
-                    "sku",
-                    "slug",
-                    "status",
-                    "stockLeft"
-                ]
-            },
-            "MediaUploadRequest": {
-                "type": "object",
-                "properties": {
-                    "alt": {
-                        "type": "string",
-                        "maxLength": 200,
-                        "minLength": 0
-                    },
-                    "colourName": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "maxLength": 60,
-                        "minLength": 0
-                    },
-                    "width": {
-                        "type": "integer",
-                        "format": "int32",
-                        "exclusiveMinimum": 0,
-                        "maximum": 10000
-                    },
-                    "height": {
-                        "type": "integer",
-                        "format": "int32",
-                        "exclusiveMinimum": 0,
-                        "maximum": 10000
-                    }
-                },
-                "required": [
-                    "alt",
-                    "colourName",
-                    "height",
-                    "width"
-                ]
-            },
-            "MediaUpload": {
-                "type": "object",
-                "properties": {
-                    "media": {
-                        "$ref": "#/components/schemas/AdminMedia"
-                    },
-                    "renditions": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Rendition"
-                        }
-                    },
-                    "expiresAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                "required": [
-                    "expiresAt",
-                    "media",
-                    "renditions"
-                ]
-            },
-            "Rendition": {
-                "type": "object",
-                "properties": {
-                    "width": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "uploadUrl": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "uploadUrl",
-                    "width"
-                ]
-            },
-            "AddonResponse": {
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "type": "string"
-                    },
-                    "kind": {
-                        "type": "string",
-                        "enum": [
-                            "BLOUSE"
-                        ]
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "pricePaise": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "input": {
-                        "type": "string",
-                        "enum": [
-                            "NONE",
-                            "SIZE",
-                            "MEASUREMENTS"
-                        ]
-                    }
-                },
-                "required": [
-                    "code",
-                    "description",
-                    "input",
-                    "kind",
-                    "name",
-                    "pricePaise"
-                ]
-            },
-            "AttributeResponse": {
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "values": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/AttributeValue"
-                        }
-                    }
-                },
-                "required": [
-                    "code",
-                    "name",
-                    "values"
-                ]
-            },
-            "AttributeValue": {
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "code",
-                    "name"
-                ]
-            },
-            "CategoryRef": {
-                "type": "object",
-                "properties": {
-                    "slug": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "name",
-                    "slug"
-                ]
-            },
-            "MediaResponse": {
-                "type": "object",
-                "properties": {
-                    "kind": {
-                        "type": "string",
-                        "enum": [
-                            "IMAGE",
-                            "VIDEO"
-                        ]
-                    },
-                    "key": {
-                        "type": "string"
-                    },
-                    "alt": {
-                        "type": "string"
-                    },
-                    "colourName": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "width": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ],
-                        "format": "int32"
-                    },
-                    "height": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ],
-                        "format": "int32"
-                    }
-                },
-                "required": [
-                    "alt",
-                    "colourName",
-                    "height",
-                    "key",
-                    "kind",
-                    "width"
-                ]
-            },
-            "ProductDetailResponse": {
-                "type": "object",
-                "properties": {
-                    "slug": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "subtitle": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "description": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "badge": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "enum": [
-                            "NEW",
-                            "BESTSELLER",
-                            "BRIDAL",
-                            "HANDLOOM"
-                        ]
-                    },
-                    "category": {
-                        "$ref": "#/components/schemas/CategoryRef"
-                    },
-                    "pricePaise": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "mrpPaise": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "discountPercent": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "careInstructions": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "sareeLengthM": {
-                        "type": [
-                            "number",
-                            "null"
-                        ]
-                    },
-                    "blouseIncluded": {
-                        "type": "boolean"
-                    },
-                    "blouseLengthM": {
-                        "type": [
-                            "number",
-                            "null"
-                        ]
-                    },
-                    "attributes": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/AttributeResponse"
-                        }
-                    },
-                    "variants": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/VariantResponse"
-                        }
-                    },
-                    "media": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/MediaResponse"
-                        }
-                    },
-                    "addons": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/AddonResponse"
-                        }
-                    }
-                },
-                "required": [
-                    "addons",
-                    "attributes",
-                    "badge",
-                    "blouseIncluded",
-                    "blouseLengthM",
-                    "careInstructions",
-                    "category",
-                    "description",
-                    "discountPercent",
-                    "media",
-                    "mrpPaise",
-                    "name",
-                    "pricePaise",
-                    "sareeLengthM",
-                    "slug",
-                    "subtitle",
-                    "variants"
-                ]
-            },
-            "VariantResponse": {
-                "type": "object",
-                "properties": {
-                    "sku": {
-                        "type": "string"
-                    },
-                    "colourName": {
-                        "type": "string"
-                    },
-                    "colourHex": {
-                        "type": "string"
-                    },
-                    "size": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "pricePaise": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "mrpPaise": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "inStock": {
-                        "type": "boolean"
-                    },
-                    "stockLeft": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ],
-                        "format": "int32"
-                    }
-                },
-                "required": [
-                    "colourHex",
-                    "colourName",
-                    "inStock",
-                    "mrpPaise",
-                    "pricePaise",
-                    "size",
-                    "sku",
-                    "stockLeft"
-                ]
-            },
-            "CategoryResponse": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "slug": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    }
-                },
-                "required": [
-                    "description",
-                    "id",
-                    "name",
-                    "slug"
-                ]
-            },
-            "ColourSwatch": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "hex": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "hex",
-                    "name"
-                ]
-            },
-            "FilterGroup": {
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string",
-                        "enum": [
-                            "COLOUR",
-                            "SIZE",
-                            "FACET"
-                        ]
-                    },
-                    "options": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/FilterOption"
-                        }
-                    }
-                },
-                "required": [
-                    "code",
-                    "name",
-                    "options",
-                    "type"
-                ]
-            },
-            "FilterOption": {
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "hex": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "count": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "selected": {
-                        "type": "boolean"
-                    }
-                },
-                "required": [
-                    "code",
-                    "count",
-                    "hex",
-                    "name",
-                    "selected"
-                ]
-            },
-            "PriceRange": {
-                "type": "object",
-                "properties": {
-                    "minPaise": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "maxPaise": {
-                        "type": "integer",
-                        "format": "int32"
-                    }
-                },
-                "required": [
-                    "maxPaise",
-                    "minPaise"
-                ]
-            },
-            "ProductListingResponse": {
-                "type": "object",
-                "properties": {
-                    "category": {
-                        "$ref": "#/components/schemas/CategoryResponse"
-                    },
-                    "items": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ProductSummary"
-                        }
-                    },
-                    "total": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "page": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "pageSize": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "sort": {
-                        "type": "string"
-                    },
-                    "filters": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/FilterGroup"
-                        }
-                    },
-                    "priceRange": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/PriceRange"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ]
-                    }
-                },
-                "required": [
-                    "category",
-                    "filters",
-                    "items",
-                    "page",
-                    "pageSize",
-                    "priceRange",
-                    "sort",
-                    "total"
-                ]
-            },
-            "ProductSummary": {
-                "type": "object",
-                "properties": {
-                    "slug": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "subtitle": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "badge": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "enum": [
-                            "NEW",
-                            "BESTSELLER",
-                            "BRIDAL",
-                            "HANDLOOM"
-                        ]
-                    },
-                    "pricePaise": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "mrpPaise": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "discountPercent": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "colours": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ColourSwatch"
-                        }
-                    },
-                    "inStock": {
-                        "type": "boolean"
-                    },
-                    "stockLeft": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ],
-                        "format": "int32"
-                    },
-                    "image": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/MediaResponse"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ]
-                    }
-                },
-                "required": [
-                    "badge",
-                    "colours",
-                    "discountPercent",
-                    "image",
-                    "inStock",
-                    "mrpPaise",
-                    "name",
-                    "pricePaise",
-                    "slug",
-                    "stockLeft",
-                    "subtitle"
-                ]
-            },
-            "AdminProductPage": {
-                "type": "object",
-                "properties": {
-                    "items": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/AdminProductSummary"
-                        }
-                    },
-                    "total": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "page": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "pageSize": {
-                        "type": "integer",
-                        "format": "int32"
-                    }
-                },
-                "required": [
-                    "items",
-                    "page",
-                    "pageSize",
-                    "total"
-                ]
-            },
-            "AdminProductSummary": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "slug": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "category": {
-                        "$ref": "#/components/schemas/CategoryRef"
-                    },
-                    "status": {
-                        "type": "string",
-                        "enum": [
-                            "DRAFT",
-                            "PUBLISHED",
-                            "ARCHIVED"
-                        ]
-                    },
-                    "variantCount": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "stockTotal": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "minPricePaise": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ],
-                        "format": "int32"
-                    },
-                    "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                "required": [
-                    "category",
-                    "id",
-                    "minPricePaise",
-                    "name",
-                    "slug",
-                    "status",
-                    "stockTotal",
-                    "updatedAt",
-                    "variantCount"
-                ]
-            },
-            "CatalogOptions": {
-                "type": "object",
-                "properties": {
-                    "categories": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/CategoryResponse"
-                        }
-                    },
-                    "facets": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/FacetOption"
-                        }
-                    },
-                    "colourFamilies": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ColourOption"
-                        }
-                    },
-                    "sizes": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "required": [
-                    "categories",
-                    "colourFamilies",
-                    "facets",
-                    "sizes"
-                ]
-            },
-            "ColourOption": {
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "hex": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "code",
-                    "hex",
-                    "name"
-                ]
-            },
-            "FacetOption": {
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "values": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/AttributeValue"
-                        }
-                    }
-                },
-                "required": [
-                    "code",
-                    "name",
-                    "values"
-                ]
+    "/api/v1/admin/products/{id}" : {
+      "get" : {
+        "tags" : [ "admin-product-controller" ],
+        "operationId" : "getAdminProduct",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminProduct"
+                }
+              }
             }
+          }
         }
+      },
+      "put" : {
+        "tags" : [ "admin-product-controller" ],
+        "operationId" : "updateProduct",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ProductForm"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminProduct"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/store/bag/quote" : {
+      "post" : {
+        "tags" : [ "store-bag-controller" ],
+        "operationId" : "quoteBag",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BagQuoteRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BagQuote"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh" : {
+      "post" : {
+        "tags" : [ "auth-controller" ],
+        "operationId" : "refreshSession",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RefreshRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AuthSession"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/otp/verify" : {
+      "post" : {
+        "tags" : [ "auth-controller" ],
+        "operationId" : "verifyOtp",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/OtpVerification"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AuthSession"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/otp/request" : {
+      "post" : {
+        "tags" : [ "auth-controller" ],
+        "operationId" : "requestOtp",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/OtpRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "description" : "Accepted",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/OtpSent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout" : {
+      "post" : {
+        "tags" : [ "auth-controller" ],
+        "operationId" : "logout",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RefreshRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/google" : {
+      "post" : {
+        "tags" : [ "auth-controller" ],
+        "operationId" : "signInWithGoogle",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/GoogleSignIn"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AuthSession"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/products" : {
+      "get" : {
+        "tags" : [ "admin-product-controller" ],
+        "operationId" : "listAdminProducts",
+        "parameters" : [ {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : [ "string", "null" ],
+            "enum" : [ "DRAFT", "PUBLISHED", "ARCHIVED" ]
+          }
+        }, {
+          "name" : "category",
+          "in" : "query",
+          "description" : "Category slug",
+          "required" : false,
+          "schema" : {
+            "type" : [ "string", "null" ]
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "description" : "Search name, URL or SKU",
+          "required" : false,
+          "schema" : {
+            "type" : [ "string", "null" ]
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 1
+          }
+        }, {
+          "name" : "pageSize",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 50
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminProductPage"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "admin-product-controller" ],
+        "operationId" : "createProduct",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ProductForm"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminProduct"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/products/{productId}/media/{mediaId}/complete" : {
+      "post" : {
+        "tags" : [ "admin-media-controller" ],
+        "operationId" : "completeMediaUpload",
+        "parameters" : [ {
+          "name" : "productId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "mediaId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/AdminMedia"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/products/{productId}/media/uploads" : {
+      "post" : {
+        "tags" : [ "admin-media-controller" ],
+        "operationId" : "startMediaUpload",
+        "parameters" : [ {
+          "name" : "productId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MediaUploadRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MediaUpload"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/products/{id}/unpublish" : {
+      "post" : {
+        "tags" : [ "admin-product-controller" ],
+        "operationId" : "unpublishProduct",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminProduct"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/products/{id}/publish" : {
+      "post" : {
+        "tags" : [ "admin-product-controller" ],
+        "operationId" : "publishProduct",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminProduct"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/products/{id}/archive" : {
+      "post" : {
+        "tags" : [ "admin-product-controller" ],
+        "operationId" : "archiveProduct",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminProduct"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/store/products/{slug}" : {
+      "get" : {
+        "tags" : [ "store-product-controller" ],
+        "operationId" : "getProduct",
+        "parameters" : [ {
+          "name" : "slug",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProductDetailResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/store/categories" : {
+      "get" : {
+        "tags" : [ "store-category-controller" ],
+        "operationId" : "list",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CategoryResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/store/categories/{slug}/products" : {
+      "get" : {
+        "tags" : [ "store-product-controller" ],
+        "operationId" : "listProducts",
+        "parameters" : [ {
+          "name" : "slug",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "colour",
+          "in" : "query",
+          "description" : "Comma-separated colour family codes",
+          "required" : false,
+          "schema" : {
+            "type" : [ "string", "null" ]
+          },
+          "example" : "red,maroon"
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "description" : "Comma-separated sizes",
+          "required" : false,
+          "schema" : {
+            "type" : [ "string", "null" ]
+          },
+          "example" : "M,L"
+        }, {
+          "name" : "inStock",
+          "in" : "query",
+          "description" : "Only products with stock in the selected colour/size",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        }, {
+          "name" : "priceMin",
+          "in" : "query",
+          "description" : "Minimum price in paise",
+          "required" : false,
+          "schema" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          }
+        }, {
+          "name" : "priceMax",
+          "in" : "query",
+          "description" : "Maximum price in paise",
+          "required" : false,
+          "schema" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "popular",
+            "enum" : [ "popular", "new", "price_asc", "price_desc", "discount" ]
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "description" : "1-based page number",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 1
+          }
+        }, {
+          "name" : "pageSize",
+          "in" : "query",
+          "description" : "Products per page, at most 48",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 24
+          }
+        }, {
+          "name" : "fabric",
+          "in" : "query",
+          "description" : "Comma-separated facet value codes (OR within the facet)",
+          "example" : "silk,cotton"
+        }, {
+          "name" : "occasion",
+          "in" : "query",
+          "description" : "Comma-separated facet value codes (OR within the facet)",
+          "example" : "wedding"
+        }, {
+          "name" : "weave",
+          "in" : "query",
+          "description" : "Comma-separated facet value codes (OR within the facet)",
+          "example" : "banarasi"
+        }, {
+          "name" : "work",
+          "in" : "query",
+          "description" : "Comma-separated facet value codes (OR within the facet)",
+          "example" : "zari"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProductListingResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/catalog/options" : {
+      "get" : {
+        "tags" : [ "admin-product-controller" ],
+        "operationId" : "catalogOptions",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CatalogOptions"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/products/{productId}/media/{mediaId}" : {
+      "delete" : {
+        "tags" : [ "admin-media-controller" ],
+        "operationId" : "deleteMedia",
+        "parameters" : [ {
+          "name" : "productId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "mediaId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/AdminMedia"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
+  },
+  "components" : {
+    "schemas" : {
+      "ProfileUpdate" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "maxLength" : 80,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "name" ]
+      },
+      "CustomerProfile" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : [ "string", "null" ]
+          },
+          "email" : {
+            "type" : [ "string", "null" ]
+          },
+          "phone" : {
+            "type" : [ "string", "null" ]
+          }
+        },
+        "required" : [ "email", "id", "name", "phone" ]
+      },
+      "MediaUpdate" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "alt" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "colourName" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 60,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "alt", "colourName", "id" ]
+      },
+      "AdminMedia" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "IMAGE", "VIDEO" ]
+          },
+          "key" : {
+            "type" : "string"
+          },
+          "alt" : {
+            "type" : "string"
+          },
+          "colourName" : {
+            "type" : [ "string", "null" ]
+          },
+          "width" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          },
+          "height" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "READY" ]
+          }
+        },
+        "required" : [ "alt", "colourName", "height", "id", "key", "kind", "status", "width" ]
+      },
+      "AddonForm" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "maxLength" : 40,
+            "minLength" : 0,
+            "pattern" : "^[a-z0-9]++(?:-[a-z0-9]++)*+$"
+          },
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "BLOUSE" ]
+          },
+          "name" : {
+            "type" : "string",
+            "maxLength" : 80,
+            "minLength" : 0
+          },
+          "description" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 300,
+            "minLength" : 0
+          },
+          "pricePaise" : {
+            "type" : "integer",
+            "format" : "int32",
+            "minimum" : 0
+          },
+          "input" : {
+            "type" : "string",
+            "enum" : [ "NONE", "SIZE", "MEASUREMENTS" ]
+          },
+          "active" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "active", "code", "description", "input", "kind", "name", "pricePaise" ]
+      },
+      "ProductForm" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "maxLength" : 160,
+            "minLength" : 0
+          },
+          "slug" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 160,
+            "minLength" : 0,
+            "pattern" : "^[a-z0-9]++(?:-[a-z0-9]++)*+$"
+          },
+          "subtitle" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "description" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 5000,
+            "minLength" : 0
+          },
+          "categorySlug" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "badge" : {
+            "type" : [ "string", "null" ],
+            "enum" : [ "NEW", "BESTSELLER", "BRIDAL", "HANDLOOM" ]
+          },
+          "careInstructions" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "sareeLengthM" : {
+            "type" : [ "number", "null" ],
+            "maximum" : 9.9,
+            "minimum" : 0.5
+          },
+          "blouseIncluded" : {
+            "type" : "boolean"
+          },
+          "blouseLengthM" : {
+            "type" : [ "number", "null" ],
+            "maximum" : 2.0,
+            "minimum" : 0.1
+          },
+          "attributes" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            }
+          },
+          "variants" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/VariantForm"
+            },
+            "maxItems" : 200,
+            "minItems" : 0
+          },
+          "addons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AddonForm"
+            },
+            "maxItems" : 10,
+            "minItems" : 0
+          }
+        },
+        "required" : [ "addons", "attributes", "badge", "blouseIncluded", "blouseLengthM", "careInstructions", "categorySlug", "description", "name", "sareeLengthM", "slug", "subtitle", "variants" ]
+      },
+      "VariantForm" : {
+        "type" : "object",
+        "properties" : {
+          "sku" : {
+            "type" : [ "string", "null" ],
+            "pattern" : "^[A-Z0-9][A-Z0-9-]{0,63}$"
+          },
+          "colourName" : {
+            "type" : "string",
+            "maxLength" : 60,
+            "minLength" : 0
+          },
+          "colourHex" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "^#[0-9A-Fa-f]{6}$"
+          },
+          "colourFamily" : {
+            "type" : "string",
+            "maxLength" : 30,
+            "minLength" : 0
+          },
+          "size" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 10,
+            "minLength" : 0
+          },
+          "pricePaise" : {
+            "type" : "integer",
+            "format" : "int32",
+            "exclusiveMinimum" : 0
+          },
+          "mrpPaise" : {
+            "type" : "integer",
+            "format" : "int32",
+            "exclusiveMinimum" : 0
+          },
+          "stockQty" : {
+            "type" : "integer",
+            "format" : "int32",
+            "minimum" : 0
+          },
+          "active" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "active", "colourFamily", "colourHex", "colourName", "mrpPaise", "pricePaise", "size", "sku", "stockQty" ]
+      },
+      "AdminProduct" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "slug" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "subtitle" : {
+            "type" : [ "string", "null" ]
+          },
+          "description" : {
+            "type" : [ "string", "null" ]
+          },
+          "categorySlug" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "DRAFT", "PUBLISHED", "ARCHIVED" ]
+          },
+          "badge" : {
+            "type" : [ "string", "null" ],
+            "enum" : [ "NEW", "BESTSELLER", "BRIDAL", "HANDLOOM" ]
+          },
+          "careInstructions" : {
+            "type" : [ "string", "null" ]
+          },
+          "sareeLengthM" : {
+            "type" : [ "number", "null" ]
+          },
+          "blouseIncluded" : {
+            "type" : "boolean"
+          },
+          "blouseLengthM" : {
+            "type" : [ "number", "null" ]
+          },
+          "attributes" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            }
+          },
+          "variants" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/VariantForm"
+            }
+          },
+          "addons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AddonForm"
+            }
+          },
+          "media" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AdminMedia"
+            }
+          },
+          "publishedAt" : {
+            "type" : [ "string", "null" ],
+            "format" : "date-time"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        },
+        "required" : [ "addons", "attributes", "badge", "blouseIncluded", "blouseLengthM", "careInstructions", "categorySlug", "description", "id", "media", "name", "publishedAt", "sareeLengthM", "slug", "status", "subtitle", "updatedAt", "variants" ]
+      },
+      "BagQuoteRequest" : {
+        "type" : "object",
+        "properties" : {
+          "lines" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/BagRequestLine"
+            },
+            "maxItems" : 20,
+            "minItems" : 0
+          }
+        },
+        "required" : [ "lines" ]
+      },
+      "BagRequestLine" : {
+        "type" : "object",
+        "properties" : {
+          "sku" : {
+            "type" : "string",
+            "maxLength" : 64,
+            "minLength" : 0
+          },
+          "addonCode" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 40,
+            "minLength" : 0
+          },
+          "quantity" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 3,
+            "minimum" : 1
+          }
+        },
+        "required" : [ "addonCode", "quantity", "sku" ]
+      },
+      "BagQuote" : {
+        "type" : "object",
+        "properties" : {
+          "lines" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/BagQuoteLine"
+            }
+          },
+          "itemsPaise" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "addonsPaise" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "mrpPaise" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalPaise" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "addonsPaise", "itemsPaise", "lines", "mrpPaise", "totalPaise" ]
+      },
+      "BagQuoteLine" : {
+        "type" : "object",
+        "properties" : {
+          "sku" : {
+            "type" : "string"
+          },
+          "addonCode" : {
+            "type" : [ "string", "null" ]
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "AVAILABLE", "LIMITED", "OUT_OF_STOCK", "UNAVAILABLE" ]
+          },
+          "quantity" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "maxQuantity" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "stockLeft" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          },
+          "slug" : {
+            "type" : [ "string", "null" ]
+          },
+          "name" : {
+            "type" : [ "string", "null" ]
+          },
+          "colourName" : {
+            "type" : [ "string", "null" ]
+          },
+          "colourHex" : {
+            "type" : [ "string", "null" ]
+          },
+          "size" : {
+            "type" : [ "string", "null" ]
+          },
+          "pricePaise" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "mrpPaise" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "addonName" : {
+            "type" : [ "string", "null" ]
+          },
+          "addonPricePaise" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "addonInput" : {
+            "type" : [ "string", "null" ],
+            "enum" : [ "NONE", "SIZE", "MEASUREMENTS" ]
+          },
+          "imageKey" : {
+            "type" : [ "string", "null" ]
+          }
+        },
+        "required" : [ "addonCode", "addonInput", "addonName", "addonPricePaise", "colourHex", "colourName", "imageKey", "maxQuantity", "mrpPaise", "name", "pricePaise", "quantity", "size", "sku", "slug", "status", "stockLeft" ]
+      },
+      "RefreshRequest" : {
+        "type" : "object",
+        "properties" : {
+          "refreshToken" : {
+            "type" : "string",
+            "maxLength" : 128,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "refreshToken" ]
+      },
+      "AuthSession" : {
+        "type" : "object",
+        "properties" : {
+          "accessToken" : {
+            "type" : "string"
+          },
+          "accessTokenExpiresIn" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "refreshToken" : {
+            "type" : "string"
+          },
+          "refreshTokenExpiresIn" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "customer" : {
+            "$ref" : "#/components/schemas/CustomerProfile"
+          },
+          "newCustomer" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "accessToken", "accessTokenExpiresIn", "customer", "newCustomer", "refreshToken", "refreshTokenExpiresIn" ]
+      },
+      "OtpVerification" : {
+        "type" : "object",
+        "properties" : {
+          "phone" : {
+            "type" : "string",
+            "maxLength" : 20,
+            "minLength" : 0
+          },
+          "code" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "\\d{6}"
+          }
+        },
+        "required" : [ "code", "phone" ]
+      },
+      "OtpRequest" : {
+        "type" : "object",
+        "properties" : {
+          "phone" : {
+            "type" : "string",
+            "example" : "98765 43210",
+            "maxLength" : 20,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "phone" ]
+      },
+      "OtpSent" : {
+        "type" : "object",
+        "properties" : {
+          "phone" : {
+            "type" : "string"
+          },
+          "expiresInSeconds" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "resendAfterSeconds" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "expiresInSeconds", "phone", "resendAfterSeconds" ]
+      },
+      "GoogleSignIn" : {
+        "type" : "object",
+        "properties" : {
+          "credential" : {
+            "type" : "string",
+            "maxLength" : 4096,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "credential" ]
+      },
+      "MediaUploadRequest" : {
+        "type" : "object",
+        "properties" : {
+          "alt" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "colourName" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 60,
+            "minLength" : 0
+          },
+          "width" : {
+            "type" : "integer",
+            "format" : "int32",
+            "exclusiveMinimum" : 0,
+            "maximum" : 10000
+          },
+          "height" : {
+            "type" : "integer",
+            "format" : "int32",
+            "exclusiveMinimum" : 0,
+            "maximum" : 10000
+          }
+        },
+        "required" : [ "alt", "colourName", "height", "width" ]
+      },
+      "MediaUpload" : {
+        "type" : "object",
+        "properties" : {
+          "media" : {
+            "$ref" : "#/components/schemas/AdminMedia"
+          },
+          "renditions" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Rendition"
+            }
+          },
+          "expiresAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        },
+        "required" : [ "expiresAt", "media", "renditions" ]
+      },
+      "Rendition" : {
+        "type" : "object",
+        "properties" : {
+          "width" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "uploadUrl" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "uploadUrl", "width" ]
+      },
+      "AddonResponse" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "BLOUSE" ]
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : [ "string", "null" ]
+          },
+          "pricePaise" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "input" : {
+            "type" : "string",
+            "enum" : [ "NONE", "SIZE", "MEASUREMENTS" ]
+          }
+        },
+        "required" : [ "code", "description", "input", "kind", "name", "pricePaise" ]
+      },
+      "AttributeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "values" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AttributeValue"
+            }
+          }
+        },
+        "required" : [ "code", "name", "values" ]
+      },
+      "AttributeValue" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "code", "name" ]
+      },
+      "CategoryRef" : {
+        "type" : "object",
+        "properties" : {
+          "slug" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "name", "slug" ]
+      },
+      "MediaResponse" : {
+        "type" : "object",
+        "properties" : {
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "IMAGE", "VIDEO" ]
+          },
+          "key" : {
+            "type" : "string"
+          },
+          "alt" : {
+            "type" : "string"
+          },
+          "colourName" : {
+            "type" : [ "string", "null" ]
+          },
+          "width" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          },
+          "height" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          }
+        },
+        "required" : [ "alt", "colourName", "height", "key", "kind", "width" ]
+      },
+      "ProductDetailResponse" : {
+        "type" : "object",
+        "properties" : {
+          "slug" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "subtitle" : {
+            "type" : [ "string", "null" ]
+          },
+          "description" : {
+            "type" : [ "string", "null" ]
+          },
+          "badge" : {
+            "type" : [ "string", "null" ],
+            "enum" : [ "NEW", "BESTSELLER", "BRIDAL", "HANDLOOM" ]
+          },
+          "category" : {
+            "$ref" : "#/components/schemas/CategoryRef"
+          },
+          "pricePaise" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "mrpPaise" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "discountPercent" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "careInstructions" : {
+            "type" : [ "string", "null" ]
+          },
+          "sareeLengthM" : {
+            "type" : [ "number", "null" ]
+          },
+          "blouseIncluded" : {
+            "type" : "boolean"
+          },
+          "blouseLengthM" : {
+            "type" : [ "number", "null" ]
+          },
+          "attributes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AttributeResponse"
+            }
+          },
+          "variants" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/VariantResponse"
+            }
+          },
+          "media" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/MediaResponse"
+            }
+          },
+          "addons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AddonResponse"
+            }
+          }
+        },
+        "required" : [ "addons", "attributes", "badge", "blouseIncluded", "blouseLengthM", "careInstructions", "category", "description", "discountPercent", "media", "mrpPaise", "name", "pricePaise", "sareeLengthM", "slug", "subtitle", "variants" ]
+      },
+      "VariantResponse" : {
+        "type" : "object",
+        "properties" : {
+          "sku" : {
+            "type" : "string"
+          },
+          "colourName" : {
+            "type" : "string"
+          },
+          "colourHex" : {
+            "type" : "string"
+          },
+          "size" : {
+            "type" : [ "string", "null" ]
+          },
+          "pricePaise" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "mrpPaise" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "inStock" : {
+            "type" : "boolean"
+          },
+          "stockLeft" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          }
+        },
+        "required" : [ "colourHex", "colourName", "inStock", "mrpPaise", "pricePaise", "size", "sku", "stockLeft" ]
+      },
+      "CategoryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "slug" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : [ "string", "null" ]
+          }
+        },
+        "required" : [ "description", "id", "name", "slug" ]
+      },
+      "ColourSwatch" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "hex" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "hex", "name" ]
+      },
+      "FilterGroup" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "COLOUR", "SIZE", "FACET" ]
+          },
+          "options" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FilterOption"
+            }
+          }
+        },
+        "required" : [ "code", "name", "options", "type" ]
+      },
+      "FilterOption" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "hex" : {
+            "type" : [ "string", "null" ]
+          },
+          "count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "selected" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "code", "count", "hex", "name", "selected" ]
+      },
+      "PriceRange" : {
+        "type" : "object",
+        "properties" : {
+          "minPaise" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "maxPaise" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "maxPaise", "minPaise" ]
+      },
+      "ProductListingResponse" : {
+        "type" : "object",
+        "properties" : {
+          "category" : {
+            "$ref" : "#/components/schemas/CategoryResponse"
+          },
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ProductSummary"
+            }
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "sort" : {
+            "type" : "string"
+          },
+          "filters" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FilterGroup"
+            }
+          },
+          "priceRange" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/PriceRange"
+            }, {
+              "type" : "null"
+            } ]
+          }
+        },
+        "required" : [ "category", "filters", "items", "page", "pageSize", "priceRange", "sort", "total" ]
+      },
+      "ProductSummary" : {
+        "type" : "object",
+        "properties" : {
+          "slug" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "subtitle" : {
+            "type" : [ "string", "null" ]
+          },
+          "badge" : {
+            "type" : [ "string", "null" ],
+            "enum" : [ "NEW", "BESTSELLER", "BRIDAL", "HANDLOOM" ]
+          },
+          "pricePaise" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "mrpPaise" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "discountPercent" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "colours" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ColourSwatch"
+            }
+          },
+          "inStock" : {
+            "type" : "boolean"
+          },
+          "stockLeft" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          },
+          "image" : {
+            "oneOf" : [ {
+              "$ref" : "#/components/schemas/MediaResponse"
+            }, {
+              "type" : "null"
+            } ]
+          }
+        },
+        "required" : [ "badge", "colours", "discountPercent", "image", "inStock", "mrpPaise", "name", "pricePaise", "slug", "stockLeft", "subtitle" ]
+      },
+      "AdminProductPage" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AdminProductSummary"
+            }
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "items", "page", "pageSize", "total" ]
+      },
+      "AdminProductSummary" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "slug" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "category" : {
+            "$ref" : "#/components/schemas/CategoryRef"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "DRAFT", "PUBLISHED", "ARCHIVED" ]
+          },
+          "variantCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "stockTotal" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "minPricePaise" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        },
+        "required" : [ "category", "id", "minPricePaise", "name", "slug", "status", "stockTotal", "updatedAt", "variantCount" ]
+      },
+      "CatalogOptions" : {
+        "type" : "object",
+        "properties" : {
+          "categories" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CategoryResponse"
+            }
+          },
+          "facets" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FacetOption"
+            }
+          },
+          "colourFamilies" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ColourOption"
+            }
+          },
+          "sizes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        },
+        "required" : [ "categories", "colourFamilies", "facets", "sizes" ]
+      },
+      "ColourOption" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "hex" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "code", "hex", "name" ]
+      },
+      "FacetOption" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "values" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AttributeValue"
+            }
+          }
+        },
+        "required" : [ "code", "name", "values" ]
+      }
+    }
+  }
 }

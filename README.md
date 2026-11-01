@@ -2,6 +2,7 @@
 
 Fashion e-commerce platform: a Spring Boot modular monolith with two Next.js frontends.
 See [docs/PLAN.md](docs/PLAN.md) for the architecture and roadmap.
+Customer sign-in (Google, mobile + OTP) and its setup: [docs/AUTH.md](docs/AUTH.md).
 
 | Path | What | Runs on |
 |---|---|---|

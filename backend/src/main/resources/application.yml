@@ -40,6 +40,19 @@ vaabhi:
     secret-access-key: ${R2_SECRET_ACCESS_KEY:}
     bucket: ${R2_BUCKET:vaabhi-media}
 
+  # Customer sign-in. Without GOOGLE_CLIENT_ID, Google sign-in answers 503 (phone sign-in still works).
+  auth:
+    google-client-id: ${GOOGLE_CLIENT_ID:}
+
+  # SMS for sign-in codes: "log" prints them to the backend log (dev), "msg91" sends them (prod default).
+  # MSG91 needs a DLT-approved template whose code variable is ##otp##; see docs/AUTH.md.
+  sms:
+    provider: ${SMS_PROVIDER:log}
+    msg91:
+      auth-key: ${MSG91_AUTH_KEY:}
+      templates:
+        otp: ${MSG91_OTP_TEMPLATE_ID:}
+
 management:
   endpoints:
     web:
