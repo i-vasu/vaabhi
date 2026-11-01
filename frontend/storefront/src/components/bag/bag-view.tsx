@@ -159,10 +159,9 @@ export function BagView() {
                     </div>
                     <LineNote line={line} quote={q} />
                     <div className="mt-2.5 flex flex-wrap items-center justify-between gap-3">
-                      <div
-                        role="group"
+                      <fieldset
                         aria-label={`Quantity of ${line.name}`}
-                        className="inline-flex items-center rounded-sm border border-border-strong bg-bg-surface"
+                        className="inline-flex min-w-0 items-center rounded-sm border border-border-strong bg-bg-surface"
                       >
                         <button
                           type="button"
@@ -183,7 +182,7 @@ export function BagView() {
                         >
                           +
                         </button>
-                      </div>
+                      </fieldset>
                       <p className={cn("text-right tabular-nums", !buyable && "opacity-55")}>
                         <b className="block text-base font-semibold">{rupees(unit * line.quantity)}</b>
                         {line.quantity > 1 && (
@@ -261,11 +260,7 @@ export function BagView() {
               disabled={blocked}
               onClick={() => setNotice("Checkout opens with the next update. Your bag is saved on this device.")}
             />
-            {notice && (
-              <p role="status" className="mt-2 text-[13px] text-text-secondary">
-                {notice}
-              </p>
-            )}
+            {notice && <output className="mt-2 block text-[13px] text-text-secondary">{notice}</output>}
             <p className="mt-3 text-center text-xs text-text-muted">
               UPI · Cards · Netbanking · Cash on delivery
               <br />
@@ -298,10 +293,7 @@ export function BagView() {
       </div>
 
       {undo && (
-        <div
-          role="status"
-          className="fixed bottom-24 left-1/2 z-40 flex max-w-[calc(100%-32px)] -translate-x-1/2 items-center gap-3 rounded-md bg-text-primary py-2.5 pl-4 pr-3 text-sm text-text-on-brand md:bottom-8"
-        >
+        <output className="fixed bottom-24 left-1/2 z-40 flex max-w-[calc(100%-32px)] -translate-x-1/2 items-center gap-3 rounded-md bg-text-primary py-2.5 pl-4 pr-3 text-sm text-text-on-brand md:bottom-8">
           {undo.text}
           <button
             type="button"
@@ -313,7 +305,7 @@ export function BagView() {
           >
             Undo
           </button>
-        </div>
+        </output>
       )}
     </div>
   );
