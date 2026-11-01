@@ -1,46 +1,6 @@
 import Link from "next/link";
 import { appVersion } from "@vaabhi/observability";
-
-const columns = [
-  {
-    title: "Shop",
-    links: [
-      ["Sarees", "/c/sarees"],
-      ["Lehengas", "/c/lehengas"],
-      ["Kurta sets", "/c/kurta-sets"],
-      ["New arrivals", "/new"],
-      ["Best sellers", "/bestsellers"],
-    ],
-  },
-  {
-    title: "Help",
-    links: [
-      ["Track order", "/track"],
-      ["Size guide", "/size-guide"],
-      ["Saree care guide", "/care-guide"],
-      ["FAQs", "/faq"],
-      ["Contact us", "/contact"],
-    ],
-  },
-  {
-    title: "Policies",
-    links: [
-      ["Shipping", "/policies/shipping"],
-      ["Returns & exchanges", "/returns"],
-      ["Cancellations", "/policies/cancellation"],
-      ["Privacy", "/policies/privacy"],
-      ["Terms of use", "/policies/terms"],
-    ],
-  },
-  {
-    title: "About",
-    links: [
-      ["Our story", "/about"],
-      ["Meet the weavers", "/weavers"],
-      ["Blog", "/blog"],
-    ],
-  },
-] as const;
+import { footerColumns } from "@/lib/site-links";
 
 export function SiteFooter() {
   return (
@@ -55,7 +15,7 @@ export function SiteFooter() {
             </p>
           </div>
           <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4 md:contents">
-            {columns.map((column) => (
+            {footerColumns.map((column) => (
               <nav key={column.title} aria-label={column.title}>
                 <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-text-primary">
                   {column.title}

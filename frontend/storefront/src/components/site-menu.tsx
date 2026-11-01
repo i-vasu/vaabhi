@@ -3,16 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { MenuIcon } from "@vaabhi/ui";
+import { menuLinks } from "@/lib/site-links";
 import { Sheet } from "./sheet";
-
-export const menuLinks = [
-  ["Best sellers", "/bestsellers"],
-  ["New arrivals", "/new"],
-  ["Pre Order", "/pre-order"],
-  ["Collections", "/collections"],
-  ["Support", "/support"],
-  ["Blogs", "/blog"],
-] as const;
 
 /** Header menu icon that opens the site menu as a left-hand drawer. */
 export function SiteMenu({ className }: Readonly<{ className?: string }>) {
