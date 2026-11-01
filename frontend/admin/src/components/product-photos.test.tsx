@@ -116,6 +116,37 @@ describe("ProductPhotos", () => {
     );
   });
 
+  it("shows the upload guidelines and the photo count", () => {
+    setup([photo(1), photo(2)]);
+    expect(screen.getByText("2 of 12 photos")).toBeInTheDocument();
+    const guidelines = within(screen.getByRole("list", { name: "Photo guidelines" })).getAllByRole("listitem");
+    expect(guidelines.map((li) => li.textContent?.split(":")[0])).toEqual(expect.arrayContaining(["Formats", "Size"]));
+    expect(guidelines.some((li) => li.textContent?.includes("Up to 12 photos per product"))).toBe(true);
+  });
+
+  it("stops at 12 photos", async () => {
+    const eleven = Array.from({ length: 11 }, (_, i) => photo(i + 1));
+    setup(eleven);
+    fireEvent.change(screen.getByLabelText("Add photos"), {
+      target: {
+        files: [new File(["x"], "a.jpg", { type: "image/jpeg" }), new File(["x"], "b.jpg", { type: "image/jpeg" })],
+      },
+    });
+    const list = await screen.findByRole("list", { name: "Uploads" });
+    await waitFor(() => expect(within(list).getByText(/b.jpg: failed. Over the 12-photo limit/)).toBeInTheDocument());
+    expect(uploadCalls).toHaveLength(1);
+  });
+
+  it("disables adding when the product already has 12 photos", () => {
+    setup(Array.from({ length: 12 }, (_, i) => photo(i + 1)));
+    expect(screen.getByLabelText("Add photos")).toBeDisabled();
+    expect(screen.getByText("This product has 12 photos. Delete one to add another.")).toBeInTheDocument();
+    fireEvent.drop(screen.getByText(/Delete one to add another/).closest("label")!, {
+      dataTransfer: { files: [new File(["x"], "c.jpg", { type: "image/jpeg" })] },
+    });
+    expect(uploadCalls).toHaveLength(0);
+  });
+
   it("reorders, edits and deletes photos", async () => {
     const saved: unknown[] = [];
     server.use(
