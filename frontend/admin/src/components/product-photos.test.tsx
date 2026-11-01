@@ -100,12 +100,13 @@ describe("ProductPhotos", () => {
         files: [new File(["x"], "IMG_0001.HEIC", { type: "" }), new File(["x"], "b.heic", { type: "image/heic" })],
       },
     });
-    // An untyped .HEIC file is not an image to the drop filter; the typed one is tried and explained.
+    // Windows often gives .HEIC files no type; both are tried and explained.
     const list = await screen.findByRole("list", { name: "Uploads" });
     await waitFor(() =>
       expect(within(list).getByText(/b.heic: failed. This is an iPhone HEIC photo/)).toBeInTheDocument(),
     );
-    expect(uploadCalls).toHaveLength(1);
+    expect(within(list).getByText(/IMG_0001.HEIC: failed. This is an iPhone HEIC photo/)).toBeInTheDocument();
+    expect(uploadCalls).toHaveLength(2);
 
     fireEvent.change(screen.getByLabelText("Add photos"), {
       target: { files: [new File(["x"], "IMG_0002.HEIC", { type: "" })] },
