@@ -118,7 +118,9 @@ export default async function ProductPage({ params, searchParams }: Readonly<Pro
       <script
         type="application/ld+json"
         // JSON.stringify output escapes nothing HTML-specific; "<" is escaped so a product name cannot close the tag.
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData(product)).replaceAll("<", "\\u003c") }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData(product)).replaceAll("<", String.raw`\u003c`),
+        }}
       />
       <nav aria-label="Breadcrumb" className={`${container} px-4 py-3`}>
         <ol className="flex flex-wrap gap-1.5 text-xs text-text-muted">

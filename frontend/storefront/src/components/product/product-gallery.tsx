@@ -53,12 +53,11 @@ export function ProductGallery({
           }}
         >
           {slides.map((slide, i) => (
-            <div
+            <figure
               key={slide.key}
-              role="group"
               aria-roledescription="slide"
               aria-label={`${i + 1} of ${count}`}
-              className="h-full w-full shrink-0 snap-start"
+              className="m-0 h-full w-full shrink-0 snap-start"
             >
               {slide.src ? (
                 // eslint-disable-next-line @next/next/no-img-element -- R2 serves pre-sized WebP renditions
@@ -78,7 +77,7 @@ export function ProductGallery({
                   style={{ backgroundImage: `linear-gradient(180deg, ${hex}, ${shade(hex)})` }}
                 />
               )}
-            </div>
+            </figure>
           ))}
         </div>
         {overlay}
