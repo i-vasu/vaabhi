@@ -145,8 +145,7 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
     /** Customer sign-in. Called by the storefront's server, which keeps the tokens in httpOnly cookies. */
     auth: {
       requestOtp: (phone: string) => send<OtpSent>("POST", "/api/v1/auth/otp/request", { phone }),
-      verifyOtp: (phone: string, code: string) =>
-        send<AuthSession>("POST", "/api/v1/auth/otp/verify", { phone, code }),
+      verifyOtp: (phone: string, code: string) => send<AuthSession>("POST", "/api/v1/auth/otp/verify", { phone, code }),
       signInWithGoogle: (credential: string) => send<AuthSession>("POST", "/api/v1/auth/google", { credential }),
       refresh: (refreshToken: string) => send<AuthSession>("POST", "/api/v1/auth/refresh", { refreshToken }),
       logout: (refreshToken: string) => send<void>("POST", "/api/v1/auth/logout", { refreshToken }),

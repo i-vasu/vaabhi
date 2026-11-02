@@ -84,7 +84,12 @@ export const auth = {
 /** Asks the server who is signed in (renewing the session) and updates the cached copy. Offline: no change. */
 export async function syncSession(fetcher: typeof fetch = fetch): Promise<Session> {
   try {
-    const { customer } = await call<{ customer: CustomerProfile | null }>("/api/auth/session", "GET", undefined, fetcher);
+    const { customer } = await call<{ customer: CustomerProfile | null }>(
+      "/api/auth/session",
+      "GET",
+      undefined,
+      fetcher,
+    );
     const session = customer ? toSession(customer) : null;
     sessionStore.write(session);
     return session;

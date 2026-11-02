@@ -108,9 +108,9 @@ describe("auth-server", () => {
     const post = (headers: Record<string, string>) => new Request("https://vaabhi.com/api/auth/logout", { headers });
     expect(crossSite(post({ origin: "https://vaabhi.com", host: "vaabhi.com" }))).toBe(false);
     expect(crossSite(post({ origin: "https://evil.example", host: "vaabhi.com" }))).toBe(true);
-    expect(crossSite(post({ origin: "https://vaabhi.com", "x-forwarded-host": "vaabhi.com", host: "storefront:3000" }))).toBe(
-      false,
-    );
+    expect(
+      crossSite(post({ origin: "https://vaabhi.com", "x-forwarded-host": "vaabhi.com", host: "storefront:3000" })),
+    ).toBe(false);
     expect(crossSite(post({ host: "vaabhi.com" }))).toBe(false);
     expect(crossSite(post({ origin: "null", host: "vaabhi.com" }))).toBe(true);
   });

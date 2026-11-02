@@ -7,10 +7,7 @@ import { Button } from "@vaabhi/ui";
 import { AuthError, auth, sessionStore, toSession } from "@/lib/session";
 import { GoogleButton } from "./google-button";
 
-type Step =
-  | { kind: "phone" }
-  | { kind: "code"; phone: string }
-  | { kind: "name" };
+type Step = { kind: "phone" } | { kind: "code"; phone: string } | { kind: "name" };
 
 type Problem = { field?: "phone" | "code" | "name"; message: string };
 
@@ -19,7 +16,10 @@ const input =
 
 function problemOf(error: unknown, field: Problem["field"]): Problem {
   if (error instanceof AuthError) {
-    return { field: error.forField(field ?? "") ? field : undefined, message: error.forField(field ?? "") ?? error.message };
+    return {
+      field: error.forField(field ?? "") ? field : undefined,
+      message: error.forField(field ?? "") ?? error.message,
+    };
   }
   return { message: "Something went wrong. Please try again." };
 }
@@ -251,7 +251,12 @@ export function SignInForm({ googleClientId, next }: Readonly<{ googleClientId: 
             {resendIn > 0 ? (
               `Resend code in ${resendIn}s`
             ) : (
-              <button type="button" disabled={busy} onClick={() => void sendCode()} className="text-brand-primary underline">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void sendCode()}
+                className="text-brand-primary underline"
+              >
                 Resend code
               </button>
             )}
