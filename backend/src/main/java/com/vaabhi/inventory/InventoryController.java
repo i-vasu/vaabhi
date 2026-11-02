@@ -3,6 +3,8 @@ package com.vaabhi.inventory;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 class InventoryController {
 
 
+    private static final Logger logger = LoggerFactory.getLogger(InventoryController.class);
 
     private final InventoryService inventory;
 
