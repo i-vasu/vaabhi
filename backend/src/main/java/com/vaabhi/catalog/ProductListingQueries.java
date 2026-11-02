@@ -94,6 +94,26 @@ class ProductListingQueries {
                 .params(params)
                 .query(ItemRow.class)
                 .list();
+        return summaries(rows);
+    }
+
+    /**
+     * Published products with a badge, from every category, most popular first (the home page's Bestsellers).
+     */
+    List<ProductSummary> featured(Badge badge, int limit) {
+        var rows = jdbc.sql(LISTED.replace("p.category_id = :categoryId", "p.badge = :badge") + """
+                        SELECT l.id, l.slug, l.name, l.subtitle, l.badge, l.price_paise, l.mrp_paise, l.stock_total,
+                               l.in_stock
+                        FROM listed l ORDER BY l.popularity DESC, l.published_at DESC, l.id DESC LIMIT :limit
+                        """)
+                .param("badge", badge.name())
+                .param("limit", limit)
+                .query(ItemRow.class)
+                .list();
+        return summaries(rows);
+    }
+
+    private List<ProductSummary> summaries(List<ItemRow> rows) {
         if (rows.isEmpty()) {
             return List.of();
         }

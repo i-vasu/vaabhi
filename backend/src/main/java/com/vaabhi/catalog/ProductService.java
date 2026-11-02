@@ -1,5 +1,6 @@
 package com.vaabhi.catalog;
 
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,12 @@ public class ProductService {
                 .findFirst()
                 .orElseThrow(() -> new CatalogNotFoundException("Category", query.categorySlug()));
         return listingQueries.list(category, query, facetCatalog.definitions());
+    }
+
+    /** Up to {@code limit} published products with the badge, most popular first. */
+    @Transactional(readOnly = true)
+    public List<ProductSummary> featured(Badge badge, int limit) {
+        return listingQueries.featured(badge, limit);
     }
 
     @Transactional(readOnly = true)

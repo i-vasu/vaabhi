@@ -409,7 +409,7 @@ public class ReportService {
                 var rows = rows("""
                         SELECT %s AS customer,
                                COALESCE(SUM(r.points) FILTER (WHERE r.kind = 'EARNED'), 0) AS earned,
-                               COALESCE(-SUM(r.points) FILTER (WHERE r.kind = 'REDEEMED'), 0) AS redeemed,
+                               COALESCE(-SUM(r.points) FILTER (WHERE r.kind IN ('REDEEMED', 'RETURNED')), 0) AS redeemed,
                                (SELECT COALESCE(SUM(x.points), 0) FROM reward_entry x WHERE x.client_id = c.id) AS balance
                         FROM reward_entry r JOIN client c ON c.id = r.client_id
                         WHERE r.created_at >= :start AND r.created_at < :end

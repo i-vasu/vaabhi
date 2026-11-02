@@ -26,6 +26,10 @@ public class Category {
 
     private String description;
 
+    /** R2 key of the category photo (site/<uuid>), shown as its circle and page banner; null for none. */
+    @Column(name = "image_key")
+    private String imageKey;
+
     protected Category() {}
 
     public Category(String slug, String name, int position) {
@@ -52,5 +56,13 @@ public class Category {
 
     public String getDescription() {
         return description;
+    }
+
+    public String getImageKey() {
+        return imageKey;
+    }
+
+    void setImageKey(String imageKey) {
+        this.imageKey = imageKey;
     }
 }

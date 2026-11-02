@@ -15,6 +15,8 @@ import org.jspecify.annotations.Nullable;
  *
  * @param deliveryPackageId a delivery package; its charge is added and, without a delivery date, its days decide it
  * @param discountValue paise for AMOUNT, basis points for PERCENT (10 % = 1000)
+ * @param couponCode checked again on booking: it must still be valid and not used up
+ * @param redeemPoints loyalty points to redeem on this order; their value comes off the total
  * @param advancePaise paid at booking (recorded as an ADVANCE payment)
  */
 public record OrderForm(
@@ -28,6 +30,7 @@ public record OrderForm(
         @NotNull DiscountKind discountKind,
         @Min(0) @Max(100_000_000) long discountValue,
         @Nullable @Size(max = 40) String couponCode,
+        @Min(0) @Max(1_000_000) int redeemPoints,
         @Min(0) @Max(100_000_000) long advancePaise,
         @NotNull PaymentMode advanceMode,
         @Nullable @Size(max = 2000) String notes) {

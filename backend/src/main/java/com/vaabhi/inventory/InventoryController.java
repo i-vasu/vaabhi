@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/admin/stock")
 class InventoryController {
 
+
+
     private final InventoryService inventory;
 
     InventoryController(InventoryService inventory) {

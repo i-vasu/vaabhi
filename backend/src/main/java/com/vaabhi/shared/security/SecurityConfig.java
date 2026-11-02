@@ -93,7 +93,8 @@ public class SecurityConfig {
                         .access(area("STAFF"))
                         .requestMatchers("/api/v1/admin/payroll/**")
                         .access(area("PAYROLL"))
-                        .requestMatchers("/api/v1/admin/products/**", "/api/v1/admin/catalog/**")
+                        .requestMatchers(
+                                "/api/v1/admin/products/**", "/api/v1/admin/catalog/**", "/api/v1/admin/storefront/**")
                         .access(area("CATALOGUE"))
                         .requestMatchers("/api/v1/admin/**")
                         .hasRole("ADMIN")

@@ -25,7 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 class StoreProductControllerTest {
 
     private static final ProductListingResponse EMPTY = new ProductListingResponse(
-            new CategoryResponse(1L, "sarees", "Sarees", null), List.of(), 0, 1, 24, "popular", List.of(), null);
+            new CategoryResponse(1L, "sarees", "Sarees", null, null), List.of(), 0, 1, 24, "popular", List.of(), null);
 
     @Autowired
     private MockMvc mockMvc;

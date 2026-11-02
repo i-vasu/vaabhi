@@ -173,6 +173,10 @@ public class InvoiceService {
             issue(event.orderId(), event.actor());
         } else if (event.type() == OrderEvent.Type.CANCELLED) {
             liveInvoiceId(event.orderId()).ifPresent(id -> cancel(id, event.actor()));
+        } else if (event.type() == OrderEvent.Type.CHANGED && liveInvoiceId(event.orderId()).isPresent()) {
+            // An issued invoice is a tax record: the order cannot change under it (this rolls the change back).
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT, "This order has an invoice; cancel the invoice before changing the order");
         }
     }
 

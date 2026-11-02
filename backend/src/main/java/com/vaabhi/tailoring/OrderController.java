@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -83,9 +84,28 @@ class OrderController {
         return orders.deliver(id, ClientController.actor(jwt));
     }
 
+    /** Change the items, delivery package and discount of an open order. */
+    @PutMapping("/orders/{id}")
+    Order changeOrder(
+            @PathVariable long id, @Valid @RequestBody OrderChange change, @AuthenticationPrincipal @Nullable Jwt jwt) {
+        var known = orders.get(id).items().stream()
+                .map(OrderItem::clothPhotoKey)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        change.items().stream()
+                .map(OrderItemChange::clothPhotoKey)
+                .filter(key -> key != null && !known.contains(key))
+                .forEach(key -> images.requireUploaded(TailoringImage.Purpose.CLOTH, key));
+        return orders.change(id, change, ClientController.actor(jwt));
+    }
+
+    /** Cancel an order; when money was paid on it, the body says whether it is refunded or kept. */
     @PostMapping("/orders/{id}/cancel")
-    Order cancelOrder(@PathVariable long id, @AuthenticationPrincipal @Nullable Jwt jwt) {
-        return orders.cancel(id, ClientController.actor(jwt));
+    Order cancelOrder(
+            @PathVariable long id,
+            @Valid @RequestBody(required = false) @Nullable CancelForm form,
+            @AuthenticationPrincipal @Nullable Jwt jwt) {
+        return orders.cancel(id, form, ClientController.actor(jwt));
     }
 
     @PutMapping("/orders/{id}/schedule")

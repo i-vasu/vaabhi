@@ -125,6 +125,22 @@ public class CouponService {
         return new Coupon.CouponCheck(normalized, true, null, coupon.kind(), coupon.value(), discount);
     }
 
+    /**
+     * For booking: fails with the reason unless the code can be used. Locks the coupon row until the booking commits,
+     * so a second booking waits and then counts the first one's use.
+     */
+    @Transactional
+    public void requireForBooking(String code, long amountPaise) {
+        jdbc.sql("SELECT id FROM coupon WHERE code = :code FOR UPDATE")
+                .param("code", code.trim().toUpperCase())
+                .query(Long.class)
+                .optional();
+        var check = check(code, amountPaise);
+        if (!check.valid()) {
+            throw bad("Coupon " + check.code() + ": " + check.reason());
+        }
+    }
+
     static ResponseStatusException bad(String message) {
         return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
     }

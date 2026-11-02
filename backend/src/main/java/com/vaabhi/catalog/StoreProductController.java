@@ -92,6 +92,17 @@ class StoreProductController {
         return productService.getProduct(slug);
     }
 
+    /** Products with a badge across the catalogue, for the home page (Bestsellers by default). */
+    @GetMapping("/featured")
+    List<ProductSummary> listFeaturedProducts(
+            @RequestParam(defaultValue = "BESTSELLER") Badge badge,
+            @Parameter(description = "How many, at most 24") @RequestParam(defaultValue = "8") int limit) {
+        if (limit < 1 || limit > 24) {
+            throw badRequest("limit must be between 1 and 24");
+        }
+        return productService.featured(badge, limit);
+    }
+
     private static void validatePaging(int page, int pageSize) {
         if (page < 1) {
             throw badRequest("page must be 1 or more");

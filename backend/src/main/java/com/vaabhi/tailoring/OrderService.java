@@ -13,13 +13,17 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -120,16 +124,7 @@ public class OrderService {
                         || form.trialDate().isAfter(deliveryDate))) {
             throw bad("The trial date must fall between the order and delivery dates");
         }
-        var templates =
-                lists.garmentTemplates().stream().collect(Collectors.toMap(GarmentTemplate::id, Function.identity()));
-        for (var item : form.items()) {
-            if (item.templateId() != null && !templates.containsKey(item.templateId())) {
-                throw bad("Unknown garment for " + item.description());
-            }
-            if (item.serviceProductId() != null) {
-                products.get(item.serviceProductId());
-            }
-        }
+        var templates = checkItems(form.items());
 
         var totals = totals(
                 form.items(),
@@ -137,6 +132,8 @@ public class OrderService {
                 form.discountKind(),
                 form.discountValue(),
                 settings.billing().discountAppliesTo());
+        var coupon = couponCode(form.couponCode());
+        requireCoupon(coupon, totals);
         if (form.advancePaise() > totals.totalPaise()) {
             throw bad("The advance cannot be more than the order total");
         }
@@ -163,7 +160,7 @@ public class OrderService {
                 .param("discountKind", form.discountKind().name())
                 .param("discountValue", form.discountValue())
                 .param("discount", totals.discountPaise())
-                .param("coupon", ClientService.blankToNull(form.couponCode()))
+                .param("coupon", coupon)
                 .param("total", totals.totalPaise())
                 .param("paid", form.advancePaise())
                 .param("notes", ClientService.blankToNull(form.notes()))
@@ -171,35 +168,235 @@ public class OrderService {
                 .query(Long.class)
                 .single();
 
+        long total = totals.totalPaise();
+        if (form.redeemPoints() > 0) {
+            var perk = perks.getIfAvailable();
+            if (perk == null) {
+                throw bad("Loyalty points are not available");
+            }
+            long value = perk.redeem(client.id(), orderId, number, form.redeemPoints(), actor);
+            if (value > total) {
+                throw bad("Those points are worth more than the order total");
+            }
+            total -= value;
+            if (form.advancePaise() > total) {
+                throw bad("The advance cannot be more than the order total");
+            }
+            jdbc.sql("""
+                            UPDATE shop_order SET reward_points = :points, reward_paise = :value, total_paise = :total
+                            WHERE id = :id
+                            """)
+                    .param("points", form.redeemPoints())
+                    .param("value", value)
+                    .param("total", total)
+                    .param(ID, orderId)
+                    .update();
+        }
+
         int position = 0;
         for (var item : form.items()) {
-            var template = item.templateId() == null ? null : templates.get(item.templateId());
-            jdbc.sql("""
-                            INSERT INTO order_item (order_id, position, template_id, service_product_id, description,
-                                quantity, price_paise, colour, note, measurements, cloth_photo_key, stage_id)
-                            VALUES (:order, :position, :template, :product, :description, :quantity, :price, :colour,
-                                :note, CAST(:measurements AS jsonb), :photo, :stage)
-                            """)
-                    .param("order", orderId)
-                    .param("position", ++position)
-                    .param("template", item.templateId())
-                    .param("product", item.serviceProductId())
-                    .param("description", item.description().trim())
-                    .param("quantity", item.quantity())
-                    .param("price", item.pricePaise())
-                    .param("colour", ClientService.blankToNull(item.colour()))
-                    .param("note", ClientService.blankToNull(item.note()))
-                    .param("measurements", measurementsJson(template, item.measurements()))
-                    .param("photo", item.clothPhotoKey())
-                    .param("stage", firstStage.id())
-                    .update();
+            insertItem(orderId, ++position, item, templates, firstStage.id());
         }
         if (form.advancePaise() > 0) {
             insertPayment(orderId, form.advancePaise(), form.advanceMode(), OrderPayment.Kind.ADVANCE, null, actor);
         }
         events.publishEvent(new OrderEvent(
-                OrderEvent.Type.PLACED, orderId, number, client.id(), client.name(), totals.totalPaise(), actor));
+                OrderEvent.Type.PLACED, orderId, number, client.id(), client.name(), total, actor));
         return get(orderId);
+    }
+
+    private void insertItem(
+            long orderId,
+            int position,
+            OrderItemForm item,
+            Map<Long, GarmentTemplate> templates,
+            @Nullable Long stageId) {
+        var template = item.templateId() == null ? null : templates.get(item.templateId());
+        jdbc.sql("""
+                        INSERT INTO order_item (order_id, position, template_id, service_product_id, description,
+                            quantity, price_paise, colour, note, measurements, cloth_photo_key, stage_id)
+                        VALUES (:order, :position, :template, :product, :description, :quantity, :price, :colour,
+                            :note, CAST(:measurements AS jsonb), :photo, :stage)
+                        """)
+                .param("order", orderId)
+                .param("position", position)
+                .param("template", item.templateId())
+                .param("product", item.serviceProductId())
+                .param("description", item.description().trim())
+                .param("quantity", item.quantity())
+                .param("price", item.pricePaise())
+                .param("colour", ClientService.blankToNull(item.colour()))
+                .param("note", ClientService.blankToNull(item.note()))
+                .param("measurements", measurementsJson(template, item.measurements()))
+                .param("photo", item.clothPhotoKey())
+                .param("stage", stageId)
+                .update();
+    }
+
+    /** Fails unless every item names a known garment and price-list product. */
+    private Map<Long, GarmentTemplate> checkItems(List<OrderItemForm> items) {
+        var templates =
+                lists.garmentTemplates().stream().collect(Collectors.toMap(GarmentTemplate::id, Function.identity()));
+        for (var item : items) {
+            if (item.templateId() != null && !templates.containsKey(item.templateId())) {
+                throw bad("Unknown garment for " + item.description());
+            }
+            if (item.serviceProductId() != null) {
+                products.get(item.serviceProductId());
+            }
+        }
+        return templates;
+    }
+
+    // --- change -------------------------------------------------------------------------------------------------
+
+    /**
+     * Changes the items, delivery package and discount of an open order. Items handed over keep their description,
+     * quantity and price; items that have left their first stage cannot be removed (their work is on the stage log
+     * and in piece-rate pay). The money module refuses the change while the order has a live invoice.
+     */
+    @Transactional
+    public Order change(long orderId, OrderChange change, @Nullable String actor) {
+        var before = get(orderId);
+        if (!isOpen(before.status())) {
+            throw bad(before.status() == OrderStatus.CANCELLED
+                    ? "This order was cancelled"
+                    : "This order was delivered; book an alteration for any further work");
+        }
+        var existing = before.items().stream().collect(Collectors.toMap(OrderItem::id, Function.identity()));
+        var kept = new HashSet<Long>();
+        for (var item : change.items()) {
+            if (item.id() == null) {
+                continue;
+            }
+            var old = existing.get(item.id());
+            if (old == null) {
+                throw bad("Those items are not on this order");
+            }
+            if (!kept.add(item.id())) {
+                throw bad("An item is listed twice");
+            }
+            if (isHandedOver(old)
+                    && (!old.description().equals(item.description().trim())
+                            || old.quantity() != item.quantity()
+                            || old.pricePaise() != item.pricePaise())) {
+                throw bad(old.description() + " was already handed over; it cannot be changed");
+            }
+        }
+        var removed = existing.keySet().stream().filter(id -> !kept.contains(id)).toList();
+        if (!removed.isEmpty()) {
+            var started = jdbc.sql("SELECT DISTINCT item_id FROM order_item_stage_log WHERE item_id = ANY(:items)")
+                    .param("items", removed.toArray(Long[]::new))
+                    .query(Long.class)
+                    .list();
+            for (var id : removed) {
+                var old = existing.get(id);
+                if (isHandedOver(old)) {
+                    throw bad(old.description() + " was already handed over; it cannot be removed");
+                }
+                if (started.contains(id)) {
+                    throw bad(old.description() + " is already in production; it cannot be removed");
+                }
+            }
+        }
+        var forms = change.items().stream().map(OrderItemChange::form).toList();
+        var templates = checkItems(forms);
+
+        long deliveryPaise;
+        if (change.deliveryPackageId() == null) {
+            deliveryPaise = 0;
+        } else if (change.deliveryPackageId().equals(before.deliveryPackageId())) {
+            deliveryPaise = before.deliveryChargePaise();
+        } else {
+            deliveryPaise = lists.deliveryPackages().stream()
+                    .filter(p -> change.deliveryPackageId().equals(p.id()))
+                    .findFirst()
+                    .orElseThrow(() -> bad("That delivery package is no longer offered"))
+                    .pricePaise();
+        }
+        var totals = totals(
+                forms,
+                deliveryPaise,
+                change.discountKind(),
+                change.discountValue(),
+                settings.billing().discountAppliesTo());
+        var coupon = couponCode(change.couponCode());
+        if (coupon != null && !coupon.equals(couponCode(before.couponCode()))) {
+            requireCoupon(coupon, totals);
+        }
+        if (before.rewardPaise() > totals.totalPaise()) {
+            throw bad("The points redeemed on this order are worth more than the new total");
+        }
+        long total = totals.totalPaise() - before.rewardPaise();
+
+        if (!removed.isEmpty()) {
+            jdbc.sql("DELETE FROM order_item WHERE order_id = :order AND id = ANY(:items)")
+                    .param("order", orderId)
+                    .param("items", removed.toArray(Long[]::new))
+                    .update();
+        }
+        var firstStage = lists.stages().getFirst().id();
+        int position = 0;
+        for (var item : change.items()) {
+            var form = item.form();
+            position++;
+            if (item.id() == null) {
+                insertItem(orderId, position, form, templates, firstStage);
+                continue;
+            }
+            var template = form.templateId() == null ? null : templates.get(form.templateId());
+            jdbc.sql("""
+                            UPDATE order_item SET position = :position, template_id = :template,
+                                service_product_id = :product, description = :description, quantity = :quantity,
+                                price_paise = :price, colour = :colour, note = :note,
+                                measurements = CAST(:measurements AS jsonb), cloth_photo_key = :photo
+                            WHERE id = :id AND order_id = :order
+                            """)
+                    .param("position", position)
+                    .param("template", form.templateId())
+                    .param("product", form.serviceProductId())
+                    .param("description", form.description().trim())
+                    .param("quantity", form.quantity())
+                    .param("price", form.pricePaise())
+                    .param("colour", ClientService.blankToNull(form.colour()))
+                    .param("note", ClientService.blankToNull(form.note()))
+                    .param("measurements", measurementsJson(template, form.measurements()))
+                    .param("photo", form.clothPhotoKey())
+                    .param(ID, item.id())
+                    .param("order", orderId)
+                    .update();
+        }
+        jdbc.sql("""
+                        UPDATE shop_order SET delivery_package_id = :pkg, delivery_charge_paise = :delivery,
+                            items_paise = :items, discount_kind = :discountKind, discount_value = :discountValue,
+                            discount_paise = :discount, coupon_code = :coupon, total_paise = :total,
+                            updated_at = now()
+                        WHERE id = :id
+                        """)
+                .param("pkg", change.deliveryPackageId())
+                .param("delivery", totals.deliveryPaise())
+                .param("items", totals.itemsPaise())
+                .param("discountKind", change.discountKind().name())
+                .param("discountValue", change.discountValue())
+                .param("discount", totals.discountPaise())
+                .param("coupon", coupon)
+                .param("total", total)
+                .param(ID, orderId)
+                .update();
+        events.publishEvent(new OrderEvent(
+                OrderEvent.Type.CHANGED,
+                orderId,
+                before.number(),
+                before.client().id(),
+                before.client().name(),
+                total,
+                actor));
+        refreshStatus(orderId, before.status(), actor);
+        return get(orderId);
+    }
+
+    private static boolean isHandedOver(OrderItem item) {
+        return item.stage() != null && item.stage().kind() == ProductionStage.Kind.DELIVERED;
     }
 
     /** Keeps only the garment's own fields with a value; null when there is nothing to keep. */
@@ -238,12 +435,17 @@ public class OrderService {
             long discountValue,
             long discountPaise,
             @Nullable String couponCode,
+            int rewardPoints,
+            long rewardPaise,
             long totalPaise,
             long paidPaise,
             @Nullable String notes,
             @Nullable String createdBy,
             OffsetDateTime createdAt,
-            @Nullable OffsetDateTime deliveredAt) {}
+            @Nullable OffsetDateTime deliveredAt,
+            @Nullable OffsetDateTime cancelledAt,
+            Order.@Nullable CancelSettlement cancelSettlement,
+            @Nullable String cancelReason) {}
 
     private record ItemRow(
             long id,
@@ -313,6 +515,8 @@ public class OrderService {
                 row.discountValue(),
                 row.discountPaise(),
                 row.couponCode(),
+                row.rewardPoints(),
+                row.rewardPaise(),
                 row.totalPaise(),
                 row.paidPaise(),
                 row.totalPaise() - row.paidPaise(),
@@ -320,6 +524,9 @@ public class OrderService {
                 row.createdBy(),
                 row.createdAt(),
                 row.deliveredAt(),
+                row.cancelledAt(),
+                row.cancelSettlement(),
+                row.cancelReason(),
                 items,
                 payments);
     }
@@ -443,8 +650,9 @@ public class OrderService {
     // --- production ---------------------------------------------------------------------------------------------
 
     /**
-     * Moves items (all of them when {@code itemIds} is empty) to a stage and updates the order's status. Returns
-     * the order.
+     * Moves items (all of them not yet handed over when {@code itemIds} is empty) to a stage and updates the order's
+     * status. Handing over is final: a delivered order, or an item already handed over, cannot move back (the
+     * invoice and loyalty points follow delivery); further work is booked as an alteration. Returns the order.
      */
     @Transactional
     public Order moveItems(long orderId, long stageId, Collection<Long> itemIds, @Nullable String actor) {
@@ -452,15 +660,28 @@ public class OrderService {
         if (order.status() == OrderStatus.CANCELLED) {
             throw bad("This order was cancelled");
         }
+        if (order.status() == OrderStatus.DELIVERED) {
+            throw bad("This order was delivered; book an alteration for any further work");
+        }
         var stage = lists.stages().stream()
                 .filter(s -> s.id() != null && s.id() == stageId)
                 .findFirst()
                 .orElseThrow(() -> bad("Unknown stage"));
-        var targets =
-                itemIds.isEmpty() ? order.items().stream().map(OrderItem::id).toList() : List.copyOf(itemIds);
-        var known = order.items().stream().map(OrderItem::id).collect(Collectors.toSet());
-        if (!known.containsAll(targets)) {
+        var targets = itemIds.isEmpty()
+                ? order.items().stream()
+                        .filter(item -> !isHandedOver(item))
+                        .map(OrderItem::id)
+                        .toList()
+                : List.copyOf(itemIds);
+        var byId = order.items().stream().collect(Collectors.toMap(OrderItem::id, Function.identity()));
+        if (!byId.keySet().containsAll(targets)) {
             throw bad("Those items are not on this order");
+        }
+        for (var id : targets) {
+            var item = byId.get(id);
+            if (isHandedOver(item) && !Objects.equals(item.stage().id(), stage.id())) {
+                throw bad(item.description() + " was already handed over and cannot move back");
+            }
         }
         // Record who finished each stage (for the production ledger), then move on with nobody assigned.
         jdbc.sql("""
@@ -482,7 +703,7 @@ public class OrderService {
                 .param("order", orderId)
                 .param("items", targets.toArray(Long[]::new))
                 .update();
-        refreshStatus(order, actor);
+        refreshStatus(orderId, order.status(), actor);
         return get(orderId);
     }
 
@@ -496,11 +717,11 @@ public class OrderService {
     }
 
     /** Derives the order's status from its items and announces READY / DELIVERED when they are reached. */
-    private void refreshStatus(Order before, @Nullable String actor) {
+    private void refreshStatus(long orderId, OrderStatus beforeStatus, @Nullable String actor) {
         var stages = lists.stages();
         var kinds = allStages();
         var itemStages = jdbc.sql("SELECT stage_id FROM order_item WHERE order_id = :id")
-                .param(ID, before.id())
+                .param(ID, orderId)
                 .query(Long.class)
                 .list();
         var firstStage = stages.getFirst().id();
@@ -514,27 +735,28 @@ public class OrderService {
         } else {
             status = OrderStatus.IN_PROGRESS;
         }
-        if (status == before.status()) {
+        if (status == beforeStatus) {
             return;
         }
         jdbc.sql("""
                         UPDATE shop_order SET status = :status, updated_at = now(),
                             delivered_at = CASE WHEN :status = 'DELIVERED' THEN now() ELSE NULL END
                         WHERE id = :id
-                        """).param("status", status.name()).param(ID, before.id()).update();
+                        """).param("status", status.name()).param(ID, orderId).update();
         var type = switch (status) {
             case READY -> OrderEvent.Type.READY;
             case DELIVERED -> OrderEvent.Type.DELIVERED;
             default -> null;
         };
         if (type != null) {
+            var after = get(orderId);
             events.publishEvent(new OrderEvent(
                     type,
-                    before.id(),
-                    before.number(),
-                    before.client().id(),
-                    before.client().name(),
-                    before.totalPaise(),
+                    orderId,
+                    after.number(),
+                    after.client().id(),
+                    after.client().name(),
+                    after.totalPaise(),
                     actor));
         }
     }
@@ -544,14 +766,44 @@ public class OrderService {
         return stage == null ? null : stage.kind();
     }
 
+    /**
+     * Cancels an open order. Money paid on it must be settled in the same step: refunded in full now, or kept (e.g.
+     * as a cancellation charge), so it never sits unnoticed on a cancelled order. Points redeemed on it are given
+     * back by the engage module.
+     */
     @Transactional
-    public Order cancel(long orderId, @Nullable String actor) {
+    public Order cancel(long orderId, @Nullable CancelForm form, @Nullable String actor) {
         var order = get(orderId);
         if (order.status() == OrderStatus.DELIVERED) {
             throw bad("A delivered order cannot be cancelled");
         }
         if (order.status() != OrderStatus.CANCELLED) {
-            jdbc.sql("UPDATE shop_order SET status = 'CANCELLED', updated_at = now() WHERE id = :id")
+            var settlement = Order.CancelSettlement.NONE;
+            if (order.paidPaise() > 0) {
+                if (form == null || form.settlement() == null) {
+                    throw bad("₹" + rupees(order.paidPaise())
+                            + " was paid on this order; choose to refund it or keep it");
+                }
+                if (form.settlement() == CancelForm.Settlement.REFUND) {
+                    if (form.refundMode() == null) {
+                        throw bad("Say how the refund is given back");
+                    }
+                    addPayment(
+                            orderId,
+                            new PaymentForm(order.paidPaise(), form.refundMode(), true, "Order cancelled"),
+                            actor);
+                    settlement = Order.CancelSettlement.REFUNDED;
+                } else {
+                    settlement = Order.CancelSettlement.KEPT;
+                }
+            }
+            jdbc.sql("""
+                            UPDATE shop_order SET status = 'CANCELLED', cancelled_at = now(),
+                                cancel_settlement = :settlement, cancel_reason = :reason, updated_at = now()
+                            WHERE id = :id
+                            """)
+                    .param("settlement", settlement.name())
+                    .param("reason", form == null ? null : ClientService.blankToNull(form.reason()))
                     .param(ID, orderId)
                     .update();
             events.publishEvent(new OrderEvent(
@@ -642,6 +894,13 @@ public class OrderService {
     }
 
     // --- helpers ------------------------------------------------------------------------------------------------
+
+    /** 50000 → "500", 50050 → "500.50". */
+    static String rupees(long paise) {
+        return paise % 100 == 0
+                ? String.valueOf(paise / 100)
+                : String.format(Locale.ROOT, "%d.%02d", paise / 100, Math.abs(paise % 100));
+    }
 
     static ResponseStatusException bad(String message) {
         return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);

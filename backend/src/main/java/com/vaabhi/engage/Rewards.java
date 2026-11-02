@@ -38,7 +38,9 @@ public final class Rewards {
     public enum Kind {
         EARNED,
         REDEEMED,
-        ADJUSTED
+        ADJUSTED,
+        /** Points redeemed on an order that was then cancelled, given back. */
+        RETURNED
     }
 
     /**
@@ -49,9 +51,9 @@ public final class Rewards {
     public record RewardAccount(long clientId, int balance, long valuePaise, List<RewardEntry> entries) {}
 
     /**
-     * Redeem points (positive) or correct the balance (signed) by hand.
+     * Correct the balance (signed) by hand; points are redeemed when booking an order.
      *
-     * @param kind REDEEMED or ADJUSTED
+     * @param kind ADJUSTED (REDEEMED is refused)
      */
     public record RewardChange(
             @NotNull Kind kind,

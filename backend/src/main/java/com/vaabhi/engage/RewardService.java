@@ -50,6 +50,10 @@ public class RewardService {
 
     @EventListener
     void on(OrderEvent event) {
+        if (event.type() == OrderEvent.Type.CANCELLED) {
+            returnRedeemed(event);
+            return;
+        }
         if (event.type() != OrderEvent.Type.DELIVERED) {
             return;
         }
@@ -71,6 +75,67 @@ public class RewardService {
                 .update();
     }
 
+    /** Gives back, once, the points redeemed on a cancelled order. */
+    private void returnRedeemed(OrderEvent event) {
+        int redeemed = jdbc.sql(
+                        "SELECT COALESCE(-SUM(points), 0) FROM reward_entry WHERE order_id = :order AND kind = 'REDEEMED'")
+                .param("order", event.orderId())
+                .query(Integer.class)
+                .single();
+        if (redeemed <= 0) {
+            return;
+        }
+        jdbc.sql("""
+                        INSERT INTO reward_entry (client_id, kind, points, order_id, note, created_by)
+                        VALUES (:client, 'RETURNED', :points, :order, :note, :by)
+                        ON CONFLICT (order_id) WHERE kind = 'RETURNED' DO NOTHING
+                        """)
+                .param("client", event.clientId())
+                .param("points", redeemed)
+                .param("order", event.orderId())
+                .param("note", "Order " + event.number() + " cancelled")
+                .param("by", event.actor())
+                .update();
+    }
+
+    /**
+     * Redeems points on a new order and returns their value in paise; the order takes it off its total. Locks the
+     * customer's points so two bookings cannot spend the same balance.
+     */
+    @Transactional
+    public long redeemOnOrder(long clientId, long orderId, String orderNumber, int points, @Nullable String actor) {
+        var settings = settings();
+        if (!settings.enabled()) {
+            throw CouponService.bad("Loyalty points are switched off");
+        }
+        jdbc.sql("SELECT id FROM client WHERE id = :client FOR UPDATE")
+                .param("client", clientId)
+                .query(Long.class)
+                .optional();
+        int balance = balance(clientId);
+        if (points > balance) {
+            throw CouponService.bad("Only " + balance + " points to redeem");
+        }
+        jdbc.sql("""
+                        INSERT INTO reward_entry (client_id, kind, points, order_id, note, created_by)
+                        VALUES (:client, 'REDEEMED', :points, :order, :note, :by)
+                        """)
+                .param("client", clientId)
+                .param("points", -points)
+                .param("order", orderId)
+                .param("note", "Order " + orderNumber)
+                .param("by", actor)
+                .update();
+        return (long) points * settings.paisePerPoint();
+    }
+
+    private int balance(long clientId) {
+        return jdbc.sql("SELECT COALESCE(SUM(points), 0) FROM reward_entry WHERE client_id = :client")
+                .param("client", clientId)
+                .query(Integer.class)
+                .single();
+    }
+
     @Transactional(readOnly = true)
     public Rewards.RewardAccount account(long clientId) {
         clients.summary(clientId);
@@ -88,19 +153,16 @@ public class RewardService {
                 clientId, balance, (long) balance * settings().paisePerPoint(), entries);
     }
 
-    /** Redeems points (never more than the balance) or adjusts the balance by hand. */
+    /**
+     * Corrects the balance by hand. Points are redeemed on the order they pay for (see {@link #redeemOnOrder}), so the
+     * discount and the points always match.
+     */
     @Transactional
     public Rewards.RewardAccount change(long clientId, Rewards.RewardChange change, @Nullable String actor) {
         var account = account(clientId);
         int points;
         if (change.kind() == Rewards.Kind.REDEEMED) {
-            if (change.points() <= 0) {
-                throw CouponService.bad("Redeem a positive number of points");
-            }
-            if (change.points() > account.balance()) {
-                throw CouponService.bad("Only " + account.balance() + " points to redeem");
-            }
-            points = -change.points();
+            throw CouponService.bad("Redeem points on the order when booking it");
         } else if (change.kind() == Rewards.Kind.ADJUSTED) {
             if (change.points() == 0 || account.balance() + change.points() < 0) {
                 throw CouponService.bad("That would leave the balance below zero");

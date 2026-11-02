@@ -71,6 +71,8 @@ public class ActivityService {
         var title = switch (e.type()) {
             case PLACED ->
                 "Order " + e.number() + " booked for " + e.clientName() + " (" + rupees(e.amountPaise()) + ")";
+            case CHANGED ->
+                "Order " + e.number() + " for " + e.clientName() + " changed (" + rupees(e.amountPaise()) + ")";
             case READY -> "Order " + e.number() + " for " + e.clientName() + " is ready";
             case DELIVERED -> "Order " + e.number() + " delivered to " + e.clientName();
             case CANCELLED -> "Order " + e.number() + " for " + e.clientName() + " was cancelled";
