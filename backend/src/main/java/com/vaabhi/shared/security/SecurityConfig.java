@@ -52,7 +52,7 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/api/v1/webhooks/**")
                         .permitAll()
-                        // Sign-in: the caller has no access token yet.
+                        // Sign-in, refresh and logout: the caller has no access token yet (or it expired).
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/**")
                         .permitAll()
                         // Dashboard areas: the owner may use all of them, everyone else needs the area's
@@ -97,6 +97,8 @@ public class SecurityConfig {
                         .access(area("CATALOGUE"))
                         .requestMatchers("/api/v1/admin/**")
                         .hasRole("ADMIN")
+                        .requestMatchers("/api/v1/customer/**")
+                        .hasRole("CUSTOMER")
                         .anyRequest()
                         .authenticated())
                 .oauth2ResourceServer(
@@ -111,7 +113,7 @@ public class SecurityConfig {
                 .build();
     }
 
-    /** Signs access tokens (staff sign-in) with the same HS256 secret the decoder verifies. */
+    /** Signs access tokens (staff and customer sign-in) with the same HS256 secret the decoder verifies. */
     @Bean
     JwtEncoder jwtEncoder(SecurityProperties properties) {
         return new NimbusJwtEncoder(new ImmutableSecret<>(secretKey(properties)));

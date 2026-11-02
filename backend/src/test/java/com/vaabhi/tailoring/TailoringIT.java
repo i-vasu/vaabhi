@@ -42,7 +42,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("demo")
+@ActiveProfiles("dev")
 @Import({TestcontainersConfiguration.class, TailoringIT.FakeStorage.class})
 @RecordApplicationEvents
 class TailoringIT {

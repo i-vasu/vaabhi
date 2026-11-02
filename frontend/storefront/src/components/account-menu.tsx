@@ -1,18 +1,27 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { UserIcon } from "@vaabhi/ui";
-import { sessionStore, signOut } from "@/lib/session";
+import { displayName, sessionStore, signOut, syncSession } from "@/lib/session";
 
 const item = "block w-full px-4 py-2.5 text-left text-sm text-text-primary hover:bg-bg-muted hover:text-brand-primary";
 
-/** Profile icon that opens a menu: profile, orders and wishlist, then log out (signed in) or sign up (guest). */
+/**
+ * Profile icon that opens a menu: profile, orders and wishlist, then log out (signed in) or sign in (guest).
+ * Checks the session once per page load, which also keeps the customer signed in (the session is renewed).
+ */
 export function AccountMenu({ className }: Readonly<{ className?: string }>) {
   const session = useSyncExternalStore(sessionStore.subscribe, sessionStore.read, sessionStore.serverValue);
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const menuId = useId();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    void syncSession();
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -52,7 +61,7 @@ export function AccountMenu({ className }: Readonly<{ className?: string }>) {
         >
           {session && (
             <p className="truncate border-b border-border-default px-4 py-2.5 text-xs text-text-muted">
-              Hi, {session.name}
+              Hi, {displayName(session)}
             </p>
           )}
           <ul>
@@ -77,15 +86,19 @@ export function AccountMenu({ className }: Readonly<{ className?: string }>) {
                   type="button"
                   className={item}
                   onClick={() => {
-                    signOut();
                     close();
+                    void signOut();
                   }}
                 >
                   Log out
                 </button>
               ) : (
-                <Link href="/signup" className={`${item} font-medium text-brand-primary`} onClick={close}>
-                  Sign up / Log in
+                <Link
+                  href={pathname && pathname !== "/signup" ? `/signup?next=${encodeURIComponent(pathname)}` : "/signup"}
+                  className={`${item} font-medium text-brand-primary`}
+                  onClick={close}
+                >
+                  Sign in / Sign up
                 </Link>
               )}
             </li>

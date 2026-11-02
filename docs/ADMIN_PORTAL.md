@@ -25,7 +25,7 @@ brings its backend module, Flyway migrations, API types and tests.
   answer.
 - `GET /api/v1/admin/me` returns the signed-in staff member; the dashboard calls it on load and signs out on 401/403.
 - The first owner is created on startup from `STAFF_OWNER_EMAIL` / `STAFF_OWNER_PASSWORD` while no staff account
-  exists. The `demo` profile creates `owner@vaabhi.local` / `vaabhi-demo-owner` for local development and e2e tests.
+  exists. The `dev` profile (the default locally and in tests) creates `owner@vaabhi.local` / `vaabhi-demo-owner`.
 - The dashboard keeps the token in `sessionStorage` (per tab) and sends anyone without a valid one to `/login`.
 
 ## Customers, orders and alterations
@@ -212,6 +212,6 @@ Theme tokens live in `frontend/admin/src/app/globals.css` (`bg-app`, `bg-panel`,
 
 ## Database migrations
 
-`V5__staff_account.sql` skips V4, which the customer sign-in branch (`feat/auth`, PR #28) uses. If this merges and
-deploys first, Flyway will refuse the late V4: renumber that migration (e.g. to V6) before merging #28. Later phases
-continue after the highest version on `main`.
+`V4__customer_auth.sql` is customer sign-in (PR #28, on `main` and deployed); this branch's migrations run from
+`V5__staff_account.sql` upwards after it, so a deployed database applies them in order. New migrations continue after
+the highest version on the branch.

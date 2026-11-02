@@ -172,6 +172,10 @@ export type SettingsSections = {
   watermark: WatermarkSettings;
 };
 
+export type OtpSent = Schemas["OtpSent"];
+export type AuthSession = Schemas["AuthSession"];
+export type CustomerProfile = Schemas["CustomerProfile"];
+
 /** Field-level message from the API, e.g. `{ field: "variants[0].pricePaise", message: "must be greater than 0" }`. */
 export type FieldError = { field: string; message: string };
 
@@ -203,18 +207,26 @@ export class ApiError extends Error {
     readonly errors: FieldError[] = [],
     /** The problem detail's human-readable explanation, if any. */
     readonly detail?: string,
+    /** For 429 answers: seconds to wait before trying again. */
+    readonly retryAfterSeconds?: number,
   ) {
     super(message);
   }
 }
 
-async function problemOf(response: Response): Promise<{ detail?: string; errors: FieldError[] }> {
+type Problem = { detail?: string; errors: FieldError[]; retryAfterSeconds?: number };
+
+async function problemOf(response: Response): Promise<Problem> {
   try {
-    const body = (await response.json()) as { detail?: unknown; errors?: unknown };
+    const body = (await response.json()) as { detail?: unknown; errors?: unknown; retryAfterSeconds?: unknown };
     const errors = Array.isArray(body.errors)
       ? body.errors.filter((e): e is FieldError => typeof e?.field === "string" && typeof e?.message === "string")
       : [];
-    return { detail: typeof body.detail === "string" ? body.detail : undefined, errors };
+    return {
+      detail: typeof body.detail === "string" ? body.detail : undefined,
+      errors,
+      retryAfterSeconds: typeof body.retryAfterSeconds === "number" ? body.retryAfterSeconds : undefined,
+    };
   } catch {
     return { errors: [] };
   }
@@ -246,12 +258,15 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         `${init?.method ?? "GET"} ${path} failed with ${response.status}`,
         problem.errors,
         problem.detail,
+        problem.retryAfterSeconds,
       );
     }
-    // 204 No Content (deletes, password change) has no body to parse.
+    // 204 No Content (deletes, password change, logout) has no body to parse.
     if (response.status === 204) return undefined as T;
     return (await response.json()) as T;
   }
+
+  const bearer = (accessToken: string) => ({ Authorization: `Bearer ${accessToken}` });
 
   const send = <T>(method: "POST" | "PUT" | "DELETE", path: string, body?: unknown) =>
     request<T>(path, {
@@ -274,10 +289,27 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
       /** Current prices and stock for the bag kept in the browser. */
       quoteBag: (bag: BagQuoteRequest) => send<BagQuote>("POST", "/api/v1/store/bag/quote", bag),
     },
+    /** Sign-in. Customer calls come from the storefront's server, which keeps the tokens in httpOnly cookies. */
     auth: {
       /** Admin dashboard sign-in (email + password). */
       staffLogin: (credentials: StaffLoginRequest) =>
         send<StaffSession>("POST", "/api/v1/auth/staff/login", credentials),
+      requestOtp: (phone: string) => send<OtpSent>("POST", "/api/v1/auth/otp/request", { phone }),
+      verifyOtp: (phone: string, code: string) => send<AuthSession>("POST", "/api/v1/auth/otp/verify", { phone, code }),
+      signInWithGoogle: (credential: string) => send<AuthSession>("POST", "/api/v1/auth/google", { credential }),
+      refresh: (refreshToken: string) => send<AuthSession>("POST", "/api/v1/auth/refresh", { refreshToken }),
+      logout: (refreshToken: string) => send<void>("POST", "/api/v1/auth/logout", { refreshToken }),
+    },
+    /** The signed-in customer; each call takes that customer's access token. */
+    customer: {
+      getProfile: (accessToken: string) =>
+        request<CustomerProfile>("/api/v1/customer/me", { headers: bearer(accessToken), cache: "no-store" }),
+      updateProfile: (accessToken: string, name: string) =>
+        request<CustomerProfile>("/api/v1/customer/me", {
+          method: "PUT",
+          headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        }),
     },
     admin: {
       /** The signed-in staff member. */
