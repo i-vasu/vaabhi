@@ -1,0 +1,16 @@
+# Development and testing: local runs (the default profile), integration tests, the CI e2e job and the
+# Neon dev branch. Loads the demo catalogue and has safe local defaults for everything.
+# NEVER activate this profile in production: it inserts demo products (ProfileGuard refuses to start).
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/vaabhi}
+    username: ${DATABASE_USERNAME:vaabhi}
+    password: ${DATABASE_PASSWORD:vaabhi}
+  flyway:
+    locations: classpath:db/migration,classpath:db/demo
+
+vaabhi:
+  security:
+    # Dev-only secret; the e2e tests sign admin tokens with it unless JWT_SECRET is set.
+    jwt-secret: ${JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
+    cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3001}

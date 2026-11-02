@@ -105,3 +105,42 @@ describe("listingQueryString", () => {
     expect(listingQueryString()).toBe("");
   });
 });
+
+describe("customer auth client", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("posts sign-in calls and sends the customer's own token for the profile", async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(new Response("{}")));
+    vi.stubGlobal("fetch", fetchMock);
+    const api = createApiClient({ baseUrl: "https://api.example.com" });
+
+    await api.auth.requestOtp("9876543210");
+    await api.auth.verifyOtp("9876543210", "123456");
+    await api.customer.getProfile("acc-1");
+
+    expect(fetchMock.mock.calls[0]![0]).toBe("https://api.example.com/api/v1/auth/otp/request");
+    expect(JSON.parse(fetchMock.mock.calls[1]![1].body)).toEqual({ phone: "9876543210", code: "123456" });
+    expect(fetchMock.mock.calls[2]![0]).toBe("https://api.example.com/api/v1/customer/me");
+    expect(fetchMock.mock.calls[2]![1].headers.Authorization).toBe("Bearer acc-1");
+  });
+
+  it("returns nothing for 204 and exposes Retry-After seconds on 429", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce(new Response(null, { status: 204 }))
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ detail: "Please wait", retryAfterSeconds: 30 }), { status: 429 }),
+        ),
+    );
+    const api = createApiClient({ baseUrl: "https://api.example.com" });
+
+    await expect(api.auth.logout("r")).resolves.toBeUndefined();
+    await expect(api.auth.requestOtp("9876543210")).rejects.toMatchObject({
+      status: 429,
+      detail: "Please wait",
+      retryAfterSeconds: 30,
+    });
+  });
+});
