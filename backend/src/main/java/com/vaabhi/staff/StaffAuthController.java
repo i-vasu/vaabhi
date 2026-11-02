@@ -1,11 +1,14 @@
 package com.vaabhi.staff;
 
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /** Staff sign-in for the admin dashboard. */
@@ -27,5 +30,11 @@ class StaffAuthController {
     @GetMapping("/api/v1/admin/me")
     StaffProfile currentStaff(@AuthenticationPrincipal Jwt jwt) {
         return service.me(jwt.getSubject());
+    }
+
+    @PutMapping("/api/v1/admin/me/password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void changeOwnPassword(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody PasswordChange change) {
+        service.changePassword(jwt.getSubject(), change);
     }
 }

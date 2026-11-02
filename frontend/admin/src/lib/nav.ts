@@ -1,4 +1,17 @@
-import { BellIcon, HomeIcon, MoreIcon, TagIcon, type Icon } from "@/components/icons";
+import {
+  BellIcon,
+  CalendarIcon,
+  HomeIcon,
+  MoreIcon,
+  PhoneIcon,
+  PrinterIcon,
+  ReceiptIcon,
+  SettingsIcon,
+  StoreIcon,
+  TagIcon,
+  TruckIcon,
+  type Icon,
+} from "@/components/icons";
 
 export type NavItem = {
   href: string;
@@ -19,6 +32,52 @@ export const primaryNav: NavItem[] = [
 
 export const moreNav: NavItem = { href: "/more/", label: "More", icon: MoreIcon };
 
+/** Areas of the settings hub. */
+export const settingsPages: NavItem[] = [
+  {
+    href: "/settings/shop/",
+    label: "Shop profile",
+    icon: StoreIcon,
+    description: "Name, logo, address, country, currency, hours",
+  },
+  {
+    href: "/settings/orders/",
+    label: "Orders & production",
+    icon: TruckIcon,
+    description: "Delivery charges, stages, trial date, garments",
+  },
+  {
+    href: "/settings/billing/",
+    label: "Billing & tax",
+    icon: ReceiptIcon,
+    description: "GST, numbering, bank details, terms",
+  },
+  {
+    href: "/settings/printing/",
+    label: "Printing & messages",
+    icon: PrinterIcon,
+    description: "Print formats, form layouts, messages, watermark",
+  },
+  {
+    href: "/settings/holidays/",
+    label: "Holidays & weekly off",
+    icon: CalendarIcon,
+    description: "Days the shop is closed",
+  },
+  {
+    href: "/settings/notifications/",
+    label: "Notifications",
+    icon: BellIcon,
+    description: "Which alerts reach your phone",
+  },
+  {
+    href: "/settings/account/",
+    label: "App & account",
+    icon: PhoneIcon,
+    description: "Password, sign out, app version",
+  },
+];
+
 /** Groups on the More page. */
 export const moreSections: { title: string; items: NavItem[] }[] = [
   {
@@ -31,12 +90,18 @@ export const moreSections: { title: string; items: NavItem[] }[] = [
       { href: "/notifications/", label: "Notifications", icon: BellIcon, description: "Order updates and alerts" },
     ],
   },
+  {
+    title: "Shop",
+    items: [
+      { href: "/settings/", label: "Settings", icon: SettingsIcon, description: "Shop, billing, printing, account" },
+    ],
+  },
 ];
 
 /** Every page reachable from search, without duplicates. */
 export function searchableNav(): NavItem[] {
   const seen = new Set<string>();
-  return [...primaryNav, ...moreSections.flatMap((section) => section.items)].filter((item) =>
+  return [...primaryNav, ...moreSections.flatMap((section) => section.items), ...settingsPages].filter((item) =>
     seen.has(item.href) ? false : (seen.add(item.href), true),
   );
 }

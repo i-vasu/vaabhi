@@ -18,7 +18,8 @@ test.describe("Admin", () => {
     await page.getByLabel("Password").fill("not-a-password");
     await page.getByRole("button", { name: "Sign in" }).click();
 
-    await expect(page.getByRole("alert")).toHaveText("Email or password is wrong");
+    // Matched by text: the dev server adds its own role=alert route announcer.
+    await expect(page.getByText("Email or password is wrong")).toBeVisible();
   });
 
   test("signed-in staff see the home page and can sign out", async ({ page }) => {

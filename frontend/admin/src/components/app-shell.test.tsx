@@ -78,8 +78,8 @@ describe("AppShell", () => {
     signIn();
     render(<AppShell>page</AppShell>);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Account" }));
-    const sheet = screen.getByRole("dialog", { name: "Account" });
+    fireEvent.click(await screen.findByRole("button", { name: /^Account/ }));
+    const sheet = screen.getByRole("dialog", { name: /^Account/ });
     expect(within(sheet).getByText("asha@vaabhi.local")).toBeInTheDocument();
     fireEvent.click(within(sheet).getByRole("button", { name: "Sign out" }));
 
@@ -93,7 +93,7 @@ describe("AppShell", () => {
 
     fireEvent.click(await screen.findByRole("button", { name: "Search" }));
     const sheet = screen.getByRole("dialog", { name: "Go to" });
-    fireEvent.change(within(sheet).getByLabelText("Search pages"), { target: { value: "alert" } });
+    fireEvent.change(within(sheet).getByLabelText("Search pages"), { target: { value: "order updates" } });
     expect(within(sheet).getByRole("link", { name: /Notifications/ })).toHaveAttribute("href", "/notifications/");
     expect(within(sheet).queryByRole("link", { name: /Products/ })).not.toBeInTheDocument();
 

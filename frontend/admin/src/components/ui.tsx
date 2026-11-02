@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useRef, type InputHTMLAttributes, type ReactNode } from "react";
+import { useEffect, useId, useRef, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from "react";
 import { cn } from "@vaabhi/ui";
 import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, type Icon } from "./icons";
 
@@ -334,6 +334,167 @@ export function TextField({
       )}
     </div>
   );
+}
+
+function FieldShell({
+  id,
+  label,
+  hint,
+  error,
+  className,
+  children,
+}: {
+  id: string;
+  label: string;
+  hint?: ReactNode;
+  error?: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className={className}>
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-ink-soft">
+        {label}
+      </label>
+      {children}
+      {(error || hint) && (
+        <p id={`${id}-note`} className={cn("mt-1.5 text-sm", error ? "text-bad" : "text-ink-faint")}>
+          {error ?? hint}
+        </p>
+      )}
+    </div>
+  );
+}
+
+export function TextAreaField({
+  label,
+  hint,
+  error,
+  className,
+  ...props
+}: TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string; hint?: ReactNode; error?: string }) {
+  const id = useId();
+  return (
+    <FieldShell id={id} label={label} hint={hint} error={error} className={className}>
+      <textarea
+        id={id}
+        rows={3}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error || hint ? `${id}-note` : undefined}
+        className={cn(inputClasses, "resize-y", error && "border-bad")}
+        {...props}
+      />
+    </FieldShell>
+  );
+}
+
+export function SelectField<T extends string>({
+  label,
+  hint,
+  error,
+  className,
+  options,
+  value,
+  onChange,
+  disabled,
+}: {
+  label: string;
+  hint?: ReactNode;
+  error?: string;
+  className?: string;
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
+  disabled?: boolean;
+}) {
+  const id = useId();
+  return (
+    <FieldShell id={id} label={label} hint={hint} error={error} className={className}>
+      <select
+        id={id}
+        value={value}
+        disabled={disabled}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error || hint ? `${id}-note` : undefined}
+        onChange={(event) => onChange(event.target.value as T)}
+        className={cn(inputClasses, "appearance-auto", error && "border-bad")}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </FieldShell>
+  );
+}
+
+/** A list row whose trailing control is a switch; the whole row explains what the switch does. */
+export function ToggleRow({
+  title,
+  subtitle,
+  checked,
+  onChange,
+  disabled,
+}: {
+  title: string;
+  subtitle?: ReactNode;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-4 px-4 py-4">
+      <span className="min-w-0 flex-1">
+        <span className="block font-medium">{title}</span>
+        {subtitle && <span className="mt-0.5 block text-sm text-ink-soft">{subtitle}</span>}
+      </span>
+      <Toggle checked={checked} onChange={onChange} label={title} disabled={disabled} />
+    </div>
+  );
+}
+
+export const buttonPrimary =
+  "inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-5 py-3 font-medium text-white transition-colors hover:bg-accent-strong disabled:opacity-50";
+export const buttonSecondary =
+  "inline-flex items-center justify-center gap-2 rounded-xl border border-line-strong px-4 py-2.5 font-medium text-accent-ink transition-colors hover:bg-panel-2 disabled:opacity-50";
+
+/** Save button with its outcome: "Saved" after success, the reason after failure. */
+export function SaveBar({
+  saving,
+  saved,
+  error,
+  onSave,
+  label = "Save",
+}: {
+  saving: boolean;
+  saved: boolean;
+  error: string | null;
+  onSave: () => void;
+  label?: string;
+}) {
+  return (
+    <div className="sticky bottom-20 z-20 mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-line bg-panel/95 p-3 backdrop-blur md:bottom-4">
+      <button type="button" className={cn(buttonPrimary, "min-w-32")} disabled={saving} onClick={onSave}>
+        {saving ? "Saving…" : label}
+      </button>
+      <span role="status" className={cn("text-sm", error ? "text-bad" : "text-ok")}>
+        {error ?? (saved ? "Saved" : "")}
+      </span>
+    </div>
+  );
+}
+
+/** Loading and load-failure placeholder for a page that fetches before it can show a form. */
+export function LoadState({ loading, error }: { loading: boolean; error: string | null }) {
+  if (error) {
+    return (
+      <p role="alert" className="rounded-xl bg-bad-soft px-4 py-3 text-bad">
+        {error}
+      </p>
+    );
+  }
+  return loading ? <p className="text-ink-soft">Loading…</p> : null;
 }
 
 // --- sheet ------------------------------------------------------------------------------------------------------

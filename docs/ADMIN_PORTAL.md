@@ -1,13 +1,13 @@
 # Admin portal
 
 The admin dashboard (`frontend/admin`) is the shop's back office: orders and tailoring work, customers, staff,
-money, stock and reports. It is built in phases; each phase is one pull request with its backend module, Flyway
-migrations, API types and tests.
+money, stock and reports. It is built in phases, all in one pull request with one commit per phase; each phase
+brings its backend module, Flyway migrations, API types and tests.
 
 | Phase | Scope | Status |
 |---|---|---|
-| 0 Foundations | Staff sign-in (email + password, lockout, first owner from env), app frame (sidebar on desktop, bottom bar on phones, header with search and notifications), dark navy theme, shared components | this PR |
-| 1 Settings | Shop profile (address, hours, links), billing & tax (GST, GSTIN, rates, prices incl. tax), order / invoice / item numbering, bank details, UPI QR, alteration wording, delivery charges, production stages, trial date, garment & measurement templates, holidays & weekly off, notification switches | planned |
+| 0 Foundations | Staff sign-in (email + password, lockout, first owner from env), app frame (sidebar on desktop, bottom bar on phones, header with search and notifications), dark navy theme, shared components | done |
+| 1 Settings | Shop profile (address, hours, links), billing & tax (GST, GSTIN, rates, prices incl. tax), order / invoice / item numbering, bank details, UPI QR, alteration wording, delivery charges, production stages, trial date, garment & measurement templates, holidays & weekly off, notification switches | done |
 | 2 Customers & orders | Customers (list, add, detail, measurements, occasions), new order (items, cloth photo, advance, discount ₹/%, coupon, notes, live totals), orders list and stage progress, alterations | planned |
 | 3 Workshop | Work board by stage, assigning staff, who may work which stage, workshop overview (in production, due today, overdue, stage load) | planned |
 | 4 Money | Invoices (auto on delivery), payments (outstanding, collections), expenses, financial ledger | planned |

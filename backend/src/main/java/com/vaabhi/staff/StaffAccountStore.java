@@ -70,6 +70,13 @@ class StaffAccountStore {
                 .single();
     }
 
+    void setPasswordHash(long id, String hash) {
+        jdbc.sql("UPDATE staff_account SET password_hash = :hash, updated_at = now() WHERE id = :id")
+                .param(ID, id)
+                .param("hash", hash)
+                .update();
+    }
+
     void setActive(long id, boolean active) {
         jdbc.sql("UPDATE staff_account SET active = :active, updated_at = now() WHERE id = :id")
                 .param(ID, id)

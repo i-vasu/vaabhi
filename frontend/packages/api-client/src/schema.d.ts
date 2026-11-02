@@ -4,6 +4,214 @@
  */
 
 export interface paths {
+    "/api/v1/admin/settings/watermark": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getWatermark"];
+        put: operations["saveWatermark"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/stages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getStages"];
+        put: operations["saveStages"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/shop-profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getShopProfile"];
+        put: operations["saveShopProfile"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/printing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getPrintSettings"];
+        put: operations["savePrintSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getOrderSettings"];
+        put: operations["saveOrderSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/numbering": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getNumbering"];
+        put: operations["saveNumbering"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getNotificationSettings"];
+        put: operations["saveNotificationSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMessageTemplates"];
+        put: operations["saveMessageTemplates"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/garment-templates/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateGarmentTemplate"];
+        post?: never;
+        delete: operations["deleteGarmentTemplate"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getDocuments"];
+        put: operations["saveDocuments"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/delivery-packages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getDeliveryPackages"];
+        put: operations["saveDeliveryPackages"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getCalendar"];
+        put: operations["saveCalendar"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/billing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getBilling"];
+        put: operations["saveBilling"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/products/{productId}/media": {
         parameters: {
             query?: never;
@@ -29,6 +237,22 @@ export interface paths {
         };
         get: operations["getAdminProduct"];
         put: operations["updateProduct"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/me/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["changeOwnPassword"];
         post?: never;
         delete?: never;
         options?: never;
@@ -62,6 +286,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["staffLogin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["startSettingsImageUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/garment-templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getGarmentTemplates"];
+        put?: never;
+        post: operations["createGarmentTemplate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -264,6 +520,154 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        WatermarkSettings: {
+            enabled: boolean;
+            text: string | null;
+            /** @enum {string} */
+            position: "BOTTOM_RIGHT" | "BOTTOM_LEFT" | "CENTER" | "TOP_RIGHT";
+            /** Format: int32 */
+            opacityPercent: number;
+        };
+        ProductionStage: {
+            /** Format: int64 */
+            id: number | null;
+            name: string;
+            /** @enum {string} */
+            kind: "WORK" | "READY" | "DELIVERED";
+        };
+        ShopProfile: {
+            ownerName: string;
+            shopName: string;
+            /** @enum {string} */
+            businessType: "LADIES_BOUTIQUE" | "GENTS_TAILORING" | "UNISEX_TAILORING" | "KIDS_WEAR" | "DESIGNER_STUDIO";
+            phone: string | null;
+            /** Format: email */
+            publicEmail: string | null;
+            googleReviewLink: string | null;
+            website: string | null;
+            mapsLink: string | null;
+            instagram: string | null;
+            facebook: string | null;
+            youtube: string | null;
+            threads: string | null;
+            address: string | null;
+            doorNo: string | null;
+            street: string | null;
+            area: string | null;
+            city: string | null;
+            district: string | null;
+            state: string | null;
+            country: string;
+            pinCode: string | null;
+            currency: string;
+            /** Format: time-local */
+            opensAt: string;
+            /** Format: time-local */
+            closesAt: string;
+            logoKey: string | null;
+        };
+        PrintSettings: {
+            formats: ("A4" | "A5" | "THERMAL_80MM" | "THERMAL_58MM")[];
+            /** @enum {string} */
+            defaultFormat: "A4" | "A5" | "THERMAL_80MM" | "THERMAL_58MM";
+            showLogo: boolean;
+            showMeasurements: boolean;
+            showClothPhotos: boolean;
+            showBankDetails: boolean;
+            showUpiQr: boolean;
+            showTerms: boolean;
+            showSignature: boolean;
+            showStaffName: boolean;
+        };
+        OrderSettings: {
+            trialDate: boolean;
+            subCategories: boolean;
+            barcodes: boolean;
+            lazyProductList: boolean;
+            tailorChargeOnAddons: boolean;
+        };
+        NumberSequence: {
+            /** @enum {string} */
+            kind: "ORDER" | "INVOICE" | "ALTERATION" | "ITEM";
+            prefix: string;
+            /** Format: int64 */
+            nextValue: number;
+            suffix: string;
+            /** Format: int32 */
+            pad: number;
+            preview: string;
+        };
+        NotificationSettings: {
+            newOrder: boolean;
+            orderReady: boolean;
+            orderDelivered: boolean;
+            paymentReceived: boolean;
+            dataExported: boolean;
+            morningSchedule: boolean;
+            dailySummary: boolean;
+        };
+        MessageTemplates: {
+            /** @enum {string} */
+            channel: "WHATSAPP" | "SMS";
+            orderPlaced: string;
+            orderReady: string;
+            orderDelivered: string;
+            paymentReceived: string;
+            reviewRequest: string;
+            reward: string;
+        };
+        Field: {
+            key: string;
+            label: string;
+            unit: string;
+        };
+        GarmentTemplate: {
+            /** Format: int64 */
+            id: number | null;
+            name: string;
+            /** @enum {string} */
+            businessType: "ALL" | "LADIES" | "GENTS" | "KIDS";
+            fields: components["schemas"]["Field"][];
+        };
+        DocumentSettings: {
+            slogan: string | null;
+            bankName: string | null;
+            branch: string | null;
+            accountNumber: string | null;
+            ifsc: string | null;
+            upiId: string | null;
+            upiQrKey: string | null;
+            alterationUndertaking: string | null;
+            terms: string | null;
+        };
+        DeliveryPackage: {
+            /** Format: int64 */
+            id: number | null;
+            name: string;
+            /** Format: int64 */
+            pricePaise: number;
+            /** Format: int32 */
+            days: number;
+        };
+        CalendarSettings: {
+            weeklyOff: ("MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY")[];
+            holidays: components["schemas"]["Holiday"][];
+        };
+        Holiday: {
+            /** Format: date */
+            date: string;
+            name: string;
+        };
+        BillingSettings: {
+            chargeGst: boolean;
+            gstin: string | null;
+            defaultGstRate: number;
+            pricesIncludeTax: boolean;
+            showHsnCodes: boolean;
+            /** @enum {string} */
+            discountAppliesTo: "ORDER_TOTAL" | "ITEMS_BEFORE_TAX";
+            autoInvoice: boolean;
+        };
         MediaUpdate: {
             /** Format: int64 */
             id: number;
@@ -356,6 +760,10 @@ export interface components {
             /** Format: date-time */
             updatedAt: string;
         };
+        PasswordChange: {
+            currentPassword: string;
+            newPassword: string;
+        };
         BagQuoteRequest: {
             lines: components["schemas"]["BagRequestLine"][];
         };
@@ -421,6 +829,16 @@ export interface components {
             /** Format: int64 */
             expiresIn: number;
             staff: components["schemas"]["StaffProfile"];
+        };
+        SettingsImageRequest: {
+            /** @enum {string} */
+            purpose: "LOGO" | "UPI_QR";
+        };
+        SettingsImageUpload: {
+            key: string;
+            uploadUrl: string;
+            /** Format: date-time */
+            expiresAt: string;
         };
         MediaUploadRequest: {
             alt: string;
@@ -626,6 +1044,580 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    getWatermark: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WatermarkSettings"];
+                };
+            };
+        };
+    };
+    saveWatermark: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WatermarkSettings"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WatermarkSettings"];
+                };
+            };
+        };
+    };
+    getStages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProductionStage"][];
+                };
+            };
+        };
+    };
+    saveStages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductionStage"][];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProductionStage"][];
+                };
+            };
+        };
+    };
+    getShopProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShopProfile"];
+                };
+            };
+        };
+    };
+    saveShopProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShopProfile"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShopProfile"];
+                };
+            };
+        };
+    };
+    getPrintSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PrintSettings"];
+                };
+            };
+        };
+    };
+    savePrintSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrintSettings"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PrintSettings"];
+                };
+            };
+        };
+    };
+    getOrderSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["OrderSettings"];
+                };
+            };
+        };
+    };
+    saveOrderSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderSettings"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["OrderSettings"];
+                };
+            };
+        };
+    };
+    getNumbering: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NumberSequence"][];
+                };
+            };
+        };
+    };
+    saveNumbering: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NumberSequence"][];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NumberSequence"][];
+                };
+            };
+        };
+    };
+    getNotificationSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NotificationSettings"];
+                };
+            };
+        };
+    };
+    saveNotificationSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NotificationSettings"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NotificationSettings"];
+                };
+            };
+        };
+    };
+    getMessageTemplates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MessageTemplates"];
+                };
+            };
+        };
+    };
+    saveMessageTemplates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MessageTemplates"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MessageTemplates"];
+                };
+            };
+        };
+    };
+    updateGarmentTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GarmentTemplate"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GarmentTemplate"];
+                };
+            };
+        };
+    };
+    deleteGarmentTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getDocuments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DocumentSettings"];
+                };
+            };
+        };
+    };
+    saveDocuments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DocumentSettings"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DocumentSettings"];
+                };
+            };
+        };
+    };
+    getDeliveryPackages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DeliveryPackage"][];
+                };
+            };
+        };
+    };
+    saveDeliveryPackages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeliveryPackage"][];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DeliveryPackage"][];
+                };
+            };
+        };
+    };
+    getCalendar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CalendarSettings"];
+                };
+            };
+        };
+    };
+    saveCalendar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalendarSettings"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CalendarSettings"];
+                };
+            };
+        };
+    };
+    getBilling: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BillingSettings"];
+                };
+            };
+        };
+    };
+    saveBilling: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingSettings"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BillingSettings"];
+                };
+            };
+        };
+    };
     updateMedia: {
         parameters: {
             query?: never;
@@ -700,6 +1692,28 @@ export interface operations {
             };
         };
     };
+    changeOwnPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordChange"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     quoteBag: {
         parameters: {
             query?: never;
@@ -744,6 +1758,74 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["StaffSession"];
+                };
+            };
+        };
+    };
+    startSettingsImageUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SettingsImageRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SettingsImageUpload"];
+                };
+            };
+        };
+    };
+    getGarmentTemplates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GarmentTemplate"][];
+                };
+            };
+        };
+    };
+    createGarmentTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GarmentTemplate"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GarmentTemplate"];
                 };
             };
         };

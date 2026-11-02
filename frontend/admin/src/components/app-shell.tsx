@@ -144,13 +144,12 @@ function Header({ staff, onSignOut }: { staff: StaffProfile; onSignOut: () => vo
 
   return (
     <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-line bg-panel/95 px-4 py-3 backdrop-blur md:px-8">
-      <button
-        type="button"
-        onClick={() => setAccount(true)}
-        className="flex min-w-0 items-center gap-3 text-left"
-        aria-label="Account"
-      >
-        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-accent font-semibold text-white">
+      <button type="button" onClick={() => setAccount(true)} className="flex min-w-0 items-center gap-3 text-left">
+        <span className="sr-only">Account: </span>
+        <span
+          aria-hidden="true"
+          className="grid size-11 shrink-0 place-items-center rounded-full bg-accent font-semibold text-white"
+        >
           {initials(staff.name)}
         </span>
         <span className="min-w-0">

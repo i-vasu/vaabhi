@@ -71,6 +71,20 @@ class StaffAuthService {
 
     @Transactional(readOnly = true)
     public StaffProfile me(String subject) {
+        return account(subject).profile();
+    }
+
+    @Transactional
+    public void changePassword(String subject, PasswordChange change) {
+        var account = account(subject);
+        if (!passwordEncoder.matches(change.currentPassword(), account.passwordHash())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is wrong");
+        }
+        store.setPasswordHash(account.id(), passwordEncoder.encode(change.newPassword()));
+    }
+
+    /** The active staff account behind a token subject ({@code staff:<id>}). */
+    private StaffAccountStore.Account account(String subject) {
         if (!subject.startsWith(SUBJECT_PREFIX)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, NOT_STAFF);
         }
@@ -82,7 +96,6 @@ class StaffAuthService {
         }
         return store.findById(id)
                 .filter(StaffAccountStore.Account::active)
-                .map(StaffAccountStore.Account::profile)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Account not found"));
     }
 

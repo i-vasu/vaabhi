@@ -3,6 +3,7 @@ package com.vaabhi.staff;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -96,6 +97,33 @@ class StaffAuthIT {
         store.setActive(id, false);
 
         login(email, "right-password").andExpect(status().isForbidden());
+    }
+
+    @Test
+    void staffChangeTheirOwnPassword() throws Exception {
+        var email = "tailor-password@vaabhi.local";
+        var id = store.create("Tailor", email, null, StaffRole.STAFF, passwordEncoder.encode("old-password-1"));
+        var me = jwt().jwt(j -> j.subject("staff:" + id)).authorities(new SimpleGrantedAuthority("ROLE_ADMIN"));
+
+        mockMvc.perform(put("/api/v1/admin/me/password")
+                        .with(me)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"currentPassword\":\"wrong\",\"newPassword\":\"new-password-1\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("Current password is wrong"));
+        mockMvc.perform(put("/api/v1/admin/me/password")
+                        .with(me)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"currentPassword\":\"old-password-1\",\"newPassword\":\"short\"}"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(put("/api/v1/admin/me/password")
+                        .with(me)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"currentPassword\":\"old-password-1\",\"newPassword\":\"new-password-1\"}"))
+                .andExpect(status().isNoContent());
+
+        login(email, "old-password-1").andExpect(status().isUnauthorized());
+        login(email, "new-password-1").andExpect(status().isOk());
     }
 
     @Test

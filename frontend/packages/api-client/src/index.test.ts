@@ -97,6 +97,48 @@ describe("admin client", () => {
     expect(fetchMock.mock.calls[0]![1].body).toBe('{"email":"owner@vaabhi.local","password":"secret"}');
   });
 
+  it("reads and saves settings, and accepts empty 204 answers", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockImplementation((_url: string, init: RequestInit) =>
+        Promise.resolve(init.method === "DELETE" ? new Response(null, { status: 204 }) : new Response("[]")),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+    const api = createApiClient({ baseUrl: "https://api.example.com" });
+
+    await api.admin.settings.get("billing");
+    await api.admin.settings.save("calendar", { weeklyOff: ["SUNDAY"], holidays: [] });
+    await api.admin.settings.numbering();
+    await api.admin.settings.saveNumbering([]);
+    await api.admin.settings.stages();
+    await api.admin.settings.saveStages([]);
+    await api.admin.settings.deliveryPackages();
+    await api.admin.settings.saveDeliveryPackages([]);
+    await api.admin.settings.garmentTemplates();
+    await api.admin.settings.createGarmentTemplate({ id: null, name: "Kurta", businessType: "ALL", fields: [] });
+    await api.admin.settings.updateGarmentTemplate(3, { id: 3, name: "Kurta", businessType: "ALL", fields: [] });
+    await expect(api.admin.settings.deleteGarmentTemplate(3)).resolves.toBeUndefined();
+    await api.admin.settings.startImageUpload("LOGO");
+    await api.admin.changePassword({ currentPassword: "a", newPassword: "b" });
+
+    expect(fetchMock.mock.calls.map(([url, init]) => `${init.method ?? "GET"} ${url}`)).toEqual([
+      "GET https://api.example.com/api/v1/admin/settings/billing",
+      "PUT https://api.example.com/api/v1/admin/settings/calendar",
+      "GET https://api.example.com/api/v1/admin/settings/numbering",
+      "PUT https://api.example.com/api/v1/admin/settings/numbering",
+      "GET https://api.example.com/api/v1/admin/settings/stages",
+      "PUT https://api.example.com/api/v1/admin/settings/stages",
+      "GET https://api.example.com/api/v1/admin/settings/delivery-packages",
+      "PUT https://api.example.com/api/v1/admin/settings/delivery-packages",
+      "GET https://api.example.com/api/v1/admin/settings/garment-templates",
+      "POST https://api.example.com/api/v1/admin/settings/garment-templates",
+      "PUT https://api.example.com/api/v1/admin/settings/garment-templates/3",
+      "DELETE https://api.example.com/api/v1/admin/settings/garment-templates/3",
+      "POST https://api.example.com/api/v1/admin/settings/images",
+      "PUT https://api.example.com/api/v1/admin/me/password",
+    ]);
+  });
+
   it("exposes field errors from problem details", async () => {
     const problem = {
       detail: "Unknown category",
