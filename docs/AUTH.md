@@ -23,42 +23,114 @@ browser ──/api/auth/*──► storefront (Next.js) ──/api/v1/auth/*─�
   60 days) and retires the old one. A retired token reused after 30 s ends all of that customer's sessions
   (stolen-token protection). Logout revokes the token immediately.
 
-## Local development
+## Settings
 
-Nothing to set up: the `dev` profile uses the **log** SMS provider, so codes appear in the backend log:
+| Setting                 | Where                   | Dev (local)                           | Prod (VPS)                              |
+| ----------------------- | ----------------------- | ------------------------------------- | --------------------------------------- |
+| `GOOGLE_CLIENT_ID`      | backend **and** storefront | dev OAuth client (optional)        | prod OAuth client                       |
+| `SMS_PROVIDER`          | backend                 | `log` (default)                       | `msg91` (default; `log` is refused)     |
+| `MSG91_AUTH_KEY`        | backend                 | only to send real SMS from your laptop | required for phone sign-in             |
+| `MSG91_OTP_TEMPLATE_ID` | backend                 | only to send real SMS from your laptop | required for phone sign-in             |
+
+Each one is optional: without Google the page shows phone sign-in only; without MSG91 in prod, phone sign-in answers
+*"not available right now"* (HTTP 503) and Google still works.
+
+## 1. Google (one-time, ~15 minutes)
+
+Use **two OAuth clients in one Google Cloud project**, so the production client never trusts `localhost`.
+
+1. [console.cloud.google.com](https://console.cloud.google.com) → create project **vaabhi** (or reuse one).
+2. **Google Auth Platform → Branding** (older consoles: *APIs & Services → OAuth consent screen*):
+   app name *Vaabhi*, user support email, developer contact email, authorised domain `vaabhi.com`,
+   home page `https://vaabhi.com`, privacy policy and terms URLs. Skip the logo for now: adding one triggers
+   Google's brand verification (days), while the basic scopes need none.
+3. **Audience:** user type **External**. Then **Publish app** (status *In production*). While it stays in
+   *Testing*, only the test users listed there can sign in.
+4. **Data access:** only `openid`, `.../auth/userinfo.email`, `.../auth/userinfo.profile`.
+5. **Clients → Create client → Web application**, twice:
+
+   | Client name         | Authorised JavaScript origins                        |
+   | ------------------- | ---------------------------------------------------- |
+   | `Vaabhi web (dev)`  | `http://localhost` and `http://localhost:3000`       |
+   | `Vaabhi web (prod)` | `https://vaabhi.com` and `https://www.vaabhi.com`    |
+
+   No redirect URIs (the button returns an ID token to the page). Copy each **Client ID**
+   (`….apps.googleusercontent.com`); the client secret is not used. New origins can take a few minutes to work.
+
+## 2. MSG91 (one-time; DLT approval takes 1–7 days)
+
+Every promotional or transactional SMS in India must use a sender ID and template registered on a DLT portal.
+
+1. **DLT** (Jio, Vodafone Idea "Vilpower", Airtel, …; any one is enough): register the business as a
+   *Principal Entity* (needs PAN / GST or incorporation document) → note the **PE / entity ID**.
+2. On the DLT portal add a **header (sender ID)** of 6 letters, e.g. `VAABHI`, category *Service Implicit*.
+3. Add a **content template**, type *Service Implicit*, linked to that header, text exactly:
+
+   ```
+   {#var#} is your Vaabhi sign-in code. It is valid for 5 minutes. Do not share it with anyone. - Vaabhi
+   ```
+
+   Wait for approval and note the **DLT template ID**.
+4. [msg91.com](https://msg91.com) → sign up → complete KYC → **SMS → Sender ID**: add `VAABHI` with the entity ID.
+5. **SMS → Templates → Create**: paste the same text with the variable written as `##otp##`
+   (`##otp## is your Vaabhi sign-in code. …`), choose the sender ID, enter the DLT template ID. Save and copy
+   MSG91's **template ID** (not the DLT one) → `MSG91_OTP_TEMPLATE_ID`.
+6. **Profile → Authkey → Create** (whitelist the VPS IP if you turn on IP security) → `MSG91_AUTH_KEY`.
+7. Add credit (SMS → *Buy credits*). Sign-in is capped at 300 codes an hour, so a wallet alert at ~₹500 is plenty.
+
+## 3. Dev (your computer)
+
+**Phone sign-in needs nothing:** the `dev` profile uses the **log** SMS provider, so codes appear in the backend log:
 
 ```
 SMS (not sent, dev log provider) to +919876543210 [otp]: {otp=042137}
 ```
 
-Google sign-in needs `GOOGLE_CLIENT_ID` (below) in the backend environment and in `frontend/storefront/.env.local`,
-with `http://localhost:3000` added as an authorised JavaScript origin. Without it the page shows phone sign-in only.
+**Google sign-in:** give the *dev* client id to both apps.
 
-## Production setup
+- Storefront: `frontend/storefront/.env.local` (git-ignored) → `GOOGLE_CLIENT_ID=….apps.googleusercontent.com`
+- Backend: an environment variable (Spring does not read `.env` files). In IntelliJ: *Run → Edit Configurations →
+  VaabhiApplication → Environment variables*. From PowerShell:
 
-### Google
+  ```powershell
+  $env:GOOGLE_CLIENT_ID = "….apps.googleusercontent.com"; ./mvnw spring-boot:run
+  ```
 
-1. Google Cloud console → APIs & Services → **OAuth consent screen**: app name *Vaabhi*, support email, logo,
-   `vaabhi.com` as authorised domain, privacy policy URL. Scopes: just `openid`, `email`, `profile`.
-2. **Credentials → Create credentials → OAuth client ID → Web application.** Authorised JavaScript origins:
-   `https://vaabhi.com` (and `http://localhost:3000` for development). No redirect URIs are needed.
-3. Put the client id in `/opt/vaabhi/.env` as `GOOGLE_CLIENT_ID=…apps.googleusercontent.com`
-   (used by both the backend and the storefront; it is not a secret).
+Open `http://localhost:3000/signup` (not `127.0.0.1`, which is not an authorised origin).
 
-### MSG91 (phone OTP)
+**Real SMS from your laptop** (e.g. to try the MSG91 template before going live): also set
+`SMS_PROVIDER=msg91`, `MSG91_AUTH_KEY` and `MSG91_OTP_TEMPLATE_ID` on the backend. Each code costs an SMS.
 
-1. Create an MSG91 account and complete **DLT registration** (entity / PE ID, a 6-character sender ID such as
-   `VAABHI`, and a *Service Implicit* content template). Suggested template text:
-   `{#var#} is your Vaabhi sign-in code. It is valid for 5 minutes. Do not share it with anyone. - Vaabhi`
-2. In MSG91 → SMS → **Templates**, add that DLT template with the variable written as `##otp##`, attach the sender ID
-   and DLT template id, and copy MSG91's **template id**.
-3. MSG91 → **API** → copy the auth key.
-4. Add to `/opt/vaabhi/.env`:
+## 4. Prod (VPS)
 
-   ```
-   MSG91_AUTH_KEY=…
-   MSG91_OTP_TEMPLATE_ID=…
-   ```
+Store the values as **GitHub secrets** in the `production` environment; every deploy writes them into
+`/opt/vaabhi/.env` (only those lines; like the R2 keys). From the repository root:
 
-Until both are set, phone sign-in answers *"not available right now"* and Google sign-in still works. The `prod`
-profile refuses the dev log provider, so codes can never end up in production logs.
+```bash
+gh secret set GOOGLE_CLIENT_ID      --env production   # the *prod* client id
+gh secret set MSG91_AUTH_KEY        --env production
+gh secret set MSG91_OTP_TEMPLATE_ID --env production
+```
+
+Apply them by redeploying the running build (or merge anything to `main`):
+
+```bash
+gh workflow run deploy.yml -f image_tag=$(ssh -p 20036 deploy@148.113.17.68 cat /opt/vaabhi/.current-tag)
+```
+
+Or, with SSH access, put the three lines in `/opt/vaabhi/.env` yourself and run
+`docker compose -f docker-compose.prod.yml --env-file .env up -d`. The storefront reads `GOOGLE_CLIENT_ID` at
+request time, so no rebuild is needed. Rotating a key is the same: update the secret, redeploy.
+
+**Check it works:**
+
+```bash
+# 200 {"phone":"+91…","expiresInSeconds":300,"resendAfterSeconds":30} and an SMS arrives; 503 means MSG91 is not configured yet
+curl -s -X POST https://api.vaabhi.com/api/v1/auth/otp/request \
+  -H 'Content-Type: application/json' -d '{"phone":"<your mobile>"}'
+```
+
+Then on `https://vaabhi.com/signup` sign in with the code and with Google. If MSG91 refuses a message, the backend
+logs `MSG91 refused [otp]: HTTP … <reason>` (usually a template that is not yet DLT-approved or a sender ID mismatch).
+
+The `prod` profile refuses the dev log provider, so codes can never end up in production logs.
