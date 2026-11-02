@@ -212,22 +212,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/service-products/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["updateServiceProduct"];
-        post?: never;
-        delete: operations["deleteServiceProduct"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/admin/products/{productId}/media": {
         parameters: {
             query?: never;
@@ -260,22 +244,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/orders/{id}/schedule": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["rescheduleOrder"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/admin/me/password": {
         parameters: {
             query?: never;
@@ -285,22 +253,6 @@ export interface paths {
         };
         get?: never;
         put: operations["changeOwnPassword"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/clients/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getClient"];
-        put: operations["updateClient"];
         post?: never;
         delete?: never;
         options?: never;
@@ -340,22 +292,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/tailoring/images": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["startTailoringImageUpload"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/admin/settings/images": {
         parameters: {
             query?: never;
@@ -382,22 +318,6 @@ export interface paths {
         get: operations["getGarmentTemplates"];
         put?: never;
         post: operations["createGarmentTemplate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/service-products": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listServiceProducts"];
-        put?: never;
-        post: operations["createServiceProduct"];
         delete?: never;
         options?: never;
         head?: never;
@@ -494,6 +414,182 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["archiveProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/store/products/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getProduct"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/store/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/store/categories/{slug}/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listProducts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["currentStaff"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["catalogOptions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{productId}/media/{mediaId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteMedia"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/service-products/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateServiceProduct"];
+        post?: never;
+        delete: operations["deleteServiceProduct"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["rescheduleOrder"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/clients/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getClient"];
+        put: operations["updateClient"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/tailoring/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["startTailoringImageUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/service-products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listServiceProducts"];
+        put?: never;
+        post: operations["createServiceProduct"];
         delete?: never;
         options?: never;
         head?: never;
@@ -644,54 +740,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/store/products/{slug}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getProduct"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/store/categories": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/store/categories/{slug}/products": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listProducts"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/admin/orders/{id}": {
         parameters: {
             query?: never;
@@ -700,38 +748,6 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getOrder"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["currentStaff"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/catalog/options": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["catalogOptions"];
         put?: never;
         post?: never;
         delete?: never;
@@ -756,7 +772,39 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/products/{productId}/media/{mediaId}": {
+    "/api/v1/admin/workshop/staff/{staffId}/stages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["saveWorkshopStaffStages"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/workshop/items/{itemId}/assignee": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["assignWorkItem"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/workshop/items/move": {
         parameters: {
             query?: never;
             header?: never;
@@ -765,8 +813,56 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        post: operations["moveWorkItems"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/workshop/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listWorkshopStaff"];
+        put?: never;
         post?: never;
-        delete: operations["deleteMedia"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/workshop/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getWorkshopOverview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/workshop/board": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getWorkBoard"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -924,37 +1020,6 @@ export interface components {
             discountAppliesTo: "ORDER_TOTAL" | "ITEMS_BEFORE_TAX";
             autoInvoice: boolean;
         };
-        ServiceProductForm: {
-            /** Format: int64 */
-            templateId: number;
-            code: string | null;
-            name: string;
-            /** Format: int64 */
-            pricePaise: number;
-            photoKey: string | null;
-            stageCosts: components["schemas"]["StageCost"][];
-        };
-        StageCost: {
-            /** Format: int64 */
-            stageId: number;
-            /** Format: int64 */
-            paise: number;
-        };
-        ServiceProduct: {
-            /** Format: int64 */
-            id: number;
-            /** Format: int64 */
-            templateId: number;
-            garment: string;
-            code: string;
-            name: string;
-            /** Format: int64 */
-            pricePaise: number;
-            photoKey: string | null;
-            stageCosts: components["schemas"]["StageCost"][];
-            /** Format: int64 */
-            profitPaise: number;
-        };
         MediaUpdate: {
             /** Format: int64 */
             id: number;
@@ -1047,188 +1112,9 @@ export interface components {
             /** Format: date-time */
             updatedAt: string;
         };
-        OrderSchedule: {
-            /** Format: date */
-            deliveryDate: string;
-            /** Format: time-local */
-            dueTime: string | null;
-            /** Format: date */
-            trialDate: string | null;
-            notes: string | null;
-        };
-        ClientSummary: {
-            /** Format: int64 */
-            id: number;
-            name: string;
-            phone: string;
-            photoKey: string | null;
-            /** @enum {string} */
-            clientType: "RETAIL" | "WHOLESALE" | "VIP";
-            /** Format: int32 */
-            orderCount: number;
-            /** Format: int64 */
-            spentPaise: number;
-            /** Format: int64 */
-            outstandingPaise: number;
-            /** Format: date */
-            lastOrderDate: string | null;
-        };
-        Order: {
-            /** Format: int64 */
-            id: number;
-            number: string;
-            client: components["schemas"]["ClientSummary"];
-            /** @enum {string} */
-            status: "BOOKED" | "IN_PROGRESS" | "READY" | "DELIVERED" | "CANCELLED";
-            /** Format: date */
-            orderDate: string;
-            /** Format: date */
-            deliveryDate: string;
-            /** Format: time-local */
-            dueTime: string | null;
-            /** Format: date */
-            trialDate: string | null;
-            /** Format: int64 */
-            deliveryPackageId: number | null;
-            /** Format: int64 */
-            deliveryChargePaise: number;
-            /** Format: int64 */
-            itemsPaise: number;
-            /** @enum {string} */
-            discountKind: "AMOUNT" | "PERCENT";
-            /** Format: int64 */
-            discountValue: number;
-            /** Format: int64 */
-            discountPaise: number;
-            couponCode: string | null;
-            /** Format: int64 */
-            totalPaise: number;
-            /** Format: int64 */
-            paidPaise: number;
-            /** Format: int64 */
-            balancePaise: number;
-            notes: string | null;
-            createdBy: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            deliveredAt: string | null;
-            items: components["schemas"]["OrderItem"][];
-            payments: components["schemas"]["OrderPayment"][];
-        };
-        OrderItem: {
-            /** Format: int64 */
-            id: number;
-            /** Format: int64 */
-            templateId: number | null;
-            /** Format: int64 */
-            serviceProductId: number | null;
-            description: string;
-            /** Format: int32 */
-            quantity: number;
-            /** Format: int64 */
-            pricePaise: number;
-            colour: string | null;
-            note: string | null;
-            measurements: {
-                [key: string]: string;
-            } | null;
-            clothPhotoKey: string | null;
-            stage: components["schemas"]["ProductionStage"] | null;
-            /** Format: date-time */
-            stageChangedAt: string;
-        };
-        OrderPayment: {
-            /** Format: int64 */
-            id: number;
-            /** Format: int64 */
-            amountPaise: number;
-            /** @enum {string} */
-            mode: "CASH" | "UPI" | "CARD" | "BANK";
-            /** @enum {string} */
-            kind: "ADVANCE" | "PAYMENT" | "REFUND";
-            note: string | null;
-            receivedBy: string | null;
-            /** Format: date-time */
-            receivedAt: string;
-        };
         PasswordChange: {
             currentPassword: string;
             newPassword: string;
-        };
-        ClientForm: {
-            phone: string;
-            firstName: string;
-            lastName: string | null;
-            /** @enum {string} */
-            gender: "FEMALE" | "MALE" | "OTHER";
-            photoKey: string | null;
-            /** Format: email */
-            email: string | null;
-            altPhone: string | null;
-            whatsapp: string | null;
-            address: string | null;
-            city: string | null;
-            state: string | null;
-            pinCode: string | null;
-            /** @enum {string} */
-            clientType: "RETAIL" | "WHOLESALE" | "VIP";
-            gstin: string | null;
-            preferredStyle: string | null;
-            /** Format: date */
-            birthDate: string | null;
-            occasionName: string | null;
-            /** Format: date */
-            occasionDate: string | null;
-        };
-        Client: {
-            /** Format: int64 */
-            id: number;
-            phone: string;
-            firstName: string;
-            lastName: string | null;
-            /** @enum {string} */
-            gender: "FEMALE" | "MALE" | "OTHER";
-            photoKey: string | null;
-            email: string | null;
-            altPhone: string | null;
-            whatsapp: string | null;
-            address: string | null;
-            city: string | null;
-            state: string | null;
-            pinCode: string | null;
-            /** @enum {string} */
-            clientType: "RETAIL" | "WHOLESALE" | "VIP";
-            gstin: string | null;
-            preferredStyle: string | null;
-            /** Format: date */
-            birthDate: string | null;
-            occasionName: string | null;
-            /** Format: date */
-            occasionDate: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: int32 */
-            orderCount: number;
-            /** Format: int64 */
-            spentPaise: number;
-            /** Format: int64 */
-            outstandingPaise: number;
-            measurements: components["schemas"]["Measurement"][];
-        };
-        Measurement: {
-            /** Format: int64 */
-            id: number;
-            /** Format: int64 */
-            templateId: number;
-            garment: string;
-            values: {
-                [key: string]: string;
-            };
-            notes: string | null;
-            takenBy: string | null;
-            /** Format: date-time */
-            takenAt: string;
         };
         BagQuoteRequest: {
             lines: components["schemas"]["BagRequestLine"][];
@@ -1296,16 +1182,6 @@ export interface components {
             expiresIn: number;
             staff: components["schemas"]["StaffProfile"];
         };
-        TailoringImageRequest: {
-            /** @enum {string} */
-            purpose: "CLIENT" | "CLOTH" | "ALTERATION" | "PRODUCT";
-        };
-        TailoringImageUpload: {
-            key: string;
-            uploadUrl: string;
-            /** Format: date-time */
-            expiresAt: string;
-        };
         SettingsImageRequest: {
             /** @enum {string} */
             purpose: "LOGO" | "UPI_QR";
@@ -1334,135 +1210,6 @@ export interface components {
             /** Format: int32 */
             width: number;
             uploadUrl: string;
-        };
-        OrderForm: {
-            /** Format: int64 */
-            clientId: number;
-            /** Format: date */
-            orderDate: string;
-            /** Format: date */
-            deliveryDate: string | null;
-            /** Format: time-local */
-            dueTime: string | null;
-            /** Format: date */
-            trialDate: string | null;
-            /** Format: int64 */
-            deliveryPackageId: number | null;
-            items: components["schemas"]["OrderItemForm"][];
-            /** @enum {string} */
-            discountKind: "AMOUNT" | "PERCENT";
-            /** Format: int64 */
-            discountValue: number;
-            couponCode: string | null;
-            /** Format: int64 */
-            advancePaise: number;
-            /** @enum {string} */
-            advanceMode: "CASH" | "UPI" | "CARD" | "BANK";
-            notes: string | null;
-        };
-        OrderItemForm: {
-            /** Format: int64 */
-            templateId: number | null;
-            /** Format: int64 */
-            serviceProductId: number | null;
-            description: string;
-            /** Format: int32 */
-            quantity: number;
-            /** Format: int64 */
-            pricePaise: number;
-            colour: string | null;
-            note: string | null;
-            measurements: {
-                [key: string]: string;
-            } | null;
-            clothPhotoKey: string | null;
-        };
-        StageMove: {
-            /** Format: int64 */
-            stageId: number;
-            itemIds: number[];
-        };
-        PaymentForm: {
-            /** Format: int64 */
-            amountPaise: number;
-            /** @enum {string} */
-            mode: "CASH" | "UPI" | "CARD" | "BANK";
-            refund: boolean;
-            note: string | null;
-        };
-        MeasurementForm: {
-            /** Format: int64 */
-            templateId: number;
-            values: {
-                [key: string]: string;
-            };
-            notes: string | null;
-        };
-        AlterationForm: {
-            /** Format: int64 */
-            clientId: number;
-            /** Format: int64 */
-            orderId: number | null;
-            /** Format: date */
-            readyBy: string;
-            paid: boolean;
-            items: components["schemas"]["AlterationItemForm"][];
-            notes: string | null;
-            undertakingAccepted: boolean;
-        };
-        AlterationItemForm: {
-            /** @enum {string} */
-            kind: "FIT_ADJUSTMENT" | "LENGTH" | "REPAIR" | "REWORK";
-            garment: string;
-            instructions: string | null;
-            photoKey: string | null;
-            /** Format: int64 */
-            costPaise: number;
-        };
-        Alteration: {
-            /** Format: int64 */
-            id: number;
-            number: string;
-            client: components["schemas"]["ClientSummary"];
-            /** Format: int64 */
-            orderId: number | null;
-            orderNumber: string | null;
-            /** @enum {string} */
-            status: "BOOKED" | "IN_PROGRESS" | "READY" | "DELIVERED" | "CANCELLED";
-            /** Format: date */
-            readyBy: string;
-            paid: boolean;
-            /** Format: int64 */
-            totalPaise: number;
-            /** Format: int64 */
-            collectedPaise: number;
-            /** Format: int64 */
-            balancePaise: number;
-            notes: string | null;
-            undertaking: string;
-            createdBy: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            deliveredAt: string | null;
-            items: components["schemas"]["AlterationItem"][];
-        };
-        AlterationItem: {
-            /** Format: int64 */
-            id: number;
-            /** @enum {string} */
-            kind: "FIT_ADJUSTMENT" | "LENGTH" | "REPAIR" | "REWORK";
-            garment: string;
-            instructions: string | null;
-            photoKey: string | null;
-            /** Format: int64 */
-            costPaise: number;
-        };
-        AlterationProgress: {
-            /** @enum {string} */
-            status: "BOOKED" | "IN_PROGRESS" | "READY" | "DELIVERED" | "CANCELLED";
-            /** Format: int64 */
-            collectPaise: number;
         };
         AddonResponse: {
             code: string;
@@ -1624,6 +1371,372 @@ export interface components {
             /** Format: date-time */
             updatedAt: string;
         };
+        CatalogOptions: {
+            categories: components["schemas"]["CategoryResponse"][];
+            facets: components["schemas"]["FacetOption"][];
+            colourFamilies: components["schemas"]["ColourOption"][];
+            sizes: string[];
+        };
+        ColourOption: {
+            code: string;
+            name: string;
+            hex: string;
+        };
+        FacetOption: {
+            code: string;
+            name: string;
+            values: components["schemas"]["AttributeValue"][];
+        };
+        ServiceProductForm: {
+            /** Format: int64 */
+            templateId: number;
+            code: string | null;
+            name: string;
+            /** Format: int64 */
+            pricePaise: number;
+            photoKey: string | null;
+            stageCosts: components["schemas"]["StageCost"][];
+        };
+        StageCost: {
+            /** Format: int64 */
+            stageId: number;
+            /** Format: int64 */
+            paise: number;
+        };
+        ServiceProduct: {
+            /** Format: int64 */
+            id: number;
+            /** Format: int64 */
+            templateId: number;
+            garment: string;
+            code: string;
+            name: string;
+            /** Format: int64 */
+            pricePaise: number;
+            photoKey: string | null;
+            stageCosts: components["schemas"]["StageCost"][];
+            /** Format: int64 */
+            profitPaise: number;
+        };
+        OrderSchedule: {
+            /** Format: date */
+            deliveryDate: string;
+            /** Format: time-local */
+            dueTime: string | null;
+            /** Format: date */
+            trialDate: string | null;
+            notes: string | null;
+        };
+        ClientSummary: {
+            /** Format: int64 */
+            id: number;
+            name: string;
+            phone: string;
+            photoKey: string | null;
+            /** @enum {string} */
+            clientType: "RETAIL" | "WHOLESALE" | "VIP";
+            /** Format: int32 */
+            orderCount: number;
+            /** Format: int64 */
+            spentPaise: number;
+            /** Format: int64 */
+            outstandingPaise: number;
+            /** Format: date */
+            lastOrderDate: string | null;
+        };
+        Order: {
+            /** Format: int64 */
+            id: number;
+            number: string;
+            client: components["schemas"]["ClientSummary"];
+            /** @enum {string} */
+            status: "BOOKED" | "IN_PROGRESS" | "READY" | "DELIVERED" | "CANCELLED";
+            /** Format: date */
+            orderDate: string;
+            /** Format: date */
+            deliveryDate: string;
+            /** Format: time-local */
+            dueTime: string | null;
+            /** Format: date */
+            trialDate: string | null;
+            /** Format: int64 */
+            deliveryPackageId: number | null;
+            /** Format: int64 */
+            deliveryChargePaise: number;
+            /** Format: int64 */
+            itemsPaise: number;
+            /** @enum {string} */
+            discountKind: "AMOUNT" | "PERCENT";
+            /** Format: int64 */
+            discountValue: number;
+            /** Format: int64 */
+            discountPaise: number;
+            couponCode: string | null;
+            /** Format: int64 */
+            totalPaise: number;
+            /** Format: int64 */
+            paidPaise: number;
+            /** Format: int64 */
+            balancePaise: number;
+            notes: string | null;
+            createdBy: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            deliveredAt: string | null;
+            items: components["schemas"]["OrderItem"][];
+            payments: components["schemas"]["OrderPayment"][];
+        };
+        OrderItem: {
+            /** Format: int64 */
+            id: number;
+            /** Format: int64 */
+            templateId: number | null;
+            /** Format: int64 */
+            serviceProductId: number | null;
+            description: string;
+            /** Format: int32 */
+            quantity: number;
+            /** Format: int64 */
+            pricePaise: number;
+            colour: string | null;
+            note: string | null;
+            measurements: {
+                [key: string]: string;
+            } | null;
+            clothPhotoKey: string | null;
+            stage: components["schemas"]["ProductionStage"] | null;
+            /** Format: date-time */
+            stageChangedAt: string;
+            assignedTo: components["schemas"]["Assignee"] | null;
+        };
+        OrderPayment: {
+            /** Format: int64 */
+            id: number;
+            /** Format: int64 */
+            amountPaise: number;
+            /** @enum {string} */
+            mode: "CASH" | "UPI" | "CARD" | "BANK";
+            /** @enum {string} */
+            kind: "ADVANCE" | "PAYMENT" | "REFUND";
+            note: string | null;
+            receivedBy: string | null;
+            /** Format: date-time */
+            receivedAt: string;
+        };
+        ClientForm: {
+            phone: string;
+            firstName: string;
+            lastName: string | null;
+            /** @enum {string} */
+            gender: "FEMALE" | "MALE" | "OTHER";
+            photoKey: string | null;
+            /** Format: email */
+            email: string | null;
+            altPhone: string | null;
+            whatsapp: string | null;
+            address: string | null;
+            city: string | null;
+            state: string | null;
+            pinCode: string | null;
+            /** @enum {string} */
+            clientType: "RETAIL" | "WHOLESALE" | "VIP";
+            gstin: string | null;
+            preferredStyle: string | null;
+            /** Format: date */
+            birthDate: string | null;
+            occasionName: string | null;
+            /** Format: date */
+            occasionDate: string | null;
+        };
+        Client: {
+            /** Format: int64 */
+            id: number;
+            phone: string;
+            firstName: string;
+            lastName: string | null;
+            /** @enum {string} */
+            gender: "FEMALE" | "MALE" | "OTHER";
+            photoKey: string | null;
+            email: string | null;
+            altPhone: string | null;
+            whatsapp: string | null;
+            address: string | null;
+            city: string | null;
+            state: string | null;
+            pinCode: string | null;
+            /** @enum {string} */
+            clientType: "RETAIL" | "WHOLESALE" | "VIP";
+            gstin: string | null;
+            preferredStyle: string | null;
+            /** Format: date */
+            birthDate: string | null;
+            occasionName: string | null;
+            /** Format: date */
+            occasionDate: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: int32 */
+            orderCount: number;
+            /** Format: int64 */
+            spentPaise: number;
+            /** Format: int64 */
+            outstandingPaise: number;
+            measurements: components["schemas"]["Measurement"][];
+        };
+        Measurement: {
+            /** Format: int64 */
+            id: number;
+            /** Format: int64 */
+            templateId: number;
+            garment: string;
+            values: {
+                [key: string]: string;
+            };
+            notes: string | null;
+            takenBy: string | null;
+            /** Format: date-time */
+            takenAt: string;
+        };
+        TailoringImageRequest: {
+            /** @enum {string} */
+            purpose: "CLIENT" | "CLOTH" | "ALTERATION" | "PRODUCT";
+        };
+        TailoringImageUpload: {
+            key: string;
+            uploadUrl: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        OrderForm: {
+            /** Format: int64 */
+            clientId: number;
+            /** Format: date */
+            orderDate: string;
+            /** Format: date */
+            deliveryDate: string | null;
+            /** Format: time-local */
+            dueTime: string | null;
+            /** Format: date */
+            trialDate: string | null;
+            /** Format: int64 */
+            deliveryPackageId: number | null;
+            items: components["schemas"]["OrderItemForm"][];
+            /** @enum {string} */
+            discountKind: "AMOUNT" | "PERCENT";
+            /** Format: int64 */
+            discountValue: number;
+            couponCode: string | null;
+            /** Format: int64 */
+            advancePaise: number;
+            /** @enum {string} */
+            advanceMode: "CASH" | "UPI" | "CARD" | "BANK";
+            notes: string | null;
+        };
+        OrderItemForm: {
+            /** Format: int64 */
+            templateId: number | null;
+            /** Format: int64 */
+            serviceProductId: number | null;
+            description: string;
+            /** Format: int32 */
+            quantity: number;
+            /** Format: int64 */
+            pricePaise: number;
+            colour: string | null;
+            note: string | null;
+            measurements: {
+                [key: string]: string;
+            } | null;
+            clothPhotoKey: string | null;
+        };
+        StageMove: {
+            /** Format: int64 */
+            stageId: number;
+            itemIds: number[];
+        };
+        PaymentForm: {
+            /** Format: int64 */
+            amountPaise: number;
+            /** @enum {string} */
+            mode: "CASH" | "UPI" | "CARD" | "BANK";
+            refund: boolean;
+            note: string | null;
+        };
+        MeasurementForm: {
+            /** Format: int64 */
+            templateId: number;
+            values: {
+                [key: string]: string;
+            };
+            notes: string | null;
+        };
+        AlterationForm: {
+            /** Format: int64 */
+            clientId: number;
+            /** Format: int64 */
+            orderId: number | null;
+            /** Format: date */
+            readyBy: string;
+            paid: boolean;
+            items: components["schemas"]["AlterationItemForm"][];
+            notes: string | null;
+            undertakingAccepted: boolean;
+        };
+        AlterationItemForm: {
+            /** @enum {string} */
+            kind: "FIT_ADJUSTMENT" | "LENGTH" | "REPAIR" | "REWORK";
+            garment: string;
+            instructions: string | null;
+            photoKey: string | null;
+            /** Format: int64 */
+            costPaise: number;
+        };
+        Alteration: {
+            /** Format: int64 */
+            id: number;
+            number: string;
+            client: components["schemas"]["ClientSummary"];
+            /** Format: int64 */
+            orderId: number | null;
+            orderNumber: string | null;
+            /** @enum {string} */
+            status: "BOOKED" | "IN_PROGRESS" | "READY" | "DELIVERED" | "CANCELLED";
+            /** Format: date */
+            readyBy: string;
+            paid: boolean;
+            /** Format: int64 */
+            totalPaise: number;
+            /** Format: int64 */
+            collectedPaise: number;
+            /** Format: int64 */
+            balancePaise: number;
+            notes: string | null;
+            undertaking: string;
+            createdBy: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            deliveredAt: string | null;
+            items: components["schemas"]["AlterationItem"][];
+        };
+        AlterationItem: {
+            /** Format: int64 */
+            id: number;
+            /** @enum {string} */
+            kind: "FIT_ADJUSTMENT" | "LENGTH" | "REPAIR" | "REWORK";
+            garment: string;
+            instructions: string | null;
+            photoKey: string | null;
+            /** Format: int64 */
+            costPaise: number;
+        };
+        AlterationProgress: {
+            /** @enum {string} */
+            status: "BOOKED" | "IN_PROGRESS" | "READY" | "DELIVERED" | "CANCELLED";
+            /** Format: int64 */
+            collectPaise: number;
+        };
         OrderPage: {
             items: components["schemas"]["OrderSummary"][];
             /** Format: int64 */
@@ -1667,22 +1780,6 @@ export interface components {
             /** Format: int32 */
             pageSize: number;
         };
-        CatalogOptions: {
-            categories: components["schemas"]["CategoryResponse"][];
-            facets: components["schemas"]["FacetOption"][];
-            colourFamilies: components["schemas"]["ColourOption"][];
-            sizes: string[];
-        };
-        ColourOption: {
-            code: string;
-            name: string;
-            hex: string;
-        };
-        FacetOption: {
-            code: string;
-            name: string;
-            values: components["schemas"]["AttributeValue"][];
-        };
         AlterationPage: {
             items: components["schemas"]["AlterationSummary"][];
             /** Format: int64 */
@@ -1713,6 +1810,87 @@ export interface components {
             /** Format: int64 */
             balancePaise: number;
             overdue: boolean;
+        };
+        StaffStages: {
+            stageIds: number[];
+        };
+        WorkshopStaff: {
+            /** Format: int64 */
+            id: number;
+            name: string;
+            /** @enum {string} */
+            role: "OWNER" | "MANAGER" | "STAFF";
+            stageIds: number[];
+            /** Format: int32 */
+            workingOn: number;
+        };
+        AssignForm: {
+            /** Format: int64 */
+            staffId: number | null;
+        };
+        Assignee: {
+            /** Format: int64 */
+            id: number;
+            name: string;
+        };
+        WorkItem: {
+            /** Format: int64 */
+            itemId: number;
+            /** Format: int64 */
+            orderId: number;
+            orderNumber: string;
+            /** Format: int64 */
+            clientId: number;
+            clientName: string;
+            description: string;
+            /** Format: int32 */
+            quantity: number;
+            colour: string | null;
+            garment: string | null;
+            clothPhotoKey: string | null;
+            stage: components["schemas"]["ProductionStage"];
+            /** Format: date-time */
+            stageSince: string;
+            /** Format: date */
+            deliveryDate: string;
+            /** Format: date */
+            trialDate: string | null;
+            dueToday: boolean;
+            overdue: boolean;
+            assignedTo: components["schemas"]["Assignee"] | null;
+        };
+        BulkMove: {
+            /** Format: int64 */
+            stageId: number;
+            itemIds: number[];
+        };
+        BoardColumn: {
+            stage: components["schemas"]["ProductionStage"];
+            removed: boolean;
+            items: components["schemas"]["WorkItem"][];
+        };
+        StageLoad: {
+            stage: components["schemas"]["ProductionStage"];
+            /** Format: int32 */
+            items: number;
+            /** Format: int32 */
+            overdue: number;
+        };
+        WorkshopOverview: {
+            /** Format: int32 */
+            inProduction: number;
+            /** Format: int32 */
+            unassigned: number;
+            /** Format: int32 */
+            readyItems: number;
+            /** Format: int32 */
+            dueToday: number;
+            /** Format: int32 */
+            overdue: number;
+            /** Format: int32 */
+            trialsToday: number;
+            stageLoad: components["schemas"]["StageLoad"][];
+            staffLoad: components["schemas"]["WorkshopStaff"][];
         };
     };
     responses: never;
@@ -2297,52 +2475,6 @@ export interface operations {
             };
         };
     };
-    updateServiceProduct: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ServiceProductForm"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ServiceProduct"];
-                };
-            };
-        };
-    };
-    deleteServiceProduct: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     updateMedia: {
         parameters: {
             query?: never;
@@ -2417,32 +2549,6 @@ export interface operations {
             };
         };
     };
-    rescheduleOrder: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["OrderSchedule"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Order"];
-                };
-            };
-        };
-    };
     changeOwnPassword: {
         parameters: {
             query?: never;
@@ -2462,54 +2568,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-        };
-    };
-    getClient: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Client"];
-                };
-            };
-        };
-    };
-    updateClient: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ClientForm"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Client"];
-                };
             };
         };
     };
@@ -2557,30 +2615,6 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["StaffSession"];
-                };
-            };
-        };
-    };
-    startTailoringImageUpload: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TailoringImageRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TailoringImageUpload"];
                 };
             };
         };
@@ -2649,53 +2683,6 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["GarmentTemplate"];
-                };
-            };
-        };
-    };
-    listServiceProducts: {
-        parameters: {
-            query?: {
-                templateId?: number | null;
-                q?: string | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ServiceProduct"][];
-                };
-            };
-        };
-    };
-    createServiceProduct: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ServiceProductForm"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ServiceProduct"];
                 };
             };
         };
@@ -2867,11 +2854,371 @@ export interface operations {
             };
         };
     };
+    getProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProductDetailResponse"];
+                };
+            };
+        };
+    };
+    list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CategoryResponse"][];
+                };
+            };
+        };
+    };
+    listProducts: {
+        parameters: {
+            query?: {
+                /**
+                 * @description Comma-separated colour family codes
+                 * @example red,maroon
+                 */
+                colour?: string | null;
+                /**
+                 * @description Comma-separated sizes
+                 * @example M,L
+                 */
+                size?: string | null;
+                /** @description Only products with stock in the selected colour/size */
+                inStock?: boolean;
+                /** @description Minimum price in paise */
+                priceMin?: number | null;
+                /** @description Maximum price in paise */
+                priceMax?: number | null;
+                sort?: "popular" | "new" | "price_asc" | "price_desc" | "discount";
+                /** @description 1-based page number */
+                page?: number;
+                /** @description Products per page, at most 48 */
+                pageSize?: number;
+                /**
+                 * @description Comma-separated facet value codes (OR within the facet)
+                 * @example silk,cotton
+                 */
+                fabric?: string;
+                /**
+                 * @description Comma-separated facet value codes (OR within the facet)
+                 * @example wedding
+                 */
+                occasion?: string;
+                /**
+                 * @description Comma-separated facet value codes (OR within the facet)
+                 * @example banarasi
+                 */
+                weave?: string;
+                /**
+                 * @description Comma-separated facet value codes (OR within the facet)
+                 * @example zari
+                 */
+                work?: string;
+            };
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProductListingResponse"];
+                };
+            };
+        };
+    };
+    currentStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffProfile"];
+                };
+            };
+        };
+    };
+    catalogOptions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CatalogOptions"];
+                };
+            };
+        };
+    };
+    deleteMedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+                mediaId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminMedia"][];
+                };
+            };
+        };
+    };
+    updateServiceProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ServiceProductForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ServiceProduct"];
+                };
+            };
+        };
+    };
+    deleteServiceProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    rescheduleOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderSchedule"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Order"];
+                };
+            };
+        };
+    };
+    getClient: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Client"];
+                };
+            };
+        };
+    };
+    updateClient: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClientForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Client"];
+                };
+            };
+        };
+    };
+    startTailoringImageUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TailoringImageRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TailoringImageUpload"];
+                };
+            };
+        };
+    };
+    listServiceProducts: {
+        parameters: {
+            query?: {
+                templateId?: number | null;
+                q?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ServiceProduct"][];
+                };
+            };
+        };
+    };
+    createServiceProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ServiceProductForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ServiceProduct"];
+                };
+            };
+        };
+    };
     listOrders: {
         parameters: {
             query?: {
                 q?: string | null;
-                filter?: "ALL" | "OPEN" | "BOOKED" | "IN_PROGRESS" | "READY" | "DELIVERED" | "CANCELLED" | "OVERDUE";
+                filter?: "ALL" | "OPEN" | "BOOKED" | "IN_PROGRESS" | "READY" | "DELIVERED" | "CANCELLED" | "OVERDUE" | "DUE_TODAY";
                 from?: string | null;
                 to?: string | null;
                 clientId?: number | null;
@@ -3094,7 +3441,7 @@ export interface operations {
         parameters: {
             query?: {
                 q?: string | null;
-                filter?: "ALL" | "OPEN" | "BOOKED" | "IN_PROGRESS" | "READY" | "DELIVERED" | "CANCELLED" | "OVERDUE";
+                filter?: "ALL" | "OPEN" | "BOOKED" | "IN_PROGRESS" | "READY" | "DELIVERED" | "CANCELLED" | "OVERDUE" | "DUE_TODAY";
                 clientId?: number | null;
                 page?: number;
                 pageSize?: number;
@@ -3166,112 +3513,6 @@ export interface operations {
             };
         };
     };
-    getProduct: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                slug: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ProductDetailResponse"];
-                };
-            };
-        };
-    };
-    list: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CategoryResponse"][];
-                };
-            };
-        };
-    };
-    listProducts: {
-        parameters: {
-            query?: {
-                /**
-                 * @description Comma-separated colour family codes
-                 * @example red,maroon
-                 */
-                colour?: string | null;
-                /**
-                 * @description Comma-separated sizes
-                 * @example M,L
-                 */
-                size?: string | null;
-                /** @description Only products with stock in the selected colour/size */
-                inStock?: boolean;
-                /** @description Minimum price in paise */
-                priceMin?: number | null;
-                /** @description Maximum price in paise */
-                priceMax?: number | null;
-                sort?: "popular" | "new" | "price_asc" | "price_desc" | "discount";
-                /** @description 1-based page number */
-                page?: number;
-                /** @description Products per page, at most 48 */
-                pageSize?: number;
-                /**
-                 * @description Comma-separated facet value codes (OR within the facet)
-                 * @example silk,cotton
-                 */
-                fabric?: string;
-                /**
-                 * @description Comma-separated facet value codes (OR within the facet)
-                 * @example wedding
-                 */
-                occasion?: string;
-                /**
-                 * @description Comma-separated facet value codes (OR within the facet)
-                 * @example banarasi
-                 */
-                weave?: string;
-                /**
-                 * @description Comma-separated facet value codes (OR within the facet)
-                 * @example zari
-                 */
-                work?: string;
-            };
-            header?: never;
-            path: {
-                slug: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ProductListingResponse"];
-                };
-            };
-        };
-    };
     getOrder: {
         parameters: {
             query?: never;
@@ -3290,46 +3531,6 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["Order"];
-                };
-            };
-        };
-    };
-    currentStaff: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["StaffProfile"];
-                };
-            };
-        };
-    };
-    catalogOptions: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CatalogOptions"];
                 };
             };
         };
@@ -3356,14 +3557,87 @@ export interface operations {
             };
         };
     };
-    deleteMedia: {
+    saveWorkshopStaffStages: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                productId: number;
-                mediaId: number;
+                staffId: number;
             };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffStages"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WorkshopStaff"];
+                };
+            };
+        };
+    };
+    assignWorkItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WorkItem"];
+                };
+            };
+        };
+    };
+    moveWorkItems: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkMove"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BoardColumn"][];
+                };
+            };
+        };
+    };
+    listWorkshopStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
@@ -3374,7 +3648,50 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["AdminMedia"][];
+                    "*/*": components["schemas"]["WorkshopStaff"][];
+                };
+            };
+        };
+    };
+    getWorkshopOverview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WorkshopOverview"];
+                };
+            };
+        };
+    };
+    getWorkBoard: {
+        parameters: {
+            query?: {
+                staffId?: number | null;
+                q?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BoardColumn"][];
                 };
             };
         };

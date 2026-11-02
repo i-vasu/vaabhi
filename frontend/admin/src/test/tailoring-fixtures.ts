@@ -1,5 +1,9 @@
 import type {
   Alteration,
+  BoardColumn,
+  WorkItem,
+  WorkshopOverview,
+  WorkshopStaff,
   AlterationPage,
   Client,
   ClientPage,
@@ -98,6 +102,7 @@ export const order: Order = {
       clothPhotoKey: null,
       stage: stages[0]!,
       stageChangedAt: "2026-11-01T11:00:00+05:30",
+      assignedTo: null,
     },
   ],
   payments: [
@@ -205,6 +210,53 @@ export const serviceProducts: ServiceProduct[] = [
   },
 ];
 
+export const workItem: WorkItem = {
+  itemId: 101,
+  orderId: 42,
+  orderNumber: "ORD-2042",
+  clientId: 7,
+  clientName: "Meera Iyer",
+  description: "3 dart blouse",
+  quantity: 2,
+  colour: "Maroon",
+  garment: "Blouse",
+  clothPhotoKey: null,
+  stage: stages[0]!,
+  stageSince: "2026-11-01T11:00:00+05:30",
+  deliveryDate: "2026-10-30",
+  trialDate: null,
+  dueToday: false,
+  overdue: true,
+  assignedTo: null,
+};
+
+export const board: BoardColumn[] = [
+  { stage: stages[0]!, removed: false, items: [workItem] },
+  { stage: stages[1]!, removed: false, items: [] },
+  { stage: stages[2]!, removed: false, items: [] },
+  { stage: stages[3]!, removed: false, items: [] },
+];
+
+export const workshopStaff: WorkshopStaff[] = [
+  { id: 1, name: "Asha Rao", role: "OWNER", stageIds: [], workingOn: 0 },
+  { id: 2, name: "Sita Cutter", role: "STAFF", stageIds: [1], workingOn: 3 },
+  { id: 3, name: "Ravi Tailor", role: "STAFF", stageIds: [2], workingOn: 1 },
+];
+
+export const overview: WorkshopOverview = {
+  inProduction: 6,
+  unassigned: 2,
+  readyItems: 1,
+  dueToday: 2,
+  overdue: 1,
+  trialsToday: 0,
+  stageLoad: [
+    { stage: stages[0]!, items: 4, overdue: 2 },
+    { stage: stages[1]!, items: 2, overdue: 0 },
+  ],
+  staffLoad: workshopStaff,
+};
+
 export type Sent = { method: string; path: string; query: string; body: unknown };
 
 /**
@@ -256,6 +308,20 @@ export function serveTailoring(): { sent: Sent[] } {
     http.post(`${base}/alterations`, reply(alteration, 201)),
     http.get(`${base}/alterations/:id`, reply(alteration)),
     http.post(`${base}/alterations/:id/progress`, reply({ ...alteration, status: "DELIVERED", balancePaise: 0 })),
+    http.get(`${base}/workshop/overview`, reply(overview)),
+    http.get(`${base}/workshop/board`, reply(board)),
+    http.put(`${base}/workshop/items/:id/assignee`, reply({ ...workItem, assignedTo: { id: 2, name: "Sita Cutter" } })),
+    http.post(
+      `${base}/workshop/items/move`,
+      reply([
+        { ...board[0], items: [] },
+        { ...board[1], items: [{ ...workItem, stage: stages[1] }] },
+        board[2],
+        board[3],
+      ]),
+    ),
+    http.get(`${base}/workshop/staff`, reply(workshopStaff)),
+    http.put(`${base}/workshop/staff/:id/stages`, reply({ ...workshopStaff[1], stageIds: [1, 2] })),
   );
   return { sent };
 }

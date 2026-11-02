@@ -132,6 +132,7 @@ function OrderView({ id }: { id: number }) {
               <p className="text-sm text-ink-soft">
                 {rupees(item.pricePaise * item.quantity)}
                 {item.note && ` · ${item.note}`}
+                {item.assignedTo && <span className="text-ink"> · with {item.assignedTo.name}</span>}
               </p>
               {item.measurements && (
                 <p className="mt-1 text-sm text-ink-faint">

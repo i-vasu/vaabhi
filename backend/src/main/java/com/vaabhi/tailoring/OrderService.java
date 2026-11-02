@@ -257,7 +257,9 @@ public class OrderService {
             @Nullable String measurements,
             @Nullable String clothPhotoKey,
             @Nullable Long stageId,
-            OffsetDateTime stageChangedAt) {}
+            OffsetDateTime stageChangedAt,
+            @Nullable Long assignedStaffId,
+            @Nullable String assignedStaffName) {}
 
     @Transactional(readOnly = true)
     public Order get(long id) {
@@ -268,9 +270,11 @@ public class OrderService {
                 .orElseThrow(OrderService::notFound);
         var stages = allStages();
         var items = jdbc.sql("""
-                        SELECT id, template_id, service_product_id, description, quantity, price_paise, colour, note,
-                               measurements::text AS measurements, cloth_photo_key, stage_id, stage_changed_at
-                        FROM order_item WHERE order_id = :id ORDER BY position
+                        SELECT i.id, i.template_id, i.service_product_id, i.description, i.quantity, i.price_paise,
+                               i.colour, i.note, i.measurements::text AS measurements, i.cloth_photo_key, i.stage_id,
+                               i.stage_changed_at, i.assigned_staff_id, s.name AS assigned_staff_name
+                        FROM order_item i LEFT JOIN staff_account s ON s.id = i.assigned_staff_id
+                        WHERE i.order_id = :id ORDER BY i.position
                         """).param(ID, id).query(ItemRow.class).list().stream()
                 .map(item -> new OrderItem(
                         item.id(),
@@ -284,7 +288,10 @@ public class OrderService {
                         item.measurements() == null ? null : json.readValue(item.measurements(), VALUES),
                         item.clothPhotoKey(),
                         item.stageId() == null ? null : stages.get(item.stageId()),
-                        item.stageChangedAt()))
+                        item.stageChangedAt(),
+                        item.assignedStaffId() == null
+                                ? null
+                                : new Assignee(item.assignedStaffId(), String.valueOf(item.assignedStaffName()))))
                 .toList();
         var payments = jdbc.sql("""
                         SELECT id, amount_paise, mode, kind, note, received_by, received_at FROM order_payment
@@ -332,7 +339,8 @@ public class OrderService {
         READY,
         DELIVERED,
         CANCELLED,
-        OVERDUE
+        OVERDUE,
+        DUE_TODAY
     }
 
     private record SummaryRow(
@@ -370,8 +378,9 @@ public class OrderService {
                     case BOOKED, IN_PROGRESS, READY, DELIVERED, CANCELLED -> filter.name();
                     default -> null;
                 });
-        params.put("open", filter == Filter.OPEN || filter == Filter.OVERDUE);
+        params.put("open", filter == Filter.OPEN || filter == Filter.OVERDUE || filter == Filter.DUE_TODAY);
         params.put("overdue", filter == Filter.OVERDUE);
+        params.put("dueToday", filter == Filter.DUE_TODAY);
         params.put("today", today);
         params.put("from", from);
         params.put("to", to);
@@ -381,6 +390,7 @@ public class OrderService {
                 WHERE (CAST(:status AS varchar) IS NULL OR o.status = :status)
                   AND (NOT :open OR o.status NOT IN ('DELIVERED', 'CANCELLED'))
                   AND (NOT :overdue OR o.delivery_date < :today)
+                  AND (NOT :dueToday OR o.delivery_date = :today)
                   AND (CAST(:from AS date) IS NULL OR o.order_date >= :from)
                   AND (CAST(:to AS date) IS NULL OR o.order_date <= :to)
                   AND (CAST(:client AS bigint) IS NULL OR o.client_id = :client)
@@ -452,8 +462,20 @@ public class OrderService {
         if (!known.containsAll(targets)) {
             throw bad("Those items are not on this order");
         }
+        // Record who finished each stage (for the production ledger), then move on with nobody assigned.
         jdbc.sql("""
-                        UPDATE order_item SET stage_id = :stage, stage_changed_at = now()
+                        INSERT INTO order_item_stage_log (item_id, from_stage_id, to_stage_id, staff_id, actor)
+                        SELECT id, stage_id, :stage, assigned_staff_id, :actor FROM order_item
+                        WHERE order_id = :order AND id = ANY(:items) AND stage_id IS DISTINCT FROM :stage
+                        """)
+                .param("stage", stage.id())
+                .param("actor", actor)
+                .param("order", orderId)
+                .param("items", targets.toArray(Long[]::new))
+                .update();
+        jdbc.sql("""
+                        UPDATE order_item SET stage_id = :stage, stage_changed_at = now(), assigned_staff_id = NULL,
+                            assigned_at = NULL
                         WHERE order_id = :order AND id = ANY(:items) AND stage_id IS DISTINCT FROM :stage
                         """)
                 .param("stage", stage.id())

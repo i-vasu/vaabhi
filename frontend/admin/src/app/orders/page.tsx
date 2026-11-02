@@ -14,6 +14,7 @@ import { formatDate, formatPhone, idParam, useLoad } from "@/lib/tailoring";
 const PAGE_SIZE = 20;
 const ORDER_FILTERS: { value: OrderFilter; label: string }[] = [
   { value: "OPEN", label: "Open" },
+  { value: "DUE_TODAY", label: "Due today" },
   { value: "OVERDUE", label: "Overdue" },
   { value: "READY", label: "Ready" },
   { value: "DELIVERED", label: "Delivered" },

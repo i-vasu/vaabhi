@@ -90,6 +90,13 @@ export type AlterationSummary = Schemas["AlterationSummary"];
 export type AlterationPage = Schemas["AlterationPage"];
 export type AlterationProgress = Schemas["AlterationProgress"];
 export type AlterationListParams = NonNullable<operations["listAlterations"]["parameters"]["query"]>;
+export type Assignee = Schemas["Assignee"];
+export type WorkItem = Schemas["WorkItem"];
+export type BoardColumn = Schemas["BoardColumn"];
+export type WorkshopOverview = Schemas["WorkshopOverview"];
+export type WorkshopStaff = Schemas["WorkshopStaff"];
+export type StageLoad = Schemas["StageLoad"];
+export type BulkMove = Schemas["BulkMove"];
 export type TailoringImageUpload = Schemas["TailoringImageUpload"];
 export type TailoringImagePurpose = Schemas["TailoringImageRequest"]["purpose"];
 
@@ -275,6 +282,17 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         create: (form: AlterationForm) => send<Alteration>("POST", "/api/v1/admin/alterations", form),
         progress: (id: number, progress: AlterationProgress) =>
           send<Alteration>("POST", `/api/v1/admin/alterations/${id}/progress`, progress),
+      },
+      workshop: {
+        overview: () => request<WorkshopOverview>("/api/v1/admin/workshop/overview"),
+        board: (params: { staffId?: number; q?: string } = {}) =>
+          request<BoardColumn[]>(`/api/v1/admin/workshop/board${queryString(params)}`),
+        assign: (itemId: number, staffId: number | null) =>
+          send<WorkItem>("PUT", `/api/v1/admin/workshop/items/${itemId}/assignee`, { staffId }),
+        move: (move: BulkMove) => send<BoardColumn[]>("POST", "/api/v1/admin/workshop/items/move", move),
+        staff: () => request<WorkshopStaff[]>("/api/v1/admin/workshop/staff"),
+        saveStages: (staffId: number, stageIds: number[]) =>
+          send<WorkshopStaff>("PUT", `/api/v1/admin/workshop/staff/${staffId}/stages`, { stageIds }),
       },
       startTailoringImageUpload: (purpose: TailoringImagePurpose) =>
         send<TailoringImageUpload>("POST", "/api/v1/admin/tailoring/images", { purpose }),

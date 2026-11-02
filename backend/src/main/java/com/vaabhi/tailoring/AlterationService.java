@@ -186,8 +186,13 @@ public class AlterationService {
                     case BOOKED, IN_PROGRESS, READY, DELIVERED, CANCELLED -> filter.name();
                     default -> null;
                 });
-        params.put("open", filter == OrderService.Filter.OPEN || filter == OrderService.Filter.OVERDUE);
+        params.put(
+                "open",
+                filter == OrderService.Filter.OPEN
+                        || filter == OrderService.Filter.OVERDUE
+                        || filter == OrderService.Filter.DUE_TODAY);
         params.put("overdue", filter == OrderService.Filter.OVERDUE);
+        params.put("dueToday", filter == OrderService.Filter.DUE_TODAY);
         params.put("today", today);
         params.put("client", clientId);
         var where = """
@@ -195,6 +200,7 @@ public class AlterationService {
                 WHERE (CAST(:status AS varchar) IS NULL OR a.status = :status)
                   AND (NOT :open OR a.status NOT IN ('DELIVERED', 'CANCELLED'))
                   AND (NOT :overdue OR a.ready_by < :today)
+                  AND (NOT :dueToday OR a.ready_by = :today)
                   AND (CAST(:client AS bigint) IS NULL OR a.client_id = :client)
                   AND (CAST(:q AS varchar) IS NULL OR lower(a.number) LIKE :q
                        OR lower(c.first_name || ' ' || coalesce(c.last_name, '')) LIKE :q

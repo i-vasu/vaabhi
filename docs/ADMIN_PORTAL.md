@@ -9,7 +9,7 @@ brings its backend module, Flyway migrations, API types and tests.
 | 0 Foundations | Staff sign-in (email + password, lockout, first owner from env), app frame (sidebar on desktop, bottom bar on phones, header with search and notifications), dark navy theme, shared components | done |
 | 1 Settings | Shop profile (address, hours, links), billing & tax (GST, GSTIN, rates, prices incl. tax), order / invoice / item numbering, bank details, UPI QR, alteration wording, delivery charges, production stages, trial date, garment & measurement templates, holidays & weekly off, notification switches | done |
 | 2 Customers & orders | Customers (list, add, detail, measurements, occasions), new order (items, cloth photo, advance, discount ₹/%, coupon, notes, live totals), orders list and stage progress, payments and refunds, stitching price list with piece rates, alterations | done |
-| 3 Workshop | Work board by stage, assigning staff, who may work which stage, workshop overview (in production, due today, overdue, stage load) | planned |
+| 3 Workshop | Work board by stage, assigning staff, who may work which stage, workshop overview (in production, due today, overdue, stage load) | done |
 | 4 Money | Invoices (auto on delivery), payments (outstanding, collections), expenses, financial ledger | planned |
 | 5 Staff | Staff, roles & permissions, attendance (day / month), requests (leave, permission, off day, comp-off, advance), payroll (late, overtime, advances, salary), piece rates, production & work ledgers | planned |
 | 6 Stock & extras | Inventory (items, units, movements, stock ledger), design & customer galleries, rewards & coupons, Google review requests, activity log, notifications feed, help & support, print formats and form layouts, WhatsApp/SMS sending | planned |
@@ -57,6 +57,30 @@ Money is in paise.
 
 Admin pages: `/customers/`, `/orders/`, `/alterations/`, `/price-list/` (detail and edit pages take `?id=`; new
 order and alteration take `?clientId=` and, for alterations, `?orderId=`).
+
+## Workshop
+
+`/api/v1/admin/workshop` (`WorkshopService` in the tailoring module, `V8__workshop.sql`):
+
+- **Work board** — `GET /board` lists every work and Ready stage with the open items in it (orders not delivered
+  or cancelled), most urgent first; `?staffId=` shows one person's work. A stage removed in Settings keeps showing
+  while items still sit in it. `POST /items/move` moves items from any number of orders to a stage in one go;
+  each order's status follows as usual.
+- **Assigning** — `PUT /items/{itemId}/assignee` gives an item in a work stage to a staff member, or takes it back
+  with `staffId: null`. Moving an item to another stage clears the assignee, since the next stage is usually
+  someone else's job.
+- **Who works which stage** — `PUT /staff/{staffId}/stages`. A person with no stages ticked may take any stage;
+  otherwise only the ticked work stages. Staff come from `StaffDirectory` (the staff module's public read API);
+  adding and managing staff is phase 5.
+- **Stage log** — every time an item leaves a stage, `order_item_stage_log` records from and to stage, who was
+  assigned (the person who did that stage) and who moved it. Phase 5's production ledger and piece-rate pay read
+  it together with the price list's stage costs.
+- **Overview** — `GET /overview`: items in production and not yet given out, items ready for pickup, open orders
+  due today, overdue and with a trial today, items per stage (with how many are late), and each person's load.
+  Orders can also be listed with `filter=DUE_TODAY`.
+
+Admin pages: `/workshop/` (overview), `/workshop/board/` (`?staffId=`, `?unassigned=1`), `/workshop/staff/`. On
+phones the bottom bar is Home, Orders, Work, Customers and More; Products moved into More (Catalogue).
 
 ## UI conventions
 

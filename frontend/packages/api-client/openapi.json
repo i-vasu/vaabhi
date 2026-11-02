@@ -1848,7 +1848,8 @@
                                 "READY",
                                 "DELIVERED",
                                 "CANCELLED",
-                                "OVERDUE"
+                                "OVERDUE",
+                                "DUE_TODAY"
                             ]
                         }
                     },
@@ -2265,7 +2266,8 @@
                                 "READY",
                                 "DELIVERED",
                                 "CANCELLED",
-                                "OVERDUE"
+                                "OVERDUE",
+                                "DUE_TODAY"
                             ]
                         }
                     },
@@ -2440,6 +2442,212 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/Alteration"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/workshop/staff/{staffId}/stages": {
+            "put": {
+                "tags": [
+                    "workshop-controller"
+                ],
+                "operationId": "saveWorkshopStaffStages",
+                "parameters": [
+                    {
+                        "name": "staffId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StaffStages"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkshopStaff"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/workshop/items/{itemId}/assignee": {
+            "put": {
+                "tags": [
+                    "workshop-controller"
+                ],
+                "operationId": "assignWorkItem",
+                "parameters": [
+                    {
+                        "name": "itemId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AssignForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkItem"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/workshop/items/move": {
+            "post": {
+                "tags": [
+                    "workshop-controller"
+                ],
+                "operationId": "moveWorkItems",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BulkMove"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/BoardColumn"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/workshop/staff": {
+            "get": {
+                "tags": [
+                    "workshop-controller"
+                ],
+                "operationId": "listWorkshopStaff",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/WorkshopStaff"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/workshop/overview": {
+            "get": {
+                "tags": [
+                    "workshop-controller"
+                ],
+                "operationId": "getWorkshopOverview",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkshopOverview"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/workshop/board": {
+            "get": {
+                "tags": [
+                    "workshop-controller"
+                ],
+                "operationId": "getWorkBoard",
+                "parameters": [
+                    {
+                        "name": "staffId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/BoardColumn"
+                                    }
                                 }
                             }
                         }
@@ -5264,9 +5472,20 @@
                     "stageChangedAt": {
                         "type": "string",
                         "format": "date-time"
+                    },
+                    "assignedTo": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/Assignee"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
                     }
                 },
                 "required": [
+                    "assignedTo",
                     "clothPhotoKey",
                     "colour",
                     "description",
@@ -6535,6 +6754,309 @@
                     "readyBy",
                     "status",
                     "totalPaise"
+                ]
+            },
+            "StaffStages": {
+                "type": "object",
+                "properties": {
+                    "stageIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "format": "int64"
+                        },
+                        "maxItems": 20,
+                        "minItems": 0
+                    }
+                },
+                "required": [
+                    "stageIds"
+                ]
+            },
+            "WorkshopStaff": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "role": {
+                        "type": "string",
+                        "enum": [
+                            "OWNER",
+                            "MANAGER",
+                            "STAFF"
+                        ]
+                    },
+                    "stageIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    "workingOn": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "role",
+                    "stageIds",
+                    "workingOn"
+                ]
+            },
+            "AssignForm": {
+                "type": "object",
+                "properties": {
+                    "staffId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "staffId"
+                ]
+            },
+            "Assignee": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name"
+                ]
+            },
+            "WorkItem": {
+                "type": "object",
+                "properties": {
+                    "itemId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "orderId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "orderNumber": {
+                        "type": "string"
+                    },
+                    "clientId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "clientName": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "colour": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "garment": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "clothPhotoKey": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "stage": {
+                        "$ref": "#/components/schemas/ProductionStage"
+                    },
+                    "stageSince": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "deliveryDate": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "trialDate": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "dueToday": {
+                        "type": "boolean"
+                    },
+                    "overdue": {
+                        "type": "boolean"
+                    },
+                    "assignedTo": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/Assignee"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "assignedTo",
+                    "clientId",
+                    "clientName",
+                    "clothPhotoKey",
+                    "colour",
+                    "deliveryDate",
+                    "description",
+                    "dueToday",
+                    "garment",
+                    "itemId",
+                    "orderId",
+                    "orderNumber",
+                    "overdue",
+                    "quantity",
+                    "stage",
+                    "stageSince",
+                    "trialDate"
+                ]
+            },
+            "BulkMove": {
+                "type": "object",
+                "properties": {
+                    "stageId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "itemIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "format": "int64"
+                        },
+                        "maxItems": 100,
+                        "minItems": 1
+                    }
+                },
+                "required": [
+                    "itemIds",
+                    "stageId"
+                ]
+            },
+            "BoardColumn": {
+                "type": "object",
+                "properties": {
+                    "stage": {
+                        "$ref": "#/components/schemas/ProductionStage"
+                    },
+                    "removed": {
+                        "type": "boolean"
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/WorkItem"
+                        }
+                    }
+                },
+                "required": [
+                    "items",
+                    "removed",
+                    "stage"
+                ]
+            },
+            "StageLoad": {
+                "type": "object",
+                "properties": {
+                    "stage": {
+                        "$ref": "#/components/schemas/ProductionStage"
+                    },
+                    "items": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "overdue": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                },
+                "required": [
+                    "items",
+                    "overdue",
+                    "stage"
+                ]
+            },
+            "WorkshopOverview": {
+                "type": "object",
+                "properties": {
+                    "inProduction": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "unassigned": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "readyItems": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "dueToday": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "overdue": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "trialsToday": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "stageLoad": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/StageLoad"
+                        }
+                    },
+                    "staffLoad": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/WorkshopStaff"
+                        }
+                    }
+                },
+                "required": [
+                    "dueToday",
+                    "inProduction",
+                    "overdue",
+                    "readyItems",
+                    "staffLoad",
+                    "stageLoad",
+                    "trialsToday",
+                    "unassigned"
                 ]
             }
         }

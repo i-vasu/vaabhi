@@ -1,6 +1,7 @@
 import {
   BagIcon,
   BellIcon,
+  BoardIcon,
   CalendarIcon,
   HomeIcon,
   MoreIcon,
@@ -31,11 +32,18 @@ export type NavItem = {
 export const primaryNav: NavItem[] = [
   { href: "/", label: "Home", icon: HomeIcon, description: "Today at the shop" },
   { href: "/orders/", label: "Orders", icon: BagIcon, description: "Book, track, deliver and take payments" },
+  { href: "/workshop/", label: "Work", icon: BoardIcon, description: "Work board, stage load and who does what" },
   { href: "/customers/", label: "Customers", icon: UsersIcon, description: "Contacts, measurements and history" },
-  { href: "/products/", label: "Products", icon: TagIcon, description: "Catalogue, prices and photos" },
 ];
 
 const byHref = (href: string) => primaryNav.find((item) => item.href === href)!;
+
+const products: NavItem = {
+  href: "/products/",
+  label: "Products",
+  icon: TagIcon,
+  description: "Catalogue, prices and photos",
+};
 
 export const moreNav: NavItem = { href: "/more/", label: "More", icon: MoreIcon };
 
@@ -91,6 +99,19 @@ export const moreSections: { title: string; items: NavItem[] }[] = [
     title: "Tailoring",
     items: [
       byHref("/orders/"),
+      byHref("/workshop/"),
+      {
+        href: "/workshop/board/",
+        label: "Work board",
+        icon: BoardIcon,
+        description: "Give out and move work by stage",
+      },
+      {
+        href: "/workshop/staff/",
+        label: "Who works which stage",
+        icon: UsersIcon,
+        description: "Stages each person may be given",
+      },
       byHref("/customers/"),
       { href: "/alterations/", label: "Alterations", icon: RulerIcon, description: "Fit fixes, length and repairs" },
       { href: "/price-list/", label: "Price list", icon: TagIcon, description: "Stitching prices and piece rates" },
@@ -98,7 +119,7 @@ export const moreSections: { title: string; items: NavItem[] }[] = [
   },
   {
     title: "Catalogue",
-    items: [byHref("/products/")],
+    items: [products],
   },
   {
     title: "Updates",

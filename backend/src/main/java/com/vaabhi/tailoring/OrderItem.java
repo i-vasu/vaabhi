@@ -9,6 +9,7 @@ import org.jspecify.annotations.Nullable;
  * One garment of an order and where it is in production.
  *
  * @param measurements the measurements copied at booking
+ * @param assignedTo who is working on it in its current stage
  */
 public record OrderItem(
         long id,
@@ -22,4 +23,5 @@ public record OrderItem(
         @Nullable Map<String, String> measurements,
         @Nullable String clothPhotoKey,
         @Nullable ProductionStage stage,
-        OffsetDateTime stageChangedAt) {}
+        OffsetDateTime stageChangedAt,
+        @Nullable Assignee assignedTo) {}

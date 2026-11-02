@@ -44,14 +44,15 @@ describe("AppShell", () => {
 
   it("shows the signed-in staff member, navigation and the page", async () => {
     signIn();
-    pathname = "/products/edit/";
+    pathname = "/orders/view/";
     render(<AppShell>page body</AppShell>);
 
     expect(await screen.findByText("page body")).toBeInTheDocument();
     expect(screen.getByText("Asha Rao")).toBeInTheDocument();
     expect(screen.getByText("Owner · vaabhi")).toBeInTheDocument();
     const [sidebar] = screen.getAllByRole("navigation", { name: "Main" });
-    expect(within(sidebar!).getByRole("link", { name: "Products" })).toHaveAttribute("aria-current", "page");
+    expect(within(sidebar!).getByRole("link", { name: "Orders" })).toHaveAttribute("aria-current", "page");
+    expect(within(sidebar!).getByRole("link", { name: "Work" })).toHaveAttribute("href", "/workshop/");
     expect(within(sidebar!).getByRole("link", { name: "Home" })).not.toHaveAttribute("aria-current");
   });
 
