@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import type { Client, GarmentTemplate, Measurement } from "@vaabhi/api-client";
 import { PlusIcon, RulerIcon } from "@/components/icons";
+import { MessageSheet } from "@/components/message-sheet";
+import { RewardsSection } from "@/components/rewards-section";
 import { ErrorNote, Fact, Pill, StatusPill } from "@/components/tailoring";
 import {
   ListCard,
@@ -29,6 +31,7 @@ function CustomerView({ id }: { id: number }) {
   const orders = useLoad(() => api.admin.orders.list({ clientId: id, pageSize: 10 }), [id]);
   const alterations = useLoad(() => api.admin.alterations.list({ clientId: id, filter: "ALL", pageSize: 10 }), [id]);
   const [measuring, setMeasuring] = useState(false);
+  const [messaging, setMessaging] = useState(false);
 
   if (!client.value) {
     return (
@@ -66,6 +69,9 @@ function CustomerView({ id }: { id: number }) {
           <Link href={`/alterations/new/?clientId=${id}`} className={buttonSecondary}>
             Alteration
           </Link>
+          <button type="button" className={buttonSecondary} onClick={() => setMessaging(true)}>
+            Message
+          </button>
         </div>
       </div>
 
@@ -87,6 +93,8 @@ function CustomerView({ id }: { id: number }) {
         Measurements
       </SectionLabel>
       <Measurements measurements={c.measurements} />
+
+      <RewardsSection clientId={id} />
 
       <SectionLabel>Orders</SectionLabel>
       <ErrorNote>{orders.error}</ErrorNote>
@@ -135,6 +143,7 @@ function CustomerView({ id }: { id: number }) {
         </ListCard>
       )}
 
+      {messaging && <MessageSheet clientId={id} onClose={() => setMessaging(false)} />}
       {measuring && (
         <MeasurementSheet
           clientId={id}

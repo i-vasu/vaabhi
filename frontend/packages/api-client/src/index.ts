@@ -133,6 +133,26 @@ export type LedgerKind = LedgerEntry["kind"];
 export type Due = Schemas["Due"];
 export type Outstanding = Schemas["Outstanding"];
 export type TailoringImageUpload = Schemas["TailoringImageUpload"];
+export type StockItem = Schemas["StockItem"];
+export type StockItemForm = Schemas["StockItemForm"];
+export type StockUnit = StockItem["unit"];
+export type StockMovement = Schemas["StockMovement"];
+export type StockMovementForm = Schemas["StockMovementForm"];
+export type Coupon = Schemas["Coupon"];
+export type CouponForm = Schemas["CouponForm"];
+export type CouponCheck = Schemas["CouponCheck"];
+export type RewardSettings = Schemas["RewardSettings"];
+export type RewardAccount = Schemas["RewardAccount"];
+export type RewardChange = Schemas["RewardChange"];
+export type Message = Schemas["Message"];
+export type MessageForm = Schemas["MessageForm"];
+export type MessagePurpose = MessageForm["purpose"];
+export type GalleryPhoto = Schemas["GalleryPhoto"];
+export type GalleryForm = Schemas["GalleryForm"];
+export type GalleryUpload = Schemas["GalleryUpload"];
+export type ActivityEntry = Schemas["ActivityEntry"];
+export type ActivityPage = Schemas["ActivityPage"];
+export type Notifications = Schemas["Notifications"];
 export type TailoringImagePurpose = Schemas["TailoringImageRequest"]["purpose"];
 
 /** The JSON settings sections, by their API path. */
@@ -260,6 +280,45 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
       me: () => request<StaffProfile>("/api/v1/admin/me"),
       changePassword: (change: PasswordChange) => send<void>("PUT", "/api/v1/admin/me/password", change),
       myRequests: () => request<StaffRequest[]>("/api/v1/admin/me/requests"),
+      notifications: () => request<Notifications>("/api/v1/admin/me/notifications"),
+      markNotificationsSeen: () => send<void>("POST", "/api/v1/admin/me/notifications/seen"),
+      activity: (params: { kind?: string; refType?: string; refId?: number; page?: number; pageSize?: number } = {}) =>
+        request<ActivityPage>(`/api/v1/admin/activity${queryString(params)}`),
+      stock: {
+        list: (params: { q?: string; low?: boolean } = {}) =>
+          request<StockItem[]>(`/api/v1/admin/stock${queryString(params)}`),
+        get: (id: number) => request<StockItem>(`/api/v1/admin/stock/${id}`),
+        create: (form: StockItemForm) => send<StockItem>("POST", "/api/v1/admin/stock", form),
+        update: (id: number, form: StockItemForm) => send<StockItem>("PUT", `/api/v1/admin/stock/${id}`, form),
+        remove: (id: number) => send<void>("DELETE", `/api/v1/admin/stock/${id}`),
+        movements: (id: number) => request<StockMovement[]>(`/api/v1/admin/stock/${id}/movements`),
+        move: (id: number, form: StockMovementForm) =>
+          send<StockMovement>("POST", `/api/v1/admin/stock/${id}/movements`, form),
+      },
+      engage: {
+        coupons: () => request<Coupon[]>("/api/v1/admin/engage/coupons"),
+        createCoupon: (form: CouponForm) => send<Coupon>("POST", "/api/v1/admin/engage/coupons", form),
+        updateCoupon: (id: number, form: CouponForm) => send<Coupon>("PUT", `/api/v1/admin/engage/coupons/${id}`, form),
+        checkCoupon: (code: string, amountPaise: number) =>
+          request<CouponCheck>(`/api/v1/admin/engage/coupons/check${queryString({ code, amountPaise })}`),
+        rewardSettings: () => request<RewardSettings>("/api/v1/admin/engage/rewards/settings"),
+        saveRewardSettings: (settings: RewardSettings) =>
+          send<RewardSettings>("PUT", "/api/v1/admin/engage/rewards/settings", settings),
+        rewards: (clientId: number) => request<RewardAccount>(`/api/v1/admin/engage/rewards/clients/${clientId}`),
+        changeRewards: (clientId: number, change: RewardChange) =>
+          send<RewardAccount>("POST", `/api/v1/admin/engage/rewards/clients/${clientId}`, change),
+        messages: (params: { clientId?: number; orderId?: number } = {}) =>
+          request<Message[]>(`/api/v1/admin/engage/messages${queryString(params)}`),
+        prepareMessage: (form: MessageForm) => send<Message>("POST", "/api/v1/admin/engage/messages", form),
+      },
+      gallery: {
+        list: (params: { kind?: GalleryPhoto["kind"]; templateId?: number; clientId?: number; q?: string } = {}) =>
+          request<GalleryPhoto[]>(`/api/v1/admin/gallery${queryString(params)}`),
+        startUpload: () => send<GalleryUpload>("POST", "/api/v1/admin/gallery/uploads"),
+        add: (form: GalleryForm) => send<GalleryPhoto>("POST", "/api/v1/admin/gallery", form),
+        update: (id: number, form: GalleryForm) => send<GalleryPhoto>("PUT", `/api/v1/admin/gallery/${id}`, form),
+        remove: (id: number) => send<void>("DELETE", `/api/v1/admin/gallery/${id}`),
+      },
       createMyRequest: (form: RequestForm) => send<StaffRequest>("POST", "/api/v1/admin/me/requests", form),
       staff: {
         list: (includeInactive = false) =>

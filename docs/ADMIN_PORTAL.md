@@ -12,7 +12,7 @@ brings its backend module, Flyway migrations, API types and tests.
 | 3 Workshop | Work board by stage, assigning staff, who may work which stage, workshop overview (in production, due today, overdue, stage load) | done |
 | 4 Money | Invoices (auto on delivery), payments (outstanding, collections), expenses, financial ledger | done |
 | 5 Staff | Staff, roles & permissions, attendance (day / month), requests (leave, permission, off day, comp-off, advance), payroll (late, overtime, advances, salary), piece rates, production & work ledgers | done |
-| 6 Stock & extras | Inventory (items, units, movements, stock ledger), design & customer galleries, rewards & coupons, Google review requests, activity log, notifications feed, help & support, print formats and form layouts, WhatsApp/SMS sending | planned |
+| 6 Stock & extras | Inventory (items, units, movements, stock ledger), design & customer galleries, rewards & coupons, Google review requests, activity log, notifications feed, help & support, print formats and form layouts, WhatsApp/SMS sending | done (paid sending needs a provider; see below) |
 | 7 Reports | Reports hub (KPIs, 6-month revenue, dues ageing), sales, GST register, sales orders, financial ledger, product profitability, orders, deliveries, customers, alterations, workshop, production, work, stock, rewards, AI usage; CSV export | planned |
 
 ## Sign-in
@@ -150,6 +150,36 @@ invoice or offers to issue one; alteration hand-over asks how the customer paid.
 Admin pages: `/staff/` (and `new`, `edit`, `view?id=` with the statement), `/staff/roles/` (owner),
 `/staff/attendance/` (day) and `/staff/attendance/month/`, `/staff/requests/`, `/requests/` (my requests),
 `/payroll/` and `/payroll/production/`.
+
+## Stock, engage, gallery, activity (phase 6)
+
+`V11__stock_engage_activity.sql`. New permissions: STOCK, MARKETING (coupons, rewards, gallery) and REPORTS (reports,
+activity log); managers get all three by default.
+
+- **Inventory** (`/api/v1/admin/stock`) — items with a unit (metres, pieces, rolls…), reorder level and unit cost.
+  Every change is a movement (IN, OUT, or a signed ADJUST), optionally for an order; on hand is the sum of
+  movements and can never go below zero. The item page is its stock ledger with the balance after each movement.
+- **Coupons** (`/engage/coupons`) — percent or rupee codes with a minimum order, dates and a use limit; uses are the
+  orders (not cancelled) booked with the code. New order's **Apply** checks the code (`/engage/coupons/check`,
+  allowed for ORDERS) and fills in the discount. Booking does not re-check the code: staff could already type any
+  discount.
+- **Rewards** (`/engage/rewards`) — off until switched on. A delivered order earns points (whole ₹100s × points per
+  ₹100, once per order); points are redeemed or corrected by hand on the customer page. Redeeming records the
+  points; give their value as the discount on the next booking.
+- **Messages and review requests** (`/engage/messages`) — fill the Settings → Messages templates for an order or
+  customer (order booked / ready / delivered, payment, review request with the shop's Google review link, reward
+  code, or your own text) and log them. **No paid WhatsApp/SMS provider is set up:** each message comes back as a
+  wa.me / sms: link that opens on the shop's phone ready to send. A provider is added by implementing
+  `engage.MessageProvider` as a bean; messages are then sent and logged as SENT or FAILED.
+- **Gallery** (`/api/v1/admin/gallery`) — design ideas and customers' finished garments with tags and garment;
+  photos upload as 800 px WebP to R2 like product photos (needs R2; locally the upload says storage is not set up).
+- **Activity log** (`/api/v1/admin/activity`, REPORTS) — written in the same transaction as order, payment,
+  alteration and settings events. **Notifications** (`/me/notifications`, everyone) — live alerts (overdue, due
+  today, ready, low stock, waiting requests) plus recent order and alteration updates; opening the page marks them
+  seen.
+- **Printing** — `/print/order/?id=` and `/print/alteration/?id=` print on the shop's paper formats (A4, A5, 80 mm,
+  58 mm) following Settings → Printing (measurements, bank/UPI, terms, staff name, signature); the invoice page
+  prints too. The app frame hides itself when printing. **Help** — `/help/`.
 
 ## UI conventions
 

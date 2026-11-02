@@ -131,13 +131,16 @@ function AlterationView({ id }: { id: number }) {
       <SectionLabel>Terms accepted</SectionLabel>
       <p className="rounded-2xl border border-line bg-panel p-4 text-sm text-ink-soft">{a.undertaking}</p>
 
-      {isOpen(a.status) && (
-        <div className="mt-6">
+      <div className="mt-6 flex flex-wrap gap-2">
+        <Link href={`/print/alteration/?id=${a.id}`} className={buttonSecondary}>
+          Print slip
+        </Link>
+        {isOpen(a.status) && (
           <button type="button" className={`${buttonSecondary} text-bad`} onClick={() => setSheet("cancel")}>
             Cancel alteration
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {sheet === "deliver" && (
         <DeliverSheet

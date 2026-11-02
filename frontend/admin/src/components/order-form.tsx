@@ -166,6 +166,7 @@ export function OrderEditor({ initialClient }: { initialClient: ClientSummary | 
   const [draft, setDraft] = useState<OrderDraft>(() => blankDraft());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [coupon, setCoupon] = useState<string | null>(null);
 
   const setup = useLoad(
     () =>
@@ -329,12 +330,50 @@ export function OrderEditor({ initialClient }: { initialClient: ClientSummary | 
             onChange={(event) => update({ discount: event.target.value })}
           />
         </div>
-        <TextField
-          label="Coupon code"
-          maxLength={40}
-          value={draft.couponCode}
-          onChange={(event) => update({ couponCode: event.target.value })}
-        />
+        <div>
+          <div className="flex items-end gap-2">
+            <TextField
+              className="flex-1"
+              label="Coupon code"
+              maxLength={40}
+              value={draft.couponCode}
+              onChange={(event) => {
+                update({ couponCode: event.target.value });
+                setCoupon(null);
+              }}
+            />
+            <button
+              type="button"
+              className={buttonSecondary}
+              disabled={!draft.couponCode.trim()}
+              onClick={async () => {
+                try {
+                  const check = await api.admin.engage.checkCoupon(
+                    draft.couponCode.trim(),
+                    totals.itemsPaise + totals.deliveryPaise,
+                  );
+                  setCoupon(check.valid ? `${check.code}: ${rupees(check.discountPaise)} off` : check.reason);
+                  if (check.valid && check.kind) {
+                    update({
+                      couponCode: check.code,
+                      discountKind: check.kind,
+                      discount: String(check.value / 100),
+                    });
+                  }
+                } catch (e) {
+                  setCoupon(describeError(e).message);
+                }
+              }}
+            >
+              Apply
+            </button>
+          </div>
+          {coupon && (
+            <p role="status" className="mt-1.5 text-sm text-ink-soft">
+              {coupon}
+            </p>
+          )}
+        </div>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <TextField

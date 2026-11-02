@@ -3984,6 +3984,865 @@
                     }
                 }
             }
+        },
+        "/api/v1/admin/stock/{id}": {
+            "get": {
+                "tags": [
+                    "inventory-controller"
+                ],
+                "operationId": "getStockItem",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StockItem"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "inventory-controller"
+                ],
+                "operationId": "updateStockItem",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StockItemForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StockItem"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "inventory-controller"
+                ],
+                "operationId": "deleteStockItem",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/gallery/{id}": {
+            "put": {
+                "tags": [
+                    "gallery-controller"
+                ],
+                "operationId": "updateGalleryPhoto",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GalleryForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GalleryPhoto"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "gallery-controller"
+                ],
+                "operationId": "deleteGalleryPhoto",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/engage/rewards/settings": {
+            "get": {
+                "tags": [
+                    "engage-controller"
+                ],
+                "operationId": "getRewardSettings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RewardSettings"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "engage-controller"
+                ],
+                "operationId": "saveRewardSettings",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RewardSettings"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RewardSettings"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/engage/coupons/{id}": {
+            "put": {
+                "tags": [
+                    "engage-controller"
+                ],
+                "operationId": "updateCoupon",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CouponForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Coupon"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/stock": {
+            "get": {
+                "tags": [
+                    "inventory-controller"
+                ],
+                "operationId": "listStock",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "low",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/StockItem"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "inventory-controller"
+                ],
+                "operationId": "createStockItem",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StockItemForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StockItem"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/stock/{id}/movements": {
+            "get": {
+                "tags": [
+                    "inventory-controller"
+                ],
+                "operationId": "getStockLedger",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/StockMovement"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "inventory-controller"
+                ],
+                "operationId": "moveStock",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StockMovementForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StockMovement"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/me/notifications/seen": {
+            "post": {
+                "tags": [
+                    "activity-controller"
+                ],
+                "operationId": "markNotificationsSeen",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/gallery": {
+            "get": {
+                "tags": [
+                    "gallery-controller"
+                ],
+                "operationId": "listGallery",
+                "parameters": [
+                    {
+                        "name": "kind",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "DESIGN",
+                                "CUSTOMER"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "templateId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "clientId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/GalleryPhoto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "gallery-controller"
+                ],
+                "operationId": "addGalleryPhoto",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GalleryForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GalleryPhoto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/gallery/uploads": {
+            "post": {
+                "tags": [
+                    "gallery-controller"
+                ],
+                "operationId": "startGalleryUpload",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GalleryUpload"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/engage/rewards/clients/{clientId}": {
+            "get": {
+                "tags": [
+                    "engage-controller"
+                ],
+                "operationId": "getRewardAccount",
+                "parameters": [
+                    {
+                        "name": "clientId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RewardAccount"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "engage-controller"
+                ],
+                "operationId": "changeRewards",
+                "parameters": [
+                    {
+                        "name": "clientId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RewardChange"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RewardAccount"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/engage/messages": {
+            "get": {
+                "tags": [
+                    "engage-controller"
+                ],
+                "operationId": "listMessages",
+                "parameters": [
+                    {
+                        "name": "clientId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "orderId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Message"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "engage-controller"
+                ],
+                "operationId": "prepareMessage",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MessageForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Message"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/engage/coupons": {
+            "get": {
+                "tags": [
+                    "engage-controller"
+                ],
+                "operationId": "listCoupons",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Coupon"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "engage-controller"
+                ],
+                "operationId": "createCoupon",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CouponForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Coupon"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/me/notifications": {
+            "get": {
+                "tags": [
+                    "activity-controller"
+                ],
+                "operationId": "getNotifications",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Notifications"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/engage/coupons/check": {
+            "get": {
+                "tags": [
+                    "engage-controller"
+                ],
+                "operationId": "checkCoupon",
+                "parameters": [
+                    {
+                        "name": "code",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "amountPaise",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CouponCheck"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/activity": {
+            "get": {
+                "tags": [
+                    "activity-controller"
+                ],
+                "operationId": "getActivityLog",
+                "parameters": [
+                    {
+                        "name": "kind",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "refType",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "refId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 50
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ActivityPage"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -9286,7 +10145,10 @@
                                 "STAFF",
                                 "PAYROLL",
                                 "CATALOGUE",
-                                "SETTINGS"
+                                "SETTINGS",
+                                "STOCK",
+                                "MARKETING",
+                                "REPORTS"
                             ]
                         },
                         "uniqueItems": true
@@ -9318,7 +10180,10 @@
                                 "STAFF",
                                 "PAYROLL",
                                 "CATALOGUE",
-                                "SETTINGS"
+                                "SETTINGS",
+                                "STOCK",
+                                "MARKETING",
+                                "REPORTS"
                             ]
                         },
                         "uniqueItems": true
@@ -9544,7 +10409,10 @@
                                 "STAFF",
                                 "PAYROLL",
                                 "CATALOGUE",
-                                "SETTINGS"
+                                "SETTINGS",
+                                "STOCK",
+                                "MARKETING",
+                                "REPORTS"
                             ]
                         },
                         "uniqueItems": true
@@ -10246,6 +11114,1049 @@
                     "name",
                     "pieces",
                     "staffId"
+                ]
+            },
+            "StockItemForm": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 120,
+                        "minLength": 0
+                    },
+                    "sku": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 40,
+                        "minLength": 0
+                    },
+                    "category": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 40,
+                        "minLength": 0
+                    },
+                    "unit": {
+                        "type": "string",
+                        "enum": [
+                            "PCS",
+                            "M",
+                            "CM",
+                            "KG",
+                            "G",
+                            "L",
+                            "ROLL",
+                            "BOX",
+                            "SET"
+                        ]
+                    },
+                    "reorderLevel": {
+                        "type": "number",
+                        "minimum": 0
+                    },
+                    "costPaise": {
+                        "type": "integer",
+                        "format": "int64",
+                        "maximum": 100000000,
+                        "minimum": 0
+                    }
+                },
+                "required": [
+                    "category",
+                    "costPaise",
+                    "name",
+                    "reorderLevel",
+                    "sku",
+                    "unit"
+                ]
+            },
+            "StockItem": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "sku": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "category": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "unit": {
+                        "type": "string",
+                        "enum": [
+                            "PCS",
+                            "M",
+                            "CM",
+                            "KG",
+                            "G",
+                            "L",
+                            "ROLL",
+                            "BOX",
+                            "SET"
+                        ]
+                    },
+                    "reorderLevel": {
+                        "type": "number"
+                    },
+                    "costPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "onHand": {
+                        "type": "number"
+                    },
+                    "low": {
+                        "type": "boolean"
+                    },
+                    "valuePaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "category",
+                    "costPaise",
+                    "id",
+                    "low",
+                    "name",
+                    "onHand",
+                    "reorderLevel",
+                    "sku",
+                    "unit",
+                    "valuePaise"
+                ]
+            },
+            "GalleryForm": {
+                "type": "object",
+                "properties": {
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "DESIGN",
+                            "CUSTOMER"
+                        ]
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 120,
+                        "minLength": 0
+                    },
+                    "tags": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 200,
+                        "minLength": 0
+                    },
+                    "templateId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "clientId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "orderId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "photoKey": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "clientId",
+                    "kind",
+                    "orderId",
+                    "photoKey",
+                    "tags",
+                    "templateId",
+                    "title"
+                ]
+            },
+            "GalleryPhoto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "DESIGN",
+                            "CUSTOMER"
+                        ]
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "tags": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "templateId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "garment": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "clientId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "clientName": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "orderId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "photoKey": {
+                        "type": "string"
+                    },
+                    "createdBy": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "clientId",
+                    "clientName",
+                    "createdAt",
+                    "createdBy",
+                    "garment",
+                    "id",
+                    "kind",
+                    "orderId",
+                    "photoKey",
+                    "tags",
+                    "templateId",
+                    "title"
+                ]
+            },
+            "RewardSettings": {
+                "type": "object",
+                "properties": {
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "pointsPer100": {
+                        "type": "integer",
+                        "format": "int32",
+                        "maximum": 100,
+                        "minimum": 0
+                    },
+                    "paisePerPoint": {
+                        "type": "integer",
+                        "format": "int32",
+                        "maximum": 10000,
+                        "minimum": 0
+                    }
+                },
+                "required": [
+                    "enabled",
+                    "paisePerPoint",
+                    "pointsPer100"
+                ]
+            },
+            "CouponForm": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "maxLength": 40,
+                        "minLength": 0,
+                        "pattern": "^[A-Za-z0-9_-]+$"
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 200,
+                        "minLength": 0
+                    },
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "AMOUNT",
+                            "PERCENT"
+                        ]
+                    },
+                    "value": {
+                        "type": "integer",
+                        "format": "int64",
+                        "maximum": 100000000,
+                        "minimum": 1
+                    },
+                    "minOrderPaise": {
+                        "type": "integer",
+                        "format": "int64",
+                        "maximum": 100000000,
+                        "minimum": 0
+                    },
+                    "validFrom": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "validTo": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "maxUses": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32",
+                        "minimum": 1
+                    },
+                    "active": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "active",
+                    "code",
+                    "description",
+                    "kind",
+                    "maxUses",
+                    "minOrderPaise",
+                    "validFrom",
+                    "validTo",
+                    "value"
+                ]
+            },
+            "Coupon": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "code": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "AMOUNT",
+                            "PERCENT"
+                        ]
+                    },
+                    "value": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "minOrderPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "validFrom": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "validTo": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "maxUses": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "active": {
+                        "type": "boolean"
+                    },
+                    "uses": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                },
+                "required": [
+                    "active",
+                    "code",
+                    "description",
+                    "id",
+                    "kind",
+                    "maxUses",
+                    "minOrderPaise",
+                    "uses",
+                    "validFrom",
+                    "validTo",
+                    "value"
+                ]
+            },
+            "StockMovementForm": {
+                "type": "object",
+                "properties": {
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "IN",
+                            "OUT",
+                            "ADJUST"
+                        ]
+                    },
+                    "quantity": {
+                        "type": "number",
+                        "maximum": 1000000,
+                        "minimum": -1000000
+                    },
+                    "orderId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "note": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 200,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "kind",
+                    "note",
+                    "orderId",
+                    "quantity"
+                ]
+            },
+            "StockMovement": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "itemId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "itemName": {
+                        "type": "string"
+                    },
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "IN",
+                            "OUT",
+                            "ADJUST"
+                        ]
+                    },
+                    "quantity": {
+                        "type": "number"
+                    },
+                    "balance": {
+                        "type": "number"
+                    },
+                    "orderId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "orderNumber": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "note": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "movedBy": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "movedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "balance",
+                    "id",
+                    "itemId",
+                    "itemName",
+                    "kind",
+                    "movedAt",
+                    "movedBy",
+                    "note",
+                    "orderId",
+                    "orderNumber",
+                    "quantity"
+                ]
+            },
+            "GalleryUpload": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "uploadUrl": {
+                        "type": "string"
+                    },
+                    "expiresAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "expiresAt",
+                    "key",
+                    "uploadUrl"
+                ]
+            },
+            "RewardChange": {
+                "type": "object",
+                "properties": {
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "EARNED",
+                            "REDEEMED",
+                            "ADJUSTED"
+                        ]
+                    },
+                    "points": {
+                        "type": "integer",
+                        "format": "int32",
+                        "maximum": 100000,
+                        "minimum": -100000
+                    },
+                    "orderId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "note": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 200,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "kind",
+                    "note",
+                    "orderId",
+                    "points"
+                ]
+            },
+            "RewardAccount": {
+                "type": "object",
+                "properties": {
+                    "clientId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "balance": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "valuePaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "entries": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RewardEntry"
+                        }
+                    }
+                },
+                "required": [
+                    "balance",
+                    "clientId",
+                    "entries",
+                    "valuePaise"
+                ]
+            },
+            "RewardEntry": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "EARNED",
+                            "REDEEMED",
+                            "ADJUSTED"
+                        ]
+                    },
+                    "points": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "orderId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "orderNumber": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "note": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "createdBy": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "createdAt",
+                    "createdBy",
+                    "id",
+                    "kind",
+                    "note",
+                    "orderId",
+                    "orderNumber",
+                    "points"
+                ]
+            },
+            "MessageForm": {
+                "type": "object",
+                "properties": {
+                    "purpose": {
+                        "type": "string",
+                        "enum": [
+                            "ORDER_PLACED",
+                            "ORDER_READY",
+                            "ORDER_DELIVERED",
+                            "PAYMENT",
+                            "REVIEW",
+                            "REWARD",
+                            "CUSTOM"
+                        ]
+                    },
+                    "orderId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "clientId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "code": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 40,
+                        "minLength": 0
+                    },
+                    "body": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 2000,
+                        "minLength": 0
+                    },
+                    "channel": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "WHATSAPP",
+                            "SMS"
+                        ]
+                    }
+                },
+                "required": [
+                    "body",
+                    "channel",
+                    "clientId",
+                    "code",
+                    "orderId",
+                    "purpose"
+                ]
+            },
+            "Message": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "channel": {
+                        "type": "string",
+                        "enum": [
+                            "WHATSAPP",
+                            "SMS"
+                        ]
+                    },
+                    "purpose": {
+                        "type": "string",
+                        "enum": [
+                            "ORDER_PLACED",
+                            "ORDER_READY",
+                            "ORDER_DELIVERED",
+                            "PAYMENT",
+                            "REVIEW",
+                            "REWARD",
+                            "CUSTOM"
+                        ]
+                    },
+                    "clientId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "clientName": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "orderId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "orderNumber": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "toPhone": {
+                        "type": "string"
+                    },
+                    "body": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "LINK",
+                            "SENT",
+                            "FAILED"
+                        ]
+                    },
+                    "link": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "error": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "createdBy": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "body",
+                    "channel",
+                    "clientId",
+                    "clientName",
+                    "createdAt",
+                    "createdBy",
+                    "error",
+                    "id",
+                    "link",
+                    "orderId",
+                    "orderNumber",
+                    "purpose",
+                    "status",
+                    "toPhone"
+                ]
+            },
+            "ActivityEntry": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "kind": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "actor": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "refType": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "refId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "actor",
+                    "at",
+                    "id",
+                    "kind",
+                    "refId",
+                    "refType",
+                    "title"
+                ]
+            },
+            "Alert": {
+                "type": "object",
+                "properties": {
+                    "kind": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "count": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "href": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "count",
+                    "href",
+                    "kind",
+                    "title"
+                ]
+            },
+            "Notifications": {
+                "type": "object",
+                "properties": {
+                    "alerts": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Alert"
+                        }
+                    },
+                    "recent": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ActivityEntry"
+                        }
+                    },
+                    "unread": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                },
+                "required": [
+                    "alerts",
+                    "recent",
+                    "unread"
+                ]
+            },
+            "CouponCheck": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "valid": {
+                        "type": "boolean"
+                    },
+                    "reason": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "kind": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "AMOUNT",
+                            "PERCENT"
+                        ]
+                    },
+                    "value": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "discountPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "code",
+                    "discountPaise",
+                    "kind",
+                    "reason",
+                    "valid",
+                    "value"
+                ]
+            },
+            "ActivityPage": {
+                "type": "object",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ActivityEntry"
+                        }
+                    },
+                    "total": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "page": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                },
+                "required": [
+                    "items",
+                    "page",
+                    "pageSize",
+                    "total"
                 ]
             }
         }

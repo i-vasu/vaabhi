@@ -1316,6 +1316,246 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/stock/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getStockItem"];
+        put: operations["updateStockItem"];
+        post?: never;
+        delete: operations["deleteStockItem"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/gallery/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateGalleryPhoto"];
+        post?: never;
+        delete: operations["deleteGalleryPhoto"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/engage/rewards/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getRewardSettings"];
+        put: operations["saveRewardSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/engage/coupons/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateCoupon"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/stock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listStock"];
+        put?: never;
+        post: operations["createStockItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/stock/{id}/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getStockLedger"];
+        put?: never;
+        post: operations["moveStock"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/me/notifications/seen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["markNotificationsSeen"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/gallery": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listGallery"];
+        put?: never;
+        post: operations["addGalleryPhoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/gallery/uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["startGalleryUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/engage/rewards/clients/{clientId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getRewardAccount"];
+        put?: never;
+        post: operations["changeRewards"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/engage/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listMessages"];
+        put?: never;
+        post: operations["prepareMessage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/engage/coupons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listCoupons"];
+        put?: never;
+        post: operations["createCoupon"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/me/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getNotifications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/engage/coupons/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["checkCoupon"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getActivityLog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2584,12 +2824,12 @@ export interface components {
             lastLoginAt: string | null;
         };
         PermissionsForm: {
-            permissions: ("ORDERS" | "WORKSHOP" | "MONEY" | "STAFF" | "PAYROLL" | "CATALOGUE" | "SETTINGS")[];
+            permissions: ("ORDERS" | "WORKSHOP" | "MONEY" | "STAFF" | "PAYROLL" | "CATALOGUE" | "SETTINGS" | "STOCK" | "MARKETING" | "REPORTS")[];
         };
         RolePermissions: {
             /** @enum {string} */
             role: "OWNER" | "MANAGER" | "STAFF";
-            permissions: ("ORDERS" | "WORKSHOP" | "MONEY" | "STAFF" | "PAYROLL" | "CATALOGUE" | "SETTINGS")[];
+            permissions: ("ORDERS" | "WORKSHOP" | "MONEY" | "STAFF" | "PAYROLL" | "CATALOGUE" | "SETTINGS" | "STOCK" | "MARKETING" | "REPORTS")[];
             editable: boolean;
         };
         AttendanceForm: {
@@ -2638,7 +2878,7 @@ export interface components {
             email: string | null;
             /** @enum {string} */
             role: "OWNER" | "MANAGER" | "STAFF";
-            permissions: ("ORDERS" | "WORKSHOP" | "MONEY" | "STAFF" | "PAYROLL" | "CATALOGUE" | "SETTINGS")[];
+            permissions: ("ORDERS" | "WORKSHOP" | "MONEY" | "STAFF" | "PAYROLL" | "CATALOGUE" | "SETTINGS" | "STOCK" | "MARKETING" | "REPORTS")[];
         };
         RequestForm: {
             /** Format: int64 */
@@ -2831,6 +3071,255 @@ export interface components {
             pieces: number;
             /** Format: int64 */
             amountPaise: number;
+        };
+        StockItemForm: {
+            name: string;
+            sku: string | null;
+            category: string | null;
+            /** @enum {string} */
+            unit: "PCS" | "M" | "CM" | "KG" | "G" | "L" | "ROLL" | "BOX" | "SET";
+            reorderLevel: number;
+            /** Format: int64 */
+            costPaise: number;
+        };
+        StockItem: {
+            /** Format: int64 */
+            id: number;
+            name: string;
+            sku: string | null;
+            category: string | null;
+            /** @enum {string} */
+            unit: "PCS" | "M" | "CM" | "KG" | "G" | "L" | "ROLL" | "BOX" | "SET";
+            reorderLevel: number;
+            /** Format: int64 */
+            costPaise: number;
+            onHand: number;
+            low: boolean;
+            /** Format: int64 */
+            valuePaise: number;
+        };
+        GalleryForm: {
+            /** @enum {string} */
+            kind: "DESIGN" | "CUSTOMER";
+            title: string;
+            tags: string | null;
+            /** Format: int64 */
+            templateId: number | null;
+            /** Format: int64 */
+            clientId: number | null;
+            /** Format: int64 */
+            orderId: number | null;
+            photoKey: string;
+        };
+        GalleryPhoto: {
+            /** Format: int64 */
+            id: number;
+            /** @enum {string} */
+            kind: "DESIGN" | "CUSTOMER";
+            title: string;
+            tags: string | null;
+            /** Format: int64 */
+            templateId: number | null;
+            garment: string | null;
+            /** Format: int64 */
+            clientId: number | null;
+            clientName: string | null;
+            /** Format: int64 */
+            orderId: number | null;
+            photoKey: string;
+            createdBy: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        RewardSettings: {
+            enabled: boolean;
+            /** Format: int32 */
+            pointsPer100: number;
+            /** Format: int32 */
+            paisePerPoint: number;
+        };
+        CouponForm: {
+            code: string;
+            description: string | null;
+            /** @enum {string} */
+            kind: "AMOUNT" | "PERCENT";
+            /** Format: int64 */
+            value: number;
+            /** Format: int64 */
+            minOrderPaise: number;
+            /** Format: date */
+            validFrom: string | null;
+            /** Format: date */
+            validTo: string | null;
+            /** Format: int32 */
+            maxUses: number | null;
+            active: boolean;
+        };
+        Coupon: {
+            /** Format: int64 */
+            id: number;
+            code: string;
+            description: string | null;
+            /** @enum {string} */
+            kind: "AMOUNT" | "PERCENT";
+            /** Format: int64 */
+            value: number;
+            /** Format: int64 */
+            minOrderPaise: number;
+            /** Format: date */
+            validFrom: string | null;
+            /** Format: date */
+            validTo: string | null;
+            /** Format: int32 */
+            maxUses: number | null;
+            active: boolean;
+            /** Format: int32 */
+            uses: number;
+        };
+        StockMovementForm: {
+            /** @enum {string} */
+            kind: "IN" | "OUT" | "ADJUST";
+            quantity: number;
+            /** Format: int64 */
+            orderId: number | null;
+            note: string | null;
+        };
+        StockMovement: {
+            /** Format: int64 */
+            id: number;
+            /** Format: int64 */
+            itemId: number;
+            itemName: string;
+            /** @enum {string} */
+            kind: "IN" | "OUT" | "ADJUST";
+            quantity: number;
+            balance: number;
+            /** Format: int64 */
+            orderId: number | null;
+            orderNumber: string | null;
+            note: string | null;
+            movedBy: string | null;
+            /** Format: date-time */
+            movedAt: string;
+        };
+        GalleryUpload: {
+            key: string;
+            uploadUrl: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        RewardChange: {
+            /** @enum {string} */
+            kind: "EARNED" | "REDEEMED" | "ADJUSTED";
+            /** Format: int32 */
+            points: number;
+            /** Format: int64 */
+            orderId: number | null;
+            note: string | null;
+        };
+        RewardAccount: {
+            /** Format: int64 */
+            clientId: number;
+            /** Format: int32 */
+            balance: number;
+            /** Format: int64 */
+            valuePaise: number;
+            entries: components["schemas"]["RewardEntry"][];
+        };
+        RewardEntry: {
+            /** Format: int64 */
+            id: number;
+            /** @enum {string} */
+            kind: "EARNED" | "REDEEMED" | "ADJUSTED";
+            /** Format: int32 */
+            points: number;
+            /** Format: int64 */
+            orderId: number | null;
+            orderNumber: string | null;
+            note: string | null;
+            createdBy: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        MessageForm: {
+            /** @enum {string} */
+            purpose: "ORDER_PLACED" | "ORDER_READY" | "ORDER_DELIVERED" | "PAYMENT" | "REVIEW" | "REWARD" | "CUSTOM";
+            /** Format: int64 */
+            orderId: number | null;
+            /** Format: int64 */
+            clientId: number | null;
+            code: string | null;
+            body: string | null;
+            /** @enum {string|null} */
+            channel: "WHATSAPP" | "SMS" | null;
+        };
+        Message: {
+            /** Format: int64 */
+            id: number;
+            /** @enum {string} */
+            channel: "WHATSAPP" | "SMS";
+            /** @enum {string} */
+            purpose: "ORDER_PLACED" | "ORDER_READY" | "ORDER_DELIVERED" | "PAYMENT" | "REVIEW" | "REWARD" | "CUSTOM";
+            /** Format: int64 */
+            clientId: number | null;
+            clientName: string | null;
+            /** Format: int64 */
+            orderId: number | null;
+            orderNumber: string | null;
+            toPhone: string;
+            body: string;
+            /** @enum {string} */
+            status: "LINK" | "SENT" | "FAILED";
+            link: string | null;
+            error: string | null;
+            createdBy: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ActivityEntry: {
+            /** Format: int64 */
+            id: number;
+            /** Format: date-time */
+            at: string;
+            kind: string;
+            title: string;
+            actor: string | null;
+            refType: string | null;
+            /** Format: int64 */
+            refId: number | null;
+        };
+        Alert: {
+            kind: string;
+            title: string;
+            /** Format: int32 */
+            count: number;
+            href: string;
+        };
+        Notifications: {
+            alerts: components["schemas"]["Alert"][];
+            recent: components["schemas"]["ActivityEntry"][];
+            /** Format: int32 */
+            unread: number;
+        };
+        CouponCheck: {
+            code: string;
+            valid: boolean;
+            reason: string | null;
+            /** @enum {string|null} */
+            kind: "AMOUNT" | "PERCENT" | null;
+            /** Format: int64 */
+            value: number;
+            /** Format: int64 */
+            discountPaise: number;
+        };
+        ActivityPage: {
+            items: components["schemas"]["ActivityEntry"][];
+            /** Format: int64 */
+            total: number;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
         };
     };
     responses: never;
@@ -5467,6 +5956,580 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["StaffMember"];
+                };
+            };
+        };
+    };
+    getStockItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StockItem"];
+                };
+            };
+        };
+    };
+    updateStockItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StockItemForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StockItem"];
+                };
+            };
+        };
+    };
+    deleteStockItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateGalleryPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GalleryForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GalleryPhoto"];
+                };
+            };
+        };
+    };
+    deleteGalleryPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getRewardSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RewardSettings"];
+                };
+            };
+        };
+    };
+    saveRewardSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RewardSettings"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RewardSettings"];
+                };
+            };
+        };
+    };
+    updateCoupon: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CouponForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Coupon"];
+                };
+            };
+        };
+    };
+    listStock: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                low?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StockItem"][];
+                };
+            };
+        };
+    };
+    createStockItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StockItemForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StockItem"];
+                };
+            };
+        };
+    };
+    getStockLedger: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StockMovement"][];
+                };
+            };
+        };
+    };
+    moveStock: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StockMovementForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StockMovement"];
+                };
+            };
+        };
+    };
+    markNotificationsSeen: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listGallery: {
+        parameters: {
+            query?: {
+                kind?: "DESIGN" | "CUSTOMER" | null;
+                templateId?: number | null;
+                clientId?: number | null;
+                q?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GalleryPhoto"][];
+                };
+            };
+        };
+    };
+    addGalleryPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GalleryForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GalleryPhoto"];
+                };
+            };
+        };
+    };
+    startGalleryUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GalleryUpload"];
+                };
+            };
+        };
+    };
+    getRewardAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                clientId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RewardAccount"];
+                };
+            };
+        };
+    };
+    changeRewards: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                clientId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RewardChange"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RewardAccount"];
+                };
+            };
+        };
+    };
+    listMessages: {
+        parameters: {
+            query?: {
+                clientId?: number | null;
+                orderId?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Message"][];
+                };
+            };
+        };
+    };
+    prepareMessage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MessageForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Message"];
+                };
+            };
+        };
+    };
+    listCoupons: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Coupon"][];
+                };
+            };
+        };
+    };
+    createCoupon: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CouponForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Coupon"];
+                };
+            };
+        };
+    };
+    getNotifications: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Notifications"];
+                };
+            };
+        };
+    };
+    checkCoupon: {
+        parameters: {
+            query: {
+                code: string;
+                amountPaise: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CouponCheck"];
+                };
+            };
+        };
+    };
+    getActivityLog: {
+        parameters: {
+            query?: {
+                kind?: string | null;
+                refType?: string | null;
+                refId?: number | null;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ActivityPage"];
                 };
             };
         };

@@ -70,8 +70,18 @@ public class SecurityConfig {
                                 "/api/v1/admin/service-products/**",
                                 "/api/v1/admin/tailoring/**",
                                 // An order's invoice is shown and issued from the order page.
-                                "/api/v1/admin/money/orders/**")
+                                "/api/v1/admin/money/orders/**",
+                                // Counter staff check coupons, see points and message customers.
+                                "/api/v1/admin/engage/coupons/check",
+                                "/api/v1/admin/engage/rewards/clients/**",
+                                "/api/v1/admin/engage/messages/**")
                         .access(area("ORDERS"))
+                        .requestMatchers("/api/v1/admin/stock/**")
+                        .access(area("STOCK"))
+                        .requestMatchers("/api/v1/admin/engage/**", "/api/v1/admin/gallery/**")
+                        .access(area("MARKETING"))
+                        .requestMatchers("/api/v1/admin/reports/**", "/api/v1/admin/activity/**")
+                        .access(area("REPORTS"))
                         .requestMatchers("/api/v1/admin/workshop/**")
                         .access(area("WORKSHOP"))
                         .requestMatchers("/api/v1/admin/money/**")

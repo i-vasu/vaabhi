@@ -25,6 +25,9 @@ export const PERMISSIONS: { value: Permission; label: string; description: strin
   { value: "PAYROLL", label: "Payroll", description: "Payslips and the production ledger" },
   { value: "CATALOGUE", label: "Catalogue", description: "Online shop products" },
   { value: "SETTINGS", label: "Settings", description: "Change shop settings" },
+  { value: "STOCK", label: "Stock", description: "Stock items and the stock ledger" },
+  { value: "MARKETING", label: "Marketing", description: "Coupons, rewards and the gallery" },
+  { value: "REPORTS", label: "Reports", description: "Reports and the activity log" },
 ];
 
 export const ATTENDANCE: { value: AttendanceStatus; label: string; short: string; tone: Tone }[] = [

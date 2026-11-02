@@ -19,6 +19,7 @@ import type {
 } from "@vaabhi/api-client";
 import { http, HttpResponse } from "msw";
 import { API, server } from "./server";
+import { serveExtras } from "./extras-fixtures";
 import { serveSettings, stages } from "./settings-fixtures";
 
 export const client: Client = {
@@ -424,6 +425,7 @@ export type Sent = { method: string; path: string; query: string; body: unknown 
 export function serveTailoring(): { sent: Sent[] } {
   serveSettings();
   const sent: Sent[] = [];
+  serveExtras(sent);
   const record = async (request: Request) => {
     const url = new URL(request.url);
     const text = request.method === "GET" ? "" : await request.text();

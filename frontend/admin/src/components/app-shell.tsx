@@ -80,7 +80,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               replace("/login/");
             }}
           />
-          <main className="flex-1 px-4 pb-28 pt-6 md:px-8 md:pb-10">{children}</main>
+          <main className="flex-1 px-4 pb-28 pt-6 md:px-8 md:pb-10 print:p-0">{children}</main>
         </div>
         <BottomBar pathname={pathname} staff={staff} />
       </div>
@@ -90,7 +90,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
 function Sidebar({ pathname, staff }: { pathname: string; staff: StaffProfile }) {
   return (
-    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-line bg-panel p-4 md:flex">
+    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-line bg-panel p-4 md:flex print:hidden">
       <Link href="/" className="mb-8 px-2 text-lg font-semibold tracking-[0.2em]">
         VAABHI
       </Link>
@@ -123,7 +123,7 @@ function BottomBar({ pathname, staff }: { pathname: string; staff: StaffProfile 
   return (
     <nav
       aria-label="Main"
-      className="fixed inset-x-0 bottom-0 z-40 flex border-t border-line bg-panel pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 flex border-t border-line bg-panel pb-[env(safe-area-inset-bottom)] md:hidden print:hidden"
     >
       {[...primaryNav, moreNav]
         .filter((item) => canSee(item, staff))
@@ -156,7 +156,7 @@ function Header({ staff, onSignOut }: { staff: StaffProfile; onSignOut: () => vo
     "grid size-11 place-items-center rounded-xl border border-line text-ink-soft hover:bg-panel-2 hover:text-ink";
 
   return (
-    <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-line bg-panel/95 px-4 py-3 backdrop-blur md:px-8">
+    <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-line bg-panel/95 px-4 py-3 backdrop-blur md:px-8 print:hidden">
       <button type="button" onClick={() => setAccount(true)} className="flex min-w-0 items-center gap-3 text-left">
         <span className="sr-only">Account: </span>
         <span

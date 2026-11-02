@@ -7,7 +7,10 @@ import {
   BellIcon,
   BoardIcon,
   CalendarIcon,
+  ChatIcon,
   DocumentIcon,
+  HelpIcon,
+  ImageIcon,
   HomeIcon,
   InboxIcon,
   LockIcon,
@@ -261,6 +264,46 @@ export const moreSections: { title: string; items: NavItem[] }[] = [
     ],
   },
   {
+    title: "Stock & marketing",
+    items: [
+      {
+        href: "/stock/",
+        label: "Stock",
+        icon: TagIcon,
+        description: "Cloth, lining and material in and out",
+        permission: "STOCK",
+      },
+      {
+        href: "/coupons/",
+        label: "Coupons",
+        icon: BadgeIcon,
+        description: "Discount codes for New order",
+        permission: "MARKETING",
+      },
+      {
+        href: "/rewards/",
+        label: "Rewards",
+        icon: BadgeIcon,
+        description: "Points customers earn on delivered orders",
+        permission: "MARKETING",
+      },
+      {
+        href: "/gallery/",
+        label: "Gallery",
+        icon: ImageIcon,
+        description: "Design ideas and finished garments",
+        permission: "MARKETING",
+      },
+      {
+        href: "/messages/",
+        label: "Messages",
+        icon: ChatIcon,
+        description: "WhatsApp and SMS sent to customers",
+        permission: "ORDERS",
+      },
+    ],
+  },
+  {
     title: "Catalogue",
     items: [products],
   },
@@ -268,12 +311,20 @@ export const moreSections: { title: string; items: NavItem[] }[] = [
     title: "Updates",
     items: [
       { href: "/notifications/", label: "Notifications", icon: BellIcon, description: "Order updates and alerts" },
+      {
+        href: "/activity/",
+        label: "Activity log",
+        icon: ActivityIcon,
+        description: "What happened and who did it",
+        permission: "REPORTS",
+      },
     ],
   },
   {
     title: "Shop",
     items: [
       { href: "/settings/", label: "Settings", icon: SettingsIcon, description: "Shop, billing, printing, account" },
+      { href: "/help/", label: "Help & support", icon: HelpIcon, description: "How things work, getting help" },
     ],
   },
 ];

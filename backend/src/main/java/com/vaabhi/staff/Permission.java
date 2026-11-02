@@ -18,5 +18,11 @@ public enum Permission {
     /** The online shop's products. */
     CATALOGUE,
     /** Changing shop settings (everyone may read them). */
-    SETTINGS
+    SETTINGS,
+    /** Stock items, movements and the stock ledger. */
+    STOCK,
+    /** Coupons, rewards and the galleries. */
+    MARKETING,
+    /** Reports and the activity log. */
+    REPORTS
 }

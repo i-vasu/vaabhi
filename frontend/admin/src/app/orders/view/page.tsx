@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import type { Order, PaymentMode, ProductionStage } from "@vaabhi/api-client";
+import { MessageSheet } from "@/components/message-sheet";
 import { ErrorNote, Fact, Pill, StatusPill } from "@/components/tailoring";
 import {
   ListCard,
@@ -36,7 +37,7 @@ function OrderView({ id }: { id: number }) {
   // Delivering may issue the invoice (auto-invoice), so it is fetched again after every change.
   const invoice = useLoad(() => api.admin.money.orderInvoice(id), [id]);
   const action = useAction();
-  const [sheet, setSheet] = useState<"payment" | "schedule" | "cancel" | null>(null);
+  const [sheet, setSheet] = useState<"payment" | "schedule" | "cancel" | "message" | null>(null);
 
   if (!order.value) {
     return (
@@ -226,6 +227,12 @@ function OrderView({ id }: { id: number }) {
         <Link href={`/alterations/new/?clientId=${o.client.id}&orderId=${o.id}`} className={buttonSecondary}>
           Book alteration
         </Link>
+        <Link href={`/print/order/?id=${o.id}`} className={buttonSecondary}>
+          Print slip
+        </Link>
+        <button type="button" className={buttonSecondary} onClick={() => setSheet("message")}>
+          Message
+        </button>
         {open && (
           <button type="button" className={`${buttonSecondary} text-bad`} onClick={() => setSheet("cancel")}>
             Cancel order
@@ -242,6 +249,7 @@ function OrderView({ id }: { id: number }) {
           onSubmit={(payment) => void apply(() => api.admin.orders.addPayment(id, payment))}
         />
       )}
+      {sheet === "message" && <MessageSheet orderId={o.id} clientId={o.client.id} onClose={() => setSheet(null)} />}
       {sheet === "schedule" && (
         <ScheduleSheet
           order={o}
