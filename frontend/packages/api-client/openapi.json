@@ -4843,6 +4843,103 @@
                     }
                 }
             }
+        },
+        "/api/v1/admin/reports": {
+            "get": {
+                "tags": [
+                    "report-controller"
+                ],
+                "operationId": "listReports",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ReportInfo"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/reports/{name}": {
+            "get": {
+                "tags": [
+                    "report-controller"
+                ],
+                "operationId": "getReport",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Report"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/reports/overview": {
+            "get": {
+                "tags": [
+                    "report-controller"
+                ],
+                "operationId": "getReportsOverview",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ReportsOverview"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -12157,6 +12254,211 @@
                     "page",
                     "pageSize",
                     "total"
+                ]
+            },
+            "ReportInfo": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "description",
+                    "name",
+                    "title"
+                ]
+            },
+            "Column": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "TEXT",
+                            "NUMBER",
+                            "MONEY",
+                            "DATE",
+                            "PERCENT"
+                        ]
+                    }
+                },
+                "required": [
+                    "key",
+                    "label",
+                    "type"
+                ]
+            },
+            "Report": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "from": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "to": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "columns": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Column"
+                        }
+                    },
+                    "rows": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {}
+                        }
+                    },
+                    "totals": {
+                        "type": "object",
+                        "additionalProperties": {}
+                    },
+                    "note": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "columns",
+                    "from",
+                    "name",
+                    "note",
+                    "rows",
+                    "title",
+                    "to",
+                    "totals"
+                ]
+            },
+            "AgeingBucket": {
+                "type": "object",
+                "properties": {
+                    "label": {
+                        "type": "string"
+                    },
+                    "count": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "paise": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "count",
+                    "label",
+                    "paise"
+                ]
+            },
+            "MonthFigures": {
+                "type": "object",
+                "properties": {
+                    "month": {
+                        "type": "string"
+                    },
+                    "bookedPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "collectedPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "expensesPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "bookedPaise",
+                    "collectedPaise",
+                    "expensesPaise",
+                    "month"
+                ]
+            },
+            "ReportsOverview": {
+                "type": "object",
+                "properties": {
+                    "bookedPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "collectedPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "expensesPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "ordersBooked": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "ordersDelivered": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "averageOrderPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "newCustomers": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "outstandingPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "months": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MonthFigures"
+                        }
+                    },
+                    "ageing": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AgeingBucket"
+                        }
+                    }
+                },
+                "required": [
+                    "ageing",
+                    "averageOrderPaise",
+                    "bookedPaise",
+                    "collectedPaise",
+                    "expensesPaise",
+                    "months",
+                    "newCustomers",
+                    "ordersBooked",
+                    "ordersDelivered",
+                    "outstandingPaise"
                 ]
             }
         }

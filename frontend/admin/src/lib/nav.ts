@@ -304,6 +304,18 @@ export const moreSections: { title: string; items: NavItem[] }[] = [
     ],
   },
   {
+    title: "Reports",
+    items: [
+      {
+        href: "/reports/",
+        label: "Reports",
+        icon: ActivityIcon,
+        description: "Sales, GST, orders, workshop, staff, stock; CSV export",
+        permission: "REPORTS",
+      },
+    ],
+  },
+  {
     title: "Catalogue",
     items: [products],
   },

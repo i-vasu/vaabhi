@@ -153,6 +153,10 @@ export type GalleryUpload = Schemas["GalleryUpload"];
 export type ActivityEntry = Schemas["ActivityEntry"];
 export type ActivityPage = Schemas["ActivityPage"];
 export type Notifications = Schemas["Notifications"];
+export type Report = Schemas["Report"];
+export type ReportColumn = Report["columns"][number];
+export type ReportInfo = Schemas["ReportInfo"];
+export type ReportsOverview = Schemas["ReportsOverview"];
 export type TailoringImagePurpose = Schemas["TailoringImageRequest"]["purpose"];
 
 /** The JSON settings sections, by their API path. */
@@ -284,6 +288,12 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
       markNotificationsSeen: () => send<void>("POST", "/api/v1/admin/me/notifications/seen"),
       activity: (params: { kind?: string; refType?: string; refId?: number; page?: number; pageSize?: number } = {}) =>
         request<ActivityPage>(`/api/v1/admin/activity${queryString(params)}`),
+      reports: {
+        list: () => request<ReportInfo[]>("/api/v1/admin/reports"),
+        overview: () => request<ReportsOverview>("/api/v1/admin/reports/overview"),
+        get: (name: string, params: { from?: string; to?: string } = {}) =>
+          request<Report>(`/api/v1/admin/reports/${encodeURIComponent(name)}${queryString(params)}`),
+      },
       stock: {
         list: (params: { q?: string; low?: boolean } = {}) =>
           request<StockItem[]>(`/api/v1/admin/stock${queryString(params)}`),

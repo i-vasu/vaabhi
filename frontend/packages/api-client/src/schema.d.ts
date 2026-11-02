@@ -1556,6 +1556,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listReports"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getReportsOverview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3320,6 +3368,69 @@ export interface components {
             page: number;
             /** Format: int32 */
             pageSize: number;
+        };
+        ReportInfo: {
+            name: string;
+            title: string;
+            description: string;
+        };
+        Column: {
+            key: string;
+            label: string;
+            /** @enum {string} */
+            type: "TEXT" | "NUMBER" | "MONEY" | "DATE" | "PERCENT";
+        };
+        Report: {
+            name: string;
+            title: string;
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            columns: components["schemas"]["Column"][];
+            rows: {
+                [key: string]: unknown;
+            }[];
+            totals: {
+                [key: string]: unknown;
+            };
+            note: string | null;
+        };
+        AgeingBucket: {
+            label: string;
+            /** Format: int32 */
+            count: number;
+            /** Format: int64 */
+            paise: number;
+        };
+        MonthFigures: {
+            month: string;
+            /** Format: int64 */
+            bookedPaise: number;
+            /** Format: int64 */
+            collectedPaise: number;
+            /** Format: int64 */
+            expensesPaise: number;
+        };
+        ReportsOverview: {
+            /** Format: int64 */
+            bookedPaise: number;
+            /** Format: int64 */
+            collectedPaise: number;
+            /** Format: int64 */
+            expensesPaise: number;
+            /** Format: int32 */
+            ordersBooked: number;
+            /** Format: int32 */
+            ordersDelivered: number;
+            /** Format: int64 */
+            averageOrderPaise: number;
+            /** Format: int32 */
+            newCustomers: number;
+            /** Format: int64 */
+            outstandingPaise: number;
+            months: components["schemas"]["MonthFigures"][];
+            ageing: components["schemas"]["AgeingBucket"][];
         };
     };
     responses: never;
@@ -6530,6 +6641,71 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ActivityPage"];
+                };
+            };
+        };
+    };
+    listReports: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReportInfo"][];
+                };
+            };
+        };
+    };
+    getReport: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+            };
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Report"];
+                };
+            };
+        };
+    };
+    getReportsOverview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReportsOverview"];
                 };
             };
         };

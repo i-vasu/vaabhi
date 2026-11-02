@@ -4,6 +4,9 @@ import type {
   GalleryPhoto,
   Message,
   Notifications,
+  Report,
+  ReportInfo,
+  ReportsOverview,
   RewardAccount,
   StockItem,
   StockMovement,
@@ -129,6 +132,53 @@ export const activity: ActivityPage = {
   pageSize: 50,
 };
 
+export const reportList: ReportInfo[] = [
+  { name: "sales", title: "Sales", description: "Invoiced per day: taxable value, GST and total" },
+  { name: "gst", title: "GST register", description: "Every invoice with GSTIN" },
+];
+
+export const reportsOverview: ReportsOverview = {
+  bookedPaise: 250000,
+  collectedPaise: 180000,
+  expensesPaise: 40000,
+  ordersBooked: 4,
+  ordersDelivered: 2,
+  averageOrderPaise: 62500,
+  newCustomers: 3,
+  outstandingPaise: 70000,
+  months: ["2026-06", "2026-07", "2026-08", "2026-09", "2026-10", "2026-11"].map((month, i) => ({
+    month,
+    bookedPaise: 100000 * i,
+    collectedPaise: 80000 * i,
+    expensesPaise: 20000 * i,
+  })),
+  ageing: [
+    { label: "Not due yet", count: 1, paise: 50000 },
+    { label: "1–7 days late", count: 1, paise: 20000 },
+    { label: "8–30 days late", count: 0, paise: 0 },
+    { label: "31–60 days late", count: 0, paise: 0 },
+    { label: "Over 60 days late", count: 0, paise: 0 },
+  ],
+};
+
+export const salesReport: Report = {
+  name: "sales",
+  title: "Sales",
+  from: "2026-11-01",
+  to: "2026-11-02",
+  columns: [
+    { key: "day", label: "Day", type: "DATE" },
+    { key: "invoices", label: "Invoices", type: "NUMBER" },
+    { key: "total", label: "Total", type: "MONEY" },
+  ],
+  rows: [
+    { day: "2026-11-01", invoices: 2, total: 150000 },
+    { day: "2026-11-02", invoices: 1, total: 99000 },
+  ],
+  totals: { invoices: 3, total: 249000 },
+  note: "Cancelled invoices are left out.",
+};
+
 export const notifications: Notifications = {
   alerts: [{ kind: "LOW_STOCK", title: "1 stock items running low", count: 1, href: "/stock/?low=1" }],
   recent: [activity.items[0]!],
@@ -186,6 +236,9 @@ export function serveExtras(sent: Sent[], account: RewardAccount = rewards): voi
     ),
     http.post(`${base}/gallery`, reply(photo, 201)),
     http.delete(`${base}/gallery/:id`, reply(null)),
+    http.get(`${base}/reports`, reply(reportList)),
+    http.get(`${base}/reports/overview`, reply(reportsOverview)),
+    http.get(`${base}/reports/:name`, reply(salesReport)),
     http.get(`${base}/activity`, reply(activity)),
     http.get(`${base}/me/notifications`, reply(notifications)),
     http.post(`${base}/me/notifications/seen`, reply(null)),

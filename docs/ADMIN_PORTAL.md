@@ -13,7 +13,7 @@ brings its backend module, Flyway migrations, API types and tests.
 | 4 Money | Invoices (auto on delivery), payments (outstanding, collections), expenses, financial ledger | done |
 | 5 Staff | Staff, roles & permissions, attendance (day / month), requests (leave, permission, off day, comp-off, advance), payroll (late, overtime, advances, salary), piece rates, production & work ledgers | done |
 | 6 Stock & extras | Inventory (items, units, movements, stock ledger), design & customer galleries, rewards & coupons, Google review requests, activity log, notifications feed, help & support, print formats and form layouts, WhatsApp/SMS sending | done (paid sending needs a provider; see below) |
-| 7 Reports | Reports hub (KPIs, 6-month revenue, dues ageing), sales, GST register, sales orders, financial ledger, product profitability, orders, deliveries, customers, alterations, workshop, production, work, stock, rewards, AI usage; CSV export | planned |
+| 7 Reports | Reports hub (KPIs, 6-month revenue, dues ageing), sales, GST register, sales orders, financial ledger, product profitability, orders, deliveries, customers, alterations, workshop, production, work, stock, rewards, AI usage; CSV export | done |
 
 ## Sign-in
 
@@ -180,6 +180,27 @@ activity log); managers get all three by default.
 - **Printing** — `/print/order/?id=` and `/print/alteration/?id=` print on the shop's paper formats (A4, A5, 80 mm,
   58 mm) following Settings → Printing (measurements, bank/UPI, terms, staff name, signature); the invoice page
   prints too. The app frame hides itself when printing. **Help** — `/help/`.
+
+## Reports (phase 7)
+
+The `reports` module (`/api/v1/admin/reports`, REPORTS permission) reads the other modules' tables; nothing depends
+on it.
+
+- **Overview** (`/reports/overview`) — this month's booked, collected (order and alteration payments), spent, net,
+  orders booked and delivered, average order, new customers and what is owed; six months of booked / collected /
+  spent; dues ageing (not due, 1–7, 8–30, 31–60, over 60 days late).
+- **Reports** (`/reports/{name}?from&to`, this month by default, at most 400 days) — sales, gst, sales-orders,
+  orders, deliveries, customers, alterations, workshop (pieces finished and hours spent per stage), production,
+  work (attendance), stock, rewards, profitability, ledger, expenses, usage. Every report has the same shape:
+  typed columns (TEXT, NUMBER, MONEY in paise, DATE, PERCENT), rows, totals and a note; the dashboard shows any of
+  them in one table and exports CSV (money in rupees).
+- **Usage** counts orders, invoices, messages (and how many a provider sent), gallery photos, staff and customers.
+  The dashboard has no AI features, so there is **no AI usage to report**; plan usage limits do not apply to a
+  single-shop install.
+- Charts use categorical slots 1–3 of the dataviz reference palette stepped for the dark panel (validated), with a
+  legend, hover tooltip and a screen-reader table.
+
+Admin pages: `/reports/` and `/reports/view/?name=`.
 
 ## UI conventions
 
