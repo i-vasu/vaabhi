@@ -868,6 +868,134 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/money/expenses/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateExpense"];
+        post?: never;
+        delete: operations["deleteExpense"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/orders/{orderId}/invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getOrderInvoice"];
+        put?: never;
+        post: operations["issueOrderInvoice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/invoices/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["cancelInvoice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/expenses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listExpenses"];
+        put?: never;
+        post: operations["createExpense"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/outstanding": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getOutstanding"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/ledger": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getLedger"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listInvoices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/invoices/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getInvoice"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1736,6 +1864,8 @@ export interface components {
             status: "BOOKED" | "IN_PROGRESS" | "READY" | "DELIVERED" | "CANCELLED";
             /** Format: int64 */
             collectPaise: number;
+            /** @enum {string|null} */
+            mode: "CASH" | "UPI" | "CARD" | "BANK" | null;
         };
         OrderPage: {
             items: components["schemas"]["OrderSummary"][];
@@ -1891,6 +2021,199 @@ export interface components {
             trialsToday: number;
             stageLoad: components["schemas"]["StageLoad"][];
             staffLoad: components["schemas"]["WorkshopStaff"][];
+        };
+        ExpenseForm: {
+            /** Format: date */
+            spentOn: string;
+            /** @enum {string} */
+            category: "RENT" | "SALARY" | "MATERIAL" | "UTILITIES" | "TRANSPORT" | "MAINTENANCE" | "MARKETING" | "OTHER";
+            description: string;
+            /** Format: int64 */
+            amountPaise: number;
+            /** @enum {string} */
+            mode: "CASH" | "UPI" | "CARD" | "BANK";
+            paidTo: string | null;
+        };
+        Expense: {
+            /** Format: int64 */
+            id: number;
+            /** Format: date */
+            spentOn: string;
+            /** @enum {string} */
+            category: "RENT" | "SALARY" | "MATERIAL" | "UTILITIES" | "TRANSPORT" | "MAINTENANCE" | "MARKETING" | "OTHER";
+            description: string;
+            /** Format: int64 */
+            amountPaise: number;
+            /** @enum {string} */
+            mode: "CASH" | "UPI" | "CARD" | "BANK";
+            paidTo: string | null;
+            createdBy: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        Invoice: {
+            /** Format: int64 */
+            id: number;
+            number: string;
+            /** Format: int64 */
+            orderId: number;
+            orderNumber: string;
+            client: components["schemas"]["ClientSummary"];
+            /** Format: date */
+            issuedOn: string;
+            lines: components["schemas"]["InvoiceLine"][];
+            /** Format: int64 */
+            discountPaise: number;
+            /** Format: int64 */
+            orderTotalPaise: number;
+            gstRate: number;
+            pricesIncludeTax: boolean;
+            /** Format: int64 */
+            taxablePaise: number;
+            /** Format: int64 */
+            cgstPaise: number;
+            /** Format: int64 */
+            sgstPaise: number;
+            /** Format: int64 */
+            totalPaise: number;
+            /** Format: int64 */
+            paidPaise: number;
+            /** Format: int64 */
+            balancePaise: number;
+            shopGstin: string | null;
+            clientGstin: string | null;
+            createdBy: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            cancelledAt: string | null;
+            cancelledBy: string | null;
+        };
+        InvoiceLine: {
+            description: string;
+            /** Format: int32 */
+            quantity: number;
+            /** Format: int64 */
+            unitPaise: number;
+            /** Format: int64 */
+            amountPaise: number;
+        };
+        Due: {
+            /** @enum {string} */
+            kind: "ORDER" | "ALTERATION";
+            /** Format: int64 */
+            id: number;
+            number: string;
+            /** Format: int64 */
+            clientId: number;
+            clientName: string;
+            clientPhone: string;
+            /** Format: date */
+            date: string;
+            /** Format: int64 */
+            totalPaise: number;
+            /** Format: int64 */
+            paidPaise: number;
+            /** Format: int64 */
+            duePaise: number;
+            /** Format: int32 */
+            daysLate: number;
+            handedOver: boolean;
+            invoiceNumber: string | null;
+        };
+        Outstanding: {
+            /** Format: int64 */
+            totalPaise: number;
+            /** Format: int64 */
+            handedOverPaise: number;
+            items: components["schemas"]["Due"][];
+        };
+        Ledger: {
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            /** Format: int64 */
+            openingPaise: number;
+            /** Format: int64 */
+            inPaise: number;
+            /** Format: int64 */
+            outPaise: number;
+            /** Format: int64 */
+            closingPaise: number;
+            byMode: components["schemas"]["ModeTotal"][];
+            entries: components["schemas"]["LedgerEntry"][];
+        };
+        LedgerEntry: {
+            /** Format: date-time */
+            at: string;
+            /** @enum {string} */
+            kind: "ORDER_PAYMENT" | "REFUND" | "ALTERATION_PAYMENT" | "EXPENSE";
+            /** Format: int64 */
+            sourceId: number;
+            reference: string;
+            party: string | null;
+            /** @enum {string} */
+            mode: "CASH" | "UPI" | "CARD" | "BANK";
+            /** Format: int64 */
+            amountPaise: number;
+            /** Format: int64 */
+            balancePaise: number;
+        };
+        ModeTotal: {
+            /** @enum {string} */
+            mode: "CASH" | "UPI" | "CARD" | "BANK";
+            /** Format: int64 */
+            inPaise: number;
+            /** Format: int64 */
+            outPaise: number;
+        };
+        InvoicePage: {
+            items: components["schemas"]["InvoiceSummary"][];
+            /** Format: int64 */
+            total: number;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+            /** Format: int64 */
+            totalPaise: number;
+            /** Format: int64 */
+            taxPaise: number;
+        };
+        InvoiceSummary: {
+            /** Format: int64 */
+            id: number;
+            number: string;
+            /** Format: int64 */
+            orderId: number;
+            orderNumber: string;
+            /** Format: int64 */
+            clientId: number;
+            clientName: string;
+            /** Format: date */
+            issuedOn: string;
+            /** Format: int64 */
+            taxablePaise: number;
+            /** Format: int64 */
+            taxPaise: number;
+            /** Format: int64 */
+            totalPaise: number;
+            /** Format: int64 */
+            balancePaise: number;
+            cancelled: boolean;
+        };
+        CategoryTotal: {
+            /** @enum {string} */
+            category: "RENT" | "SALARY" | "MATERIAL" | "UTILITIES" | "TRANSPORT" | "MAINTENANCE" | "MARKETING" | "OTHER";
+            /** Format: int64 */
+            amountPaise: number;
+        };
+        ExpenseList: {
+            items: components["schemas"]["Expense"][];
+            /** Format: int64 */
+            totalPaise: number;
+            byCategory: components["schemas"]["CategoryTotal"][];
         };
     };
     responses: never;
@@ -3692,6 +4015,260 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["BoardColumn"][];
+                };
+            };
+        };
+    };
+    updateExpense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpenseForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Expense"];
+                };
+            };
+        };
+    };
+    deleteExpense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getOrderInvoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Invoice"];
+                };
+            };
+        };
+    };
+    issueOrderInvoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Invoice"];
+                };
+            };
+        };
+    };
+    cancelInvoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Invoice"];
+                };
+            };
+        };
+    };
+    listExpenses: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                category?: "RENT" | "SALARY" | "MATERIAL" | "UTILITIES" | "TRANSPORT" | "MAINTENANCE" | "MARKETING" | "OTHER" | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ExpenseList"];
+                };
+            };
+        };
+    };
+    createExpense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpenseForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Expense"];
+                };
+            };
+        };
+    };
+    getOutstanding: {
+        parameters: {
+            query?: {
+                clientId?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Outstanding"];
+                };
+            };
+        };
+    };
+    getLedger: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                kind?: "ORDER_PAYMENT" | "REFUND" | "ALTERATION_PAYMENT" | "EXPENSE" | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Ledger"];
+                };
+            };
+        };
+    };
+    listInvoices: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                from?: string | null;
+                to?: string | null;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InvoicePage"];
+                };
+            };
+        };
+    };
+    getInvoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Invoice"];
                 };
             };
         };

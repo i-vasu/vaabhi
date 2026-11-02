@@ -1,5 +1,10 @@
 import type {
   Alteration,
+  ExpenseList,
+  Invoice,
+  InvoicePage,
+  Ledger,
+  Outstanding,
   BoardColumn,
   WorkItem,
   WorkshopOverview,
@@ -257,6 +262,159 @@ export const overview: WorkshopOverview = {
   staffLoad: workshopStaff,
 };
 
+export const invoice: Invoice = {
+  id: 5,
+  number: "INV-305",
+  orderId: 42,
+  orderNumber: "ORD-2042",
+  client: clientSummary,
+  issuedOn: "2026-11-02",
+  lines: [
+    { description: "3 dart blouse (Maroon)", quantity: 2, unitPaise: 50000, amountPaise: 100000 },
+    { description: "Fall & pico", quantity: 1, unitPaise: 10000, amountPaise: 10000 },
+  ],
+  discountPaise: 11000,
+  orderTotalPaise: 99000,
+  gstRate: 5,
+  pricesIncludeTax: true,
+  taxablePaise: 94286,
+  cgstPaise: 2357,
+  sgstPaise: 2357,
+  totalPaise: 99000,
+  paidPaise: 30000,
+  balancePaise: 69000,
+  shopGstin: "27ABCDE1234F1Z5",
+  clientGstin: null,
+  createdBy: "Asha Rao",
+  createdAt: "2026-11-02T12:00:00+05:30",
+  cancelledAt: null,
+  cancelledBy: null,
+};
+
+export const invoicePage: InvoicePage = {
+  items: [
+    {
+      id: 5,
+      number: "INV-305",
+      orderId: 42,
+      orderNumber: "ORD-2042",
+      clientId: 7,
+      clientName: "Meera Iyer",
+      issuedOn: "2026-11-02",
+      taxablePaise: 94286,
+      taxPaise: 4714,
+      totalPaise: 99000,
+      balancePaise: 69000,
+      cancelled: false,
+    },
+  ],
+  total: 1,
+  page: 1,
+  pageSize: 20,
+  totalPaise: 99000,
+  taxPaise: 4714,
+};
+
+export const expenseList: ExpenseList = {
+  items: [
+    {
+      id: 3,
+      spentOn: "2026-11-01",
+      category: "RENT",
+      description: "Shop rent",
+      amountPaise: 1500000,
+      mode: "BANK",
+      paidTo: "Landlord",
+      createdBy: "Asha Rao",
+      createdAt: "2026-11-01T10:00:00+05:30",
+    },
+  ],
+  totalPaise: 1500000,
+  byCategory: [{ category: "RENT", amountPaise: 1500000 }],
+};
+
+export const ledger: Ledger = {
+  from: "2026-11-01",
+  to: "2026-11-30",
+  openingPaise: 500000,
+  inPaise: 30000,
+  outPaise: 1505000,
+  closingPaise: -975000,
+  byMode: [
+    { mode: "UPI", inPaise: 30000, outPaise: 5000 },
+    { mode: "BANK", inPaise: 0, outPaise: 1500000 },
+  ],
+  entries: [
+    {
+      at: "2026-11-01T10:00:00+05:30",
+      kind: "EXPENSE",
+      sourceId: 3,
+      reference: "Shop rent",
+      party: "Landlord",
+      mode: "BANK",
+      amountPaise: -1500000,
+      balancePaise: -1000000,
+    },
+    {
+      at: "2026-11-01T11:00:00+05:30",
+      kind: "ORDER_PAYMENT",
+      sourceId: 42,
+      reference: "ORD-2042",
+      party: "Meera Iyer",
+      mode: "UPI",
+      amountPaise: 30000,
+      balancePaise: -970000,
+    },
+    {
+      at: "2026-11-02T09:00:00+05:30",
+      kind: "REFUND",
+      sourceId: 42,
+      reference: "ORD-2042",
+      party: "Meera Iyer",
+      mode: "UPI",
+      amountPaise: -5000,
+      balancePaise: -975000,
+    },
+  ],
+};
+
+export const outstanding: Outstanding = {
+  totalPaise: 109000,
+  handedOverPaise: 40000,
+  items: [
+    {
+      kind: "ALTERATION",
+      id: 9,
+      number: "ALT-109",
+      clientId: 7,
+      clientName: "Meera Iyer",
+      clientPhone: "+919876500001",
+      date: "2026-10-28",
+      totalPaise: 40000,
+      paidPaise: 0,
+      duePaise: 40000,
+      daysLate: 5,
+      handedOver: true,
+      invoiceNumber: null,
+    },
+    {
+      kind: "ORDER",
+      id: 42,
+      number: "ORD-2042",
+      clientId: 7,
+      clientName: "Meera Iyer",
+      clientPhone: "+919876500001",
+      date: "2026-11-08",
+      totalPaise: 99000,
+      paidPaise: 30000,
+      duePaise: 69000,
+      daysLate: 0,
+      handedOver: false,
+      invoiceNumber: "INV-305",
+    },
+  ],
+};
+
 export type Sent = { method: string; path: string; query: string; body: unknown };
 
 /**
@@ -308,6 +466,26 @@ export function serveTailoring(): { sent: Sent[] } {
     http.post(`${base}/alterations`, reply(alteration, 201)),
     http.get(`${base}/alterations/:id`, reply(alteration)),
     http.post(`${base}/alterations/:id/progress`, reply({ ...alteration, status: "DELIVERED", balancePaise: 0 })),
+    http.get(`${base}/money/invoices`, reply(invoicePage)),
+    http.get(`${base}/money/invoices/:id`, reply(invoice)),
+    http.post(
+      `${base}/money/invoices/:id/cancel`,
+      reply({ ...invoice, cancelledAt: "2026-11-02T13:00:00+05:30", cancelledBy: "Asha Rao" }),
+    ),
+    http.get(`${base}/money/orders/:id/invoice`, async ({ request }) => {
+      await record(request);
+      return new HttpResponse(null, { status: 204 });
+    }),
+    http.post(`${base}/money/orders/:id/invoice`, reply(invoice, 201)),
+    http.get(`${base}/money/expenses`, reply(expenseList)),
+    http.post(`${base}/money/expenses`, reply(expenseList.items[0], 201)),
+    http.put(`${base}/money/expenses/:id`, reply(expenseList.items[0])),
+    http.delete(`${base}/money/expenses/:id`, async ({ request }) => {
+      await record(request);
+      return new HttpResponse(null, { status: 204 });
+    }),
+    http.get(`${base}/money/ledger`, reply(ledger)),
+    http.get(`${base}/money/outstanding`, reply(outstanding)),
     http.get(`${base}/workshop/overview`, reply(overview)),
     http.get(`${base}/workshop/board`, reply(board)),
     http.put(`${base}/workshop/items/:id/assignee`, reply({ ...workItem, assignedTo: { id: 2, name: "Sita Cutter" } })),

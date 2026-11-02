@@ -33,6 +33,8 @@ const dateTime = new Intl.DateTimeFormat("en-IN", {
 function OrderView({ id }: { id: number }) {
   const order = useLoad(() => api.admin.orders.get(id), [id]);
   const stages = useLoad(() => api.admin.settings.stages(), []);
+  // Delivering may issue the invoice (auto-invoice), so it is fetched again after every change.
+  const invoice = useLoad(() => api.admin.money.orderInvoice(id), [id]);
   const action = useAction();
   const [sheet, setSheet] = useState<"payment" | "schedule" | "cancel" | null>(null);
 
@@ -50,6 +52,7 @@ function OrderView({ id }: { id: number }) {
     const next = await action.run(call);
     if (next) {
       order.setValue(next);
+      invoice.reload();
       setSheet(null);
     }
   };
@@ -195,6 +198,26 @@ function OrderView({ id }: { id: number }) {
       )}
 
       <div className="mt-6 flex flex-wrap gap-2">
+        {invoice.value ? (
+          <Link href={`/money/invoices/view/?id=${invoice.value.id}`} className={buttonSecondary}>
+            Invoice {invoice.value.number}
+          </Link>
+        ) : (
+          invoice.value === null &&
+          o.status !== "CANCELLED" && (
+            <button
+              type="button"
+              className={buttonSecondary}
+              disabled={action.busy}
+              onClick={async () => {
+                const issued = await action.run(() => api.admin.money.issueInvoice(id));
+                if (issued) invoice.setValue(issued);
+              }}
+            >
+              Issue invoice
+            </button>
+          )
+        )}
         {open && (
           <button type="button" className={buttonSecondary} onClick={() => setSheet("schedule")}>
             Change dates

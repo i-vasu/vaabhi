@@ -88,11 +88,13 @@ describe("alteration page", () => {
     fireEvent.click(screen.getByRole("button", { name: "Hand over" }));
     const dialog = screen.getByRole("dialog", { name: "Hand over" });
     expect(within(dialog).getByLabelText("Collected now (₹)")).toHaveValue("400");
+    fireEvent.change(within(dialog).getByLabelText("Paid by"), { target: { value: "UPI" } });
     fireEvent.click(within(dialog).getByRole("button", { name: "Hand over" }));
     await waitFor(() =>
       expect(lastSent(sent, "POST", "/alterations/9/progress")?.body).toEqual({
         status: "DELIVERED",
         collectPaise: 40000,
+        mode: "UPI",
       }),
     );
     expect(await screen.findByText("Delivered")).toBeInTheDocument();
@@ -104,7 +106,11 @@ describe("alteration page", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Cancel alteration" }));
     fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Cancel alteration" }));
     await waitFor(() =>
-      expect(lastSent(sent, "POST", "/alterations/9/progress")?.body).toEqual({ status: "CANCELLED", collectPaise: 0 }),
+      expect(lastSent(sent, "POST", "/alterations/9/progress")?.body).toEqual({
+        status: "CANCELLED",
+        collectPaise: 0,
+        mode: null,
+      }),
     );
   });
 });

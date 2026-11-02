@@ -190,3 +190,16 @@ describe("order page", () => {
     await waitFor(() => expect(lastSent(sent, "POST", "/orders/42/deliver")).toBeDefined());
   });
 });
+
+describe("order invoice", () => {
+  it("issues the invoice from the order and then links to it", async () => {
+    search = new URLSearchParams("id=42");
+    render(<OrderPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Issue invoice" }));
+    await waitFor(() => expect(lastSent(sent, "POST", "/money/orders/42/invoice")).toBeDefined());
+    expect(await screen.findByRole("link", { name: "Invoice INV-305" })).toHaveAttribute(
+      "href",
+      "/money/invoices/view/?id=5",
+    );
+  });
+});

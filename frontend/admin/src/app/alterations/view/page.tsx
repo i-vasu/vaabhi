@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
-import type { Alteration, OrderStatus } from "@vaabhi/api-client";
+import type { Alteration, OrderStatus, PaymentMode } from "@vaabhi/api-client";
 import { ErrorNote, Fact, Pill, StatusPill } from "@/components/tailoring";
 import {
   ListCard,
   LoadState,
   PageHeader,
   SectionLabel,
+  SelectField,
   Sheet,
   TextField,
   buttonPrimary,
@@ -20,6 +21,7 @@ import { mediaUrl } from "@/lib/photo-upload";
 import { parseRupees, rupees } from "@/lib/settings";
 import {
   ALTERATION_KINDS,
+  PAYMENT_MODES,
   STATUS_LABELS,
   formatDate,
   formatPhone,
@@ -57,8 +59,8 @@ function AlterationView({ id }: { id: number }) {
   }
   const a = alteration.value;
   const next = NEXT[a.status];
-  const move = async (status: OrderStatus, collectPaise = 0) => {
-    const updated = await action.run(() => api.admin.alterations.progress(id, { status, collectPaise }));
+  const move = async (status: OrderStatus, collectPaise = 0, mode: PaymentMode | null = null) => {
+    const updated = await action.run(() => api.admin.alterations.progress(id, { status, collectPaise, mode }));
     if (updated) {
       alteration.setValue(updated);
       setSheet(null);
@@ -143,7 +145,7 @@ function AlterationView({ id }: { id: number }) {
           busy={action.busy}
           error={action.error}
           onClose={() => setSheet(null)}
-          onDeliver={(paise) => void move("DELIVERED", paise)}
+          onDeliver={(paise, mode) => void move("DELIVERED", paise, mode)}
         />
       )}
       {sheet === "cancel" && (
@@ -182,9 +184,10 @@ function DeliverSheet({
   busy: boolean;
   error: string | null;
   onClose: () => void;
-  onDeliver: (collectPaise: number) => void;
+  onDeliver: (collectPaise: number, mode: PaymentMode) => void;
 }) {
   const [amount, setAmount] = useState(String(alteration.balancePaise / 100));
+  const [mode, setMode] = useState<PaymentMode>("CASH");
   const collect = amount.trim() === "" ? 0 : parseRupees(amount);
   return (
     <Sheet open title="Hand over" onClose={onClose}>
@@ -197,12 +200,13 @@ function DeliverSheet({
           error={collect === null ? "Enter the amount as a number" : undefined}
           onChange={(event) => setAmount(event.target.value)}
         />
+        <SelectField label="Paid by" options={PAYMENT_MODES} value={mode} onChange={setMode} />
         <ErrorNote>{error}</ErrorNote>
         <button
           type="button"
           className={buttonPrimary}
           disabled={busy || collect === null}
-          onClick={() => collect !== null && onDeliver(collect)}
+          onClick={() => collect !== null && onDeliver(collect, mode)}
         >
           {busy ? "Saving…" : "Hand over"}
         </button>

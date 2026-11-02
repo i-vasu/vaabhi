@@ -2654,6 +2654,460 @@
                     }
                 }
             }
+        },
+        "/api/v1/admin/money/expenses/{id}": {
+            "put": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "updateExpense",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ExpenseForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Expense"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "deleteExpense",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/orders/{orderId}/invoice": {
+            "get": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "getOrderInvoice",
+                "parameters": [
+                    {
+                        "name": "orderId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Invoice"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "issueOrderInvoice",
+                "parameters": [
+                    {
+                        "name": "orderId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Invoice"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/invoices/{id}/cancel": {
+            "post": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "cancelInvoice",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Invoice"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/expenses": {
+            "get": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "listExpenses",
+                "parameters": [
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "RENT",
+                                "SALARY",
+                                "MATERIAL",
+                                "UTILITIES",
+                                "TRANSPORT",
+                                "MAINTENANCE",
+                                "MARKETING",
+                                "OTHER"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExpenseList"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "createExpense",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ExpenseForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Expense"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/outstanding": {
+            "get": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "getOutstanding",
+                "parameters": [
+                    {
+                        "name": "clientId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Outstanding"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/ledger": {
+            "get": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "getLedger",
+                "parameters": [
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "kind",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "ORDER_PAYMENT",
+                                "REFUND",
+                                "ALTERATION_PAYMENT",
+                                "EXPENSE"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Ledger"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/invoices": {
+            "get": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "listInvoices",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InvoicePage"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/invoices/{id}": {
+            "get": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "getInvoice",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Invoice"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -6509,10 +6963,23 @@
                         "format": "int64",
                         "maximum": 100000000,
                         "minimum": 0
+                    },
+                    "mode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "CASH",
+                            "UPI",
+                            "CARD",
+                            "BANK"
+                        ]
                     }
                 },
                 "required": [
                     "collectPaise",
+                    "mode",
                     "status"
                 ]
             },
@@ -7057,6 +7524,676 @@
                     "stageLoad",
                     "trialsToday",
                     "unassigned"
+                ]
+            },
+            "ExpenseForm": {
+                "type": "object",
+                "properties": {
+                    "spentOn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "category": {
+                        "type": "string",
+                        "enum": [
+                            "RENT",
+                            "SALARY",
+                            "MATERIAL",
+                            "UTILITIES",
+                            "TRANSPORT",
+                            "MAINTENANCE",
+                            "MARKETING",
+                            "OTHER"
+                        ]
+                    },
+                    "description": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "minLength": 0
+                    },
+                    "amountPaise": {
+                        "type": "integer",
+                        "format": "int64",
+                        "maximum": 100000000,
+                        "minimum": 1
+                    },
+                    "mode": {
+                        "type": "string",
+                        "enum": [
+                            "CASH",
+                            "UPI",
+                            "CARD",
+                            "BANK"
+                        ]
+                    },
+                    "paidTo": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 120,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "amountPaise",
+                    "category",
+                    "description",
+                    "mode",
+                    "paidTo",
+                    "spentOn"
+                ]
+            },
+            "Expense": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "spentOn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "category": {
+                        "type": "string",
+                        "enum": [
+                            "RENT",
+                            "SALARY",
+                            "MATERIAL",
+                            "UTILITIES",
+                            "TRANSPORT",
+                            "MAINTENANCE",
+                            "MARKETING",
+                            "OTHER"
+                        ]
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "amountPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "mode": {
+                        "type": "string",
+                        "enum": [
+                            "CASH",
+                            "UPI",
+                            "CARD",
+                            "BANK"
+                        ]
+                    },
+                    "paidTo": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "createdBy": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "amountPaise",
+                    "category",
+                    "createdAt",
+                    "createdBy",
+                    "description",
+                    "id",
+                    "mode",
+                    "paidTo",
+                    "spentOn"
+                ]
+            },
+            "Invoice": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "number": {
+                        "type": "string"
+                    },
+                    "orderId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "orderNumber": {
+                        "type": "string"
+                    },
+                    "client": {
+                        "$ref": "#/components/schemas/ClientSummary"
+                    },
+                    "issuedOn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/InvoiceLine"
+                        }
+                    },
+                    "discountPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "orderTotalPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "gstRate": {
+                        "type": "number"
+                    },
+                    "pricesIncludeTax": {
+                        "type": "boolean"
+                    },
+                    "taxablePaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "cgstPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "sgstPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "totalPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "paidPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "balancePaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "shopGstin": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "clientGstin": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "createdBy": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "cancelledAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "cancelledBy": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "balancePaise",
+                    "cancelledAt",
+                    "cancelledBy",
+                    "cgstPaise",
+                    "client",
+                    "clientGstin",
+                    "createdAt",
+                    "createdBy",
+                    "discountPaise",
+                    "gstRate",
+                    "id",
+                    "issuedOn",
+                    "lines",
+                    "number",
+                    "orderId",
+                    "orderNumber",
+                    "orderTotalPaise",
+                    "paidPaise",
+                    "pricesIncludeTax",
+                    "sgstPaise",
+                    "shopGstin",
+                    "taxablePaise",
+                    "totalPaise"
+                ]
+            },
+            "InvoiceLine": {
+                "type": "object",
+                "properties": {
+                    "description": {
+                        "type": "string"
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "unitPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "amountPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "amountPaise",
+                    "description",
+                    "quantity",
+                    "unitPaise"
+                ]
+            },
+            "Due": {
+                "type": "object",
+                "properties": {
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "ORDER",
+                            "ALTERATION"
+                        ]
+                    },
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "number": {
+                        "type": "string"
+                    },
+                    "clientId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "clientName": {
+                        "type": "string"
+                    },
+                    "clientPhone": {
+                        "type": "string"
+                    },
+                    "date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "totalPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "paidPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "duePaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "daysLate": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "handedOver": {
+                        "type": "boolean"
+                    },
+                    "invoiceNumber": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "clientId",
+                    "clientName",
+                    "clientPhone",
+                    "date",
+                    "daysLate",
+                    "duePaise",
+                    "handedOver",
+                    "id",
+                    "invoiceNumber",
+                    "kind",
+                    "number",
+                    "paidPaise",
+                    "totalPaise"
+                ]
+            },
+            "Outstanding": {
+                "type": "object",
+                "properties": {
+                    "totalPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "handedOverPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Due"
+                        }
+                    }
+                },
+                "required": [
+                    "handedOverPaise",
+                    "items",
+                    "totalPaise"
+                ]
+            },
+            "Ledger": {
+                "type": "object",
+                "properties": {
+                    "from": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "to": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "openingPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "inPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "outPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "closingPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "byMode": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ModeTotal"
+                        }
+                    },
+                    "entries": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LedgerEntry"
+                        }
+                    }
+                },
+                "required": [
+                    "byMode",
+                    "closingPaise",
+                    "entries",
+                    "from",
+                    "inPaise",
+                    "openingPaise",
+                    "outPaise",
+                    "to"
+                ]
+            },
+            "LedgerEntry": {
+                "type": "object",
+                "properties": {
+                    "at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "ORDER_PAYMENT",
+                            "REFUND",
+                            "ALTERATION_PAYMENT",
+                            "EXPENSE"
+                        ]
+                    },
+                    "sourceId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "reference": {
+                        "type": "string"
+                    },
+                    "party": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "mode": {
+                        "type": "string",
+                        "enum": [
+                            "CASH",
+                            "UPI",
+                            "CARD",
+                            "BANK"
+                        ]
+                    },
+                    "amountPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "balancePaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "amountPaise",
+                    "at",
+                    "balancePaise",
+                    "kind",
+                    "mode",
+                    "party",
+                    "reference",
+                    "sourceId"
+                ]
+            },
+            "ModeTotal": {
+                "type": "object",
+                "properties": {
+                    "mode": {
+                        "type": "string",
+                        "enum": [
+                            "CASH",
+                            "UPI",
+                            "CARD",
+                            "BANK"
+                        ]
+                    },
+                    "inPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "outPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "inPaise",
+                    "mode",
+                    "outPaise"
+                ]
+            },
+            "InvoicePage": {
+                "type": "object",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/InvoiceSummary"
+                        }
+                    },
+                    "total": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "page": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "totalPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "taxPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "items",
+                    "page",
+                    "pageSize",
+                    "taxPaise",
+                    "total",
+                    "totalPaise"
+                ]
+            },
+            "InvoiceSummary": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "number": {
+                        "type": "string"
+                    },
+                    "orderId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "orderNumber": {
+                        "type": "string"
+                    },
+                    "clientId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "clientName": {
+                        "type": "string"
+                    },
+                    "issuedOn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "taxablePaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "taxPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "totalPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "balancePaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "cancelled": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "balancePaise",
+                    "cancelled",
+                    "clientId",
+                    "clientName",
+                    "id",
+                    "issuedOn",
+                    "number",
+                    "orderId",
+                    "orderNumber",
+                    "taxPaise",
+                    "taxablePaise",
+                    "totalPaise"
+                ]
+            },
+            "CategoryTotal": {
+                "type": "object",
+                "properties": {
+                    "category": {
+                        "type": "string",
+                        "enum": [
+                            "RENT",
+                            "SALARY",
+                            "MATERIAL",
+                            "UTILITIES",
+                            "TRANSPORT",
+                            "MAINTENANCE",
+                            "MARKETING",
+                            "OTHER"
+                        ]
+                    },
+                    "amountPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "amountPaise",
+                    "category"
+                ]
+            },
+            "ExpenseList": {
+                "type": "object",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Expense"
+                        }
+                    },
+                    "totalPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "byCategory": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CategoryTotal"
+                        }
+                    }
+                },
+                "required": [
+                    "byCategory",
+                    "items",
+                    "totalPaise"
                 ]
             }
         }

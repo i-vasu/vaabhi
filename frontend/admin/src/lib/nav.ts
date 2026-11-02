@@ -1,4 +1,7 @@
 import {
+  ActivityIcon,
+  BankIcon,
+  DocumentIcon,
   BagIcon,
   BellIcon,
   BoardIcon,
@@ -115,6 +118,21 @@ export const moreSections: { title: string; items: NavItem[] }[] = [
       byHref("/customers/"),
       { href: "/alterations/", label: "Alterations", icon: RulerIcon, description: "Fit fixes, length and repairs" },
       { href: "/price-list/", label: "Price list", icon: TagIcon, description: "Stitching prices and piece rates" },
+    ],
+  },
+  {
+    title: "Money",
+    items: [
+      { href: "/money/", label: "Money", icon: BankIcon, description: "Money in and out this month, what is owed" },
+      { href: "/money/dues/", label: "Dues", icon: BankIcon, description: "Who owes what, oldest first" },
+      { href: "/money/invoices/", label: "Invoices", icon: DocumentIcon, description: "Tax invoices and GST" },
+      {
+        href: "/money/expenses/",
+        label: "Expenses",
+        icon: ReceiptIcon,
+        description: "Rent, salaries, material, bills",
+      },
+      { href: "/money/ledger/", label: "Ledger", icon: ActivityIcon, description: "Every rupee in and out" },
     ],
   },
   {

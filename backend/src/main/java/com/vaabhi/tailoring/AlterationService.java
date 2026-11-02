@@ -280,6 +280,15 @@ public class AlterationService {
                 .update();
         var client = before.client();
         if (progress.collectPaise() > 0) {
+            jdbc.sql("""
+                            INSERT INTO alteration_payment (alteration_id, amount_paise, mode, received_by)
+                            VALUES (:id, :amount, :mode, :by)
+                            """)
+                    .param(ID, id)
+                    .param("amount", progress.collectPaise())
+                    .param("mode", (progress.mode() == null ? PaymentMode.CASH : progress.mode()).name())
+                    .param("by", actor)
+                    .update();
             events.publishEvent(new AlterationEvent(
                     AlterationEvent.Type.PAYMENT_RECEIVED,
                     id,

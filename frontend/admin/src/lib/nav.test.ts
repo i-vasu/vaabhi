@@ -25,6 +25,9 @@ describe("navigation", () => {
         "/workshop/",
         "/workshop/board/",
         "/products/",
+        "/money/",
+        "/money/invoices/",
+        "/money/ledger/",
       ]),
     );
   });

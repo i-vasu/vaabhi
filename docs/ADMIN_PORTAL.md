@@ -10,7 +10,7 @@ brings its backend module, Flyway migrations, API types and tests.
 | 1 Settings | Shop profile (address, hours, links), billing & tax (GST, GSTIN, rates, prices incl. tax), order / invoice / item numbering, bank details, UPI QR, alteration wording, delivery charges, production stages, trial date, garment & measurement templates, holidays & weekly off, notification switches | done |
 | 2 Customers & orders | Customers (list, add, detail, measurements, occasions), new order (items, cloth photo, advance, discount ₹/%, coupon, notes, live totals), orders list and stage progress, payments and refunds, stitching price list with piece rates, alterations | done |
 | 3 Workshop | Work board by stage, assigning staff, who may work which stage, workshop overview (in production, due today, overdue, stage load) | done |
-| 4 Money | Invoices (auto on delivery), payments (outstanding, collections), expenses, financial ledger | planned |
+| 4 Money | Invoices (auto on delivery), payments (outstanding, collections), expenses, financial ledger | done |
 | 5 Staff | Staff, roles & permissions, attendance (day / month), requests (leave, permission, off day, comp-off, advance), payroll (late, overtime, advances, salary), piece rates, production & work ledgers | planned |
 | 6 Stock & extras | Inventory (items, units, movements, stock ledger), design & customer galleries, rewards & coupons, Google review requests, activity log, notifications feed, help & support, print formats and form layouts, WhatsApp/SMS sending | planned |
 | 7 Reports | Reports hub (KPIs, 6-month revenue, dues ageing), sales, GST register, sales orders, financial ledger, product profitability, orders, deliveries, customers, alterations, workshop, production, work, stock, rewards, AI usage; CSV export | planned |
@@ -81,6 +81,33 @@ order and alteration take `?clientId=` and, for alterations, `?orderId=`).
 
 Admin pages: `/workshop/` (overview), `/workshop/board/` (`?staffId=`, `?unassigned=1`), `/workshop/staff/`. On
 phones the bottom bar is Home, Orders, Work, Customers and More; Products moved into More (Catalogue).
+
+## Money
+
+The `money` module (`/api/v1/admin/money`, `V9__money.sql`) reads the tailoring module's orders and payments and
+depends on it; nothing depends on money.
+
+- **Invoices** — with auto-invoice on (Settings → Billing), `InvoiceService` listens for `OrderEvent.DELIVERED` and
+  issues the invoice in the same transaction, so a delivered order always has one. Staff can also issue one from
+  the order (`POST /orders/{orderId}/invoice`; 409 if it already has one). Lines are the order items (with colour)
+  and the delivery charge; the discount is the lines minus the order total. Cancelling keeps the number in the
+  register and allows a new invoice; cancelling an order cancels its live invoice.
+- **GST** — applies only when Billing has GST on and a GSTIN. The default rate is used (tailoring services have no
+  per-category rate yet). With prices including tax, the invoice total is the order total and the GST is taken out
+  of it; otherwise GST is added on top and the customer owes the invoice total. The tax is split evenly into CGST
+  and SGST (SGST takes an odd paisa), rounding half up. HSN/SAC codes are not printed yet.
+- **Dues** — `GET /outstanding`: orders and charged alterations, not cancelled, that still owe money, oldest first.
+  An invoiced order owes its invoice total. Dues on work already handed over are totalled separately.
+- **Expenses** — categories rent, salary, material, utilities, transport, maintenance, marketing, other; listed by
+  month with totals per category.
+- **Ledger** — `GET /ledger?from&to&kind`: order payments, refunds, alteration payments (now recorded per payment
+  with its mode, in `alteration_payment`) and expenses, oldest first, with the opening balance before the range, a
+  running balance, totals in and out, and per payment mode. At most 400 days per request. Expenses count from the
+  start of their day.
+
+Admin pages under More → Money: `/money/` (this month in and out, what is owed), `/money/dues/`, `/money/invoices/`
+(and `/money/invoices/view/?id=`, printable), `/money/expenses/`, `/money/ledger/`. The order page links to its
+invoice or offers to issue one; alteration hand-over asks how the customer paid.
 
 ## UI conventions
 

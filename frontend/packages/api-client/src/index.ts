@@ -97,6 +97,19 @@ export type WorkshopOverview = Schemas["WorkshopOverview"];
 export type WorkshopStaff = Schemas["WorkshopStaff"];
 export type StageLoad = Schemas["StageLoad"];
 export type BulkMove = Schemas["BulkMove"];
+export type Invoice = Schemas["Invoice"];
+export type InvoiceLine = Schemas["InvoiceLine"];
+export type InvoiceSummary = Schemas["InvoiceSummary"];
+export type InvoicePage = Schemas["InvoicePage"];
+export type Expense = Schemas["Expense"];
+export type ExpenseForm = Schemas["ExpenseForm"];
+export type ExpenseCategory = ExpenseForm["category"];
+export type ExpenseList = Schemas["ExpenseList"];
+export type Ledger = Schemas["Ledger"];
+export type LedgerEntry = Schemas["LedgerEntry"];
+export type LedgerKind = LedgerEntry["kind"];
+export type Due = Schemas["Due"];
+export type Outstanding = Schemas["Outstanding"];
 export type TailoringImageUpload = Schemas["TailoringImageUpload"];
 export type TailoringImagePurpose = Schemas["TailoringImageRequest"]["purpose"];
 
@@ -293,6 +306,26 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         staff: () => request<WorkshopStaff[]>("/api/v1/admin/workshop/staff"),
         saveStages: (staffId: number, stageIds: number[]) =>
           send<WorkshopStaff>("PUT", `/api/v1/admin/workshop/staff/${staffId}/stages`, { stageIds }),
+      },
+      money: {
+        invoices: (params: { q?: string; from?: string; to?: string; page?: number; pageSize?: number } = {}) =>
+          request<InvoicePage>(`/api/v1/admin/money/invoices${queryString(params)}`),
+        invoice: (id: number) => request<Invoice>(`/api/v1/admin/money/invoices/${id}`),
+        cancelInvoice: (id: number) => send<Invoice>("POST", `/api/v1/admin/money/invoices/${id}/cancel`),
+        /** The order's live invoice, or null when it has none yet (204). */
+        orderInvoice: (orderId: number) =>
+          request<Invoice | undefined>(`/api/v1/admin/money/orders/${orderId}/invoice`).then((i) => i ?? null),
+        issueInvoice: (orderId: number) => send<Invoice>("POST", `/api/v1/admin/money/orders/${orderId}/invoice`),
+        expenses: (params: { from?: string; to?: string; category?: ExpenseCategory } = {}) =>
+          request<ExpenseList>(`/api/v1/admin/money/expenses${queryString(params)}`),
+        createExpense: (form: ExpenseForm) => send<Expense>("POST", "/api/v1/admin/money/expenses", form),
+        updateExpense: (id: number, form: ExpenseForm) =>
+          send<Expense>("PUT", `/api/v1/admin/money/expenses/${id}`, form),
+        deleteExpense: (id: number) => send<void>("DELETE", `/api/v1/admin/money/expenses/${id}`),
+        ledger: (params: { from?: string; to?: string; kind?: LedgerKind } = {}) =>
+          request<Ledger>(`/api/v1/admin/money/ledger${queryString(params)}`),
+        outstanding: (params: { clientId?: number } = {}) =>
+          request<Outstanding>(`/api/v1/admin/money/outstanding${queryString(params)}`),
       },
       startTailoringImageUpload: (purpose: TailoringImagePurpose) =>
         send<TailoringImageUpload>("POST", "/api/v1/admin/tailoring/images", { purpose }),
