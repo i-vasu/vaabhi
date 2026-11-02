@@ -5,7 +5,13 @@ const encode = (value: object) => btoa(JSON.stringify(value)).replace(/=+$/, "")
 /** An unsigned JWT-shaped token with the given payload (the admin app never verifies signatures). */
 export const tokenFor = (payload: object) => `${encode({ alg: "HS256" })}.${encode(payload)}.sig`;
 
-export const owner: StaffProfile = { id: 1, name: "Asha Rao", email: "asha@vaabhi.local", role: "OWNER" };
+export const owner: StaffProfile = {
+  id: 1,
+  name: "Asha Rao",
+  email: "asha@vaabhi.local",
+  role: "OWNER",
+  permissions: ["ORDERS", "WORKSHOP", "MONEY", "STAFF", "PAYROLL", "CATALOGUE", "SETTINGS"],
+};
 
 /** A token valid for another hour. */
 export const validToken = () => tokenFor({ sub: "staff:1", exp: Math.floor(Date.now() / 1000) + 3600 });

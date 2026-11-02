@@ -1,12 +1,16 @@
+import type { Permission, StaffProfile } from "@vaabhi/api-client";
 import {
   ActivityIcon,
-  BankIcon,
-  DocumentIcon,
+  BadgeIcon,
   BagIcon,
+  BankIcon,
   BellIcon,
   BoardIcon,
   CalendarIcon,
+  DocumentIcon,
   HomeIcon,
+  InboxIcon,
+  LockIcon,
   MoreIcon,
   PhoneIcon,
   PrinterIcon,
@@ -26,6 +30,8 @@ export type NavItem = {
   icon: Icon;
   /** One line shown in the More page and in search results. */
   description?: string;
+  /** The area permission needed to see it; "OWNER" for the owner alone; none for everyone. */
+  permission?: Permission | "OWNER";
 };
 
 /**
@@ -34,9 +40,27 @@ export type NavItem = {
  */
 export const primaryNav: NavItem[] = [
   { href: "/", label: "Home", icon: HomeIcon, description: "Today at the shop" },
-  { href: "/orders/", label: "Orders", icon: BagIcon, description: "Book, track, deliver and take payments" },
-  { href: "/workshop/", label: "Work", icon: BoardIcon, description: "Work board, stage load and who does what" },
-  { href: "/customers/", label: "Customers", icon: UsersIcon, description: "Contacts, measurements and history" },
+  {
+    href: "/orders/",
+    label: "Orders",
+    icon: BagIcon,
+    description: "Book, track, deliver and take payments",
+    permission: "ORDERS",
+  },
+  {
+    href: "/workshop/",
+    label: "Work",
+    icon: BoardIcon,
+    description: "Work board, stage load and who does what",
+    permission: "WORKSHOP",
+  },
+  {
+    href: "/customers/",
+    label: "Customers",
+    icon: UsersIcon,
+    description: "Contacts, measurements and history",
+    permission: "ORDERS",
+  },
 ];
 
 const byHref = (href: string) => primaryNav.find((item) => item.href === href)!;
@@ -46,47 +70,54 @@ const products: NavItem = {
   label: "Products",
   icon: TagIcon,
   description: "Catalogue, prices and photos",
+  permission: "CATALOGUE",
 };
 
 export const moreNav: NavItem = { href: "/more/", label: "More", icon: MoreIcon };
 
-/** Areas of the settings hub. */
+/** Areas of the settings hub. Everyone may read settings; changing them needs SETTINGS. */
 export const settingsPages: NavItem[] = [
   {
     href: "/settings/shop/",
     label: "Shop profile",
     icon: StoreIcon,
     description: "Name, logo, address, country, currency, hours",
+    permission: "SETTINGS",
   },
   {
     href: "/settings/orders/",
     label: "Orders & production",
     icon: TruckIcon,
     description: "Delivery charges, stages, trial date, garments",
+    permission: "SETTINGS",
   },
   {
     href: "/settings/billing/",
     label: "Billing & tax",
     icon: ReceiptIcon,
     description: "GST, numbering, bank details, terms",
+    permission: "SETTINGS",
   },
   {
     href: "/settings/printing/",
     label: "Printing & messages",
     icon: PrinterIcon,
     description: "Print formats, form layouts, messages, watermark",
+    permission: "SETTINGS",
   },
   {
     href: "/settings/holidays/",
     label: "Holidays & weekly off",
     icon: CalendarIcon,
     description: "Days the shop is closed",
+    permission: "SETTINGS",
   },
   {
     href: "/settings/notifications/",
     label: "Notifications",
     icon: BellIcon,
     description: "Which alerts reach your phone",
+    permission: "SETTINGS",
   },
   {
     href: "/settings/account/",
@@ -108,31 +139,125 @@ export const moreSections: { title: string; items: NavItem[] }[] = [
         label: "Work board",
         icon: BoardIcon,
         description: "Give out and move work by stage",
+        permission: "WORKSHOP",
       },
       {
         href: "/workshop/staff/",
         label: "Who works which stage",
         icon: UsersIcon,
         description: "Stages each person may be given",
+        permission: "WORKSHOP",
       },
       byHref("/customers/"),
-      { href: "/alterations/", label: "Alterations", icon: RulerIcon, description: "Fit fixes, length and repairs" },
-      { href: "/price-list/", label: "Price list", icon: TagIcon, description: "Stitching prices and piece rates" },
+      {
+        href: "/alterations/",
+        label: "Alterations",
+        icon: RulerIcon,
+        description: "Fit fixes, length and repairs",
+        permission: "ORDERS",
+      },
+      {
+        href: "/price-list/",
+        label: "Price list",
+        icon: TagIcon,
+        description: "Stitching prices and piece rates",
+        permission: "ORDERS",
+      },
     ],
   },
   {
     title: "Money",
     items: [
-      { href: "/money/", label: "Money", icon: BankIcon, description: "Money in and out this month, what is owed" },
-      { href: "/money/dues/", label: "Dues", icon: BankIcon, description: "Who owes what, oldest first" },
-      { href: "/money/invoices/", label: "Invoices", icon: DocumentIcon, description: "Tax invoices and GST" },
+      {
+        href: "/money/",
+        label: "Money",
+        icon: BankIcon,
+        description: "Money in and out this month, what is owed",
+        permission: "MONEY",
+      },
+      {
+        href: "/money/dues/",
+        label: "Dues",
+        icon: BankIcon,
+        description: "Who owes what, oldest first",
+        permission: "MONEY",
+      },
+      {
+        href: "/money/invoices/",
+        label: "Invoices",
+        icon: DocumentIcon,
+        description: "Tax invoices and GST",
+        permission: "MONEY",
+      },
       {
         href: "/money/expenses/",
         label: "Expenses",
         icon: ReceiptIcon,
         description: "Rent, salaries, material, bills",
+        permission: "MONEY",
       },
-      { href: "/money/ledger/", label: "Ledger", icon: ActivityIcon, description: "Every rupee in and out" },
+      {
+        href: "/money/ledger/",
+        label: "Ledger",
+        icon: ActivityIcon,
+        description: "Every rupee in and out",
+        permission: "MONEY",
+      },
+    ],
+  },
+  {
+    title: "Staff",
+    items: [
+      {
+        href: "/staff/",
+        label: "Staff",
+        icon: UsersIcon,
+        description: "People, pay, shifts and sign-ins",
+        permission: "STAFF",
+      },
+      {
+        href: "/staff/attendance/",
+        label: "Attendance",
+        icon: CalendarIcon,
+        description: "Mark today, late and overtime",
+        permission: "STAFF",
+      },
+      {
+        href: "/staff/attendance/month/",
+        label: "Attendance by month",
+        icon: CalendarIcon,
+        description: "Everyone's month at a glance",
+        permission: "STAFF",
+      },
+      {
+        href: "/staff/requests/",
+        label: "Requests",
+        icon: InboxIcon,
+        description: "Leave, permission, off days, advances",
+        permission: "STAFF",
+      },
+      {
+        href: "/payroll/",
+        label: "Payroll",
+        icon: BankIcon,
+        description: "Payslips, finalise and pay a month",
+        permission: "PAYROLL",
+      },
+      {
+        href: "/payroll/production/",
+        label: "Production ledger",
+        icon: ActivityIcon,
+        description: "Stages each person finished, at piece rates",
+        permission: "PAYROLL",
+      },
+      {
+        href: "/staff/roles/",
+        label: "Roles & permissions",
+        icon: LockIcon,
+        description: "What managers and staff may do",
+        permission: "OWNER",
+      },
+      { href: "/requests/", label: "My requests", icon: BadgeIcon, description: "Ask for leave or an advance" },
     ],
   },
   {
@@ -153,11 +278,28 @@ export const moreSections: { title: string; items: NavItem[] }[] = [
   },
 ];
 
-/** Every page reachable from search, without duplicates. */
-export function searchableNav(): NavItem[] {
+/**
+ * Whether the signed-in person may see the item. Only hides what the API would refuse anyway; with nobody known
+ * (outside the app frame) everything shows.
+ */
+export function canSee(item: NavItem, staff: Pick<StaffProfile, "role" | "permissions"> | undefined): boolean {
+  return !item.permission || hasPermission(staff, item.permission);
+}
+
+/** Whether the person may use an area ("OWNER": the owner alone); true with nobody known. */
+export function hasPermission(
+  staff: Pick<StaffProfile, "role" | "permissions"> | undefined,
+  permission: Permission | "OWNER",
+): boolean {
+  if (!staff || staff.role === "OWNER") return true;
+  return permission !== "OWNER" && staff.permissions.includes(permission);
+}
+
+/** Every page reachable from search, without duplicates, limited to what the person may see. */
+export function searchableNav(staff?: Pick<StaffProfile, "role" | "permissions">): NavItem[] {
   const seen = new Set<string>();
-  return [...primaryNav, ...moreSections.flatMap((section) => section.items), ...settingsPages].filter((item) =>
-    seen.has(item.href) ? false : (seen.add(item.href), true),
+  return [...primaryNav, ...moreSections.flatMap((section) => section.items), ...settingsPages].filter(
+    (item) => canSee(item, staff) && (seen.has(item.href) ? false : (seen.add(item.href), true)),
   );
 }
 

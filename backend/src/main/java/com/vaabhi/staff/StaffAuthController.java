@@ -28,7 +28,7 @@ class StaffAuthController {
     }
 
     @GetMapping("/api/v1/admin/me")
-    StaffProfile currentStaff(@AuthenticationPrincipal Jwt jwt) {
+    SignedInStaff currentStaff(@AuthenticationPrincipal Jwt jwt) {
         return service.me(jwt.getSubject());
     }
 

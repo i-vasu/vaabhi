@@ -26,6 +26,7 @@ class StaffAuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtEncoder jwtEncoder;
     private final StaffProperties properties;
+    private final RolePermissionService roles;
     private final Clock clock;
     /** Checked against when the email is unknown, so unknown and known emails take about the same time. */
     private final String dummyHash;
@@ -35,11 +36,13 @@ class StaffAuthService {
             PasswordEncoder passwordEncoder,
             JwtEncoder jwtEncoder,
             StaffProperties properties,
+            RolePermissionService roles,
             Clock clock) {
         this.store = store;
         this.passwordEncoder = passwordEncoder;
         this.jwtEncoder = jwtEncoder;
         this.properties = properties;
+        this.roles = roles;
         this.clock = clock;
         this.dummyHash = passwordEncoder.encode("not-a-real-password");
     }
@@ -58,7 +61,13 @@ class StaffAuthService {
             throw new ResponseStatusException(
                     HttpStatus.TOO_MANY_REQUESTS, "Too many wrong passwords. Try again in a few minutes.");
         }
-        if (!passwordEncoder.matches(request.password(), account.passwordHash())) {
+        var hash = account.passwordHash();
+        if (hash == null) {
+            // Staff without dashboard access: answer exactly like a wrong password.
+            passwordEncoder.matches(request.password(), dummyHash);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, WRONG_CREDENTIALS);
+        }
+        if (!passwordEncoder.matches(request.password(), hash)) {
             store.recordFailure(account.id(), properties.maxFailedLogins(), now.plus(properties.lockout()));
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, WRONG_CREDENTIALS);
         }
@@ -66,18 +75,25 @@ class StaffAuthService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This account has been switched off");
         }
         store.recordSuccess(account.id(), now);
-        return new StaffSession(issueToken(account, now), properties.tokenTtl().toSeconds(), account.profile());
+        var signedIn = signedIn(account);
+        return new StaffSession(issueToken(signedIn, now), properties.tokenTtl().toSeconds(), signedIn);
     }
 
     @Transactional(readOnly = true)
-    public StaffProfile me(String subject) {
-        return account(subject).profile();
+    public SignedInStaff me(String subject) {
+        return signedIn(account(subject));
+    }
+
+    private SignedInStaff signedIn(StaffAccountStore.Account account) {
+        return new SignedInStaff(
+                account.id(), account.name(), account.email(), account.role(), roles.permissions(account.role()));
     }
 
     @Transactional
     public void changePassword(String subject, PasswordChange change) {
         var account = account(subject);
-        if (!passwordEncoder.matches(change.currentPassword(), account.passwordHash())) {
+        var hash = account.passwordHash();
+        if (hash == null || !passwordEncoder.matches(change.currentPassword(), hash)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is wrong");
         }
         store.setPasswordHash(account.id(), passwordEncoder.encode(change.newPassword()));
@@ -99,13 +115,16 @@ class StaffAuthService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Account not found"));
     }
 
-    private String issueToken(StaffAccountStore.Account account, OffsetDateTime now) {
+    private String issueToken(SignedInStaff account, OffsetDateTime now) {
         var claims = JwtClaimsSet.builder()
                 .issuer("vaabhi")
                 .subject(SUBJECT_PREFIX + account.id())
                 .issuedAt(now.toInstant())
                 .expiresAt(now.plus(properties.tokenTtl()).toInstant())
-                .claim("roles", List.of("ADMIN"))
+                .claim("roles", account.role() == StaffRole.OWNER ? List.of("ADMIN", "OWNER") : List.of("ADMIN"))
+                .claim(
+                        "permissions",
+                        account.permissions().stream().map(Enum::name).sorted().toList())
                 .claim("staffRole", account.role().name())
                 .claim("name", account.name())
                 .build();

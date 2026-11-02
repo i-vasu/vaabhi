@@ -996,6 +996,326 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/staff/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getStaff"];
+        put: operations["updateStaff"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/roles/{role}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["saveRolePermissions"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/attendance/{day}/{staffId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["markAttendance"];
+        post?: never;
+        delete: operations["clearAttendance"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listStaff"];
+        put?: never;
+        post: operations["createStaff"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/{id}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["deactivateStaff"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/{id}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["activateStaff"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listStaffRequests"];
+        put?: never;
+        post: operations["createStaffRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/requests/{id}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["decideStaffRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/attendance/{day}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["markManyAttendance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payroll/payslips/{id}/pay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["payPayslip"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payroll/months/{month}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reopenPayrollMonth"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payroll/months/{month}/finalize": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["finalizePayrollMonth"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/me/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listOwnRequests"];
+        put?: never;
+        post: operations["createOwnRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listRolePermissions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getDayAttendance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/attendance/month/{month}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMonthAttendance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payroll/staff/{staffId}/statement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getStaffStatement"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payroll/production": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getProduction"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/payroll/months/{month}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getPayrollMonth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/{id}/sign-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["removeStaffSignIn"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1296,19 +1616,11 @@ export interface components {
             email: string;
             password: string;
         };
-        StaffProfile: {
-            /** Format: int64 */
-            id: number;
-            name: string;
-            email: string;
-            /** @enum {string} */
-            role: "OWNER" | "MANAGER" | "STAFF";
-        };
         StaffSession: {
             accessToken: string;
             /** Format: int64 */
             expiresIn: number;
-            staff: components["schemas"]["StaffProfile"];
+            staff: components["schemas"]["SignedInStaff"];
         };
         SettingsImageRequest: {
             /** @enum {string} */
@@ -2214,6 +2526,311 @@ export interface components {
             /** Format: int64 */
             totalPaise: number;
             byCategory: components["schemas"]["CategoryTotal"][];
+        };
+        StaffForm: {
+            name: string;
+            phone: string | null;
+            /** Format: email */
+            email: string | null;
+            /** @enum {string} */
+            role: "OWNER" | "MANAGER" | "STAFF";
+            designation: string | null;
+            /** Format: date */
+            joinedOn: string | null;
+            /** @enum {string} */
+            payType: "MONTHLY" | "DAILY" | "PIECE";
+            /** Format: int64 */
+            salaryPaise: number;
+            /** Format: int64 */
+            hourlyPaise: number;
+            /** Format: time-local */
+            shiftStart: string;
+            /** Format: time-local */
+            shiftEnd: string;
+            /** Format: int32 */
+            lateGraceMinutes: number;
+            /** Format: int32 */
+            weeklyOff: number | null;
+            password: string | null;
+        };
+        StaffMember: {
+            /** Format: int64 */
+            id: number;
+            name: string;
+            phone: string | null;
+            email: string | null;
+            /** @enum {string} */
+            role: "OWNER" | "MANAGER" | "STAFF";
+            designation: string | null;
+            /** Format: date */
+            joinedOn: string | null;
+            /** @enum {string} */
+            payType: "MONTHLY" | "DAILY" | "PIECE";
+            /** Format: int64 */
+            salaryPaise: number;
+            /** Format: int64 */
+            hourlyPaise: number;
+            /** Format: time-local */
+            shiftStart: string;
+            /** Format: time-local */
+            shiftEnd: string;
+            /** Format: int32 */
+            lateGraceMinutes: number;
+            /** Format: int32 */
+            weeklyOff: number | null;
+            active: boolean;
+            canSignIn: boolean;
+            /** Format: date-time */
+            lastLoginAt: string | null;
+        };
+        PermissionsForm: {
+            permissions: ("ORDERS" | "WORKSHOP" | "MONEY" | "STAFF" | "PAYROLL" | "CATALOGUE" | "SETTINGS")[];
+        };
+        RolePermissions: {
+            /** @enum {string} */
+            role: "OWNER" | "MANAGER" | "STAFF";
+            permissions: ("ORDERS" | "WORKSHOP" | "MONEY" | "STAFF" | "PAYROLL" | "CATALOGUE" | "SETTINGS")[];
+            editable: boolean;
+        };
+        AttendanceForm: {
+            /** @enum {string} */
+            status: "PRESENT" | "HALF_DAY" | "ABSENT" | "LEAVE" | "OFF" | "HOLIDAY" | "COMP_OFF";
+            /** Format: time-local */
+            checkIn: string | null;
+            /** Format: time-local */
+            checkOut: string | null;
+            note: string | null;
+        };
+        AttendanceEntry: {
+            /** Format: int64 */
+            staffId: number;
+            name: string;
+            designation: string | null;
+            /** Format: time-local */
+            shiftStart: string;
+            /** Format: time-local */
+            shiftEnd: string;
+            /** @enum {string|null} */
+            status: "PRESENT" | "HALF_DAY" | "ABSENT" | "LEAVE" | "OFF" | "HOLIDAY" | "COMP_OFF" | null;
+            /** @enum {string|null} */
+            suggested: "PRESENT" | "HALF_DAY" | "ABSENT" | "LEAVE" | "OFF" | "HOLIDAY" | "COMP_OFF" | null;
+            /** Format: time-local */
+            checkIn: string | null;
+            /** Format: time-local */
+            checkOut: string | null;
+            /** Format: int32 */
+            lateMinutes: number;
+            /** Format: int32 */
+            overtimeMinutes: number;
+            note: string | null;
+            markedBy: string | null;
+        };
+        DayAttendance: {
+            /** Format: date */
+            day: string;
+            holiday: string | null;
+            entries: components["schemas"]["AttendanceEntry"][];
+        };
+        SignedInStaff: {
+            /** Format: int64 */
+            id: number;
+            name: string;
+            email: string | null;
+            /** @enum {string} */
+            role: "OWNER" | "MANAGER" | "STAFF";
+            permissions: ("ORDERS" | "WORKSHOP" | "MONEY" | "STAFF" | "PAYROLL" | "CATALOGUE" | "SETTINGS")[];
+        };
+        RequestForm: {
+            /** Format: int64 */
+            staffId: number | null;
+            /** @enum {string} */
+            kind: "LEAVE" | "PERMISSION" | "OFF_DAY" | "COMP_OFF" | "ADVANCE";
+            /** Format: date */
+            fromDate: string;
+            /** Format: date */
+            toDate: string | null;
+            hours: number | null;
+            /** Format: int64 */
+            amountPaise: number | null;
+            reason: string | null;
+        };
+        StaffRequest: {
+            /** Format: int64 */
+            id: number;
+            /** Format: int64 */
+            staffId: number;
+            staffName: string;
+            /** @enum {string} */
+            kind: "LEAVE" | "PERMISSION" | "OFF_DAY" | "COMP_OFF" | "ADVANCE";
+            /** Format: date */
+            fromDate: string;
+            /** Format: date */
+            toDate: string;
+            hours: number | null;
+            /** Format: int64 */
+            amountPaise: number | null;
+            reason: string | null;
+            /** @enum {string} */
+            status: "PENDING" | "APPROVED" | "REJECTED";
+            requestedBy: string | null;
+            decidedBy: string | null;
+            /** Format: date-time */
+            decidedAt: string | null;
+            decisionNote: string | null;
+            /** Format: date */
+            recoveredMonth: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        RequestDecision: {
+            approve: boolean;
+            note: string | null;
+        };
+        BulkAttendance: {
+            /** @enum {string} */
+            status: "PRESENT" | "HALF_DAY" | "ABSENT" | "LEAVE" | "OFF" | "HOLIDAY" | "COMP_OFF";
+            staffIds: number[];
+        };
+        PayForm: {
+            /** @enum {string} */
+            mode: "CASH" | "UPI" | "CARD" | "BANK";
+        };
+        Payslip: {
+            /** Format: int64 */
+            id: number | null;
+            /** Format: int64 */
+            staffId: number;
+            name: string;
+            designation: string | null;
+            /** Format: date */
+            month: string;
+            /** @enum {string} */
+            payType: "MONTHLY" | "DAILY" | "PIECE";
+            /** Format: int64 */
+            ratePaise: number;
+            daysPaid: number;
+            daysUnpaid: number;
+            /** Format: int64 */
+            basePaise: number;
+            /** Format: int64 */
+            piecePaise: number;
+            /** Format: int32 */
+            pieces: number;
+            /** Format: int32 */
+            overtimeMinutes: number;
+            /** Format: int64 */
+            overtimePaise: number;
+            /** Format: int32 */
+            lateMinutes: number;
+            /** Format: int64 */
+            latePaise: number;
+            /** Format: int64 */
+            advancePaise: number;
+            /** Format: int64 */
+            netPaise: number;
+            /** Format: date-time */
+            paidAt: string | null;
+            /** @enum {string|null} */
+            paidMode: "CASH" | "UPI" | "CARD" | "BANK" | null;
+        };
+        PayrollMonth: {
+            /** Format: date */
+            month: string;
+            finalized: boolean;
+            slips: components["schemas"]["Payslip"][];
+            /** Format: int64 */
+            totalNetPaise: number;
+            /** Format: int64 */
+            paidPaise: number;
+            /** Format: int64 */
+            unpaidPaise: number;
+        };
+        MonthAttendance: {
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            rows: components["schemas"]["Row"][];
+        };
+        Row: {
+            /** Format: int64 */
+            staffId: number;
+            name: string;
+            days: ("PRESENT" | "HALF_DAY" | "ABSENT" | "LEAVE" | "OFF" | "HOLIDAY" | "COMP_OFF")[];
+            /** Format: int32 */
+            present: number;
+            /** Format: int32 */
+            halfDays: number;
+            /** Format: int32 */
+            absent: number;
+            /** Format: int32 */
+            leave: number;
+            /** Format: int32 */
+            offDays: number;
+            /** Format: int32 */
+            unmarked: number;
+            /** Format: int32 */
+            lateMinutes: number;
+            /** Format: int32 */
+            overtimeMinutes: number;
+        };
+        Entry: {
+            /** Format: date */
+            date: string;
+            /** @enum {string} */
+            kind: "EARNED" | "ADVANCE" | "PAID";
+            description: string;
+            /** Format: int64 */
+            amountPaise: number;
+            /** Format: int64 */
+            balancePaise: number;
+        };
+        StaffStatement: {
+            /** Format: int64 */
+            staffId: number;
+            name: string;
+            entries: components["schemas"]["Entry"][];
+            /** Format: int64 */
+            balancePaise: number;
+        };
+        ProductionEntry: {
+            /** Format: date-time */
+            at: string;
+            /** Format: int64 */
+            staffId: number;
+            staffName: string;
+            /** Format: int64 */
+            orderId: number;
+            orderNumber: string;
+            /** Format: int64 */
+            itemId: number;
+            description: string;
+            /** Format: int32 */
+            quantity: number;
+            /** Format: int64 */
+            stageId: number;
+            stageName: string;
+            /** Format: int64 */
+            ratePaise: number;
+            /** Format: int64 */
+            amountPaise: number;
+        };
+        ProductionLedger: {
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            entries: components["schemas"]["ProductionEntry"][];
+            byStaff: components["schemas"]["StaffPieces"][];
+        };
+        StaffPieces: {
+            /** Format: int64 */
+            staffId: number;
+            name: string;
+            /** Format: int32 */
+            pieces: number;
+            /** Format: int64 */
+            amountPaise: number;
         };
     };
     responses: never;
@@ -3298,7 +3915,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["StaffProfile"];
+                    "*/*": components["schemas"]["SignedInStaff"];
                 };
             };
         };
@@ -4269,6 +4886,587 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["Invoice"];
+                };
+            };
+        };
+    };
+    getStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffMember"];
+                };
+            };
+        };
+    };
+    updateStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffMember"];
+                };
+            };
+        };
+    };
+    saveRolePermissions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                role: "OWNER" | "MANAGER" | "STAFF";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PermissionsForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RolePermissions"];
+                };
+            };
+        };
+    };
+    markAttendance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                day: string;
+                staffId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttendanceForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DayAttendance"];
+                };
+            };
+        };
+    };
+    clearAttendance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                day: string;
+                staffId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DayAttendance"];
+                };
+            };
+        };
+    };
+    listStaff: {
+        parameters: {
+            query?: {
+                includeInactive?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffMember"][];
+                };
+            };
+        };
+    };
+    createStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffMember"];
+                };
+            };
+        };
+    };
+    deactivateStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffMember"];
+                };
+            };
+        };
+    };
+    activateStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffMember"];
+                };
+            };
+        };
+    };
+    listStaffRequests: {
+        parameters: {
+            query?: {
+                status?: "PENDING" | "APPROVED" | "REJECTED" | null;
+                staffId?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffRequest"][];
+                };
+            };
+        };
+    };
+    createStaffRequest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffRequest"];
+                };
+            };
+        };
+    };
+    decideStaffRequest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestDecision"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffRequest"];
+                };
+            };
+        };
+    };
+    markManyAttendance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                day: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkAttendance"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DayAttendance"];
+                };
+            };
+        };
+    };
+    payPayslip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PayForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Payslip"];
+                };
+            };
+        };
+    };
+    reopenPayrollMonth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                month: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PayrollMonth"];
+                };
+            };
+        };
+    };
+    finalizePayrollMonth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                month: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PayrollMonth"];
+                };
+            };
+        };
+    };
+    listOwnRequests: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffRequest"][];
+                };
+            };
+        };
+    };
+    createOwnRequest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffRequest"];
+                };
+            };
+        };
+    };
+    listRolePermissions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RolePermissions"][];
+                };
+            };
+        };
+    };
+    getDayAttendance: {
+        parameters: {
+            query: {
+                day: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DayAttendance"];
+                };
+            };
+        };
+    };
+    getMonthAttendance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                month: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MonthAttendance"];
+                };
+            };
+        };
+    };
+    getStaffStatement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                staffId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffStatement"];
+                };
+            };
+        };
+    };
+    getProduction: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                staffId?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProductionLedger"];
+                };
+            };
+        };
+    };
+    getPayrollMonth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                month: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PayrollMonth"];
+                };
+            };
+        };
+    };
+    removeStaffSignIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffMember"];
                 };
             };
         };

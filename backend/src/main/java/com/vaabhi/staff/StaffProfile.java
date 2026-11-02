@@ -1,4 +1,10 @@
 package com.vaabhi.staff;
 
-/** The signed-in staff member, as shown in the dashboard header. */
-public record StaffProfile(long id, String name, String email, StaffRole role) {}
+import org.jspecify.annotations.Nullable;
+
+/**
+ * A staff member as other modules see them.
+ *
+ * @param email their sign-in email; null for staff who do not use the dashboard
+ */
+public record StaffProfile(long id, String name, @Nullable String email, StaffRole role) {}

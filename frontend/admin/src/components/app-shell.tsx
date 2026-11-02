@@ -2,17 +2,24 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { ApiError, type StaffProfile, type StaffRole } from "@vaabhi/api-client";
 import { cn } from "@vaabhi/ui";
 import { appVersion } from "@vaabhi/observability";
 import { api } from "@/lib/api";
 import { clearSession, getStaff, getToken } from "@/lib/auth";
-import { isActive, moreNav, primaryNav, searchableNav } from "@/lib/nav";
+import { canSee, isActive, moreNav, primaryNav, searchableNav } from "@/lib/nav";
 import { BellIcon, LogoutIcon, SearchIcon } from "./icons";
 import { Sheet, inputClasses } from "./ui";
 
 const SHOP_NAME = "vaabhi";
+
+const StaffContext = createContext<StaffProfile | undefined>(undefined);
+
+/** The signed-in staff member (with their permissions), inside the app frame. */
+export function useStaff(): StaffProfile | undefined {
+  return useContext(StaffContext);
+}
 
 const roleLabel: Record<StaffRole, string> = { OWNER: "Owner", MANAGER: "Manager", STAFF: "Staff" };
 
@@ -62,44 +69,48 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (!staff) return <div className="min-h-screen bg-app" aria-busy="true" />;
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar pathname={pathname} />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <Header
-          staff={staff}
-          onSignOut={() => {
-            clearSession();
-            replace("/login/");
-          }}
-        />
-        <main className="flex-1 px-4 pb-28 pt-6 md:px-8 md:pb-10">{children}</main>
+    <StaffContext.Provider value={staff}>
+      <div className="flex min-h-screen">
+        <Sidebar pathname={pathname} staff={staff} />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Header
+            staff={staff}
+            onSignOut={() => {
+              clearSession();
+              replace("/login/");
+            }}
+          />
+          <main className="flex-1 px-4 pb-28 pt-6 md:px-8 md:pb-10">{children}</main>
+        </div>
+        <BottomBar pathname={pathname} staff={staff} />
       </div>
-      <BottomBar pathname={pathname} />
-    </div>
+    </StaffContext.Provider>
   );
 }
 
-function Sidebar({ pathname }: { pathname: string }) {
+function Sidebar({ pathname, staff }: { pathname: string; staff: StaffProfile }) {
   return (
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-line bg-panel p-4 md:flex">
       <Link href="/" className="mb-8 px-2 text-lg font-semibold tracking-[0.2em]">
         VAABHI
       </Link>
       <nav aria-label="Main" className="flex flex-col gap-1">
-        {[...primaryNav, moreNav].map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            aria-current={isActive(item, pathname) ? "page" : undefined}
-            className={cn(
-              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm",
-              isActive(item, pathname) ? "bg-accent-soft text-accent-ink" : "text-ink-soft hover:bg-panel-2",
-            )}
-          >
-            <item.icon />
-            {item.label}
-          </Link>
-        ))}
+        {[...primaryNav, moreNav]
+          .filter((item) => canSee(item, staff))
+          .map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={isActive(item, pathname) ? "page" : undefined}
+              className={cn(
+                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm",
+                isActive(item, pathname) ? "bg-accent-soft text-accent-ink" : "text-ink-soft hover:bg-panel-2",
+              )}
+            >
+              <item.icon />
+              {item.label}
+            </Link>
+          ))}
       </nav>
       <p className="mt-auto px-2 pt-6 text-xs text-ink-faint" data-testid="app-version">
         {appVersion().label}
@@ -108,30 +119,32 @@ function Sidebar({ pathname }: { pathname: string }) {
   );
 }
 
-function BottomBar({ pathname }: { pathname: string }) {
+function BottomBar({ pathname, staff }: { pathname: string; staff: StaffProfile }) {
   return (
     <nav
       aria-label="Main"
       className="fixed inset-x-0 bottom-0 z-40 flex border-t border-line bg-panel pb-[env(safe-area-inset-bottom)] md:hidden"
     >
-      {[...primaryNav, moreNav].map((item) => {
-        const active = isActive(item, pathname);
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            aria-current={active ? "page" : undefined}
-            className={cn(
-              "flex flex-1 flex-col items-center gap-1 py-2.5 text-xs",
-              active ? "text-ink" : "text-ink-faint",
-            )}
-          >
-            <item.icon size={22} />
-            {item.label}
-            <span className={cn("h-0.5 w-6 rounded-full", active ? "bg-ink" : "bg-transparent")} />
-          </Link>
-        );
-      })}
+      {[...primaryNav, moreNav]
+        .filter((item) => canSee(item, staff))
+        .map((item) => {
+          const active = isActive(item, pathname);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "flex flex-1 flex-col items-center gap-1 py-2.5 text-xs",
+                active ? "text-ink" : "text-ink-faint",
+              )}
+            >
+              <item.icon size={22} />
+              {item.label}
+              <span className={cn("h-0.5 w-6 rounded-full", active ? "bg-ink" : "bg-transparent")} />
+            </Link>
+          );
+        })}
     </nav>
   );
 }
@@ -187,12 +200,13 @@ function Header({ staff, onSignOut }: { staff: StaffProfile; onSignOut: () => vo
 /** Jump to any page by name. Search across orders and customers arrives with those modules. */
 function GoToSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [query, setQuery] = useState("");
+  const staff = useStaff();
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return searchableNav().filter(
+    return searchableNav(staff).filter(
       (item) => !q || item.label.toLowerCase().includes(q) || item.description?.toLowerCase().includes(q),
     );
-  }, [query]);
+  }, [query, staff]);
 
   return (
     <Sheet open={open} title="Go to" onClose={onClose}>

@@ -29,7 +29,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Import(TestcontainersConfiguration.class)
 class AdminCatalogueIT {
 
-    private static final RequestPostProcessor ADMIN = jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"));
+    private static final RequestPostProcessor ADMIN =
+            jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_OWNER"));
 
     private static final String FORM = """
             {"name":"Mint organza lehenga","slug":null,"subtitle":"Mirror work","description":"Light and bright",

@@ -1464,7 +1464,7 @@
                         "content": {
                             "*/*": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/StaffProfile"
+                                    "$ref": "#/components/schemas/SignedInStaff"
                                 }
                             }
                         }
@@ -3108,6 +3108,882 @@
                     }
                 }
             }
+        },
+        "/api/v1/admin/staff/{id}": {
+            "get": {
+                "tags": [
+                    "staff-controller"
+                ],
+                "operationId": "getStaff",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StaffMember"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "staff-controller"
+                ],
+                "operationId": "updateStaff",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StaffForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StaffMember"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/staff/roles/{role}": {
+            "put": {
+                "tags": [
+                    "staff-controller"
+                ],
+                "operationId": "saveRolePermissions",
+                "parameters": [
+                    {
+                        "name": "role",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "OWNER",
+                                "MANAGER",
+                                "STAFF"
+                            ]
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PermissionsForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RolePermissions"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/staff/attendance/{day}/{staffId}": {
+            "put": {
+                "tags": [
+                    "staff-controller"
+                ],
+                "operationId": "markAttendance",
+                "parameters": [
+                    {
+                        "name": "day",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "staffId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AttendanceForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DayAttendance"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "staff-controller"
+                ],
+                "operationId": "clearAttendance",
+                "parameters": [
+                    {
+                        "name": "day",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "staffId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DayAttendance"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/staff": {
+            "get": {
+                "tags": [
+                    "staff-controller"
+                ],
+                "operationId": "listStaff",
+                "parameters": [
+                    {
+                        "name": "includeInactive",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/StaffMember"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "staff-controller"
+                ],
+                "operationId": "createStaff",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StaffForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StaffMember"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/staff/{id}/deactivate": {
+            "post": {
+                "tags": [
+                    "staff-controller"
+                ],
+                "operationId": "deactivateStaff",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StaffMember"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/staff/{id}/activate": {
+            "post": {
+                "tags": [
+                    "staff-controller"
+                ],
+                "operationId": "activateStaff",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StaffMember"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/staff/requests": {
+            "get": {
+                "tags": [
+                    "staff-controller"
+                ],
+                "operationId": "listStaffRequests",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "PENDING",
+                                "APPROVED",
+                                "REJECTED"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "staffId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/StaffRequest"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "staff-controller"
+                ],
+                "operationId": "createStaffRequest",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RequestForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StaffRequest"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/staff/requests/{id}/decision": {
+            "post": {
+                "tags": [
+                    "staff-controller"
+                ],
+                "operationId": "decideStaffRequest",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RequestDecision"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StaffRequest"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/staff/attendance/{day}": {
+            "post": {
+                "tags": [
+                    "staff-controller"
+                ],
+                "operationId": "markManyAttendance",
+                "parameters": [
+                    {
+                        "name": "day",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BulkAttendance"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DayAttendance"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/payroll/payslips/{id}/pay": {
+            "post": {
+                "tags": [
+                    "payroll-controller"
+                ],
+                "operationId": "payPayslip",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PayForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Payslip"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/payroll/months/{month}/reopen": {
+            "post": {
+                "tags": [
+                    "payroll-controller"
+                ],
+                "operationId": "reopenPayrollMonth",
+                "parameters": [
+                    {
+                        "name": "month",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PayrollMonth"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/payroll/months/{month}/finalize": {
+            "post": {
+                "tags": [
+                    "payroll-controller"
+                ],
+                "operationId": "finalizePayrollMonth",
+                "parameters": [
+                    {
+                        "name": "month",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PayrollMonth"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/me/requests": {
+            "get": {
+                "tags": [
+                    "staff-controller"
+                ],
+                "operationId": "listOwnRequests",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/StaffRequest"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "staff-controller"
+                ],
+                "operationId": "createOwnRequest",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RequestForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StaffRequest"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/staff/roles": {
+            "get": {
+                "tags": [
+                    "staff-controller"
+                ],
+                "operationId": "listRolePermissions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/RolePermissions"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/staff/attendance": {
+            "get": {
+                "tags": [
+                    "staff-controller"
+                ],
+                "operationId": "getDayAttendance",
+                "parameters": [
+                    {
+                        "name": "day",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DayAttendance"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/staff/attendance/month/{month}": {
+            "get": {
+                "tags": [
+                    "staff-controller"
+                ],
+                "operationId": "getMonthAttendance",
+                "parameters": [
+                    {
+                        "name": "month",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MonthAttendance"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/payroll/staff/{staffId}/statement": {
+            "get": {
+                "tags": [
+                    "payroll-controller"
+                ],
+                "operationId": "getStaffStatement",
+                "parameters": [
+                    {
+                        "name": "staffId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StaffStatement"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/payroll/production": {
+            "get": {
+                "tags": [
+                    "payroll-controller"
+                ],
+                "operationId": "getProduction",
+                "parameters": [
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "staffId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductionLedger"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/payroll/months/{month}": {
+            "get": {
+                "tags": [
+                    "payroll-controller"
+                ],
+                "operationId": "getPayrollMonth",
+                "parameters": [
+                    {
+                        "name": "month",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PayrollMonth"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/staff/{id}/sign-in": {
+            "delete": {
+                "tags": [
+                    "staff-controller"
+                ],
+                "operationId": "removeStaffSignIn",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StaffMember"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -4598,35 +5474,6 @@
                     "password"
                 ]
             },
-            "StaffProfile": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "email": {
-                        "type": "string"
-                    },
-                    "role": {
-                        "type": "string",
-                        "enum": [
-                            "OWNER",
-                            "MANAGER",
-                            "STAFF"
-                        ]
-                    }
-                },
-                "required": [
-                    "email",
-                    "id",
-                    "name",
-                    "role"
-                ]
-            },
             "StaffSession": {
                 "type": "object",
                 "properties": {
@@ -4638,7 +5485,7 @@
                         "format": "int64"
                     },
                     "staff": {
-                        "$ref": "#/components/schemas/StaffProfile"
+                        "$ref": "#/components/schemas/SignedInStaff"
                     }
                 },
                 "required": [
@@ -8194,6 +9041,1211 @@
                     "byCategory",
                     "items",
                     "totalPaise"
+                ]
+            },
+            "StaffForm": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 120,
+                        "minLength": 0
+                    },
+                    "phone": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 20,
+                        "minLength": 0
+                    },
+                    "email": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "email",
+                        "maxLength": 254,
+                        "minLength": 0
+                    },
+                    "role": {
+                        "type": "string",
+                        "enum": [
+                            "OWNER",
+                            "MANAGER",
+                            "STAFF"
+                        ]
+                    },
+                    "designation": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 60,
+                        "minLength": 0
+                    },
+                    "joinedOn": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "payType": {
+                        "type": "string",
+                        "enum": [
+                            "MONTHLY",
+                            "DAILY",
+                            "PIECE"
+                        ]
+                    },
+                    "salaryPaise": {
+                        "type": "integer",
+                        "format": "int64",
+                        "maximum": 100000000,
+                        "minimum": 0
+                    },
+                    "hourlyPaise": {
+                        "type": "integer",
+                        "format": "int64",
+                        "maximum": 10000000,
+                        "minimum": 0
+                    },
+                    "shiftStart": {
+                        "type": "string",
+                        "format": "time-local"
+                    },
+                    "shiftEnd": {
+                        "type": "string",
+                        "format": "time-local"
+                    },
+                    "lateGraceMinutes": {
+                        "type": "integer",
+                        "format": "int32",
+                        "maximum": 180,
+                        "minimum": 0
+                    },
+                    "weeklyOff": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32",
+                        "maximum": 7,
+                        "minimum": 1
+                    },
+                    "password": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 200,
+                        "minLength": 10
+                    }
+                },
+                "required": [
+                    "designation",
+                    "email",
+                    "hourlyPaise",
+                    "joinedOn",
+                    "lateGraceMinutes",
+                    "name",
+                    "password",
+                    "payType",
+                    "phone",
+                    "role",
+                    "salaryPaise",
+                    "shiftEnd",
+                    "shiftStart",
+                    "weeklyOff"
+                ]
+            },
+            "StaffMember": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "email": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "role": {
+                        "type": "string",
+                        "enum": [
+                            "OWNER",
+                            "MANAGER",
+                            "STAFF"
+                        ]
+                    },
+                    "designation": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "joinedOn": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "payType": {
+                        "type": "string",
+                        "enum": [
+                            "MONTHLY",
+                            "DAILY",
+                            "PIECE"
+                        ]
+                    },
+                    "salaryPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "hourlyPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "shiftStart": {
+                        "type": "string",
+                        "format": "time-local"
+                    },
+                    "shiftEnd": {
+                        "type": "string",
+                        "format": "time-local"
+                    },
+                    "lateGraceMinutes": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "weeklyOff": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "active": {
+                        "type": "boolean"
+                    },
+                    "canSignIn": {
+                        "type": "boolean"
+                    },
+                    "lastLoginAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "active",
+                    "canSignIn",
+                    "designation",
+                    "email",
+                    "hourlyPaise",
+                    "id",
+                    "joinedOn",
+                    "lastLoginAt",
+                    "lateGraceMinutes",
+                    "name",
+                    "payType",
+                    "phone",
+                    "role",
+                    "salaryPaise",
+                    "shiftEnd",
+                    "shiftStart",
+                    "weeklyOff"
+                ]
+            },
+            "PermissionsForm": {
+                "type": "object",
+                "properties": {
+                    "permissions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "ORDERS",
+                                "WORKSHOP",
+                                "MONEY",
+                                "STAFF",
+                                "PAYROLL",
+                                "CATALOGUE",
+                                "SETTINGS"
+                            ]
+                        },
+                        "uniqueItems": true
+                    }
+                },
+                "required": [
+                    "permissions"
+                ]
+            },
+            "RolePermissions": {
+                "type": "object",
+                "properties": {
+                    "role": {
+                        "type": "string",
+                        "enum": [
+                            "OWNER",
+                            "MANAGER",
+                            "STAFF"
+                        ]
+                    },
+                    "permissions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "ORDERS",
+                                "WORKSHOP",
+                                "MONEY",
+                                "STAFF",
+                                "PAYROLL",
+                                "CATALOGUE",
+                                "SETTINGS"
+                            ]
+                        },
+                        "uniqueItems": true
+                    },
+                    "editable": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "editable",
+                    "permissions",
+                    "role"
+                ]
+            },
+            "AttendanceForm": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "PRESENT",
+                            "HALF_DAY",
+                            "ABSENT",
+                            "LEAVE",
+                            "OFF",
+                            "HOLIDAY",
+                            "COMP_OFF"
+                        ]
+                    },
+                    "checkIn": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "time-local"
+                    },
+                    "checkOut": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "time-local"
+                    },
+                    "note": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 200,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "checkIn",
+                    "checkOut",
+                    "note",
+                    "status"
+                ]
+            },
+            "AttendanceEntry": {
+                "type": "object",
+                "properties": {
+                    "staffId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "designation": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "shiftStart": {
+                        "type": "string",
+                        "format": "time-local"
+                    },
+                    "shiftEnd": {
+                        "type": "string",
+                        "format": "time-local"
+                    },
+                    "status": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "PRESENT",
+                            "HALF_DAY",
+                            "ABSENT",
+                            "LEAVE",
+                            "OFF",
+                            "HOLIDAY",
+                            "COMP_OFF"
+                        ]
+                    },
+                    "suggested": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "PRESENT",
+                            "HALF_DAY",
+                            "ABSENT",
+                            "LEAVE",
+                            "OFF",
+                            "HOLIDAY",
+                            "COMP_OFF"
+                        ]
+                    },
+                    "checkIn": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "time-local"
+                    },
+                    "checkOut": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "time-local"
+                    },
+                    "lateMinutes": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "overtimeMinutes": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "note": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "markedBy": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "checkIn",
+                    "checkOut",
+                    "designation",
+                    "lateMinutes",
+                    "markedBy",
+                    "name",
+                    "note",
+                    "overtimeMinutes",
+                    "shiftEnd",
+                    "shiftStart",
+                    "staffId",
+                    "status",
+                    "suggested"
+                ]
+            },
+            "DayAttendance": {
+                "type": "object",
+                "properties": {
+                    "day": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "holiday": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "entries": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AttendanceEntry"
+                        }
+                    }
+                },
+                "required": [
+                    "day",
+                    "entries",
+                    "holiday"
+                ]
+            },
+            "SignedInStaff": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "role": {
+                        "type": "string",
+                        "enum": [
+                            "OWNER",
+                            "MANAGER",
+                            "STAFF"
+                        ]
+                    },
+                    "permissions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "ORDERS",
+                                "WORKSHOP",
+                                "MONEY",
+                                "STAFF",
+                                "PAYROLL",
+                                "CATALOGUE",
+                                "SETTINGS"
+                            ]
+                        },
+                        "uniqueItems": true
+                    }
+                },
+                "required": [
+                    "email",
+                    "id",
+                    "name",
+                    "permissions",
+                    "role"
+                ]
+            },
+            "RequestForm": {
+                "type": "object",
+                "properties": {
+                    "staffId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "LEAVE",
+                            "PERMISSION",
+                            "OFF_DAY",
+                            "COMP_OFF",
+                            "ADVANCE"
+                        ]
+                    },
+                    "fromDate": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "toDate": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "hours": {
+                        "type": [
+                            "number",
+                            "null"
+                        ],
+                        "maximum": 8,
+                        "minimum": 0.5
+                    },
+                    "amountPaise": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64",
+                        "maximum": 100000000,
+                        "minimum": 100
+                    },
+                    "reason": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 500,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "amountPaise",
+                    "fromDate",
+                    "hours",
+                    "kind",
+                    "reason",
+                    "staffId",
+                    "toDate"
+                ]
+            },
+            "StaffRequest": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "staffId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "staffName": {
+                        "type": "string"
+                    },
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "LEAVE",
+                            "PERMISSION",
+                            "OFF_DAY",
+                            "COMP_OFF",
+                            "ADVANCE"
+                        ]
+                    },
+                    "fromDate": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "toDate": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "hours": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "amountPaise": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "reason": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "PENDING",
+                            "APPROVED",
+                            "REJECTED"
+                        ]
+                    },
+                    "requestedBy": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "decidedBy": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "decidedAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "decisionNote": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "recoveredMonth": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "amountPaise",
+                    "createdAt",
+                    "decidedAt",
+                    "decidedBy",
+                    "decisionNote",
+                    "fromDate",
+                    "hours",
+                    "id",
+                    "kind",
+                    "reason",
+                    "recoveredMonth",
+                    "requestedBy",
+                    "staffId",
+                    "staffName",
+                    "status",
+                    "toDate"
+                ]
+            },
+            "RequestDecision": {
+                "type": "object",
+                "properties": {
+                    "approve": {
+                        "type": "boolean"
+                    },
+                    "note": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 200,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "approve",
+                    "note"
+                ]
+            },
+            "BulkAttendance": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "PRESENT",
+                            "HALF_DAY",
+                            "ABSENT",
+                            "LEAVE",
+                            "OFF",
+                            "HOLIDAY",
+                            "COMP_OFF"
+                        ]
+                    },
+                    "staffIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "format": "int64"
+                        },
+                        "maxItems": 200,
+                        "minItems": 1
+                    }
+                },
+                "required": [
+                    "staffIds",
+                    "status"
+                ]
+            },
+            "PayForm": {
+                "type": "object",
+                "properties": {
+                    "mode": {
+                        "type": "string",
+                        "enum": [
+                            "CASH",
+                            "UPI",
+                            "CARD",
+                            "BANK"
+                        ]
+                    }
+                },
+                "required": [
+                    "mode"
+                ]
+            },
+            "Payslip": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "staffId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "designation": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "month": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "payType": {
+                        "type": "string",
+                        "enum": [
+                            "MONTHLY",
+                            "DAILY",
+                            "PIECE"
+                        ]
+                    },
+                    "ratePaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "daysPaid": {
+                        "type": "number"
+                    },
+                    "daysUnpaid": {
+                        "type": "number"
+                    },
+                    "basePaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "piecePaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "pieces": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "overtimeMinutes": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "overtimePaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "lateMinutes": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "latePaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "advancePaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "netPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "paidAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "paidMode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "CASH",
+                            "UPI",
+                            "CARD",
+                            "BANK"
+                        ]
+                    }
+                },
+                "required": [
+                    "advancePaise",
+                    "basePaise",
+                    "daysPaid",
+                    "daysUnpaid",
+                    "designation",
+                    "id",
+                    "lateMinutes",
+                    "latePaise",
+                    "month",
+                    "name",
+                    "netPaise",
+                    "overtimeMinutes",
+                    "overtimePaise",
+                    "paidAt",
+                    "paidMode",
+                    "payType",
+                    "piecePaise",
+                    "pieces",
+                    "ratePaise",
+                    "staffId"
+                ]
+            },
+            "PayrollMonth": {
+                "type": "object",
+                "properties": {
+                    "month": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "finalized": {
+                        "type": "boolean"
+                    },
+                    "slips": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Payslip"
+                        }
+                    },
+                    "totalNetPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "paidPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "unpaidPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "finalized",
+                    "month",
+                    "paidPaise",
+                    "slips",
+                    "totalNetPaise",
+                    "unpaidPaise"
+                ]
+            },
+            "MonthAttendance": {
+                "type": "object",
+                "properties": {
+                    "from": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "to": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "rows": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Row"
+                        }
+                    }
+                },
+                "required": [
+                    "from",
+                    "rows",
+                    "to"
+                ]
+            },
+            "Row": {
+                "type": "object",
+                "properties": {
+                    "staffId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "days": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "PRESENT",
+                                "HALF_DAY",
+                                "ABSENT",
+                                "LEAVE",
+                                "OFF",
+                                "HOLIDAY",
+                                "COMP_OFF"
+                            ]
+                        }
+                    },
+                    "present": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "halfDays": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "absent": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "leave": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "offDays": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "unmarked": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "lateMinutes": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "overtimeMinutes": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                },
+                "required": [
+                    "absent",
+                    "days",
+                    "halfDays",
+                    "lateMinutes",
+                    "leave",
+                    "name",
+                    "offDays",
+                    "overtimeMinutes",
+                    "present",
+                    "staffId",
+                    "unmarked"
+                ]
+            },
+            "Entry": {
+                "type": "object",
+                "properties": {
+                    "date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "EARNED",
+                            "ADVANCE",
+                            "PAID"
+                        ]
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "amountPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "balancePaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "amountPaise",
+                    "balancePaise",
+                    "date",
+                    "description",
+                    "kind"
+                ]
+            },
+            "StaffStatement": {
+                "type": "object",
+                "properties": {
+                    "staffId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "entries": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Entry"
+                        }
+                    },
+                    "balancePaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "balancePaise",
+                    "entries",
+                    "name",
+                    "staffId"
+                ]
+            },
+            "ProductionEntry": {
+                "type": "object",
+                "properties": {
+                    "at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "staffId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "staffName": {
+                        "type": "string"
+                    },
+                    "orderId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "orderNumber": {
+                        "type": "string"
+                    },
+                    "itemId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "stageId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "stageName": {
+                        "type": "string"
+                    },
+                    "ratePaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "amountPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "amountPaise",
+                    "at",
+                    "description",
+                    "itemId",
+                    "orderId",
+                    "orderNumber",
+                    "quantity",
+                    "ratePaise",
+                    "staffId",
+                    "staffName",
+                    "stageId",
+                    "stageName"
+                ]
+            },
+            "ProductionLedger": {
+                "type": "object",
+                "properties": {
+                    "from": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "to": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "entries": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ProductionEntry"
+                        }
+                    },
+                    "byStaff": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/StaffPieces"
+                        }
+                    }
+                },
+                "required": [
+                    "byStaff",
+                    "entries",
+                    "from",
+                    "to"
+                ]
+            },
+            "StaffPieces": {
+                "type": "object",
+                "properties": {
+                    "staffId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "pieces": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "amountPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "amountPaise",
+                    "name",
+                    "pieces",
+                    "staffId"
                 ]
             }
         }

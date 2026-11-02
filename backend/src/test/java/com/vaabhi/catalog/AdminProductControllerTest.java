@@ -30,7 +30,8 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 @Import(SecurityConfig.class)
 class AdminProductControllerTest {
 
-    private static final RequestPostProcessor ADMIN = jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"));
+    private static final RequestPostProcessor ADMIN =
+            jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_OWNER"));
 
     private static final String VALID = """
             {"name":"Silk saree","slug":null,"subtitle":null,"description":null,"categorySlug":"sarees",

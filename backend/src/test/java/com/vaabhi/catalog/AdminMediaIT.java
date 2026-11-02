@@ -47,7 +47,8 @@ class AdminMediaIT {
         }
     }
 
-    private static final RequestPostProcessor ADMIN = jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"));
+    private static final RequestPostProcessor ADMIN =
+            jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_OWNER"));
     private static final String SLUG = "jamdani-cotton-saree";
 
     @Autowired

@@ -83,7 +83,7 @@ class TailoringIT {
 
     private static final RequestPostProcessor OWNER = jwt().jwt(
                     j -> j.subject("staff:1").claim("name", "Asha Rao"))
-            .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_OWNER"));
 
     /** Every test makes its own customers; the database is shared by the whole test run. */
     private static final AtomicInteger PHONES = new AtomicInteger(1_000);

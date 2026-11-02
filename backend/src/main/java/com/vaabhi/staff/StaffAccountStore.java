@@ -15,17 +15,12 @@ class StaffAccountStore {
     record Account(
             long id,
             String name,
-            String email,
+            @Nullable String email,
             StaffRole role,
-            String passwordHash,
+            @Nullable String passwordHash,
             boolean active,
             int failedLogins,
-            @Nullable OffsetDateTime lockedUntil) {
-
-        StaffProfile profile() {
-            return new StaffProfile(id, name, email, role);
-        }
-    }
+            @Nullable OffsetDateTime lockedUntil) {}
 
     private static final String SELECT = """
             SELECT id, name, email, role, password_hash, active, failed_logins, locked_until FROM staff_account

@@ -28,12 +28,34 @@ export type AdminMedia = Schemas["AdminMedia"];
 export type MediaUpload = Schemas["MediaUpload"];
 export type MediaUploadRequest = Schemas["MediaUploadRequest"];
 export type MediaUpdate = Schemas["MediaUpdate"];
-export type StaffProfile = Schemas["StaffProfile"];
+/** The signed-in staff member with the dashboard areas their role may use. */
+export type StaffProfile = Schemas["SignedInStaff"];
+export type Permission = StaffProfile["permissions"][number];
 export type StaffRole = StaffProfile["role"];
 export type StaffSession = Schemas["StaffSession"];
 export type StaffLoginRequest = Schemas["StaffLoginRequest"];
 export type AdminListParams = NonNullable<operations["listAdminProducts"]["parameters"]["query"]>;
 export type PasswordChange = Schemas["PasswordChange"];
+export type StaffMember = Schemas["StaffMember"];
+export type StaffForm = Schemas["StaffForm"];
+export type PayType = StaffForm["payType"];
+export type RolePermissions = Schemas["RolePermissions"];
+export type DayAttendance = Schemas["DayAttendance"];
+export type AttendanceEntry = Schemas["AttendanceEntry"];
+export type AttendanceForm = Schemas["AttendanceForm"];
+export type AttendanceStatus = AttendanceForm["status"];
+/** A person's month; `days` holds null for days nobody marked (the generated schema drops that nullability). */
+export type MonthAttendanceRow = Omit<Schemas["Row"], "days"> & { days: (AttendanceStatus | null)[] };
+export type MonthAttendance = Omit<Schemas["MonthAttendance"], "rows"> & { rows: MonthAttendanceRow[] };
+export type StaffRequest = Schemas["StaffRequest"];
+export type RequestForm = Schemas["RequestForm"];
+export type RequestKind = RequestForm["kind"];
+export type RequestStatus = StaffRequest["status"];
+export type Payslip = Schemas["Payslip"];
+export type PayrollMonth = Schemas["PayrollMonth"];
+export type ProductionLedger = Schemas["ProductionLedger"];
+export type ProductionEntry = Schemas["ProductionEntry"];
+export type StaffStatement = Schemas["StaffStatement"];
 
 export type ShopProfile = Schemas["ShopProfile"];
 export type BusinessType = ShopProfile["businessType"];
@@ -237,6 +259,44 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
       /** The signed-in staff member. */
       me: () => request<StaffProfile>("/api/v1/admin/me"),
       changePassword: (change: PasswordChange) => send<void>("PUT", "/api/v1/admin/me/password", change),
+      myRequests: () => request<StaffRequest[]>("/api/v1/admin/me/requests"),
+      createMyRequest: (form: RequestForm) => send<StaffRequest>("POST", "/api/v1/admin/me/requests", form),
+      staff: {
+        list: (includeInactive = false) =>
+          request<StaffMember[]>(`/api/v1/admin/staff${queryString({ includeInactive })}`),
+        get: (id: number) => request<StaffMember>(`/api/v1/admin/staff/${id}`),
+        create: (form: StaffForm) => send<StaffMember>("POST", "/api/v1/admin/staff", form),
+        update: (id: number, form: StaffForm) => send<StaffMember>("PUT", `/api/v1/admin/staff/${id}`, form),
+        setActive: (id: number, active: boolean) =>
+          send<StaffMember>("POST", `/api/v1/admin/staff/${id}/${active ? "activate" : "deactivate"}`),
+        removeSignIn: (id: number) => send<StaffMember>("DELETE", `/api/v1/admin/staff/${id}/sign-in`),
+        roles: () => request<RolePermissions[]>("/api/v1/admin/staff/roles"),
+        saveRole: (role: StaffRole, permissions: Permission[]) =>
+          send<RolePermissions>("PUT", `/api/v1/admin/staff/roles/${role}`, { permissions }),
+        day: (day: string) => request<DayAttendance>(`/api/v1/admin/staff/attendance${queryString({ day })}`),
+        mark: (day: string, staffId: number, form: AttendanceForm) =>
+          send<DayAttendance>("PUT", `/api/v1/admin/staff/attendance/${day}/${staffId}`, form),
+        clear: (day: string, staffId: number) =>
+          send<DayAttendance>("DELETE", `/api/v1/admin/staff/attendance/${day}/${staffId}`),
+        markMany: (day: string, status: AttendanceStatus, staffIds: number[]) =>
+          send<DayAttendance>("POST", `/api/v1/admin/staff/attendance/${day}`, { status, staffIds }),
+        month: (month: string) => request<MonthAttendance>(`/api/v1/admin/staff/attendance/month/${month}`),
+        requests: (params: { status?: RequestStatus; staffId?: number } = {}) =>
+          request<StaffRequest[]>(`/api/v1/admin/staff/requests${queryString(params)}`),
+        createRequest: (form: RequestForm) => send<StaffRequest>("POST", "/api/v1/admin/staff/requests", form),
+        decide: (id: number, approve: boolean, note: string | null) =>
+          send<StaffRequest>("POST", `/api/v1/admin/staff/requests/${id}/decision`, { approve, note }),
+      },
+      payroll: {
+        month: (month: string) => request<PayrollMonth>(`/api/v1/admin/payroll/months/${month}`),
+        finalize: (month: string) => send<PayrollMonth>("POST", `/api/v1/admin/payroll/months/${month}/finalize`),
+        reopen: (month: string) => send<PayrollMonth>("POST", `/api/v1/admin/payroll/months/${month}/reopen`),
+        pay: (payslipId: number, mode: PaymentMode) =>
+          send<Payslip>("POST", `/api/v1/admin/payroll/payslips/${payslipId}/pay`, { mode }),
+        production: (params: { from?: string; to?: string; staffId?: number } = {}) =>
+          request<ProductionLedger>(`/api/v1/admin/payroll/production${queryString(params)}`),
+        statement: (staffId: number) => request<StaffStatement>(`/api/v1/admin/payroll/staff/${staffId}/statement`),
+      },
       settings: {
         get: <K extends keyof SettingsSections>(section: K) =>
           request<SettingsSections[K]>(`/api/v1/admin/settings/${section}`),

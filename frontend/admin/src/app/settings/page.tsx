@@ -3,14 +3,18 @@
 import { useState } from "react";
 import { SearchIcon } from "@/components/icons";
 import { ListCard, ListRow, PageHeader, inputClasses } from "@/components/ui";
-import { settingsPages } from "@/lib/nav";
+import { useStaff } from "@/components/app-shell";
+import { canSee, settingsPages } from "@/lib/nav";
 
 /** Settings hub: one row per area, searchable by what the area contains. */
 export default function SettingsPage() {
   const [query, setQuery] = useState("");
+  const staff = useStaff();
   const q = query.trim().toLowerCase();
   const pages = settingsPages.filter(
-    (page) => !q || page.label.toLowerCase().includes(q) || page.description?.toLowerCase().includes(q),
+    (page) =>
+      canSee(page, staff) &&
+      (!q || page.label.toLowerCase().includes(q) || page.description?.toLowerCase().includes(q)),
   );
 
   return (

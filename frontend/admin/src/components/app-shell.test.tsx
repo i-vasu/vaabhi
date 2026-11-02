@@ -56,6 +56,25 @@ describe("AppShell", () => {
     expect(within(sidebar!).getByRole("link", { name: "Home" })).not.toHaveAttribute("aria-current");
   });
 
+  it("shows only the areas the person's role may use", async () => {
+    signIn();
+    server.use(
+      http.get(`${API}/api/v1/admin/me`, () => HttpResponse.json({ ...owner, role: "STAFF", permissions: ["ORDERS"] })),
+    );
+    render(<AppShell>page body</AppShell>);
+
+    await screen.findByText("page body");
+    const [sidebar] = screen.getAllByRole("navigation", { name: "Main" });
+    expect(within(sidebar!).getByRole("link", { name: "Orders" })).toBeInTheDocument();
+    expect(within(sidebar!).getByRole("link", { name: "Customers" })).toBeInTheDocument();
+    expect(within(sidebar!).queryByRole("link", { name: "Work" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Search" }));
+    const sheet = screen.getByRole("dialog", { name: "Go to" });
+    fireEvent.change(within(sheet).getByLabelText("Search pages"), { target: { value: "ledger" } });
+    expect(within(sheet).queryByRole("link", { name: /Ledger/ })).not.toBeInTheDocument();
+  });
+
   it("signs out when the API no longer accepts the token", async () => {
     signIn();
     server.use(http.get(`${API}/api/v1/admin/me`, () => new HttpResponse(null, { status: 401 })));

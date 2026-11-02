@@ -39,7 +39,7 @@ class SettingsIT {
 
     private static final RequestPostProcessor OWNER = jwt().jwt(
                     j -> j.subject("staff:1").claim("name", "Asha Rao"))
-            .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_OWNER"));
 
     @Autowired
     private MockMvc mockMvc;
