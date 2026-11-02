@@ -55,6 +55,44 @@ export type GarmentField = Schemas["Field"];
 export type SettingsImageUpload = Schemas["SettingsImageUpload"];
 export type SettingsImagePurpose = Schemas["SettingsImageRequest"]["purpose"];
 
+export type Client = Schemas["Client"];
+export type ClientForm = Schemas["ClientForm"];
+export type ClientSummary = Schemas["ClientSummary"];
+export type ClientPage = Schemas["ClientPage"];
+export type ClientType = ClientForm["clientType"];
+export type Gender = ClientForm["gender"];
+export type ClientListParams = NonNullable<operations["listClients"]["parameters"]["query"]>;
+export type Measurement = Schemas["Measurement"];
+export type MeasurementForm = Schemas["MeasurementForm"];
+export type ServiceProduct = Schemas["ServiceProduct"];
+export type ServiceProductForm = Schemas["ServiceProductForm"];
+export type StageCost = Schemas["StageCost"];
+export type Order = Schemas["Order"];
+export type OrderForm = Schemas["OrderForm"];
+export type OrderItem = Schemas["OrderItem"];
+export type OrderItemForm = Schemas["OrderItemForm"];
+export type OrderPayment = Schemas["OrderPayment"];
+export type OrderSummary = Schemas["OrderSummary"];
+export type OrderPage = Schemas["OrderPage"];
+export type OrderStatus = Order["status"];
+export type OrderSchedule = Schemas["OrderSchedule"];
+export type OrderListParams = NonNullable<operations["listOrders"]["parameters"]["query"]>;
+export type OrderFilter = NonNullable<OrderListParams["filter"]>;
+export type DiscountKind = OrderForm["discountKind"];
+export type PaymentForm = Schemas["PaymentForm"];
+export type PaymentMode = PaymentForm["mode"];
+export type StageMove = Schemas["StageMove"];
+export type Alteration = Schemas["Alteration"];
+export type AlterationForm = Schemas["AlterationForm"];
+export type AlterationItemForm = Schemas["AlterationItemForm"];
+export type AlterationKind = AlterationItemForm["kind"];
+export type AlterationSummary = Schemas["AlterationSummary"];
+export type AlterationPage = Schemas["AlterationPage"];
+export type AlterationProgress = Schemas["AlterationProgress"];
+export type AlterationListParams = NonNullable<operations["listAlterations"]["parameters"]["query"]>;
+export type TailoringImageUpload = Schemas["TailoringImageUpload"];
+export type TailoringImagePurpose = Schemas["TailoringImageRequest"]["purpose"];
+
 /** The JSON settings sections, by their API path. */
 export type SettingsSections = {
   "shop-profile": ShopProfile;
@@ -77,6 +115,11 @@ export type ListingParams = NonNullable<operations["listProducts"]["parameters"]
 
 /** Serialises listing params, dropping empty values so URLs (and caches) stay canonical. */
 export function listingQueryString(params: ListingParams = {}): string {
+  return queryString(params);
+}
+
+/** Serialises query params (sorted, empty values dropped), e.g. `?page=2&q=meera`. */
+export function queryString(params: Record<string, string | number | boolean | null | undefined> = {}): string {
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params).sort(([a], [b]) => a.localeCompare(b))) {
     if (value === undefined || value === null || value === "" || value === false) continue;
@@ -197,6 +240,44 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         startImageUpload: (purpose: SettingsImagePurpose) =>
           send<SettingsImageUpload>("POST", "/api/v1/admin/settings/images", { purpose }),
       },
+      clients: {
+        list: (params: ClientListParams = {}) => request<ClientPage>(`/api/v1/admin/clients${queryString(params)}`),
+        get: (id: number) => request<Client>(`/api/v1/admin/clients/${id}`),
+        create: (form: ClientForm) => send<Client>("POST", "/api/v1/admin/clients", form),
+        update: (id: number, form: ClientForm) => send<Client>("PUT", `/api/v1/admin/clients/${id}`, form),
+        addMeasurement: (id: number, form: MeasurementForm) =>
+          send<Measurement>("POST", `/api/v1/admin/clients/${id}/measurements`, form),
+      },
+      orders: {
+        list: (params: OrderListParams = {}) => request<OrderPage>(`/api/v1/admin/orders${queryString(params)}`),
+        get: (id: number) => request<Order>(`/api/v1/admin/orders/${id}`),
+        create: (form: OrderForm) => send<Order>("POST", "/api/v1/admin/orders", form),
+        moveItems: (id: number, move: StageMove) => send<Order>("POST", `/api/v1/admin/orders/${id}/stage`, move),
+        deliver: (id: number) => send<Order>("POST", `/api/v1/admin/orders/${id}/deliver`),
+        cancel: (id: number) => send<Order>("POST", `/api/v1/admin/orders/${id}/cancel`),
+        reschedule: (id: number, schedule: OrderSchedule) =>
+          send<Order>("PUT", `/api/v1/admin/orders/${id}/schedule`, schedule),
+        addPayment: (id: number, payment: PaymentForm) =>
+          send<Order>("POST", `/api/v1/admin/orders/${id}/payments`, payment),
+      },
+      serviceProducts: {
+        list: (params: { templateId?: number; q?: string } = {}) =>
+          request<ServiceProduct[]>(`/api/v1/admin/service-products${queryString(params)}`),
+        create: (form: ServiceProductForm) => send<ServiceProduct>("POST", "/api/v1/admin/service-products", form),
+        update: (id: number, form: ServiceProductForm) =>
+          send<ServiceProduct>("PUT", `/api/v1/admin/service-products/${id}`, form),
+        remove: (id: number) => send<void>("DELETE", `/api/v1/admin/service-products/${id}`),
+      },
+      alterations: {
+        list: (params: AlterationListParams = {}) =>
+          request<AlterationPage>(`/api/v1/admin/alterations${queryString(params)}`),
+        get: (id: number) => request<Alteration>(`/api/v1/admin/alterations/${id}`),
+        create: (form: AlterationForm) => send<Alteration>("POST", "/api/v1/admin/alterations", form),
+        progress: (id: number, progress: AlterationProgress) =>
+          send<Alteration>("POST", `/api/v1/admin/alterations/${id}/progress`, progress),
+      },
+      startTailoringImageUpload: (purpose: TailoringImagePurpose) =>
+        send<TailoringImageUpload>("POST", "/api/v1/admin/tailoring/images", { purpose }),
       catalogOptions: () => request<CatalogOptions>("/api/v1/admin/catalog/options"),
       listProducts: (params: AdminListParams = {}) =>
         request<AdminProductPage>(`/api/v1/admin/products${listingQueryString(params)}`),

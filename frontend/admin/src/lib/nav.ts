@@ -1,4 +1,5 @@
 import {
+  BagIcon,
   BellIcon,
   CalendarIcon,
   HomeIcon,
@@ -6,10 +7,12 @@ import {
   PhoneIcon,
   PrinterIcon,
   ReceiptIcon,
+  RulerIcon,
   SettingsIcon,
   StoreIcon,
   TagIcon,
   TruckIcon,
+  UsersIcon,
   type Icon,
 } from "@/components/icons";
 
@@ -27,8 +30,12 @@ export type NavItem = {
  */
 export const primaryNav: NavItem[] = [
   { href: "/", label: "Home", icon: HomeIcon, description: "Today at the shop" },
+  { href: "/orders/", label: "Orders", icon: BagIcon, description: "Book, track, deliver and take payments" },
+  { href: "/customers/", label: "Customers", icon: UsersIcon, description: "Contacts, measurements and history" },
   { href: "/products/", label: "Products", icon: TagIcon, description: "Catalogue, prices and photos" },
 ];
+
+const byHref = (href: string) => primaryNav.find((item) => item.href === href)!;
 
 export const moreNav: NavItem = { href: "/more/", label: "More", icon: MoreIcon };
 
@@ -81,8 +88,17 @@ export const settingsPages: NavItem[] = [
 /** Groups on the More page. */
 export const moreSections: { title: string; items: NavItem[] }[] = [
   {
+    title: "Tailoring",
+    items: [
+      byHref("/orders/"),
+      byHref("/customers/"),
+      { href: "/alterations/", label: "Alterations", icon: RulerIcon, description: "Fit fixes, length and repairs" },
+      { href: "/price-list/", label: "Price list", icon: TagIcon, description: "Stitching prices and piece rates" },
+    ],
+  },
+  {
     title: "Catalogue",
-    items: [primaryNav[1]!],
+    items: [byHref("/products/")],
   },
   {
     title: "Updates",
