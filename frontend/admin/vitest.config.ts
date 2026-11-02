@@ -8,6 +8,8 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
+    // Same as next.config trailingSlash: links render as /products/, not /products.
+    env: { __NEXT_TRAILING_SLASH: "true" },
     // The product editor tests fill in dozens of fields; on shared CI runners, with every package's tests
     // running in parallel, they take 6–8 s. Assertions still fail fast; only the overall budget is longer.
     testTimeout: 15_000,

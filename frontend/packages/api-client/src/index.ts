@@ -28,6 +28,10 @@ export type AdminMedia = Schemas["AdminMedia"];
 export type MediaUpload = Schemas["MediaUpload"];
 export type MediaUploadRequest = Schemas["MediaUploadRequest"];
 export type MediaUpdate = Schemas["MediaUpdate"];
+export type StaffProfile = Schemas["StaffProfile"];
+export type StaffRole = StaffProfile["role"];
+export type StaffSession = Schemas["StaffSession"];
+export type StaffLoginRequest = Schemas["StaffLoginRequest"];
 export type AdminListParams = NonNullable<operations["listAdminProducts"]["parameters"]["query"]>;
 
 /** Field-level message from the API, e.g. `{ field: "variants[0].pricePaise", message: "must be greater than 0" }`. */
@@ -125,7 +129,14 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
       /** Current prices and stock for the bag kept in the browser. */
       quoteBag: (bag: BagQuoteRequest) => send<BagQuote>("POST", "/api/v1/store/bag/quote", bag),
     },
+    auth: {
+      /** Admin dashboard sign-in (email + password). */
+      staffLogin: (credentials: StaffLoginRequest) =>
+        send<StaffSession>("POST", "/api/v1/auth/staff/login", credentials),
+    },
     admin: {
+      /** The signed-in staff member. */
+      me: () => request<StaffProfile>("/api/v1/admin/me"),
       catalogOptions: () => request<CatalogOptions>("/api/v1/admin/catalog/options"),
       listProducts: (params: AdminListParams = {}) =>
         request<AdminProductPage>(`/api/v1/admin/products${listingQueryString(params)}`),

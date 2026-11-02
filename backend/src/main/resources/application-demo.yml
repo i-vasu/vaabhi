@@ -3,3 +3,11 @@
 spring:
   flyway:
     locations: classpath:db/migration,classpath:db/demo
+
+# Demo owner for the admin dashboard (sign in with these on localhost and in CI e2e).
+vaabhi:
+  staff:
+    owner:
+      name: ${STAFF_OWNER_NAME:Demo Owner}
+      email: ${STAFF_OWNER_EMAIL:owner@vaabhi.local}
+      password: ${STAFF_OWNER_PASSWORD:vaabhi-demo-owner}

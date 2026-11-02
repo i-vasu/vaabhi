@@ -1,29 +1,17 @@
 import AxeBuilder from "@axe-core/playwright";
-import { createHmac } from "node:crypto";
 import { expect, test } from "@playwright/test";
 import { urls } from "../playwright.config";
-
-/** An admin token signed with the CI backend's secret (the dev default unless JWT_SECRET is set). */
-function adminToken(): string {
-  const secret = process.env.JWT_SECRET ?? "dev-only-secret-change-me-0123456789abcdef";
-  const b64 = (value: object) => Buffer.from(JSON.stringify(value)).toString("base64url");
-  const now = Math.floor(Date.now() / 1000);
-  const unsigned = `${b64({ alg: "HS256", typ: "JWT" })}.${b64({ sub: "e2e", roles: ["ADMIN"], iat: now, exp: now + 600 })}`;
-  return `${unsigned}.${createHmac("sha256", secret).update(unsigned).digest("base64url")}`;
-}
+import { signIn } from "./admin-session";
 
 // Writes data, so never tagged @smoke (smoke tests run against production).
 test.describe("Admin products", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${urls.admin}/login/`);
-    await page.getByLabel("Access token").fill(adminToken());
-    await page.getByRole("button", { name: "Save token" }).click();
-    await expect(page.getByText("Token saved")).toBeVisible();
+    await signIn(page);
   });
 
   test("creates, publishes and lists a product in the store", async ({ page, request }) => {
     const name = `E2E Ruby Silk Saree ${Date.now()}`;
-    await page.getByRole("link", { name: "Products" }).click();
+    await page.getByRole("link", { name: "Products", exact: true }).click();
     await page.getByRole("link", { name: "New product" }).click();
 
     await page.getByRole("textbox", { name: "Name", exact: true }).fill(name);

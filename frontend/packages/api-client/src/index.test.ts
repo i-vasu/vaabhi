@@ -82,6 +82,21 @@ describe("admin client", () => {
     expect(fetchMock.mock.calls[6]![1].body).toBeUndefined();
   });
 
+  it("signs staff in and reads the current staff member", async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(new Response("{}")));
+    vi.stubGlobal("fetch", fetchMock);
+    const api = createApiClient({ baseUrl: "https://api.example.com" });
+
+    await api.auth.staffLogin({ email: "owner@vaabhi.local", password: "secret" });
+    await api.admin.me();
+
+    expect(fetchMock.mock.calls.map(([url, init]) => `${init.method ?? "GET"} ${url}`)).toEqual([
+      "POST https://api.example.com/api/v1/auth/staff/login",
+      "GET https://api.example.com/api/v1/admin/me",
+    ]);
+    expect(fetchMock.mock.calls[0]![1].body).toBe('{"email":"owner@vaabhi.local","password":"secret"}');
+  });
+
   it("exposes field errors from problem details", async () => {
     const problem = {
       detail: "Unknown category",

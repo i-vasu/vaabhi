@@ -26,9 +26,9 @@ import {
 const STOREFRONT_URL = process.env.NEXT_PUBLIC_STOREFRONT_URL || "https://vaabhi.com";
 
 const input =
-  "w-full rounded-md border border-neutral-300 bg-white px-2.5 py-1.5 text-sm focus:border-neutral-900 focus:outline-none";
+  "w-full rounded-md border border-line-strong bg-panel px-2.5 py-1.5 text-sm focus:border-accent focus:outline-none";
 const label = "flex flex-col gap-1 text-sm font-medium";
-const card = "rounded-lg border border-neutral-200 p-5";
+const card = "rounded-lg border border-line p-5";
 
 type LoadState = { kind: "loading" } | { kind: "error"; message: string } | { kind: "ready" };
 
@@ -126,11 +126,11 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
     }
   }
 
-  if (load.kind === "loading") return <p className="text-sm text-neutral-500">Loading…</p>;
+  if (load.kind === "loading") return <p className="text-sm text-ink-soft">Loading…</p>;
   if (load.kind === "error" || !options) {
     return (
       <div className="flex flex-col items-start gap-3">
-        <p className="text-sm text-red-700">{load.kind === "error" ? load.message : "Something went wrong."}</p>
+        <p className="text-sm text-bad">{load.kind === "error" ? load.message : "Something went wrong."}</p>
         <Link href="/login/" className="text-sm underline">
           Sign in
         </Link>
@@ -151,7 +151,7 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
     >
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Link href="/products/" className="text-sm text-neutral-500 hover:underline">
+          <Link href="/products/" className="text-sm text-ink-soft hover:underline">
             ← Products
           </Link>
           <h1 className="text-2xl font-semibold">{product ? product.name : "New product"}</h1>
@@ -189,7 +189,7 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
       </header>
 
       {message?.tone === "error" && (
-        <div role="alert" className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-800">
+        <div role="alert" className="rounded-md bg-bad-soft px-4 py-3 text-sm text-bad">
           <p>{message.text}</p>
           {errors.length > 1 && (
             <ul className="mt-2 list-disc pl-5">
@@ -203,7 +203,7 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
         </div>
       )}
       {message?.tone === "ok" && (
-        <output className="block rounded-md bg-green-50 px-4 py-3 text-sm text-green-800">{message.text}</output>
+        <output className="block rounded-md bg-ok-soft px-4 py-3 text-sm text-ok">{message.text}</output>
       )}
 
       <section className={card} aria-labelledby="basics">
@@ -309,7 +309,7 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
         <h2 id="attributes" className="mb-1 font-semibold">
           Attributes
         </h2>
-        <p className="mb-4 text-sm text-neutral-500">Shoppers filter by these in the store.</p>
+        <p className="mb-4 text-sm text-ink-soft">Shoppers filter by these in the store.</p>
         <div className="flex flex-col gap-4">
           {options.facets.map((facet) => {
             const selected = state.attributes[facet.code] ?? [];
@@ -324,7 +324,7 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
                         key={value.code}
                         className={cn(
                           "cursor-pointer rounded-full border px-3 py-1 text-sm has-[:focus-visible]:outline-2",
-                          on ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-300",
+                          on ? "border-accent bg-accent text-white" : "border-line-strong",
                         )}
                       >
                         <input
@@ -378,9 +378,9 @@ function StatusBadge({ status }: Readonly<{ status: AdminProduct["status"] }>) {
     <span
       className={cn(
         "rounded-full px-2.5 py-0.5 text-xs font-medium",
-        status === "PUBLISHED" && "bg-green-100 text-green-800",
-        status === "DRAFT" && "bg-amber-100 text-amber-900",
-        status === "ARCHIVED" && "bg-neutral-200 text-neutral-700",
+        status === "PUBLISHED" && "bg-ok-soft text-ok",
+        status === "DRAFT" && "bg-warn-soft text-warn",
+        status === "ARCHIVED" && "bg-panel-2 text-ink",
       )}
     >
       {STATUS_LABELS[status]}
@@ -399,14 +399,14 @@ function Field({
     <label className={cn(label, className)}>
       <span>{text}</span>
       {children}
-      {hint && !error && <span className="text-xs font-normal text-neutral-500">{hint}</span>}
+      {hint && !error && <span className="text-xs font-normal text-ink-soft">{hint}</span>}
       <FieldMessage message={error} />
     </label>
   );
 }
 
 function FieldMessage({ message }: Readonly<{ message?: string }>) {
-  return message ? <span className="text-xs font-normal text-red-700">{message}</span> : null;
+  return message ? <span className="text-xs font-normal text-bad">{message}</span> : null;
 }
 
 function Variants({
@@ -439,16 +439,16 @@ function Variants({
       <h2 id="variants" className="mb-1 font-semibold">
         Variants
       </h2>
-      <p className="mb-4 text-sm text-neutral-500">
+      <p className="mb-4 text-sm text-ink-soft">
         One row per colour{oneSize ? "" : " and size"}. Prices in rupees. SKUs are generated when left empty.
       </p>
       {general.map((m) => (
-        <p key={m} className="mb-3 text-sm text-red-700">
+        <p key={m} className="mb-3 text-sm text-bad">
           {m}
         </p>
       ))}
 
-      <fieldset className="mb-5 grid gap-3 rounded-md bg-neutral-50 p-4 md:grid-cols-6">
+      <fieldset className="mb-5 grid gap-3 rounded-md bg-panel p-4 md:grid-cols-6">
         <legend className="sr-only">Add a colour</legend>
         <label className={cn(label, "md:col-span-2")}>
           <span>Colour name</span>
@@ -463,7 +463,7 @@ function Variants({
           <span>Swatch</span>
           <input
             type="color"
-            className="h-9 w-full rounded-md border border-neutral-300"
+            className="h-9 w-full rounded-md border border-line-strong"
             value={colour.colourHex}
             onChange={(e) => setColour({ ...colour, colourHex: e.target.value.toUpperCase() })}
           />
@@ -531,11 +531,11 @@ function Variants({
       </fieldset>
 
       {rows.length === 0 ? (
-        <p className="text-sm text-neutral-500">No variants yet. Add a colour above.</p>
+        <p className="text-sm text-ink-soft">No variants yet. Add a colour above.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[820px] text-left text-sm">
-            <thead className="text-xs uppercase text-neutral-500">
+            <thead className="text-xs uppercase text-ink-soft">
               <tr>
                 <th className="py-2 pr-2 font-medium">Colour</th>
                 <th className="py-2 pr-2 font-medium">Size</th>
@@ -554,18 +554,18 @@ function Variants({
                 const rowErrors = errorsFor(errors, `variants[${i}]`);
                 const name = [row.colourName, row.size].filter(Boolean).join(" ");
                 return (
-                  <tr key={row.key} className="border-t border-neutral-100 align-top">
+                  <tr key={row.key} className="border-t border-line align-top">
                     <td className="py-2 pr-2">
                       <span className="flex items-center gap-2">
                         <span
                           aria-hidden="true"
-                          className="size-4 shrink-0 rounded-full border border-neutral-300"
+                          className="size-4 shrink-0 rounded-full border border-line-strong"
                           style={{ backgroundColor: row.colourHex }}
                         />
                         {row.colourName}
                       </span>
                       {rowErrors.map((m) => (
-                        <span key={m} className="block text-xs text-red-700">
+                        <span key={m} className="block text-xs text-bad">
                           {m}
                         </span>
                       ))}
@@ -618,7 +618,7 @@ function Variants({
                     <td className="py-2">
                       <button
                         type="button"
-                        className="text-neutral-500 hover:text-red-700"
+                        className="text-ink-soft hover:text-bad"
                         aria-label={`Remove ${name}`}
                         onClick={() => onChange(rows.filter((_, j) => j !== i))}
                       >
@@ -651,7 +651,7 @@ function Addons({
           <h2 id="addons" className="font-semibold">
             Blouse options
           </h2>
-          <p className="text-sm text-neutral-500">Choices shown on the product page; the price is added to the item.</p>
+          <p className="text-sm text-ink-soft">Choices shown on the product page; the price is added to the item.</p>
         </div>
         <div className="flex gap-2">
           {rows.length === 0 && (
@@ -676,7 +676,7 @@ function Addons({
         const rowErrors = errorsFor(errors, `addons[${i}]`);
         const n = i + 1;
         return (
-          <fieldset key={row.key} className="mb-3 grid gap-3 border-t border-neutral-100 pt-3 md:grid-cols-12">
+          <fieldset key={row.key} className="mb-3 grid gap-3 border-t border-line pt-3 md:grid-cols-12">
             <legend className="sr-only">Option {n}</legend>
             <label className={cn(label, "md:col-span-3")}>
               <span>Name</span>
@@ -727,7 +727,7 @@ function Addons({
               </label>
               <button
                 type="button"
-                className="text-neutral-500 hover:text-red-700"
+                className="text-ink-soft hover:text-bad"
                 aria-label={`Remove option ${n}`}
                 onClick={() => onChange(rows.filter((_, j) => j !== i))}
               >
@@ -735,7 +735,7 @@ function Addons({
               </button>
             </div>
             {rowErrors.map((m) => (
-              <p key={m} className="text-xs text-red-700 md:col-span-12">
+              <p key={m} className="text-xs text-bad md:col-span-12">
                 {m}
               </p>
             ))}

@@ -158,6 +158,36 @@
                 }
             }
         },
+        "/api/v1/auth/staff/login": {
+            "post": {
+                "tags": [
+                    "staff-auth-controller"
+                ],
+                "operationId": "staffLogin",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StaffLoginRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StaffSession"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/products": {
             "get": {
                 "tags": [
@@ -652,6 +682,26 @@
                 }
             }
         },
+        "/api/v1/admin/me": {
+            "get": {
+                "tags": [
+                    "staff-auth-controller"
+                ],
+                "operationId": "currentStaff",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StaffProfile"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/catalog/options": {
             "get": {
                 "tags": [
@@ -932,7 +982,7 @@
                             "number",
                             "null"
                         ],
-                        "maximum": 2.0,
+                        "maximum": 2,
                         "minimum": 0.1
                     },
                     "attributes": {
@@ -1369,6 +1419,75 @@
                     "slug",
                     "status",
                     "stockLeft"
+                ]
+            },
+            "StaffLoginRequest": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 254,
+                        "minLength": 0
+                    },
+                    "password": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "email",
+                    "password"
+                ]
+            },
+            "StaffProfile": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "role": {
+                        "type": "string",
+                        "enum": [
+                            "OWNER",
+                            "MANAGER",
+                            "STAFF"
+                        ]
+                    }
+                },
+                "required": [
+                    "email",
+                    "id",
+                    "name",
+                    "role"
+                ]
+            },
+            "StaffSession": {
+                "type": "object",
+                "properties": {
+                    "accessToken": {
+                        "type": "string"
+                    },
+                    "expiresIn": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "staff": {
+                        "$ref": "#/components/schemas/StaffProfile"
+                    }
+                },
+                "required": [
+                    "accessToken",
+                    "expiresIn",
+                    "staff"
                 ]
             },
             "MediaUploadRequest": {

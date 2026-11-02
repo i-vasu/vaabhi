@@ -24,7 +24,7 @@ function EditProduct() {
 
 export default function EditProductPage() {
   return (
-    <Suspense fallback={<p className="text-sm text-neutral-500">Loading…</p>}>
+    <Suspense fallback={<p className="text-sm text-ink-soft">Loading…</p>}>
       <EditProduct />
     </Suspense>
   );

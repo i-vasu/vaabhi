@@ -52,6 +52,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/staff/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["staffLogin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/products": {
         parameters: {
             query?: never;
@@ -188,6 +204,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["listProducts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["currentStaff"];
         put?: never;
         post?: never;
         delete?: never;
@@ -370,6 +402,25 @@ export interface components {
             /** @enum {string|null} */
             addonInput: "NONE" | "SIZE" | "MEASUREMENTS" | null;
             imageKey: string | null;
+        };
+        StaffLoginRequest: {
+            /** Format: email */
+            email: string;
+            password: string;
+        };
+        StaffProfile: {
+            /** Format: int64 */
+            id: number;
+            name: string;
+            email: string;
+            /** @enum {string} */
+            role: "OWNER" | "MANAGER" | "STAFF";
+        };
+        StaffSession: {
+            accessToken: string;
+            /** Format: int64 */
+            expiresIn: number;
+            staff: components["schemas"]["StaffProfile"];
         };
         MediaUploadRequest: {
             alt: string;
@@ -673,6 +724,30 @@ export interface operations {
             };
         };
     };
+    staffLogin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffLoginRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffSession"];
+                };
+            };
+        };
+    };
     listAdminProducts: {
         parameters: {
             query?: {
@@ -942,6 +1017,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ProductListingResponse"];
+                };
+            };
+        };
+    };
+    currentStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffProfile"];
                 };
             };
         };

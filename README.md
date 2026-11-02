@@ -1,7 +1,8 @@
 # Vaabhi
 
 Fashion e-commerce platform: a Spring Boot modular monolith with two Next.js frontends.
-See [docs/PLAN.md](docs/PLAN.md) for the architecture and roadmap.
+See [docs/PLAN.md](docs/PLAN.md) for the architecture and roadmap, and [docs/ADMIN_PORTAL.md](docs/ADMIN_PORTAL.md)
+for the admin dashboard phases and staff sign-in.
 
 | Path | What | Runs on |
 |---|---|---|

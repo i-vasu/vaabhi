@@ -61,11 +61,11 @@ export function ProductPhotos({
 
   if (productId === undefined) {
     return (
-      <section className="rounded-lg border border-neutral-200 p-5" aria-labelledby="photos">
+      <section className="rounded-lg border border-line p-5" aria-labelledby="photos">
         <h2 id="photos" className="mb-1 font-semibold">
           Photos
         </h2>
-        <p className="text-sm text-neutral-500">Save the product first, then add photos.</p>
+        <p className="text-sm text-ink-soft">Save the product first, then add photos.</p>
       </section>
     );
   }
@@ -130,23 +130,23 @@ export function ProductPhotos({
     media.map((m, i) => (i === index ? { ...m, ...patch } : m));
 
   return (
-    <section className="rounded-lg border border-neutral-200 p-5" aria-labelledby="photos">
+    <section className="rounded-lg border border-line p-5" aria-labelledby="photos">
       <h2 id="photos" className="mb-1 font-semibold">
         Photos
       </h2>
-      <p className="mb-2 text-sm text-neutral-500">
+      <p className="mb-2 text-sm text-ink-soft">
         {media.length} of {MAX_PHOTOS} photos
       </p>
-      <div className="mb-4 rounded-md bg-neutral-50 p-4 text-sm">
+      <div className="mb-4 rounded-md bg-panel p-4 text-sm">
         <p className="mb-2 font-medium">Before you upload</p>
-        <ul aria-label="Photo guidelines" className="list-disc space-y-1 pl-5 text-neutral-600">
+        <ul aria-label="Photo guidelines" className="list-disc space-y-1 pl-5 text-ink-soft">
           {GUIDELINES.map((line) => (
             <li key={line}>{line}</li>
           ))}
         </ul>
       </div>
       {error && (
-        <p role="alert" className="mb-3 text-sm text-red-700">
+        <p role="alert" className="mb-3 text-sm text-bad">
           {error}
         </p>
       )}
@@ -166,7 +166,7 @@ export function ProductPhotos({
         className={cn(
           "mb-4 flex cursor-pointer flex-col items-center gap-1 rounded-md border-2 border-dashed p-6 text-sm",
           "has-[:focus-visible]:outline-2",
-          dragging ? "border-neutral-900 bg-neutral-50" : "border-neutral-300",
+          dragging ? "border-accent bg-panel" : "border-line-strong",
           full && "cursor-not-allowed opacity-60",
         )}
       >
@@ -175,7 +175,7 @@ export function ProductPhotos({
             ? `This product has ${MAX_PHOTOS} photos. Delete one to add another.`
             : "Drop photos here or choose files"}
         </span>
-        <span className="text-neutral-500">JPEG, PNG or WebP · up to 30 MB each</span>
+        <span className="text-ink-soft">JPEG, PNG or WebP · up to 30 MB each</span>
         <input
           type="file"
           accept={ACCEPT}
@@ -193,7 +193,7 @@ export function ProductPhotos({
       {uploads.length > 0 && (
         <ul aria-label="Uploads" className="mb-4 flex flex-col gap-1 text-sm">
           {uploads.map((u) => (
-            <li key={u.id} className={u.state === "failed" ? "text-red-700" : "text-neutral-600"}>
+            <li key={u.id} className={u.state === "failed" ? "text-bad" : "text-ink-soft"}>
               {u.name}: {u.state === "working" ? "uploading…" : `failed. ${u.message ?? ""}`}
             </li>
           ))}
@@ -201,11 +201,11 @@ export function ProductPhotos({
       )}
 
       {media.length === 0 ? (
-        <p className="text-sm text-neutral-500">No photos yet.</p>
+        <p className="text-sm text-ink-soft">No photos yet.</p>
       ) : (
         <ol className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {media.map((item, i) => (
-            <li key={item.id} className="flex flex-col gap-2 rounded-md border border-neutral-200 p-2">
+            <li key={item.id} className="flex flex-col gap-2 rounded-md border border-line p-2">
               {item.status === "READY" ? (
                 // eslint-disable-next-line @next/next/no-img-element -- static export; R2 serves sized WebP files
                 <img
@@ -214,14 +214,14 @@ export function ProductPhotos({
                   className="aspect-[3/4] w-full rounded object-cover"
                 />
               ) : (
-                <div className="flex aspect-[3/4] items-center justify-center rounded bg-amber-50 p-2 text-center text-xs text-amber-900">
+                <div className="flex aspect-[3/4] items-center justify-center rounded bg-warn-soft p-2 text-center text-xs text-warn">
                   Upload did not finish. Delete and try again.
                 </div>
               )}
               <label className="flex flex-col gap-1 text-xs font-medium">
                 <span>Description (alt text)</span>
                 <input
-                  className="rounded border border-neutral-300 px-2 py-1 text-sm font-normal"
+                  className="rounded border border-line-strong px-2 py-1 text-sm font-normal"
                   value={item.alt}
                   onChange={(e) => onChange(edit(i, { alt: e.target.value }))}
                   onBlur={() => void save(media)}
@@ -230,7 +230,7 @@ export function ProductPhotos({
               <label className="flex flex-col gap-1 text-xs font-medium">
                 <span>Colour</span>
                 <select
-                  className="rounded border border-neutral-300 px-2 py-1 text-sm font-normal"
+                  className="rounded border border-line-strong px-2 py-1 text-sm font-normal"
                   value={item.colourName ?? ""}
                   onChange={(e) => void save(edit(i, { colourName: e.target.value || null }))}
                 >
@@ -265,7 +265,7 @@ export function ProductPhotos({
                 </span>
                 <button
                   type="button"
-                  className="text-xs text-red-700 hover:underline"
+                  className="text-xs text-bad hover:underline"
                   aria-label={`Delete photo ${i + 1}`}
                   onClick={() => void remove(item)}
                 >
