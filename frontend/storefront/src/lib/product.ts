@@ -57,17 +57,26 @@ export function selectedVariant(
   return variants.find((v) => v.size === size);
 }
 
-/** Photos for a colour: those tagged with it plus untagged ones; all photos when none match. */
+/**
+ * Photos for a colour: those tagged with it first, then the "All colours" ones, each in the admin's order; all
+ * photos when none match.
+ */
 export function photosFor(product: ProductDetail, colour: string): Media[] {
   const images = product.media.filter((m) => m.kind === "IMAGE");
-  const matching = images.filter((m) => m.colourName === null || m.colourName === colour);
+  const matching = [
+    ...images.filter((m) => m.colourName === colour),
+    ...images.filter((m) => m.colourName === null),
+  ];
   return matching.length ? matching : images;
 }
 
-/** The video for a colour: one tagged with it or untagged; otherwise the product's video, if any. */
-export function videoFor(product: ProductDetail, colour: string): Media | undefined {
+/**
+ * Videos for a colour: those tagged with it first, then the "All colours" ones. Videos tagged with another
+ * colour are left out (unlike photos, a gallery does not need a video).
+ */
+export function videosFor(product: ProductDetail, colour: string): Media[] {
   const videos = product.media.filter((m) => m.kind === "VIDEO");
-  return videos.find((m) => m.colourName === null || m.colourName === colour) ?? videos[0];
+  return [...videos.filter((m) => m.colourName === colour), ...videos.filter((m) => m.colourName === null)];
 }
 
 export type AddonChoice = {

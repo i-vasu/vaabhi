@@ -160,6 +160,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <compilerArgs>
+                        <!-- Spring reads controller and record parameter names by reflection. The parent POM turns
+                             this on, but IntelliJ only imports the explicit list below, so it must be here too. -->
+                        <arg>-parameters</arg>
                         <arg>-XDcompilePolicy=simple</arg>
                         <arg>-XDaddTypeAnnotationsToSymbol=true</arg>
                         <arg>--should-stop=ifError=FLOW</arg>

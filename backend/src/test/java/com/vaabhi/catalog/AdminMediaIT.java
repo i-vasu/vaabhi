@@ -226,7 +226,14 @@ class AdminMediaIT {
         mockMvc.perform(get("/api/v1/store/products/banarasi-katan-silk-saree"))
                 .andExpect(jsonPath("$.media[?(@.kind == 'VIDEO')].key").value(key));
 
-        // A second video is refused; a wrong file type is refused before that.
+        // Up to three videos; a fourth is refused, and so is a wrong file type.
+        for (var i = 1; i < ProductMediaService.MAX_VIDEOS; i++) {
+            mockMvc.perform(post("/api/v1/admin/products/" + productId + "/media/video-uploads")
+                            .with(ADMIN)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(video))
+                    .andExpect(status().isCreated());
+        }
         mockMvc.perform(post("/api/v1/admin/products/" + productId + "/media/video-uploads")
                         .with(ADMIN)
                         .contentType(MediaType.APPLICATION_JSON)

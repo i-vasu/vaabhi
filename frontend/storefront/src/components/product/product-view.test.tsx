@@ -122,7 +122,7 @@ describe("ProductView", () => {
     expect(player.tagName).toBe("VIDEO");
     expect(player).toHaveAttribute("src", "https://media.test/products/1/clip/video");
     expect(player).toHaveAttribute("poster", "https://media.test/products/1/front/800.webp");
-    expect(screen.getByRole("button", { name: "Play video" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Play video 1" })).toBeInTheDocument();
     expect(
       screen.getAllByRole("button", { name: /^Show photo|^Play video/ }).map((b) => b.getAttribute("aria-label")),
     ).toEqual(["Show photo 1", "Play video", "Show photo 2"]);

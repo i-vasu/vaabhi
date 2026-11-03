@@ -121,10 +121,15 @@ public class BagQuoteService {
         } else {
             status = BagQuote.Status.AVAILABLE;
         }
-        var image = images.stream()
-                .filter(i -> i.productId() == variant.productId())
-                .filter(i -> i.colourName() == null || i.colourName().equals(variant.colourName()))
+        // The colour's own first photo, else the first "All colours" one (same order as the product page).
+        var productImages =
+                images.stream().filter(i -> i.productId() == variant.productId()).toList();
+        var image = productImages.stream()
+                .filter(i -> variant.colourName().equals(i.colourName()))
                 .findFirst()
+                .or(() -> productImages.stream()
+                        .filter(i -> i.colourName() == null)
+                        .findFirst())
                 .map(ImageRow::storageKey)
                 .orElse(null);
         return new BagQuote.Line(

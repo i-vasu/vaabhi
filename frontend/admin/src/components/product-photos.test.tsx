@@ -111,7 +111,7 @@ describe("ProductPhotos", () => {
     expect(screen.getByText(/big.mp4: failed. Larger than 200 MB/)).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Add video"), { target: { files: [clip] } });
     await waitFor(() => expect(onChange).toHaveBeenCalledWith([photo(1), video(9)]));
-    expect(uploadCalls).toEqual([["video", 7, clip, { alt: "Silk saree, Ruby", colourName: "Ruby" }]]);
+    expect(uploadCalls).toEqual([["video", 7, clip, { alt: "Silk saree, Ruby", colourName: null }]]);
 
     view.rerender(
       <ProductPhotos
@@ -153,7 +153,7 @@ describe("ProductPhotos", () => {
 
     fireEvent.change(screen.getByLabelText("Add photos"), { target: { files: [file] } });
     await waitFor(() => expect(onChange).toHaveBeenCalledWith([photo(1)]));
-    expect(uploadCalls).toEqual([[7, file, { alt: "Silk saree, Ruby", colourName: "Ruby" }]]);
+    expect(uploadCalls).toEqual([[7, file, { alt: "Silk saree, Ruby", colourName: null }]]);
 
     const dropZone = screen.getByText("Tap to choose from your gallery, or drop files here").closest("label")!;
     fireEvent.dragOver(dropZone);
@@ -260,12 +260,13 @@ describe("ProductPhotos", () => {
     fireEvent.click(screen.getByRole("button", { name: "Move photo 1 later" }));
     await waitFor(() => expect(saved).toHaveLength(1));
     expect(saved[0]).toEqual([
-      { id: 2, alt: "Photo 2", colourName: "Old" },
+      { id: 2, alt: "Photo 2", colourName: null },
       { id: 1, alt: "Photo 1", colourName: null },
     ]);
     expect(onChange).toHaveBeenLastCalledWith([photo(2), photo(1)]);
 
-    fireEvent.change(screen.getAllByRole("combobox", { name: "Colour" })[0]!, { target: { value: "Ruby" } });
+    expect(screen.queryByRole("combobox", { name: "Colour" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Set photo 2 as main" }));
     await waitFor(() => expect(saved).toHaveLength(2));
     fireEvent.change(screen.getAllByRole("textbox", { name: "Description (alt text)" })[0]!, {
       target: { value: "Front" },

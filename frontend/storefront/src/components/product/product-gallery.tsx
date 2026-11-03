@@ -22,24 +22,27 @@ type Slide = { key: string; alt: string; src?: ReturnType<typeof sources>; video
 
 /**
  * Swipeable photos (CSS scroll snap, so touch works without JavaScript) with arrows, a counter and thumbnails.
- * The video, if any, comes after the first photo, with that photo as its poster. Without photos, the colour
+ * Videos, if any, come after the first photo, with that photo as their poster. Without photos, the colour
  * stands in, as on listing cards.
  */
 export function ProductGallery({
   photos,
-  video,
+  videos = [],
   name,
   hex,
   overlay,
-}: Readonly<{ photos: Media[]; video?: Media; name: string; hex: string; overlay?: React.ReactNode }>) {
+}: Readonly<{ photos: Media[]; videos?: Media[]; name: string; hex: string; overlay?: React.ReactNode }>) {
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const base = useMediaBase();
   const slides: Slide[] = photos.length
     ? photos.map((p) => ({ key: p.key, alt: p.alt, src: sources(p.key, base) }))
     : [{ key: "placeholder", alt: name }];
-  const videoSrc = video && videoUrl(video.key, base);
-  if (video && videoSrc) slides.splice(1, 0, { key: video.key, alt: video.alt, video: videoSrc });
+  const videoSlides = videos.flatMap((v) => {
+    const src = videoUrl(v.key, base);
+    return src ? [{ key: v.key, alt: v.alt, video: src }] : [];
+  });
+  slides.splice(1, 0, ...videoSlides);
   const poster = photos[0] ? mediaUrl(photos[0].key, 800, base) : undefined;
   const count = slides.length;
 
@@ -137,7 +140,9 @@ export function ProductGallery({
               key={slide.key}
               type="button"
               aria-label={
-                slide.video ? "Play video" : `Show photo ${slides.slice(0, i + 1).filter((s) => !s.video).length}`
+                slide.video
+                  ? `Play video ${slides.slice(0, i + 1).filter((s) => s.video).length}`
+                  : `Show photo ${slides.slice(0, i + 1).filter((s) => !s.video).length}`
               }
               aria-current={i === index}
               onClick={() => go(i)}
@@ -155,7 +160,7 @@ export function ProductGallery({
   );
 }
 
-/** A thumbnail: the photo itself, or the first photo with a play mark for the video. */
+/** A thumbnail: the photo itself, or the first photo with a play mark for a video. */
 function Thumbnail({ slide, poster }: Readonly<{ slide: Slide; poster?: string }>) {
   if (slide.video) {
     return (

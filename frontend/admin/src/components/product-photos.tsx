@@ -27,19 +27,20 @@ function isHeic(file: File): boolean {
 const MAX_INPUT_BYTES = 30 * 1024 * 1024;
 /** Same limit as the API (ProductMediaService.MAX_PHOTOS). */
 export const MAX_PHOTOS = 12;
+/** Same limit as the API (ProductMediaService.MAX_VIDEOS). */
+export const MAX_VIDEOS = 3;
 
 const GUIDELINES = [
   "Formats: JPEG, PNG or WebP. iPhone (HEIC) photos: upload from the iPhone itself, or export as JPEG first.",
   "Size: up to 30 MB per photo, at least 1600 px wide so zoom stays sharp.",
-  `Up to ${MAX_PHOTOS} photos per product. The first photo is shown in listings; use ← → to reorder.`,
+  `Up to ${MAX_PHOTOS} photos per product. The main photo is shown in listings; use Set as main to pick it and ← → to order the rest.`,
+  "Colour: leave on All colours, or tag a photo with a colour to show it only when shoppers pick that colour.",
   "Portrait 3:4 works best (e.g. 1200 × 1600 px), product centred on a plain background.",
-  "Pick the colour each photo shows, so shoppers see the right photos when they choose a colour.",
   "Write a short description of each photo (alt text); it helps search engines and screen readers.",
   "Photos are resized in your browser to 400, 800 and 1600 px. Keep this tab open until uploads finish.",
 ];
 
-const VIDEO_GUIDELINE =
-  "One video per product: MP4, MOV or WebM, up to 200 MB. Portrait and under a minute works best; it shows after the first photo.";
+const VIDEO_GUIDELINE = `Up to ${MAX_VIDEOS} videos per product: MP4, MOV or WebM, up to 200 MB each. Portrait and under a minute works best; tag a video with a colour to show it only for that colour.`;
 
 function problem(error: unknown): string {
   if (error instanceof ApiError) return error.detail ?? error.message;
@@ -69,10 +70,13 @@ export function releasePreview(item: QueuedMedia) {
   if (item.preview && typeof URL.revokeObjectURL === "function") URL.revokeObjectURL(item.preview);
 }
 
-/** The alt text a new photo or video starts with: the product name and its only colour. */
+/**
+ * The alt text a new photo or video starts with: the product name and its only colour. New media starts on
+ * "All colours" (colourName null); tag a photo with a colour to show it only when that colour is picked.
+ */
 export function defaultDetails(productName: string, colours: string[], fallback: string) {
-  const colourName = colours.length === 1 ? colours[0]! : null;
-  return { alt: [productName, colourName].filter(Boolean).join(", ") || fallback, colourName };
+  const onlyColour = colours.length === 1 ? colours[0]! : null;
+  return { alt: [productName, onlyColour].filter(Boolean).join(", ") || fallback, colourName: null };
 }
 
 /** Uploads a queued photo or video to a saved product; returns the product's media afterwards. */
@@ -123,12 +127,13 @@ export function ProductPhotos({
   const photos = media.filter((m) => m.kind === "IMAGE");
   const videos = media.filter((m) => m.kind === "VIDEO");
   const queuedPhotos = queued.filter((q) => q.kind === "IMAGE");
-  const queuedVideo = queued.find((q) => q.kind === "VIDEO");
+  const queuedVideos = queued.filter((q) => q.kind === "VIDEO");
   const photoCount = photos.length + queuedPhotos.length;
   const full = photoCount >= MAX_PHOTOS;
   const { hasPhoto } = mediaReady(media, queued);
   const videoUploading = uploads.some((u) => u.id.startsWith("video") && u.state === "working");
-  const hasVideo = videos.length > 0 || queuedVideo !== undefined || videoUploading;
+  const videoCount = videos.length + queuedVideos.length;
+  const videosFull = videoCount >= MAX_VIDEOS || (videoUploading && videoCount + 1 >= MAX_VIDEOS);
   const saved = productId !== undefined;
 
   const fail = (id: string, name: string, message: string) =>
@@ -187,9 +192,9 @@ export function ProductPhotos({
     onQueue(queued.filter((q) => q.id !== item.id));
   }
 
-  /** Saves a new photo order (the video keeps its place at the end) with alt text and colours. */
-  async function save(nextPhotos: AdminMedia[]) {
-    const next = [...nextPhotos, ...videos];
+  /** Saves a new photo order (the video keeps its place at the end), alt text and colour tags. */
+  async function save(nextPhotos: AdminMedia[], nextVideos: AdminMedia[] = videos) {
+    const next = [...nextPhotos, ...nextVideos];
     onChange(next);
     const updates: MediaUpdate[] = next.map((m) => ({ id: m.id, alt: m.alt, colourName: m.colourName }));
     try {
@@ -213,6 +218,13 @@ export function ProductPhotos({
     next.splice(index + by, 0, item!);
     void save(next);
   };
+  /** The main photo is the first one: listings, the home page and the bag show it. */
+  const makeMain = (index: number) => {
+    const next = [...photos];
+    const [item] = next.splice(index, 1);
+    void save([item!, ...next]);
+  };
+  const makeQueuedMain = (item: QueuedMedia) => onQueue([item, ...queued.filter((q) => q.id !== item.id)]);
   const edit = (index: number, patch: Partial<AdminMedia>) =>
     photos.map((m, i) => (i === index ? { ...m, ...patch } : m));
 
@@ -222,7 +234,8 @@ export function ProductPhotos({
         Photos &amp; video
       </h2>
       <p className="mb-2 text-sm text-ink-soft">
-        {photoCount} of {MAX_PHOTOS} photos · {hasVideo ? "1 video" : "no video yet"}
+        {photoCount} of {MAX_PHOTOS} photos ·{" "}
+        {videoCount === 0 ? "no video yet" : `${videoCount} of ${MAX_VIDEOS} videos`}
         {!saved && queued.length > 0 && " · uploads when you save"}
       </p>
       <details className="mb-4 rounded-md bg-panel p-4 text-sm">
@@ -328,6 +341,7 @@ export function ProductPhotos({
                   ))}
                 </select>
               </label>
+              <MainChoice main={i === 0} label={`Set photo ${i + 1} as main`} onPick={() => makeMain(i)} />
               <div className="flex items-center justify-between gap-1">
                 <span className="flex gap-1">
                   <Button
@@ -370,6 +384,12 @@ export function ProductPhotos({
                   {item.file.name}
                 </div>
               )}
+              <MainChoice
+                main={photos.length === 0 && queuedPhotos[0]?.id === item.id}
+                label={`Set ${item.file.name} as main`}
+                onPick={() => (photos.length === 0 ? makeQueuedMain(item) : undefined)}
+                disabled={photos.length > 0}
+              />
               <span className="text-xs text-ink-soft">Uploads when you save</span>
               <button
                 type="button"
@@ -385,59 +405,82 @@ export function ProductPhotos({
       )}
 
       <div className="mt-5 border-t border-line pt-4">
-        <h3 className="mb-2 text-sm font-semibold">Video</h3>
-        {videos.map((item) => (
-          <div key={item.id} className="flex flex-wrap items-end gap-3">
-            {item.status === "READY" ? (
-              <video
-                src={videoUrl(item.key)}
-                controls
-                playsInline
-                preload="metadata"
-                aria-label={item.alt}
-                className="aspect-[3/4] w-40 rounded bg-panel object-cover"
-              />
-            ) : (
-              <div className="flex aspect-[3/4] w-40 items-center justify-center rounded bg-warn-soft p-2 text-center text-xs text-warn">
-                Upload did not finish. Delete and try again.
-              </div>
-            )}
-            <button
-              type="button"
-              className="text-xs text-bad hover:underline"
-              aria-label="Delete video"
-              onClick={() => void remove(item)}
-            >
-              Delete
-            </button>
-          </div>
-        ))}
-        {queuedVideo && (
-          <div className="flex flex-wrap items-end gap-3">
-            {queuedVideo.preview ? (
-              <video
-                src={queuedVideo.preview}
-                controls
-                playsInline
-                preload="metadata"
-                aria-label={queuedVideo.file.name}
-                className="aspect-[3/4] w-40 rounded bg-panel object-cover"
-              />
-            ) : (
-              <span className="text-sm">{queuedVideo.file.name}</span>
-            )}
-            <span className="text-xs text-ink-soft">Uploads when you save</span>
-            <button
-              type="button"
-              className="text-xs text-bad hover:underline"
-              aria-label="Remove video"
-              onClick={() => unqueue(queuedVideo)}
-            >
-              Remove
-            </button>
-          </div>
-        )}
-        {!hasVideo && (
+        <h3 className="mb-2 text-sm font-semibold">Videos</h3>
+        <ul aria-label="Videos" className="mb-3 flex flex-wrap gap-4">
+          {videos.map((item, i) => (
+            <li key={item.id} className="flex w-40 flex-col gap-2">
+              {item.status === "READY" ? (
+                <video
+                  src={videoUrl(item.key)}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  aria-label={item.alt}
+                  className="aspect-[3/4] w-40 rounded bg-panel object-cover"
+                />
+              ) : (
+                <div className="flex aspect-[3/4] w-40 items-center justify-center rounded bg-warn-soft p-2 text-center text-xs text-warn">
+                  Upload did not finish. Delete and try again.
+                </div>
+              )}
+              <label className="flex flex-col gap-1 text-xs font-medium">
+                <span>Colour</span>
+                <select
+                  className="rounded border border-line-strong px-2 py-1 text-sm font-normal"
+                  aria-label={`Colour of video ${i + 1}`}
+                  value={item.colourName ?? ""}
+                  onChange={(e) =>
+                    void save(
+                      photos,
+                      videos.map((v) => (v.id === item.id ? { ...v, colourName: e.target.value || null } : v)),
+                    )
+                  }
+                >
+                  <option value="">All colours</option>
+                  {[...new Set([...colours, ...(item.colourName ? [item.colourName] : [])])].map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type="button"
+                className="self-start text-xs text-bad hover:underline"
+                aria-label={`Delete video ${i + 1}`}
+                onClick={() => void remove(item)}
+              >
+                Delete
+              </button>
+            </li>
+          ))}
+          {queuedVideos.map((item) => (
+            <li key={item.id} className="flex w-40 flex-col gap-2">
+              {item.preview ? (
+                <video
+                  src={item.preview}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  aria-label={item.file.name}
+                  className="aspect-[3/4] w-40 rounded bg-panel object-cover"
+                />
+              ) : (
+                <span className="text-sm">{item.file.name}</span>
+              )}
+              <span className="text-xs text-ink-soft">Uploads when you save; pick its colour after.</span>
+              <button
+                type="button"
+                className="self-start text-xs text-bad hover:underline"
+                aria-label={`Remove ${item.file.name}`}
+                onClick={() => unqueue(item)}
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+        {!videosFull && (
           <div className="flex flex-wrap items-center gap-3">
             <label
               className={cn(
@@ -461,11 +504,38 @@ export function ProductPhotos({
               />
             </label>
             <span className="text-xs text-ink-soft">
-              {hasPhoto ? "Opens your gallery. Needed to publish." : "Add a photo first."}
+              {hasPhoto
+                ? videoCount === 0
+                  ? "Opens your gallery. At least one is needed to publish."
+                  : `Opens your gallery. ${MAX_VIDEOS - videoCount} more allowed.`
+                : "Add a photo first."}
             </span>
           </div>
         )}
       </div>
     </section>
+  );
+}
+
+/** The "Main" label on the main photo, or a button to make another photo the main one. */
+function MainChoice({
+  main,
+  label,
+  onPick,
+  disabled = false,
+}: Readonly<{ main: boolean; label: string; onPick: () => void; disabled?: boolean }>) {
+  if (main) {
+    return <span className="self-start rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-white">Main</span>;
+  }
+  if (disabled) return null;
+  return (
+    <button
+      type="button"
+      className="self-start text-xs text-accent-ink hover:underline"
+      aria-label={label}
+      onClick={onPick}
+    >
+      Set as main
+    </button>
   );
 }

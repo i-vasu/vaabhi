@@ -8,7 +8,7 @@ import {
   isOneSize,
   oneSizeLine,
   photosFor,
-  videoFor,
+  videosFor,
   selectedVariant,
   stockLine,
 } from "./product";
@@ -40,18 +40,21 @@ describe("product rules", () => {
     expect(selectedVariant(lehenga(), "Red", "M")?.sku).toBe("VB-RED-M");
   });
 
-  it("picks the video for the colour, else any video; photos never include it", () => {
+  it("shows the colour's own videos, then All colours ones; photos never include them", () => {
     const clip = (key: string, colourName: string | null) =>
       ({ kind: "VIDEO", key, alt: "Drape", colourName, width: null, height: null }) as const;
-    expect(videoFor(saree(), "Mustard")).toBeUndefined();
-    const withVideo = saree({ media: [...saree().media, clip("products/1/v-mustard", "Mustard")] });
-    expect(videoFor(withVideo, "Mustard")?.key).toBe("products/1/v-mustard");
-    expect(videoFor(withVideo, "Rani pink")?.key).toBe("products/1/v-mustard");
-    expect(photosFor(withVideo, "Mustard").map((m) => m.kind)).toEqual(["IMAGE", "IMAGE"]);
+    expect(videosFor(saree(), "Mustard")).toEqual([]);
+    const withVideos = saree({
+      media: [...saree().media, clip("products/1/v-all", null), clip("products/1/v-mustard", "Mustard")],
+    });
+    expect(videosFor(withVideos, "Mustard").map((m) => m.key)).toEqual(["products/1/v-mustard", "products/1/v-all"]);
+    expect(videosFor(withVideos, "Rani pink").map((m) => m.key)).toEqual(["products/1/v-all"]);
+    expect(photosFor(withVideos, "Mustard").map((m) => m.kind)).toEqual(["IMAGE", "IMAGE"]);
   });
 
   it("shows photos for the colour plus untagged ones", () => {
-    expect(photosFor(saree(), "Mustard").map((m) => m.key)).toEqual(["products/1/front", "products/1/mustard"]);
+    // The colour's own photos come before the "All colours" ones.
+    expect(photosFor(saree(), "Mustard").map((m) => m.key)).toEqual(["products/1/mustard", "products/1/front"]);
     expect(photosFor(saree(), "Rani pink").map((m) => m.key)).toEqual(["products/1/front"]);
     const tagged = saree({ media: [saree().media[1]!] });
     expect(photosFor(tagged, "Rani pink").map((m) => m.key)).toEqual(["products/1/mustard"]);

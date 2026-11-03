@@ -25,7 +25,7 @@ public class ProductMediaService {
     public static final List<Integer> RENDITIONS = List.of(400, 800, 1600);
 
     static final int MAX_PHOTOS = 12;
-    static final int MAX_VIDEOS = 1;
+    static final int MAX_VIDEOS = 3;
     /** Every photo and video of a product: the most a reorder can name. */
     static final int MAX_MEDIA = MAX_PHOTOS + MAX_VIDEOS;
     /** A video's object name under its key; R2 serves it with the type the browser uploaded it with. */
@@ -73,7 +73,8 @@ public class ProductMediaService {
     public VideoUpload startVideoUpload(long productId, VideoUploadRequest request) {
         requireStorage();
         requireProduct(productId);
-        requireRoom(productId, MediaKind.VIDEO, MAX_VIDEOS, "A product can have one video. Delete it to add another");
+        requireRoom(
+                productId, MediaKind.VIDEO, MAX_VIDEOS, "A product can have at most " + MAX_VIDEOS + " videos");
         var key = newKey(productId);
         var mediaId =
                 store.insertPending(productId, MediaKind.VIDEO, key, request.alt(), request.colourName(), null, null);

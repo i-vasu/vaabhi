@@ -23,7 +23,7 @@ import {
   selectedVariant,
   stockLine,
   variantsOf,
-  videoFor,
+  videosFor,
 } from "@/lib/product";
 import { DeliveryCheck } from "./delivery-check";
 import { ProductGallery } from "./product-gallery";
@@ -114,7 +114,7 @@ export function ProductView({ product, colour: requested }: Readonly<{ product: 
     <div className="grid md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] md:gap-10 md:px-4">
       <ProductGallery
         photos={photosFor(product, colour)}
-        video={videoFor(product, colour)}
+        videos={videosFor(product, colour)}
         name={`${product.name}, ${colour}`}
         hex={shown.colourHex}
         overlay={
