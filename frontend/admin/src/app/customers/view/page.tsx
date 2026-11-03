@@ -77,8 +77,8 @@ function CustomerView({ id }: { id: number }) {
 
       <div className="grid grid-cols-3 gap-3">
         <StatTile label="Orders" value={c.orderCount} />
-        <StatTile label="Spent" value={rupees(c.spentPaise)} />
-        <StatTile label="Due" value={rupees(c.outstandingPaise)} tone={c.outstandingPaise > 0 ? "warn" : "default"} />
+        <StatTile label="Spent" value={rupees(c.spentRupees)} />
+        <StatTile label="Due" value={rupees(c.outstandingRupees)} tone={c.outstandingRupees > 0 ? "warn" : "default"} />
       </div>
 
       <Details client={c} />
@@ -111,7 +111,7 @@ function CustomerView({ id }: { id: number }) {
                 </>
               }
               subtitle={`${order.itemsLabel} · due ${formatDate(order.deliveryDate)}`}
-              trailing={order.balancePaise > 0 ? `${rupees(order.balancePaise)} due` : rupees(order.totalPaise)}
+              trailing={order.balanceRupees > 0 ? `${rupees(order.balanceRupees)} due` : rupees(order.totalRupees)}
             />
           ))}
         </ListCard>
@@ -137,7 +137,7 @@ function CustomerView({ id }: { id: number }) {
                 </>
               }
               subtitle={`${alteration.itemsLabel} · ready by ${formatDate(alteration.readyBy)}`}
-              trailing={alteration.paid ? rupees(alteration.totalPaise) : "Free"}
+              trailing={alteration.paid ? rupees(alteration.totalRupees) : "Free"}
             />
           ))}
         </ListCard>

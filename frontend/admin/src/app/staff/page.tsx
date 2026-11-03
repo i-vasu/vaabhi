@@ -50,7 +50,7 @@ export default function StaffPage() {
               trailing={
                 member.payType === "PIECE"
                   ? "By the piece"
-                  : `${rupees(member.salaryPaise)}${member.payType === "DAILY" ? " / day" : " / month"}`
+                  : `${rupees(member.salaryRupees)}${member.payType === "DAILY" ? " / day" : " / month"}`
               }
             />
           ))}

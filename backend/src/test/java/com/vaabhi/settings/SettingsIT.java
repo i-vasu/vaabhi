@@ -251,8 +251,8 @@ class SettingsIT {
     @Test
     void deliveryPackagesAreReplacedAsAList() throws Exception {
         var saved = put("/delivery-packages", """
-                        [{"id":null,"name":"Standard","pricePaise":0,"days":7},
-                         {"id":null,"name":"Express","pricePaise":20000,"days":3}]
+                        [{"id":null,"name":"Standard","priceRupees":0,"days":7},
+                         {"id":null,"name":"Express","priceRupees":20000,"days":3}]
                         """)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
@@ -262,10 +262,10 @@ class SettingsIT {
         int express = JsonPath.read(saved, "$[1].id");
 
         put("/delivery-packages", """
-                        [{"id":%d,"name":"Express","pricePaise":25000,"days":2}]
+                        [{"id":%d,"name":"Express","priceRupees":25000,"days":2}]
                         """.formatted(express))
                 .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].pricePaise").value(25000));
+                .andExpect(jsonPath("$[0].priceRupees").value(25000));
         mockMvc.perform(get("/api/v1/admin/settings/delivery-packages").with(OWNER))
                 .andExpect(jsonPath("$.length()").value(1));
     }

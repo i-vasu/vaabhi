@@ -1,5 +1,7 @@
 package com.vaabhi.catalog;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import org.jspecify.annotations.Nullable;
 
 /** Pricing and stock rules shared by listing and product page. */
@@ -15,10 +17,14 @@ final class Stock {
     }
 
     /** Rounded percentage off MRP, matching the storefront's label. */
-    static int discountPercent(int pricePaise, int mrpPaise) {
-        if (mrpPaise <= pricePaise) {
+    static int discountPercent(BigDecimal priceRupees, BigDecimal mrpRupees) {
+        if (mrpRupees.compareTo(priceRupees) <= 0) {
             return 0;
         }
-        return (int) Math.round((mrpPaise - pricePaise) * 100.0 / mrpPaise);
+        return mrpRupees
+                .subtract(priceRupees)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(mrpRupees, 0, RoundingMode.HALF_UP)
+                .intValue();
     }
 }

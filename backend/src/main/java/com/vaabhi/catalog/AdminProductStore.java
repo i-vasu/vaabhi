@@ -43,7 +43,7 @@ class AdminProductStore {
             String status,
             int variantCount,
             long stockTotal,
-            @Nullable Integer minPricePaise,
+            @Nullable BigDecimal minPriceRupees,
             OffsetDateTime updatedAt) {}
 
     AdminProductPage list(
@@ -65,8 +65,8 @@ class AdminProductStore {
                                    AS variant_count,
                                (SELECT COALESCE(SUM(v.stock_qty), 0) FROM product_variant v
                                 WHERE v.product_id = p.id AND v.active) AS stock_total,
-                               (SELECT MIN(v.price_paise) FROM product_variant v
-                                WHERE v.product_id = p.id AND v.active) AS min_price_paise,
+                               (SELECT MIN(v.price_rupees) FROM product_variant v
+                                WHERE v.product_id = p.id AND v.active) AS min_price_rupees,
                                p.updated_at
                         """ + LIST_FILTER + " ORDER BY p.updated_at DESC, p.id DESC LIMIT :limit OFFSET :offset")
                 .params(params)
@@ -81,7 +81,7 @@ class AdminProductStore {
                         ProductStatus.valueOf(r.status()),
                         r.variantCount(),
                         r.stockTotal(),
-                        r.minPricePaise(),
+                        r.minPriceRupees(),
                         r.updatedAt()))
                 .toList();
         return new AdminProductPage(items, total, page, pageSize);
@@ -164,14 +164,14 @@ class AdminProductStore {
 
     private List<VariantForm> variants(long productId) {
         return jdbc.sql("""
-                        SELECT sku, colour_name, colour_hex, colour_family, size, price_paise, mrp_paise, stock_qty, active
+                        SELECT sku, colour_name, colour_hex, colour_family, size, price_rupees, mrp_rupees, stock_qty, active
                         FROM product_variant WHERE product_id = :id ORDER BY position, id
                         """).param("id", productId).query(VariantForm.class).list();
     }
 
     private List<AddonForm> addons(long productId) {
         return jdbc.sql("""
-                        SELECT code, kind, name, description, price_paise, input, active
+                        SELECT code, kind, name, description, price_rupees, input, active
                         FROM product_addon WHERE product_id = :id ORDER BY position, id
                         """).param("id", productId).query(AddonForm.class).list();
     }
@@ -269,13 +269,13 @@ class AdminProductStore {
             var v = variants.get(i);
             jdbc.sql("""
                             INSERT INTO product_variant (product_id, sku, colour_name, colour_hex, colour_family, size,
-                                                         price_paise, mrp_paise, stock_qty, active, position)
+                                                         price_rupees, mrp_rupees, stock_qty, active, position)
                             VALUES (:productId, :sku, :colourName, :colourHex, :colourFamily, :size,
                                     :price, :mrp, :stock, :active, :position)
                             ON CONFLICT (sku) DO UPDATE SET colour_name = EXCLUDED.colour_name,
                                 colour_hex = EXCLUDED.colour_hex, colour_family = EXCLUDED.colour_family,
-                                size = EXCLUDED.size, price_paise = EXCLUDED.price_paise,
-                                mrp_paise = EXCLUDED.mrp_paise, stock_qty = EXCLUDED.stock_qty,
+                                size = EXCLUDED.size, price_rupees = EXCLUDED.price_rupees,
+                                mrp_rupees = EXCLUDED.mrp_rupees, stock_qty = EXCLUDED.stock_qty,
                                 active = EXCLUDED.active, position = EXCLUDED.position
                             WHERE product_variant.product_id = EXCLUDED.product_id
                             """)
@@ -285,8 +285,8 @@ class AdminProductStore {
                     .param("colourHex", v.colourHex().toUpperCase(java.util.Locale.ROOT))
                     .param("colourFamily", v.colourFamily())
                     .param("size", blankToNull(v.size()))
-                    .param("price", v.pricePaise())
-                    .param("mrp", v.mrpPaise())
+                    .param("price", v.priceRupees())
+                    .param("mrp", v.mrpRupees())
                     .param("stock", v.stockQty())
                     .param("active", v.active())
                     .param("position", i)
@@ -311,7 +311,7 @@ class AdminProductStore {
         for (var i = 0; i < addons.size(); i++) {
             var a = addons.get(i);
             jdbc.sql("""
-                            INSERT INTO product_addon (product_id, kind, code, name, description, price_paise, input,
+                            INSERT INTO product_addon (product_id, kind, code, name, description, price_rupees, input,
                                                        active, position)
                             VALUES (:productId, :kind, :code, :name, :description, :price, :input, :active, :position)
                             """)
@@ -320,7 +320,7 @@ class AdminProductStore {
                     .param("code", a.code())
                     .param("name", a.name().trim())
                     .param("description", blankToNull(a.description()))
-                    .param("price", a.pricePaise())
+                    .param("price", a.priceRupees())
                     .param("input", a.input().name())
                     .param("active", a.active())
                     .param("position", i)
@@ -338,7 +338,7 @@ class AdminProductStore {
     }
 
     int activeVariantCount(long productId) {
-        return jdbc.sql("SELECT COUNT(*) FROM product_variant WHERE product_id = :id AND active AND price_paise > 0")
+        return jdbc.sql("SELECT COUNT(*) FROM product_variant WHERE product_id = :id AND active AND price_rupees > 0")
                 .param("id", productId)
                 .query(Integer.class)
                 .single();

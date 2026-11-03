@@ -25,11 +25,11 @@ export default function DuesPage() {
       ) : (
         <>
           <div className="mb-4 grid grid-cols-2 gap-3">
-            <StatTile label="Owed in all" value={rupees(dues.value.totalPaise)} />
+            <StatTile label="Owed in all" value={rupees(dues.value.totalRupees)} />
             <StatTile
               label="Already handed over"
-              value={rupees(dues.value.handedOverPaise)}
-              tone={dues.value.handedOverPaise > 0 ? "warn" : "default"}
+              value={rupees(dues.value.handedOverRupees)}
+              tone={dues.value.handedOverRupees > 0 ? "warn" : "default"}
             />
           </div>
           <div className="mb-4">
@@ -66,8 +66,8 @@ export default function DuesPage() {
                   subtitle={`${formatPhone(due.clientPhone)} · ${due.kind === "ORDER" ? "due" : "ready by"} ${formatDate(due.date)}${due.invoiceNumber ? ` · ${due.invoiceNumber}` : ""}`}
                   trailing={
                     <span>
-                      <span className="block font-medium text-warn">{rupees(due.duePaise)}</span>
-                      <span className="block text-xs">of {rupees(due.totalPaise)}</span>
+                      <span className="block font-medium text-warn">{rupees(due.dueRupees)}</span>
+                      <span className="block text-xs">of {rupees(due.totalRupees)}</span>
                     </span>
                   }
                 />

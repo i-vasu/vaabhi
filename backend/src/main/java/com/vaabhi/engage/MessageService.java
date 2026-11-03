@@ -2,11 +2,13 @@ package com.vaabhi.engage;
 
 import com.vaabhi.settings.MessageTemplates;
 import com.vaabhi.settings.SettingsService;
+import com.vaabhi.shared.rupees.Rupees;
 import com.vaabhi.tailoring.Client;
 import com.vaabhi.tailoring.ClientService;
 import com.vaabhi.tailoring.Order;
 import com.vaabhi.tailoring.OrderPayment;
 import com.vaabhi.tailoring.OrderService;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
@@ -52,10 +54,10 @@ public class MessageService {
         this.provider = provider;
     }
 
-    static String rupees(long paise) {
+    static String rupees(BigDecimal rupees) {
         var format = NumberFormat.getNumberInstance(Locale.forLanguageTag("en-IN"));
         format.setMaximumFractionDigits(2);
-        return "₹" + format.format(paise / 100.0);
+        return "₹" + format.format(rupees);
     }
 
     /** wa.me wants digits only (with country code); sms: takes the number as stored. */
@@ -83,8 +85,8 @@ public class MessageService {
         values.put("shop", profile.shopName());
         if (order != null) {
             values.put("order", order.number());
-            values.put("amount", rupees(order.totalPaise()));
-            values.put("balance", rupees(Math.max(0, order.balancePaise())));
+            values.put("amount", rupees(order.totalRupees()));
+            values.put("balance", rupees(Rupees.max(Rupees.ZERO, order.balanceRupees())));
             values.put("date", order.deliveryDate().format(DAY));
         }
         if (profile.googleReviewLink() != null) {
@@ -103,9 +105,9 @@ public class MessageService {
                     throw CouponService.bad("Choose the order");
                 }
                 var last = order.payments().stream()
-                        .filter(p -> p.amountPaise() > 0)
+                        .filter(p -> p.amountRupees().signum() > 0)
                         .max(Comparator.comparing(OrderPayment::receivedAt));
-                values.put("amount", rupees(last.map(OrderPayment::amountPaise).orElse(order.paidPaise())));
+                values.put("amount", rupees(last.map(OrderPayment::amountRupees).orElse(order.paidRupees())));
                 yield templates.paymentReceived();
             }
             case REVIEW -> {

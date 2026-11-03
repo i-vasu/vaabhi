@@ -1,5 +1,6 @@
 package com.vaabhi.tailoring;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
@@ -18,6 +19,6 @@ public record AlterationSummary(
         int itemCount,
         String itemsLabel,
         boolean paid,
-        long totalPaise,
-        long balancePaise,
+        BigDecimal totalRupees,
+        BigDecimal balanceRupees,
         boolean overdue) {}

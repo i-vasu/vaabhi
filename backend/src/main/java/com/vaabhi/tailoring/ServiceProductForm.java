@@ -1,12 +1,14 @@
 package com.vaabhi.tailoring;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 
@@ -22,6 +24,9 @@ public record ServiceProductForm(
         String code,
 
         @NotBlank @Size(max = 80) String name,
-        @Min(0) @Max(100_000_000) long pricePaise,
+
+        @DecimalMin("0") @DecimalMax("1000000") @Digits(integer = 7, fraction = 2)
+        BigDecimal priceRupees,
+
         @Nullable @Size(max = 200) String photoKey,
         @NotNull @Size(max = 20) List<@Valid StageCost> stageCosts) {}

@@ -36,14 +36,14 @@ export default function RewardsPage() {
               onChange={(e) => s.update({ pointsPer100: Number(e.target.value) || 0 })}
             />
             <TextField
-              label="One point is worth (paise)"
+              label="One point is worth (₹)"
               inputMode="numeric"
-              value={String(v.paisePerPoint)}
-              onChange={(e) => s.update({ paisePerPoint: Number(e.target.value) || 0 })}
+              value={String(v.rupeesPerPoint)}
+              onChange={(e) => s.update({ rupeesPerPoint: Number(e.target.value) || 0 })}
             />
           </div>
           <p className="text-sm text-ink-soft">
-            A ₹1,000 order earns {10 * v.pointsPer100} points, worth {rupees(10 * v.pointsPer100 * v.paisePerPoint)}{" "}
+            A ₹1,000 order earns {10 * v.pointsPer100} points, worth {rupees(10 * v.pointsPer100 * v.rupeesPerPoint)}{" "}
             when redeemed.
           </p>
           <ErrorNote>{s.error}</ErrorNote>

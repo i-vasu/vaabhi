@@ -1,5 +1,6 @@
 package com.vaabhi.staff;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
@@ -24,7 +25,7 @@ public class StaffService {
 
     private static final String ID = "id";
     private static final String SELECT = """
-            SELECT id, name, phone, email, role, designation, joined_on, pay_type, salary_paise, hourly_paise,
+            SELECT id, name, phone, email, role, designation, joined_on, pay_type, salary_rupees, hourly_rupees,
                    shift_start, shift_end, late_grace_minutes, weekly_off, active,
                    password_hash IS NOT NULL AS can_sign_in, last_login_at
             FROM staff_account
@@ -47,8 +48,8 @@ public class StaffService {
             @Nullable String designation,
             @Nullable LocalDate joinedOn,
             PayType payType,
-            long salaryPaise,
-            long hourlyPaise,
+            BigDecimal salaryRupees,
+            BigDecimal hourlyRupees,
             LocalTime shiftStart,
             LocalTime shiftEnd,
             int lateGraceMinutes,
@@ -67,8 +68,8 @@ public class StaffService {
                     designation,
                     joinedOn,
                     payType,
-                    salaryPaise,
-                    hourlyPaise,
+                    salaryRupees,
+                    hourlyRupees,
                     shiftStart,
                     shiftEnd,
                     lateGraceMinutes,
@@ -109,7 +110,7 @@ public class StaffService {
         try {
             long id = jdbc.sql("""
                             INSERT INTO staff_account (name, phone, email, role, password_hash, designation, joined_on,
-                                pay_type, salary_paise, hourly_paise, shift_start, shift_end, late_grace_minutes,
+                                pay_type, salary_rupees, hourly_rupees, shift_start, shift_end, late_grace_minutes,
                                 weekly_off)
                             VALUES (:name, :phone, :email, :role, :hash, :designation, :joinedOn, :payType, :salary,
                                 :hourly, :shiftStart, :shiftEnd, :grace, :weeklyOff)
@@ -139,7 +140,7 @@ public class StaffService {
             jdbc.sql("""
                             UPDATE staff_account SET name = :name, phone = :phone, email = :email, role = :role,
                                 designation = :designation, joined_on = :joinedOn, pay_type = :payType,
-                                salary_paise = :salary, hourly_paise = :hourly, shift_start = :shiftStart,
+                                salary_rupees = :salary, hourly_rupees = :hourly, shift_start = :shiftStart,
                                 shift_end = :shiftEnd, late_grace_minutes = :grace, weekly_off = :weeklyOff,
                                 updated_at = now()
                             WHERE id = :id
@@ -236,8 +237,8 @@ public class StaffService {
         params.put("designation", blankToNull(form.designation()));
         params.put("joinedOn", form.joinedOn());
         params.put("payType", form.payType().name());
-        params.put("salary", form.salaryPaise());
-        params.put("hourly", form.hourlyPaise());
+        params.put("salary", form.salaryRupees());
+        params.put("hourly", form.hourlyRupees());
         params.put("shiftStart", form.shiftStart());
         params.put("shiftEnd", form.shiftEnd());
         params.put("grace", form.lateGraceMinutes());

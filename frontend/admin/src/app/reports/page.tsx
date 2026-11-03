@@ -24,21 +24,21 @@ export default function ReportsPage() {
         <>
           <SectionLabel>This month</SectionLabel>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <StatTile label="Booked" value={rupees(o.bookedPaise)} hint={`${o.ordersBooked} orders`} />
-            <StatTile label="Collected" value={rupees(o.collectedPaise)} tone="ok" />
-            <StatTile label="Spent" value={rupees(o.expensesPaise)} />
+            <StatTile label="Booked" value={rupees(o.bookedRupees)} hint={`${o.ordersBooked} orders`} />
+            <StatTile label="Collected" value={rupees(o.collectedRupees)} tone="ok" />
+            <StatTile label="Spent" value={rupees(o.expensesRupees)} />
             <StatTile
               label="Net"
-              value={rupees(o.collectedPaise - o.expensesPaise)}
-              tone={o.collectedPaise - o.expensesPaise < 0 ? "bad" : "default"}
+              value={rupees(o.collectedRupees - o.expensesRupees)}
+              tone={o.collectedRupees - o.expensesRupees < 0 ? "bad" : "default"}
             />
             <StatTile label="Delivered" value={o.ordersDelivered} />
-            <StatTile label="Average order" value={rupees(o.averageOrderPaise)} />
+            <StatTile label="Average order" value={rupees(o.averageOrderRupees)} />
             <StatTile label="New customers" value={o.newCustomers} />
             <StatTile
               label="Owed to the shop"
-              value={rupees(o.outstandingPaise)}
-              tone={o.outstandingPaise > 0 ? "warn" : "default"}
+              value={rupees(o.outstandingRupees)}
+              tone={o.outstandingRupees > 0 ? "warn" : "default"}
             />
           </div>
           <div className="mt-6 grid gap-4 lg:grid-cols-2">

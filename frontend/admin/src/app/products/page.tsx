@@ -162,7 +162,7 @@ export default function ProductsPage() {
                     <td className="py-2 pr-3 text-right">{p.variantCount}</td>
                     <td className={cn("py-2 pr-3 text-right", p.stockTotal === 0 && "text-bad")}>{p.stockTotal}</td>
                     <td className="py-2 pr-3 text-right">
-                      {p.minPricePaise === null ? "—" : inr.format(p.minPricePaise / 100)}
+                      {p.minPriceRupees === null ? "—" : inr.format(p.minPriceRupees)}
                     </td>
                     <td className="py-2 text-ink-soft">{date.format(new Date(p.updatedAt))}</td>
                   </tr>

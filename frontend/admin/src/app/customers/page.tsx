@@ -91,8 +91,8 @@ export default function CustomersPage() {
                   </>
                 }
                 trailing={
-                  client.outstandingPaise > 0 ? (
-                    <span className="text-warn">{rupees(client.outstandingPaise)} due</span>
+                  client.outstandingRupees > 0 ? (
+                    <span className="text-warn">{rupees(client.outstandingRupees)} due</span>
                   ) : (
                     `${client.orderCount} ${client.orderCount === 1 ? "order" : "orders"}`
                   )

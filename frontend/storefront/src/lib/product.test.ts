@@ -63,7 +63,7 @@ describe("product rules", () => {
   it("adds a free choice when no add-on is free", () => {
     expect(addonChoices(saree()).map((c) => c.code)).toEqual(["blouse-unstitched", "blouse-standard", "blouse-custom"]);
     const choices = addonChoices(lehenga());
-    expect(choices.map((c) => [c.code, c.pricePaise])).toEqual([
+    expect(choices.map((c) => [c.code, c.priceRupees])).toEqual([
       [null, 0],
       ["blouse-custom", 150000],
     ]);

@@ -1,5 +1,7 @@
 package com.vaabhi.money;
 
+import com.vaabhi.shared.rupees.Rupees;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.stream.Collectors;
@@ -16,7 +18,7 @@ public class ExpenseService {
 
     private static final String ID = "id";
     private static final String SELECT = """
-            SELECT id, spent_on, category, description, amount_paise, mode, paid_to, created_by, created_at
+            SELECT id, spent_on, category, description, amount_rupees, mode, paid_to, created_by, created_at
             FROM expense
             """;
 
@@ -40,14 +42,14 @@ public class ExpenseService {
                 .query(Expense.class)
                 .list();
         var byCategory = items.stream()
-                .collect(Collectors.groupingBy(Expense::category, Collectors.summingLong(Expense::amountPaise)))
+                .collect(Collectors.groupingBy(
+                        Expense::category, Collectors.reducing(Rupees.ZERO, Expense::amountRupees, BigDecimal::add)))
                 .entrySet()
                 .stream()
                 .map(entry -> new CategoryTotal(entry.getKey(), entry.getValue()))
-                .sorted(Comparator.comparingLong(CategoryTotal::amountPaise).reversed())
+                .sorted(Comparator.comparing(CategoryTotal::amountRupees).reversed())
                 .toList();
-        return new ExpenseList(
-                items, items.stream().mapToLong(Expense::amountPaise).sum(), byCategory);
+        return new ExpenseList(items, Rupees.sum(items, Expense::amountRupees), byCategory);
     }
 
     @Transactional(readOnly = true)
@@ -62,13 +64,13 @@ public class ExpenseService {
     @Transactional
     public Expense create(ExpenseForm form, @Nullable String actor) {
         long id = jdbc.sql("""
-                        INSERT INTO expense (spent_on, category, description, amount_paise, mode, paid_to, created_by)
+                        INSERT INTO expense (spent_on, category, description, amount_rupees, mode, paid_to, created_by)
                         VALUES (:spentOn, :category, :description, :amount, :mode, :paidTo, :by) RETURNING id
                         """)
                 .param("spentOn", form.spentOn())
                 .param("category", form.category().name())
                 .param("description", form.description().trim())
-                .param("amount", form.amountPaise())
+                .param("amount", form.amountRupees())
                 .param("mode", form.mode().name())
                 .param("paidTo", blankToNull(form.paidTo()))
                 .param("by", actor)
@@ -81,13 +83,13 @@ public class ExpenseService {
     public Expense update(long id, ExpenseForm form) {
         int updated = jdbc.sql("""
                         UPDATE expense SET spent_on = :spentOn, category = :category, description = :description,
-                            amount_paise = :amount, mode = :mode, paid_to = :paidTo
+                            amount_rupees = :amount, mode = :mode, paid_to = :paidTo
                         WHERE id = :id
                         """)
                 .param("spentOn", form.spentOn())
                 .param("category", form.category().name())
                 .param("description", form.description().trim())
-                .param("amount", form.amountPaise())
+                .param("amount", form.amountRupees())
                 .param("mode", form.mode().name())
                 .param("paidTo", blankToNull(form.paidTo()))
                 .param(ID, id)

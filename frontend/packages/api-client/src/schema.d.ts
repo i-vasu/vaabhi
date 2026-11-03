@@ -548,6 +548,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/webhooks/razorpay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["razorpayWebhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/store/bag/quote": {
         parameters: {
             query?: never;
@@ -558,6 +574,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["quoteBag"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customer/orders/{number}/payment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["confirmPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customer/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["startCheckout"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1460,6 +1508,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/customer/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listMyOrders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customer/orders/{number}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMyOrder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/workshop/staff": {
         parameters: {
             query?: never;
@@ -1660,6 +1740,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getPayrollMonth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/online-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listOnlineOrders"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1989,8 +2085,7 @@ export interface components {
             /** @enum {string} */
             unit: "PCS" | "M" | "CM" | "KG" | "G" | "L" | "ROLL" | "BOX" | "SET";
             reorderLevel: number;
-            /** Format: int64 */
-            costPaise: number;
+            costRupees: number;
         };
         StockItem: {
             /** Format: int64 */
@@ -2001,12 +2096,10 @@ export interface components {
             /** @enum {string} */
             unit: "PCS" | "M" | "CM" | "KG" | "G" | "L" | "ROLL" | "BOX" | "SET";
             reorderLevel: number;
-            /** Format: int64 */
-            costPaise: number;
+            costRupees: number;
             onHand: number;
             low: boolean;
-            /** Format: int64 */
-            valuePaise: number;
+            valueRupees: number;
         };
         StaffForm: {
             name: string;
@@ -2020,10 +2113,8 @@ export interface components {
             joinedOn: string | null;
             /** @enum {string} */
             payType: "MONTHLY" | "DAILY" | "PIECE";
-            /** Format: int64 */
-            salaryPaise: number;
-            /** Format: int64 */
-            hourlyPaise: number;
+            salaryRupees: number;
+            hourlyRupees: number;
             /** Format: time-local */
             shiftStart: string;
             /** Format: time-local */
@@ -2047,10 +2138,8 @@ export interface components {
             joinedOn: string | null;
             /** @enum {string} */
             payType: "MONTHLY" | "DAILY" | "PIECE";
-            /** Format: int64 */
-            salaryPaise: number;
-            /** Format: int64 */
-            hourlyPaise: number;
+            salaryRupees: number;
+            hourlyRupees: number;
             /** Format: time-local */
             shiftStart: string;
             /** Format: time-local */
@@ -2229,8 +2318,7 @@ export interface components {
             /** Format: int64 */
             id: number | null;
             name: string;
-            /** Format: int64 */
-            pricePaise: number;
+            priceRupees: number;
             /** Format: int32 */
             days: number;
         };
@@ -2258,16 +2346,14 @@ export interface components {
             templateId: number;
             code: string | null;
             name: string;
-            /** Format: int64 */
-            pricePaise: number;
+            priceRupees: number;
             photoKey: string | null;
             stageCosts: components["schemas"]["StageCost"][];
         };
         StageCost: {
             /** Format: int64 */
             stageId: number;
-            /** Format: int64 */
-            paise: number;
+            rupees: number;
         };
         ServiceProduct: {
             /** Format: int64 */
@@ -2277,12 +2363,10 @@ export interface components {
             garment: string;
             code: string;
             name: string;
-            /** Format: int64 */
-            pricePaise: number;
+            priceRupees: number;
             photoKey: string | null;
             stageCosts: components["schemas"]["StageCost"][];
-            /** Format: int64 */
-            profitPaise: number;
+            profitRupees: number;
         };
         MediaUpdate: {
             /** Format: int64 */
@@ -2311,8 +2395,7 @@ export interface components {
             kind: "BLOUSE";
             name: string;
             description: string | null;
-            /** Format: int32 */
-            pricePaise: number;
+            priceRupees: number;
             /** @enum {string} */
             input: "NONE" | "SIZE" | "MEASUREMENTS";
             active: boolean;
@@ -2341,10 +2424,8 @@ export interface components {
             colourHex: string;
             colourFamily: string;
             size: string | null;
-            /** Format: int32 */
-            pricePaise: number;
-            /** Format: int32 */
-            mrpPaise: number;
+            priceRupees: number;
+            mrpRupees: number;
             /** Format: int32 */
             stockQty: number;
             active: boolean;
@@ -2382,7 +2463,6 @@ export interface components {
             items: components["schemas"]["OrderItemChange"][];
             /** @enum {string} */
             discountKind: "AMOUNT" | "PERCENT";
-            /** Format: int64 */
             discountValue: number;
             couponCode: string | null;
         };
@@ -2396,8 +2476,7 @@ export interface components {
             description: string;
             /** Format: int32 */
             quantity: number;
-            /** Format: int64 */
-            pricePaise: number;
+            priceRupees: number;
             colour: string | null;
             note: string | null;
             measurements: {
@@ -2415,10 +2494,8 @@ export interface components {
             clientType: "RETAIL" | "WHOLESALE" | "VIP";
             /** Format: int32 */
             orderCount: number;
-            /** Format: int64 */
-            spentPaise: number;
-            /** Format: int64 */
-            outstandingPaise: number;
+            spentRupees: number;
+            outstandingRupees: number;
             /** Format: date */
             lastOrderDate: string | null;
         };
@@ -2439,27 +2516,19 @@ export interface components {
             trialDate: string | null;
             /** Format: int64 */
             deliveryPackageId: number | null;
-            /** Format: int64 */
-            deliveryChargePaise: number;
-            /** Format: int64 */
-            itemsPaise: number;
+            deliveryChargeRupees: number;
+            itemsRupees: number;
             /** @enum {string} */
             discountKind: "AMOUNT" | "PERCENT";
-            /** Format: int64 */
             discountValue: number;
-            /** Format: int64 */
-            discountPaise: number;
+            discountRupees: number;
             couponCode: string | null;
             /** Format: int32 */
             rewardPoints: number;
-            /** Format: int64 */
-            rewardPaise: number;
-            /** Format: int64 */
-            totalPaise: number;
-            /** Format: int64 */
-            paidPaise: number;
-            /** Format: int64 */
-            balancePaise: number;
+            rewardRupees: number;
+            totalRupees: number;
+            paidRupees: number;
+            balanceRupees: number;
             notes: string | null;
             createdBy: string | null;
             /** Format: date-time */
@@ -2484,8 +2553,7 @@ export interface components {
             description: string;
             /** Format: int32 */
             quantity: number;
-            /** Format: int64 */
-            pricePaise: number;
+            priceRupees: number;
             colour: string | null;
             note: string | null;
             measurements: {
@@ -2500,8 +2568,7 @@ export interface components {
         OrderPayment: {
             /** Format: int64 */
             id: number;
-            /** Format: int64 */
-            amountPaise: number;
+            amountRupees: number;
             /** @enum {string} */
             mode: "CASH" | "UPI" | "CARD" | "BANK";
             /** @enum {string} */
@@ -2526,8 +2593,7 @@ export interface components {
             /** @enum {string} */
             category: "RENT" | "SALARY" | "MATERIAL" | "UTILITIES" | "TRANSPORT" | "MAINTENANCE" | "MARKETING" | "OTHER";
             description: string;
-            /** Format: int64 */
-            amountPaise: number;
+            amountRupees: number;
             /** @enum {string} */
             mode: "CASH" | "UPI" | "CARD" | "BANK";
             paidTo: string | null;
@@ -2540,8 +2606,7 @@ export interface components {
             /** @enum {string} */
             category: "RENT" | "SALARY" | "MATERIAL" | "UTILITIES" | "TRANSPORT" | "MAINTENANCE" | "MARKETING" | "OTHER";
             description: string;
-            /** Format: int64 */
-            amountPaise: number;
+            amountRupees: number;
             /** @enum {string} */
             mode: "CASH" | "UPI" | "CARD" | "BANK";
             paidTo: string | null;
@@ -2590,18 +2655,15 @@ export interface components {
             enabled: boolean;
             /** Format: int32 */
             pointsPer100: number;
-            /** Format: int32 */
-            paisePerPoint: number;
+            rupeesPerPoint: number;
         };
         CouponForm: {
             code: string;
             description: string | null;
             /** @enum {string} */
             kind: "AMOUNT" | "PERCENT";
-            /** Format: int64 */
             value: number;
-            /** Format: int64 */
-            minOrderPaise: number;
+            minOrderRupees: number;
             /** Format: date */
             validFrom: string | null;
             /** Format: date */
@@ -2617,10 +2679,8 @@ export interface components {
             description: string | null;
             /** @enum {string} */
             kind: "AMOUNT" | "PERCENT";
-            /** Format: int64 */
             value: number;
-            /** Format: int64 */
-            minOrderPaise: number;
+            minOrderRupees: number;
             /** Format: date */
             validFrom: string | null;
             /** Format: date */
@@ -2685,10 +2745,8 @@ export interface components {
             createdAt: string;
             /** Format: int32 */
             orderCount: number;
-            /** Format: int64 */
-            spentPaise: number;
-            /** Format: int64 */
-            outstandingPaise: number;
+            spentRupees: number;
+            outstandingRupees: number;
             measurements: components["schemas"]["Measurement"][];
         };
         Measurement: {
@@ -2716,14 +2774,10 @@ export interface components {
         };
         BagQuote: {
             lines: components["schemas"]["BagQuoteLine"][];
-            /** Format: int32 */
-            itemsPaise: number;
-            /** Format: int32 */
-            addonsPaise: number;
-            /** Format: int32 */
-            mrpPaise: number;
-            /** Format: int32 */
-            totalPaise: number;
+            itemsRupees: number;
+            addonsRupees: number;
+            mrpRupees: number;
+            totalRupees: number;
         };
         BagQuoteLine: {
             sku: string;
@@ -2741,16 +2795,80 @@ export interface components {
             colourName: string | null;
             colourHex: string | null;
             size: string | null;
-            /** Format: int32 */
-            pricePaise: number;
-            /** Format: int32 */
-            mrpPaise: number;
+            priceRupees: number;
+            mrpRupees: number;
             addonName: string | null;
-            /** Format: int32 */
-            addonPricePaise: number;
+            addonPriceRupees: number;
             /** @enum {string|null} */
             addonInput: "NONE" | "SIZE" | "MEASUREMENTS" | null;
             imageKey: string | null;
+        };
+        PaymentConfirmation: {
+            razorpayOrderId: string;
+            razorpayPaymentId: string;
+            razorpaySignature: string;
+        };
+        Line: {
+            sku: string;
+            productSlug: string;
+            name: string;
+            colourName: string | null;
+            size: string | null;
+            addonName: string | null;
+            blouseSize: string | null;
+            /** Format: int32 */
+            quantity: number;
+            unitRupees: number;
+            addonRupees: number;
+            amountRupees: number;
+            imageKey: string | null;
+        };
+        WebOrder: {
+            number: string;
+            /** @enum {string} */
+            status: "PENDING_PAYMENT" | "PAID" | "FAILED";
+            contactName: string;
+            contactPhone: string;
+            contactEmail: string | null;
+            addressLine1: string;
+            addressLine2: string | null;
+            city: string;
+            state: string;
+            pincode: string;
+            itemsRupees: number;
+            shippingRupees: number;
+            totalRupees: number;
+            razorpayPaymentId: string | null;
+            /** Format: date-time */
+            paidAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            lines: components["schemas"]["Line"][];
+        };
+        Address: {
+            name: string;
+            phone: string;
+            line1: string;
+            line2: string | null;
+            city: string;
+            state: string;
+            pincode: string;
+        };
+        CheckoutRequest: {
+            lines: components["schemas"]["Line"][];
+            address: components["schemas"]["Address"];
+        };
+        CheckoutStart: {
+            orderNumber: string;
+            totalRupees: number;
+            razorpayOrderId: string;
+            razorpayKeyId: string;
+            /** Format: int64 */
+            amountPaise: number;
+            currency: string;
+            name: string;
+            phone: string;
+            email: string | null;
         };
         StaffLoginRequest: {
             /** Format: email */
@@ -2870,8 +2988,7 @@ export interface components {
             /** Format: date */
             toDate: string | null;
             hours: number | null;
-            /** Format: int64 */
-            amountPaise: number | null;
+            amountRupees: number | null;
             reason: string | null;
         };
         StaffRequest: {
@@ -2887,8 +3004,7 @@ export interface components {
             /** Format: date */
             toDate: string;
             hours: number | null;
-            /** Format: int64 */
-            amountPaise: number | null;
+            amountRupees: number | null;
             reason: string | null;
             /** @enum {string} */
             status: "PENDING" | "APPROVED" | "REJECTED";
@@ -2961,28 +3077,21 @@ export interface components {
             month: string;
             /** @enum {string} */
             payType: "MONTHLY" | "DAILY" | "PIECE";
-            /** Format: int64 */
-            ratePaise: number;
+            rateRupees: number;
             daysPaid: number;
             daysUnpaid: number;
-            /** Format: int64 */
-            basePaise: number;
-            /** Format: int64 */
-            piecePaise: number;
+            baseRupees: number;
+            pieceRupees: number;
             /** Format: int32 */
             pieces: number;
             /** Format: int32 */
             overtimeMinutes: number;
-            /** Format: int64 */
-            overtimePaise: number;
+            overtimeRupees: number;
             /** Format: int32 */
             lateMinutes: number;
-            /** Format: int64 */
-            latePaise: number;
-            /** Format: int64 */
-            advancePaise: number;
-            /** Format: int64 */
-            netPaise: number;
+            lateRupees: number;
+            advanceRupees: number;
+            netRupees: number;
             /** Format: date-time */
             paidAt: string | null;
             /** @enum {string|null} */
@@ -2993,12 +3102,9 @@ export interface components {
             month: string;
             finalized: boolean;
             slips: components["schemas"]["Payslip"][];
-            /** Format: int64 */
-            totalNetPaise: number;
-            /** Format: int64 */
-            paidPaise: number;
-            /** Format: int64 */
-            unpaidPaise: number;
+            totalNetRupees: number;
+            paidRupees: number;
+            unpaidRupees: number;
         };
         OrderForm: {
             /** Format: int64 */
@@ -3016,13 +3122,11 @@ export interface components {
             items: components["schemas"]["OrderItemForm"][];
             /** @enum {string} */
             discountKind: "AMOUNT" | "PERCENT";
-            /** Format: int64 */
             discountValue: number;
             couponCode: string | null;
             /** Format: int32 */
             redeemPoints: number;
-            /** Format: int64 */
-            advancePaise: number;
+            advanceRupees: number;
             /** @enum {string} */
             advanceMode: "CASH" | "UPI" | "CARD" | "BANK";
             notes: string | null;
@@ -3035,8 +3139,7 @@ export interface components {
             description: string;
             /** Format: int32 */
             quantity: number;
-            /** Format: int64 */
-            pricePaise: number;
+            priceRupees: number;
             colour: string | null;
             note: string | null;
             measurements: {
@@ -3050,8 +3153,7 @@ export interface components {
             itemIds: number[];
         };
         PaymentForm: {
-            /** Format: int64 */
-            amountPaise: number;
+            amountRupees: number;
             /** @enum {string} */
             mode: "CASH" | "UPI" | "CARD" | "BANK";
             refund: boolean;
@@ -3075,24 +3177,16 @@ export interface components {
             /** Format: date */
             issuedOn: string;
             lines: components["schemas"]["InvoiceLine"][];
-            /** Format: int64 */
-            discountPaise: number;
-            /** Format: int64 */
-            orderTotalPaise: number;
+            discountRupees: number;
+            orderTotalRupees: number;
             gstRate: number;
             pricesIncludeTax: boolean;
-            /** Format: int64 */
-            taxablePaise: number;
-            /** Format: int64 */
-            cgstPaise: number;
-            /** Format: int64 */
-            sgstPaise: number;
-            /** Format: int64 */
-            totalPaise: number;
-            /** Format: int64 */
-            paidPaise: number;
-            /** Format: int64 */
-            balancePaise: number;
+            taxableRupees: number;
+            cgstRupees: number;
+            sgstRupees: number;
+            totalRupees: number;
+            paidRupees: number;
+            balanceRupees: number;
             shopGstin: string | null;
             clientGstin: string | null;
             createdBy: string | null;
@@ -3106,10 +3200,8 @@ export interface components {
             description: string;
             /** Format: int32 */
             quantity: number;
-            /** Format: int64 */
-            unitPaise: number;
-            /** Format: int64 */
-            amountPaise: number;
+            unitRupees: number;
+            amountRupees: number;
         };
         GalleryUpload: {
             key: string;
@@ -3131,8 +3223,7 @@ export interface components {
             clientId: number;
             /** Format: int32 */
             balance: number;
-            /** Format: int64 */
-            valuePaise: number;
+            valueRupees: number;
             entries: components["schemas"]["RewardEntry"][];
         };
         RewardEntry: {
@@ -3211,8 +3302,7 @@ export interface components {
             garment: string;
             instructions: string | null;
             photoKey: string | null;
-            /** Format: int64 */
-            costPaise: number;
+            costRupees: number;
         };
         Alteration: {
             /** Format: int64 */
@@ -3227,12 +3317,9 @@ export interface components {
             /** Format: date */
             readyBy: string;
             paid: boolean;
-            /** Format: int64 */
-            totalPaise: number;
-            /** Format: int64 */
-            collectedPaise: number;
-            /** Format: int64 */
-            balancePaise: number;
+            totalRupees: number;
+            collectedRupees: number;
+            balanceRupees: number;
             notes: string | null;
             undertaking: string;
             createdBy: string | null;
@@ -3250,14 +3337,12 @@ export interface components {
             garment: string;
             instructions: string | null;
             photoKey: string | null;
-            /** Format: int64 */
-            costPaise: number;
+            costRupees: number;
         };
         AlterationProgress: {
             /** @enum {string} */
             status: "BOOKED" | "IN_PROGRESS" | "READY" | "DELIVERED" | "CANCELLED";
-            /** Format: int64 */
-            collectPaise: number;
+            collectRupees: number;
             /** @enum {string|null} */
             mode: "CASH" | "UPI" | "CARD" | "BANK" | null;
         };
@@ -3267,8 +3352,7 @@ export interface components {
             kind: "BLOUSE";
             name: string;
             description: string | null;
-            /** Format: int32 */
-            pricePaise: number;
+            priceRupees: number;
             /** @enum {string} */
             input: "NONE" | "SIZE" | "MEASUREMENTS";
         };
@@ -3304,10 +3388,8 @@ export interface components {
             /** @enum {string|null} */
             badge: "NEW" | "BESTSELLER" | "BRIDAL" | "HANDLOOM" | null;
             category: components["schemas"]["CategoryRef"];
-            /** Format: int32 */
-            pricePaise: number;
-            /** Format: int32 */
-            mrpPaise: number;
+            priceRupees: number;
+            mrpRupees: number;
             /** Format: int32 */
             discountPercent: number;
             careInstructions: string | null;
@@ -3324,10 +3406,8 @@ export interface components {
             colourName: string;
             colourHex: string;
             size: string | null;
-            /** Format: int32 */
-            pricePaise: number;
-            /** Format: int32 */
-            mrpPaise: number;
+            priceRupees: number;
+            mrpRupees: number;
             inStock: boolean;
             /** Format: int32 */
             stockLeft: number | null;
@@ -3351,10 +3431,8 @@ export interface components {
             subtitle: string | null;
             /** @enum {string|null} */
             badge: "NEW" | "BESTSELLER" | "BRIDAL" | "HANDLOOM" | null;
-            /** Format: int32 */
-            pricePaise: number;
-            /** Format: int32 */
-            mrpPaise: number;
+            priceRupees: number;
+            mrpRupees: number;
             /** Format: int32 */
             discountPercent: number;
             colours: components["schemas"]["ColourSwatch"][];
@@ -3384,10 +3462,8 @@ export interface components {
             selected: boolean;
         };
         PriceRange: {
-            /** Format: int32 */
-            minPaise: number;
-            /** Format: int32 */
-            maxPaise: number;
+            minRupees: number;
+            maxRupees: number;
         };
         ProductListingResponse: {
             category: components["schemas"]["CategoryResponse"];
@@ -3485,35 +3561,26 @@ export interface components {
             label: string;
             /** Format: int32 */
             count: number;
-            /** Format: int64 */
-            paise: number;
+            rupees: number;
         };
         MonthFigures: {
             month: string;
-            /** Format: int64 */
-            bookedPaise: number;
-            /** Format: int64 */
-            collectedPaise: number;
-            /** Format: int64 */
-            expensesPaise: number;
+            bookedRupees: number;
+            collectedRupees: number;
+            expensesRupees: number;
         };
         ReportsOverview: {
-            /** Format: int64 */
-            bookedPaise: number;
-            /** Format: int64 */
-            collectedPaise: number;
-            /** Format: int64 */
-            expensesPaise: number;
+            bookedRupees: number;
+            collectedRupees: number;
+            expensesRupees: number;
             /** Format: int32 */
             ordersBooked: number;
             /** Format: int32 */
             ordersDelivered: number;
-            /** Format: int64 */
-            averageOrderPaise: number;
+            averageOrderRupees: number;
             /** Format: int32 */
             newCustomers: number;
-            /** Format: int64 */
-            outstandingPaise: number;
+            outstandingRupees: number;
             months: components["schemas"]["MonthFigures"][];
             ageing: components["schemas"]["AgeingBucket"][];
         };
@@ -3538,8 +3605,7 @@ export interface components {
             variantCount: number;
             /** Format: int64 */
             stockTotal: number;
-            /** Format: int32 */
-            minPricePaise: number | null;
+            minPriceRupees: number | null;
             /** Format: date-time */
             updatedAt: string;
         };
@@ -3549,18 +3615,15 @@ export interface components {
             /** @enum {string} */
             kind: "EARNED" | "ADVANCE" | "PAID";
             description: string;
-            /** Format: int64 */
-            amountPaise: number;
-            /** Format: int64 */
-            balancePaise: number;
+            amountRupees: number;
+            balanceRupees: number;
         };
         StaffStatement: {
             /** Format: int64 */
             staffId: number;
             name: string;
             entries: components["schemas"]["Entry"][];
-            /** Format: int64 */
-            balancePaise: number;
+            balanceRupees: number;
         };
         ProductionEntry: {
             /** Format: date-time */
@@ -3579,10 +3642,8 @@ export interface components {
             /** Format: int64 */
             stageId: number;
             stageName: string;
-            /** Format: int64 */
-            ratePaise: number;
-            /** Format: int64 */
-            amountPaise: number;
+            rateRupees: number;
+            amountRupees: number;
         };
         ProductionLedger: {
             /** Format: date */
@@ -3598,8 +3659,7 @@ export interface components {
             name: string;
             /** Format: int32 */
             pieces: number;
-            /** Format: int64 */
-            amountPaise: number;
+            amountRupees: number;
         };
         OrderPage: {
             items: components["schemas"]["OrderSummary"][];
@@ -3629,10 +3689,8 @@ export interface components {
             /** Format: int32 */
             itemCount: number;
             itemsLabel: string;
-            /** Format: int64 */
-            totalPaise: number;
-            /** Format: int64 */
-            balancePaise: number;
+            totalRupees: number;
+            balanceRupees: number;
             overdue: boolean;
         };
         Due: {
@@ -3647,22 +3705,17 @@ export interface components {
             clientPhone: string;
             /** Format: date */
             date: string;
-            /** Format: int64 */
-            totalPaise: number;
-            /** Format: int64 */
-            paidPaise: number;
-            /** Format: int64 */
-            duePaise: number;
+            totalRupees: number;
+            paidRupees: number;
+            dueRupees: number;
             /** Format: int32 */
             daysLate: number;
             handedOver: boolean;
             invoiceNumber: string | null;
         };
         Outstanding: {
-            /** Format: int64 */
-            totalPaise: number;
-            /** Format: int64 */
-            handedOverPaise: number;
+            totalRupees: number;
+            handedOverRupees: number;
             items: components["schemas"]["Due"][];
         };
         Ledger: {
@@ -3670,14 +3723,10 @@ export interface components {
             from: string;
             /** Format: date */
             to: string;
-            /** Format: int64 */
-            openingPaise: number;
-            /** Format: int64 */
-            inPaise: number;
-            /** Format: int64 */
-            outPaise: number;
-            /** Format: int64 */
-            closingPaise: number;
+            openingRupees: number;
+            inRupees: number;
+            outRupees: number;
+            closingRupees: number;
             byMode: components["schemas"]["ModeTotal"][];
             entries: components["schemas"]["LedgerEntry"][];
         };
@@ -3692,18 +3741,14 @@ export interface components {
             party: string | null;
             /** @enum {string} */
             mode: "CASH" | "UPI" | "CARD" | "BANK";
-            /** Format: int64 */
-            amountPaise: number;
-            /** Format: int64 */
-            balancePaise: number;
+            amountRupees: number;
+            balanceRupees: number;
         };
         ModeTotal: {
             /** @enum {string} */
             mode: "CASH" | "UPI" | "CARD" | "BANK";
-            /** Format: int64 */
-            inPaise: number;
-            /** Format: int64 */
-            outPaise: number;
+            inRupees: number;
+            outRupees: number;
         };
         InvoicePage: {
             items: components["schemas"]["InvoiceSummary"][];
@@ -3713,10 +3758,8 @@ export interface components {
             page: number;
             /** Format: int32 */
             pageSize: number;
-            /** Format: int64 */
-            totalPaise: number;
-            /** Format: int64 */
-            taxPaise: number;
+            totalRupees: number;
+            taxRupees: number;
         };
         InvoiceSummary: {
             /** Format: int64 */
@@ -3730,26 +3773,20 @@ export interface components {
             clientName: string;
             /** Format: date */
             issuedOn: string;
-            /** Format: int64 */
-            taxablePaise: number;
-            /** Format: int64 */
-            taxPaise: number;
-            /** Format: int64 */
-            totalPaise: number;
-            /** Format: int64 */
-            balancePaise: number;
+            taxableRupees: number;
+            taxRupees: number;
+            totalRupees: number;
+            balanceRupees: number;
             cancelled: boolean;
         };
         CategoryTotal: {
             /** @enum {string} */
             category: "RENT" | "SALARY" | "MATERIAL" | "UTILITIES" | "TRANSPORT" | "MAINTENANCE" | "MARKETING" | "OTHER";
-            /** Format: int64 */
-            amountPaise: number;
+            amountRupees: number;
         };
         ExpenseList: {
             items: components["schemas"]["Expense"][];
-            /** Format: int64 */
-            totalPaise: number;
+            totalRupees: number;
             byCategory: components["schemas"]["CategoryTotal"][];
         };
         ActivityEntry: {
@@ -3783,10 +3820,8 @@ export interface components {
             reason: string | null;
             /** @enum {string|null} */
             kind: "AMOUNT" | "PERCENT" | null;
-            /** Format: int64 */
-            value: number;
-            /** Format: int64 */
-            discountPaise: number;
+            value: number | null;
+            discountRupees: number;
         };
         ClientPage: {
             items: components["schemas"]["ClientSummary"][];
@@ -3838,10 +3873,8 @@ export interface components {
             itemCount: number;
             itemsLabel: string;
             paid: boolean;
-            /** Format: int64 */
-            totalPaise: number;
-            /** Format: int64 */
-            balancePaise: number;
+            totalRupees: number;
+            balanceRupees: number;
             overdue: boolean;
         };
         ActivityPage: {
@@ -5246,6 +5279,30 @@ export interface operations {
             };
         };
     };
+    razorpayWebhook: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Razorpay-Signature"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": string;
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     quoteBag: {
         parameters: {
             query?: never;
@@ -5266,6 +5323,56 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["BagQuote"];
+                };
+            };
+        };
+    };
+    confirmPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PaymentConfirmation"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebOrder"];
+                };
+            };
+        };
+    };
+    startCheckout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckoutRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CheckoutStart"];
                 };
             };
         };
@@ -7001,9 +7108,9 @@ export interface operations {
                 size?: string | null;
                 /** @description Only products with stock in the selected colour/size */
                 inStock?: boolean;
-                /** @description Minimum price in paise */
+                /** @description Minimum price in rupees */
                 priceMin?: number | null;
-                /** @description Maximum price in paise */
+                /** @description Maximum price in rupees */
                 priceMax?: number | null;
                 sort?: "popular" | "new" | "price_asc" | "price_desc" | "discount";
                 /** @description 1-based page number */
@@ -7046,6 +7153,48 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ProductListingResponse"];
+                };
+            };
+        };
+    };
+    listMyOrders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebOrder"][];
+                };
+            };
+        };
+    };
+    getMyOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebOrder"];
                 };
             };
         };
@@ -7330,6 +7479,26 @@ export interface operations {
             };
         };
     };
+    listOnlineOrders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebOrder"][];
+                };
+            };
+        };
+    };
     getOutstanding: {
         parameters: {
             query?: {
@@ -7468,7 +7637,7 @@ export interface operations {
         parameters: {
             query: {
                 code: string;
-                amountPaise: number;
+                amountRupees: number;
             };
             header?: never;
             path?: never;

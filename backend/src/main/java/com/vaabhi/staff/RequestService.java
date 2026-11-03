@@ -1,5 +1,7 @@
 package com.vaabhi.staff;
 
+import com.vaabhi.shared.rupees.Rupees;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -24,7 +26,7 @@ public class RequestService {
     static final int MAX_DAYS = 31;
 
     private static final String SELECT = """
-            SELECT r.id, r.staff_id, s.name AS staff_name, r.kind, r.from_date, r.to_date, r.hours, r.amount_paise,
+            SELECT r.id, r.staff_id, s.name AS staff_name, r.kind, r.from_date, r.to_date, r.hours, r.amount_rupees,
                    r.reason, r.status, r.requested_by, r.decided_by, r.decided_at, r.decision_note, r.recovered_month,
                    r.created_at
             FROM staff_request r JOIN staff_account s ON s.id = r.staff_id
@@ -85,11 +87,11 @@ public class RequestService {
         if (kind == StaffRequest.Kind.PERMISSION && form.hours() == null) {
             throw StaffService.bad("Say how many hours");
         }
-        if (kind == StaffRequest.Kind.ADVANCE && form.amountPaise() == null) {
+        if (kind == StaffRequest.Kind.ADVANCE && form.amountRupees() == null) {
             throw StaffService.bad("Say how much advance");
         }
         long id = jdbc.sql("""
-                        INSERT INTO staff_request (staff_id, kind, from_date, to_date, hours, amount_paise, reason,
+                        INSERT INTO staff_request (staff_id, kind, from_date, to_date, hours, amount_rupees, reason,
                             requested_by)
                         VALUES (:staff, :kind, :from, :to, :hours, :amount, :reason, :by) RETURNING id
                         """)
@@ -98,7 +100,7 @@ public class RequestService {
                 .param("from", form.fromDate())
                 .param("to", to)
                 .param("hours", kind == StaffRequest.Kind.PERMISSION ? form.hours() : null)
-                .param("amount", kind == StaffRequest.Kind.ADVANCE ? form.amountPaise() : null)
+                .param("amount", kind == StaffRequest.Kind.ADVANCE ? form.amountRupees() : null)
                 .param("reason", StaffService.blankToNull(form.reason()))
                 .param("by", actor)
                 .query(Long.class)
@@ -108,16 +110,16 @@ public class RequestService {
 
     /** Approved advances dated on or before {@code upTo} not yet taken back, per staff member. */
     @Transactional(readOnly = true)
-    public Map<Long, Long> unrecoveredAdvances(LocalDate upTo) {
+    public Map<Long, BigDecimal> unrecoveredAdvances(LocalDate upTo) {
         return jdbc
                 .sql("""
-                        SELECT staff_id, SUM(amount_paise) AS total FROM staff_request
+                        SELECT staff_id, SUM(amount_rupees) AS total FROM staff_request
                         WHERE kind = 'ADVANCE' AND status = 'APPROVED' AND recovered_month IS NULL
                           AND from_date <= :upTo
                         GROUP BY staff_id
                         """)
                 .param("upTo", upTo)
-                .query((rs, n) -> Map.entry(rs.getLong("staff_id"), rs.getLong("total")))
+                .query((rs, n) -> Map.entry(rs.getLong("staff_id"), Rupees.of(rs.getBigDecimal("total"))))
                 .list()
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));

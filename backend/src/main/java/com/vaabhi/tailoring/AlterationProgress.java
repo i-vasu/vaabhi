@@ -1,18 +1,23 @@
 package com.vaabhi.tailoring;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import org.jspecify.annotations.Nullable;
 
 /**
  * Move an alteration on. Alterations have no production stages: BOOKED → IN_PROGRESS → READY → DELIVERED, or
  * CANCELLED.
  *
- * @param collectPaise money taken now (usually on delivery); added to what was collected
+ * @param collectRupees money taken now (usually on delivery); added to what was collected
  * @param mode how it was paid; cash when not given
  */
 public record AlterationProgress(
         @NotNull OrderStatus status,
-        @Min(0) @Max(100_000_000) long collectPaise,
+
+        @DecimalMin("0") @DecimalMax("1000000") @Digits(integer = 7, fraction = 2)
+        BigDecimal collectRupees,
+
         @Nullable PaymentMode mode) {}

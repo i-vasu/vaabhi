@@ -139,9 +139,9 @@ class TailoringIT {
         var today = LocalDate.now();
         return send(post("/api/v1/admin/orders"), """
                 {"clientId":%d,"orderDate":"%s","deliveryDate":"%s","items":[
-                  {"templateId":%d,"description":"3 dart blouse","quantity":%d,"pricePaise":%d,
+                  {"templateId":%d,"description":"3 dart blouse","quantity":%d,"priceRupees":%d,
                    "measurements":{"bust":"34","waist":"28","not_a_field":"9"}}],
-                 "discountKind":"AMOUNT","discountValue":0,"advancePaise":0,"advanceMode":"CASH"%s}
+                 "discountKind":"AMOUNT","discountValue":0,"advanceRupees":0,"advanceMode":"CASH"%s}
                 """.formatted(
                         clientId, today, today.plusDays(7), templateId("Blouse"), quantity, priceEach, extra));
     }
@@ -223,20 +223,20 @@ class TailoringIT {
         var today = LocalDate.now();
         var result = send(post("/api/v1/admin/orders"), """
                         {"clientId":%d,"orderDate":"%s","deliveryDate":"%s","items":[
-                          {"templateId":%d,"description":"3 dart blouse","quantity":2,"pricePaise":50000,
+                          {"templateId":%d,"description":"3 dart blouse","quantity":2,"priceRupees":50000,
                            "measurements":{"bust":"34","not_a_field":"9"}},
-                          {"description":"Fall & pico","quantity":1,"pricePaise":10000}],
-                         "discountKind":"PERCENT","discountValue":1000,"couponCode":" ","advancePaise":30000,
+                          {"description":"Fall & pico","quantity":1,"priceRupees":10000}],
+                         "discountKind":"PERCENT","discountValue":1000,"couponCode":" ","advanceRupees":30000,
                          "advanceMode":"UPI","notes":"Wedding on the 20th"}
                         """.formatted(
                                 client, today, today.plusDays(10), templateId("Blouse")))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("BOOKED"))
-                .andExpect(jsonPath("$.itemsPaise").value(110000))
-                .andExpect(jsonPath("$.discountPaise").value(11000))
-                .andExpect(jsonPath("$.totalPaise").value(99000))
-                .andExpect(jsonPath("$.paidPaise").value(30000))
-                .andExpect(jsonPath("$.balancePaise").value(69000))
+                .andExpect(jsonPath("$.itemsRupees").value(110000))
+                .andExpect(jsonPath("$.discountRupees").value(11000))
+                .andExpect(jsonPath("$.totalRupees").value(99000))
+                .andExpect(jsonPath("$.paidRupees").value(30000))
+                .andExpect(jsonPath("$.balanceRupees").value(69000))
                 .andExpect(jsonPath("$.couponCode").doesNotExist())
                 .andExpect(jsonPath("$.items[0].measurements.bust").value("34"))
                 .andExpect(jsonPath("$.items[0].measurements.not_a_field").doesNotExist())
@@ -253,7 +253,7 @@ class TailoringIT {
                 .andExpect(jsonPath("$.items[0].itemsLabel").value("3 dart blouse, Fall & pico"));
         mockMvc.perform(get("/api/v1/admin/clients/" + client).with(OWNER))
                 .andExpect(jsonPath("$.orderCount").value(1))
-                .andExpect(jsonPath("$.outstandingPaise").value(69000));
+                .andExpect(jsonPath("$.outstandingRupees").value(69000));
         assertThat(events.stream(OrderEvent.class))
                 .anyMatch(e -> e.type() == OrderEvent.Type.PLACED && e.orderId() == orderId);
     }
@@ -261,19 +261,19 @@ class TailoringIT {
     @Test
     void rejectsImpossibleBookings() throws Exception {
         long client = createClient("Nisha");
-        bookBlouse(client, 50000, 1, ",\"advancePaise\":60000").andExpect(status().isBadRequest());
+        bookBlouse(client, 50000, 1, ",\"advanceRupees\":60000").andExpect(status().isBadRequest());
         bookBlouse(client, 50000, 1, ",\"discountKind\":\"PERCENT\",\"discountValue\":20000")
                 .andExpect(status().isBadRequest());
         var today = LocalDate.now();
         send(post("/api/v1/admin/orders"), """
                         {"clientId":%d,"orderDate":"%s","deliveryDate":"%s","items":[
-                          {"description":"Blouse","quantity":1,"pricePaise":100}],
-                         "discountKind":"AMOUNT","discountValue":0,"advancePaise":0,"advanceMode":"CASH"}
+                          {"description":"Blouse","quantity":1,"priceRupees":100}],
+                         "discountKind":"AMOUNT","discountValue":0,"advanceRupees":0,"advanceMode":"CASH"}
                         """.formatted(client, today, today.minusDays(1)))
                 .andExpect(status().isBadRequest());
         send(post("/api/v1/admin/orders"), """
                         {"clientId":%d,"orderDate":"%s","deliveryDate":"%s","items":[],
-                         "discountKind":"AMOUNT","discountValue":0,"advancePaise":0,"advanceMode":"CASH"}
+                         "discountKind":"AMOUNT","discountValue":0,"advanceRupees":0,"advanceMode":"CASH"}
                         """.formatted(client, today, today)).andExpect(status().isBadRequest());
     }
 
@@ -311,24 +311,24 @@ class TailoringIT {
         long orderId = ((Number) JsonPath.read(body(booked), "$.id")).longValue();
 
         send(post("/api/v1/admin/orders/" + orderId + "/payments"), """
-                        {"amountPaise":20000,"mode":"CASH","refund":false}
+                        {"amountRupees":20000,"mode":"CASH","refund":false}
                         """)
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.balancePaise").value(30000));
+                .andExpect(jsonPath("$.balanceRupees").value(30000));
         send(post("/api/v1/admin/orders/" + orderId + "/payments"), """
-                        {"amountPaise":30000,"mode":"CASH","refund":true}
+                        {"amountRupees":30000,"mode":"CASH","refund":true}
                         """).andExpect(status().isBadRequest());
         send(post("/api/v1/admin/orders/" + orderId + "/cancel"), "")
                 .andExpect(jsonPath("$.status").value("CANCELLED"));
         send(post("/api/v1/admin/orders/" + orderId + "/payments"), """
-                        {"amountPaise":100,"mode":"UPI","refund":false}
+                        {"amountRupees":100,"mode":"UPI","refund":false}
                         """).andExpect(status().isBadRequest());
         send(post("/api/v1/admin/orders/" + orderId + "/payments"), """
-                        {"amountPaise":20000,"mode":"UPI","refund":true,"note":"Cancelled"}
+                        {"amountRupees":20000,"mode":"UPI","refund":true,"note":"Cancelled"}
                         """)
-                .andExpect(jsonPath("$.paidPaise").value(0))
+                .andExpect(jsonPath("$.paidRupees").value(0))
                 .andExpect(jsonPath("$.payments[1].kind").value("REFUND"))
-                .andExpect(jsonPath("$.payments[1].amountPaise").value(-20000));
+                .andExpect(jsonPath("$.payments[1].amountRupees").value(-20000));
     }
 
     @Test
@@ -337,8 +337,8 @@ class TailoringIT {
         var today = LocalDate.now();
         var booked = send(post("/api/v1/admin/orders"), """
                         {"clientId":%d,"orderDate":"%s","deliveryDate":"%s","items":[
-                          {"description":"Kurti","quantity":1,"pricePaise":70000}],
-                         "discountKind":"AMOUNT","discountValue":0,"advancePaise":0,"advanceMode":"CASH"}
+                          {"description":"Kurti","quantity":1,"priceRupees":70000}],
+                         "discountKind":"AMOUNT","discountValue":0,"advanceRupees":0,"advanceMode":"CASH"}
                         """.formatted(client, today.minusDays(10), today.minusDays(2)))
                 .andExpect(status().isCreated());
         long orderId = ((Number) JsonPath.read(body(booked), "$.id")).longValue();
@@ -369,7 +369,7 @@ class TailoringIT {
                 .andExpect(status().isOk());
         String key = JsonPath.read(body(upload), "$.key");
         assertThat(key).startsWith("tailoring/cloth/");
-        var withPhoto = ",\"items\":[{\"description\":\"Blouse\",\"quantity\":1,\"pricePaise\":100,"
+        var withPhoto = ",\"items\":[{\"description\":\"Blouse\",\"quantity\":1,\"priceRupees\":100,"
                 + "\"clothPhotoKey\":\"" + key + "\"}]";
 
         bookBlouse(client, 100, 1, withPhoto).andExpect(status().isBadRequest());
@@ -384,18 +384,18 @@ class TailoringIT {
     @Test
     void priceListShowsProfitAndHidesRemovedProducts() throws Exception {
         var created = send(post("/api/v1/admin/service-products"), """
-                        {"templateId":%d,"name":"Padded blouse","pricePaise":90000,
-                         "stageCosts":[{"stageId":%d,"paise":20000},{"stageId":%d,"paise":0}]}
+                        {"templateId":%d,"name":"Padded blouse","priceRupees":90000,
+                         "stageCosts":[{"stageId":%d,"rupees":20000},{"stageId":%d,"rupees":0}]}
                         """.formatted(
                                 templateId("Blouse"), stageId("WORK"), stageId("WORK")))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.code").isNotEmpty())
-                .andExpect(jsonPath("$.profitPaise").value(70000))
+                .andExpect(jsonPath("$.profitRupees").value(70000))
                 .andExpect(jsonPath("$.stageCosts.length()").value(1));
         long id = ((Number) JsonPath.read(body(created), "$.id")).longValue();
 
         send(post("/api/v1/admin/service-products"), """
-                        {"templateId":%d,"name":"Bad","pricePaise":100,"stageCosts":[{"stageId":%d,"paise":10}]}
+                        {"templateId":%d,"name":"Bad","priceRupees":100,"stageCosts":[{"stageId":%d,"rupees":10}]}
                         """.formatted(templateId("Blouse"), stageId("READY")))
                 .andExpect(status().isBadRequest());
 
@@ -419,29 +419,33 @@ class TailoringIT {
         var created = send(post("/api/v1/admin/alterations"), """
                         {"clientId":%d,"readyBy":"%s","paid":true,"undertakingAccepted":true,"items":[
                           {"kind":"LENGTH","garment":"Silk saree blouse","instructions":"Shorten 1 inch",
-                           "costPaise":15000},
-                          {"kind":"REPAIR","garment":"Lehenga","costPaise":25000}]}
+                           "costRupees":15000},
+                          {"kind":"REPAIR","garment":"Lehenga","costRupees":25000}]}
                         """.formatted(
                                 client, LocalDate.now().plusDays(2)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("BOOKED"))
-                .andExpect(jsonPath("$.totalPaise").value(40000))
-                .andExpect(jsonPath("$.balancePaise").value(40000))
+                .andExpect(jsonPath("$.totalRupees").value(40000))
+                .andExpect(jsonPath("$.balanceRupees").value(40000))
                 .andExpect(jsonPath("$.undertaking").isNotEmpty())
                 .andExpect(jsonPath("$.items.length()").value(2));
         long id = ((Number) JsonPath.read(body(created), "$.id")).longValue();
 
-        send(post("/api/v1/admin/alterations/" + id + "/progress"), "{\"status\":\"READY\",\"collectPaise\":0}")
+        send(post("/api/v1/admin/alterations/" + id + "/progress"), "{\"status\":\"READY\",\"collectRupees\":0}")
                 .andExpect(jsonPath("$.status").value("READY"));
-        send(post("/api/v1/admin/alterations/" + id + "/progress"), "{\"status\":\"BOOKED\",\"collectPaise\":0}")
+        send(post("/api/v1/admin/alterations/" + id + "/progress"), "{\"status\":\"BOOKED\",\"collectRupees\":0}")
                 .andExpect(status().isBadRequest());
-        send(post("/api/v1/admin/alterations/" + id + "/progress"), "{\"status\":\"DELIVERED\",\"collectPaise\":50000}")
+        send(
+                        post("/api/v1/admin/alterations/" + id + "/progress"),
+                        "{\"status\":\"DELIVERED\",\"collectRupees\":50000}")
                 .andExpect(status().isBadRequest());
-        send(post("/api/v1/admin/alterations/" + id + "/progress"), "{\"status\":\"DELIVERED\",\"collectPaise\":40000}")
+        send(
+                        post("/api/v1/admin/alterations/" + id + "/progress"),
+                        "{\"status\":\"DELIVERED\",\"collectRupees\":40000}")
                 .andExpect(jsonPath("$.status").value("DELIVERED"))
-                .andExpect(jsonPath("$.balancePaise").value(0))
+                .andExpect(jsonPath("$.balanceRupees").value(0))
                 .andExpect(jsonPath("$.deliveredAt").exists());
-        send(post("/api/v1/admin/alterations/" + id + "/progress"), "{\"status\":\"CANCELLED\",\"collectPaise\":0}")
+        send(post("/api/v1/admin/alterations/" + id + "/progress"), "{\"status\":\"CANCELLED\",\"collectRupees\":0}")
                 .andExpect(status().isBadRequest());
 
         mockMvc.perform(get("/api/v1/admin/alterations")
@@ -466,7 +470,7 @@ class TailoringIT {
         long orderId = ((Number) JsonPath.read(body(order), "$.id")).longValue();
         var form = """
                 {"clientId":%d,"orderId":%d,"readyBy":"%s","paid":false,"undertakingAccepted":%s,"items":[
-                  {"kind":"FIT_ADJUSTMENT","garment":"3 dart blouse","costPaise":5000}]}
+                  {"kind":"FIT_ADJUSTMENT","garment":"3 dart blouse","costRupees":5000}]}
                 """;
         var readyBy = LocalDate.now().plusDays(1);
 
@@ -476,8 +480,8 @@ class TailoringIT {
                 .andExpect(status().isBadRequest());
         send(post("/api/v1/admin/alterations"), form.formatted(client, orderId, readyBy, true))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.totalPaise").value(0))
-                .andExpect(jsonPath("$.items[0].costPaise").value(0))
+                .andExpect(jsonPath("$.totalRupees").value(0))
+                .andExpect(jsonPath("$.items[0].costRupees").value(0))
                 .andExpect(jsonPath("$.orderId").value(orderId))
                 .andExpect(jsonPath("$.orderNumber").isNotEmpty());
     }

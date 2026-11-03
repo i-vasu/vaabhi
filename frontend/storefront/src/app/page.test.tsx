@@ -16,7 +16,7 @@ describe("HomePage", () => {
         featuredUrl = request.url;
         return HttpResponse.json([
           product({ slug: "emerald-kanjeevaram", name: "Emerald Kanjeevaram", badge: "BESTSELLER" }),
-          product({ slug: "ruby-banarasi", name: "Ruby Banarasi", pricePaise: 1249900, mrpPaise: 1599900 }),
+          product({ slug: "ruby-banarasi", name: "Ruby Banarasi", priceRupees: 1249900, mrpRupees: 1599900 }),
         ]);
       }),
     );

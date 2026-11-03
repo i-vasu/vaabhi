@@ -1,5 +1,6 @@
 package com.vaabhi.tailoring;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.jspecify.annotations.Nullable;
 
@@ -11,6 +12,6 @@ public record ClientSummary(
         @Nullable String photoKey,
         ClientForm.ClientType clientType,
         int orderCount,
-        long spentPaise,
-        long outstandingPaise,
+        BigDecimal spentRupees,
+        BigDecimal outstandingRupees,
         @Nullable LocalDate lastOrderDate) {}

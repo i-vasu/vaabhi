@@ -51,9 +51,9 @@ export default function PayrollPage() {
       ) : (
         <>
           <div className="mb-4 grid grid-cols-3 gap-3">
-            <StatTile label="Net pay" value={rupees(p.totalNetPaise)} />
-            <StatTile label="Paid" value={rupees(p.paidPaise)} tone="ok" />
-            <StatTile label="To pay" value={rupees(p.unpaidPaise)} tone={p.unpaidPaise > 0 ? "warn" : "default"} />
+            <StatTile label="Net pay" value={rupees(p.totalNetRupees)} />
+            <StatTile label="Paid" value={rupees(p.paidRupees)} tone="ok" />
+            <StatTile label="To pay" value={rupees(p.unpaidRupees)} tone={p.unpaidRupees > 0 ? "warn" : "default"} />
           </div>
           {!p.finalized ? (
             <p className="mb-4 text-sm text-ink-soft">
@@ -78,13 +78,13 @@ export default function PayrollPage() {
                         : `${slip.daysPaid} days paid${Number(slip.daysUnpaid) > 0 ? ` · ${slip.daysUnpaid} unpaid` : ""}`}
                     </span>
                   </span>
-                  <span className={`font-semibold tabular-nums ${slip.netPaise < 0 ? "text-bad" : ""}`}>
-                    {rupees(slip.netPaise)}
+                  <span className={`font-semibold tabular-nums ${slip.netRupees < 0 ? "text-bad" : ""}`}>
+                    {rupees(slip.netRupees)}
                   </span>
                   {slip.paidAt && <Pill tone="ok">Paid</Pill>}
                 </button>
                 {open === slip.staffId && <SlipDetails slip={slip} />}
-                {p.finalized && !slip.paidAt && slip.id && slip.netPaise > 0 && (
+                {p.finalized && !slip.paidAt && slip.id && slip.netRupees > 0 && (
                   <button type="button" className={`${buttonSecondary} mt-3`} onClick={() => setPaying(slip)}>
                     Pay {slip.name}
                   </button>
@@ -103,7 +103,7 @@ export default function PayrollPage() {
                 Finalise month
               </button>
             ) : (
-              p.paidPaise === 0 && (
+              p.paidRupees === 0 && (
                 <button
                   type="button"
                   className={buttonSecondary}
@@ -141,19 +141,19 @@ function SlipDetails({ slip }: { slip: Payslip }) {
     <dl aria-label={`Payslip of ${slip.name}`} className="mt-3 border-t border-line pt-3 text-sm">
       {slip.payType !== "PIECE" && (
         <AmountLine
-          label={slip.payType === "DAILY" ? `${slip.daysPaid} days × ${rupees(slip.ratePaise)}` : "Salary"}
-          value={rupees(slip.basePaise)}
+          label={slip.payType === "DAILY" ? `${slip.daysPaid} days × ${rupees(slip.rateRupees)}` : "Salary"}
+          value={rupees(slip.baseRupees)}
         />
       )}
-      {slip.payType === "PIECE" && <AmountLine label={`${slip.pieces} pieces`} value={rupees(slip.piecePaise)} />}
-      {slip.overtimePaise > 0 && (
-        <AmountLine label={`Overtime ${minutes(slip.overtimeMinutes)}`} value={`+ ${rupees(slip.overtimePaise)}`} />
+      {slip.payType === "PIECE" && <AmountLine label={`${slip.pieces} pieces`} value={rupees(slip.pieceRupees)} />}
+      {slip.overtimeRupees > 0 && (
+        <AmountLine label={`Overtime ${minutes(slip.overtimeMinutes)}`} value={`+ ${rupees(slip.overtimeRupees)}`} />
       )}
-      {slip.latePaise > 0 && (
-        <AmountLine label={`Late ${minutes(slip.lateMinutes)}`} value={`− ${rupees(slip.latePaise)}`} />
+      {slip.lateRupees > 0 && (
+        <AmountLine label={`Late ${minutes(slip.lateMinutes)}`} value={`− ${rupees(slip.lateRupees)}`} />
       )}
-      {slip.advancePaise > 0 && <AmountLine label="Advance taken back" value={`− ${rupees(slip.advancePaise)}`} />}
-      <AmountLine label="Net" value={rupees(slip.netPaise)} strong />
+      {slip.advanceRupees > 0 && <AmountLine label="Advance taken back" value={`− ${rupees(slip.advanceRupees)}`} />}
+      <AmountLine label="Net" value={rupees(slip.netRupees)} strong />
     </dl>
   );
 }
@@ -175,7 +175,7 @@ function PaySheet({
   return (
     <Sheet open title={`Pay ${slip.name}`} onClose={onClose}>
       <div className="flex flex-col gap-4">
-        <p>{rupees(slip.netPaise)} for the month. It is recorded as a salary expense in the ledger.</p>
+        <p>{rupees(slip.netRupees)} for the month. It is recorded as a salary expense in the ledger.</p>
         <SelectField label="Paid by" options={PAYMENT_MODES} value={mode} onChange={setMode} />
         <ErrorNote>{error}</ErrorNote>
         <button type="button" className={buttonPrimary} disabled={busy} onClick={() => void onPay(mode)}>

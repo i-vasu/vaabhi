@@ -1,15 +1,17 @@
 package com.vaabhi.catalog;
 
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
 import org.jspecify.annotations.Nullable;
 
 /**
  * A colour × size variant as the admin edits it. {@code sku} is generated when blank; {@code size} null means
- * one size. Prices are in paise.
+ * one size. Prices are in rupees.
  */
 public record VariantForm(
         @Nullable @Pattern(regexp = "^[A-Z0-9][A-Z0-9-]{0,63}$", message = "use capital letters, digits and dashes")
@@ -22,7 +24,7 @@ public record VariantForm(
 
         @NotBlank @Size(max = 30) String colourFamily,
         @Nullable @Size(max = 10) String size,
-        @Positive int pricePaise,
-        @Positive int mrpPaise,
+        @Positive @Digits(integer = 7, fraction = 2) BigDecimal priceRupees,
+        @Positive @Digits(integer = 7, fraction = 2) BigDecimal mrpRupees,
         @PositiveOrZero int stockQty,
         boolean active) {}

@@ -44,15 +44,15 @@ function AlterationSlip({ id }: { id: number }) {
           <div key={item.id} className="mb-2">
             <PaperLine
               label={`${item.garment} — ${ALTERATION_KINDS.find((k) => k.value === item.kind)?.label}`}
-              value={a.paid ? rupees(item.costPaise) : ""}
+              value={a.paid ? rupees(item.costRupees) : ""}
             />
             {item.instructions && <p className="text-black/70">{item.instructions}</p>}
           </div>
         ))}
       </div>
       <div className="border-t border-black/20 pt-2">
-        <PaperLine label="Charge" value={a.paid ? rupees(a.totalPaise) : "Free"} strong />
-        {a.paid && <PaperLine label="Due" value={rupees(a.balancePaise)} />}
+        <PaperLine label="Charge" value={a.paid ? rupees(a.totalRupees) : "Free"} strong />
+        {a.paid && <PaperLine label="Due" value={rupees(a.balanceRupees)} />}
       </div>
       <p className="mt-3 text-black/70">{a.undertaking}</p>
       {printing.showSignature && (

@@ -32,7 +32,7 @@ function Stock() {
   const [editing, setEditing] = useState<{ item: StockItem | null } | null>(null);
   const [moving, setMoving] = useState<StockItem | null>(null);
   const list = items.value ?? [];
-  const value = list.reduce((sum, i) => sum + i.valuePaise, 0);
+  const value = list.reduce((sum, i) => sum + i.valueRupees, 0);
 
   return (
     <section className="mx-auto max-w-3xl">
@@ -125,13 +125,13 @@ function ItemSheet({ item, onClose, onSaved }: { item: StockItem | null; onClose
   const [category, setCategory] = useState(item?.category ?? "");
   const [unit, setUnit] = useState<StockUnit>(item?.unit ?? "M");
   const [reorder, setReorder] = useState(item ? qty(item.reorderLevel) : "0");
-  const [cost, setCost] = useState(item ? String(item.costPaise / 100) : "");
+  const [cost, setCost] = useState(item ? String(item.costRupees) : "");
   const action = useAction();
 
   async function save() {
     if (!name.trim()) return action.setError("Enter the name.");
-    const costPaise = cost.trim() === "" ? 0 : parseRupees(cost);
-    if (costPaise === null || Number.isNaN(Number(reorder)))
+    const costRupees = cost.trim() === "" ? 0 : parseRupees(cost);
+    if (costRupees === null || Number.isNaN(Number(reorder)))
       return action.setError("Enter numbers for cost and reorder level.");
     const form: StockItemForm = {
       name: name.trim(),
@@ -139,7 +139,7 @@ function ItemSheet({ item, onClose, onSaved }: { item: StockItem | null; onClose
       category: category.trim() || null,
       unit,
       reorderLevel: Number(reorder || "0"),
-      costPaise,
+      costRupees,
     };
     const saved = await action.run(() => (item ? api.admin.stock.update(item.id, form) : api.admin.stock.create(form)));
     if (saved) onSaved();

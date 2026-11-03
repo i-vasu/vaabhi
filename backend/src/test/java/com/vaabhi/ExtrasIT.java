@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import com.vaabhi.shared.storage.ObjectStorage;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -114,15 +115,19 @@ class ExtrasIT {
                 .andExpect(status().isCreated()));
     }
 
-    private long order(long clientId, long pricePaise, String coupon) throws Exception {
+    private long order(long clientId, BigDecimal priceRupees, String coupon) throws Exception {
         var today = LocalDate.now();
         return id(send(post("/api/v1/admin/orders"), """
                         {"clientId":%d,"orderDate":"%s","deliveryDate":"%s","items":[
-                          {"description":"Blouse","quantity":1,"pricePaise":%d}],
-                         "discountKind":"AMOUNT","discountValue":0,"couponCode":%s,"advancePaise":0,
+                          {"description":"Blouse","quantity":1,"priceRupees":%d}],
+                         "discountKind":"AMOUNT","discountValue":0,"couponCode":%s,"advanceRupees":0,
                          "advanceMode":"CASH"}
                         """.formatted(
-                        clientId, today, today.plusDays(4), pricePaise, coupon == null ? "null" : "\"" + coupon + "\""))
+                                clientId,
+                                today,
+                                today.plusDays(4),
+                                priceRupees,
+                                coupon == null ? "null" : "\"" + coupon + "\""))
                 .andExpect(status().isCreated()));
     }
 
@@ -132,7 +137,7 @@ class ExtrasIT {
     void stockMovesKeepABalanceAndWarnWhenLow() throws Exception {
         var name = "Silk lining " + UNIQUE.incrementAndGet();
         long item = id(send(post("/api/v1/admin/stock"), """
-                        {"name":"%s","sku":null,"category":"Lining","unit":"M","reorderLevel":5,"costPaise":12000}
+                        {"name":"%s","sku":null,"category":"Lining","unit":"M","reorderLevel":5,"costRupees":12000}
                         """.formatted(name))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.onHand").value(0))
@@ -150,14 +155,14 @@ class ExtrasIT {
         mockMvc.perform(get("/api/v1/admin/stock/" + item).with(OWNER))
                 .andExpect(jsonPath("$.onHand").value(3.5))
                 .andExpect(jsonPath("$.low").value(true))
-                .andExpect(jsonPath("$.valuePaise").value(42000));
+                .andExpect(jsonPath("$.valueRupees").value(42000));
         mockMvc.perform(get("/api/v1/admin/stock").param("low", "true").with(OWNER))
                 .andExpect(jsonPath("$[?(@.id == " + item + ")]").exists());
         mockMvc.perform(get("/api/v1/admin/stock/" + item + "/movements").with(OWNER))
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].balance").value(3.5));
         send(post("/api/v1/admin/stock"), """
-                        {"name":"%s","sku":null,"category":null,"unit":"M","reorderLevel":0,"costPaise":0}
+                        {"name":"%s","sku":null,"category":null,"unit":"M","reorderLevel":0,"costRupees":0}
                         """.formatted(name.toUpperCase())).andExpect(status().isConflict());
         mockMvc.perform(get("/api/v1/admin/stock").with(COUNTER)).andExpect(status().isForbidden());
     }
@@ -168,7 +173,7 @@ class ExtrasIT {
     void couponsCheckLimitsAndCountUses() throws Exception {
         var code = "FLOW" + UNIQUE.incrementAndGet();
         send(post("/api/v1/admin/engage/coupons"), """
-                        {"code":"%s","description":"Ten off","kind":"PERCENT","value":1000,"minOrderPaise":50000,
+                        {"code":"%s","description":"Ten off","kind":"PERCENT","value":1000,"minOrderRupees":50000,
                          "validFrom":null,"validTo":null,"maxUses":1,"active":true}
                         """.formatted(code.toLowerCase()))
                 .andExpect(status().isCreated())
@@ -176,14 +181,14 @@ class ExtrasIT {
         // Counter staff (ORDERS) may check codes but not manage coupons.
         mockMvc.perform(get("/api/v1/admin/engage/coupons/check")
                         .param("code", code)
-                        .param("amountPaise", "80000")
+                        .param("amountRupees", "80000")
                         .with(COUNTER))
                 .andExpect(jsonPath("$.valid").value(true))
-                .andExpect(jsonPath("$.discountPaise").value(8000));
+                .andExpect(jsonPath("$.discountRupees").value(8000));
         mockMvc.perform(get("/api/v1/admin/engage/coupons").with(COUNTER)).andExpect(status().isForbidden());
         mockMvc.perform(get("/api/v1/admin/engage/coupons/check")
                         .param("code", code)
-                        .param("amountPaise", "10000")
+                        .param("amountRupees", "10000")
                         .with(OWNER))
                 .andExpect(jsonPath("$.valid").value(false))
                 .andExpect(jsonPath("$.reason").value("Needs an order of at least ₹500"));
@@ -191,14 +196,14 @@ class ExtrasIT {
         order(client("Coupon"), 80000, code.toLowerCase());
         mockMvc.perform(get("/api/v1/admin/engage/coupons/check")
                         .param("code", code)
-                        .param("amountPaise", "80000")
+                        .param("amountRupees", "80000")
                         .with(OWNER))
                 .andExpect(jsonPath("$.reason").value("This coupon has been used up"));
         mockMvc.perform(get("/api/v1/admin/engage/coupons").with(OWNER))
                 .andExpect(jsonPath("$[?(@.code == '" + code + "')].uses").value(1));
         mockMvc.perform(get("/api/v1/admin/engage/coupons/check")
                         .param("code", "NOPE")
-                        .param("amountPaise", "1")
+                        .param("amountRupees", "1")
                         .with(OWNER))
                 .andExpect(jsonPath("$.reason").value("No coupon with this code"));
     }
@@ -207,7 +212,7 @@ class ExtrasIT {
     void deliveredOrdersEarnPointsOnceAndPointsCanBeRedeemed() throws Exception {
         try {
             send(put("/api/v1/admin/engage/rewards/settings"), """
-                            {"enabled":true,"pointsPer100":2,"paisePerPoint":50}
+                            {"enabled":true,"pointsPer100":2,"rupeesPerPoint":50}
                             """)
                     .andExpect(jsonPath("$.enabled").value(true));
             long clientId = client("Points");
@@ -217,7 +222,7 @@ class ExtrasIT {
             mockMvc.perform(get("/api/v1/admin/engage/rewards/clients/" + clientId)
                             .with(COUNTER))
                     .andExpect(jsonPath("$.balance").value(24))
-                    .andExpect(jsonPath("$.valuePaise").value(1200))
+                    .andExpect(jsonPath("$.valueRupees").value(1200))
                     .andExpect(jsonPath("$.entries[0].kind").value("EARNED"));
             send(
                             post("/api/v1/admin/engage/rewards/clients/" + clientId),
@@ -233,7 +238,7 @@ class ExtrasIT {
                     .andExpect(status().isBadRequest());
         } finally {
             send(put("/api/v1/admin/engage/rewards/settings"), """
-                            {"enabled":false,"pointsPer100":1,"paisePerPoint":100}
+                            {"enabled":false,"pointsPer100":1,"rupeesPerPoint":100}
                             """).andExpect(status().isOk());
         }
     }
@@ -306,7 +311,7 @@ class ExtrasIT {
         long clientId = client("Feed");
         long orderId = order(clientId, 40_000, null);
         send(post("/api/v1/admin/orders/" + orderId + "/payments"), """
-                        {"amountPaise":10000,"mode":"UPI","refund":false,"note":null}
+                        {"amountRupees":10000,"mode":"UPI","refund":false,"note":null}
                         """).andExpect(status().isCreated());
 
         var feed = body(mockMvc.perform(get("/api/v1/admin/me/notifications").with(COUNTER)));

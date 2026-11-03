@@ -58,8 +58,8 @@ export default function InvoicesPage() {
       ) : (
         <>
           <div className="mb-4 grid grid-cols-2 gap-3">
-            <StatTile label="Billed" value={rupees(v.totalPaise)} />
-            <StatTile label="GST" value={rupees(v.taxPaise)} />
+            <StatTile label="Billed" value={rupees(v.totalRupees)} />
+            <StatTile label="GST" value={rupees(v.taxRupees)} />
           </div>
           {v.items.length === 0 ? (
             <EmptyState icon={DocumentIcon} title="No invoices">
@@ -77,14 +77,14 @@ export default function InvoicesPage() {
                         {invoice.number} · {invoice.clientName} {invoice.cancelled && <Pill tone="bad">Cancelled</Pill>}
                       </>
                     }
-                    subtitle={`${formatDate(invoice.issuedOn)} · ${invoice.orderNumber}${invoice.taxPaise > 0 ? ` · GST ${rupees(invoice.taxPaise)}` : ""}`}
+                    subtitle={`${formatDate(invoice.issuedOn)} · ${invoice.orderNumber}${invoice.taxRupees > 0 ? ` · GST ${rupees(invoice.taxRupees)}` : ""}`}
                     trailing={
                       <span>
                         <span className={invoice.cancelled ? "block line-through" : "block font-medium text-ink"}>
-                          {rupees(invoice.totalPaise)}
+                          {rupees(invoice.totalRupees)}
                         </span>
-                        {invoice.balancePaise > 0 && (
-                          <span className="block text-xs text-warn">{rupees(invoice.balancePaise)} due</span>
+                        {invoice.balanceRupees > 0 && (
+                          <span className="block text-xs text-warn">{rupees(invoice.balanceRupees)} due</span>
                         )}
                       </span>
                     }

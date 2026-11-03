@@ -83,7 +83,7 @@ export type AddonChoice = {
   code: string | null;
   name: string;
   description: string | null;
-  pricePaise: number;
+  priceRupees: number;
   input: ProductAddon["input"];
 };
 
@@ -96,15 +96,15 @@ export function addonChoices(product: ProductDetail): AddonChoice[] {
     code: a.code,
     name: a.name,
     description: a.description,
-    pricePaise: a.pricePaise,
+    priceRupees: a.priceRupees,
     input: a.input,
   }));
-  if (choices.length && !choices.some((c) => c.pricePaise === 0)) {
+  if (choices.length && !choices.some((c) => c.priceRupees === 0)) {
     choices.unshift({
       code: null,
       name: "Without blouse stitching",
       description: "Blouse fabric as supplied",
-      pricePaise: 0,
+      priceRupees: 0,
       input: "NONE",
     });
   }
@@ -112,7 +112,7 @@ export function addonChoices(product: ProductDetail): AddonChoice[] {
 }
 
 export function defaultChoice(choices: AddonChoice[]): AddonChoice | undefined {
-  return choices.find((c) => c.pricePaise === 0) ?? choices[0];
+  return choices.find((c) => c.priceRupees === 0) ?? choices[0];
 }
 
 /** "One size · 5.5 m saree with a 0.8 m blouse piece" for sarees; "One size" otherwise. */

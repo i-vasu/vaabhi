@@ -1,8 +1,8 @@
 package com.vaabhi.inventory;
 
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -14,7 +14,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @param onHand what is in stock now (sum of all movements)
  * @param low on hand is at or below the reorder level
- * @param valuePaise on hand × cost
+ * @param valueRupees on hand × cost
  */
 public record StockItem(
         long id,
@@ -23,10 +23,10 @@ public record StockItem(
         @Nullable String category,
         Unit unit,
         BigDecimal reorderLevel,
-        long costPaise,
+        BigDecimal costRupees,
         BigDecimal onHand,
         boolean low,
-        long valuePaise) {
+        BigDecimal valueRupees) {
 
     public enum Unit {
         PCS,
@@ -47,5 +47,7 @@ public record StockItem(
             @Nullable @Size(max = 40) String category,
             @NotNull Unit unit,
             @NotNull @DecimalMin("0") BigDecimal reorderLevel,
-            @Min(0) @Max(100_000_000) long costPaise) {}
+
+            @DecimalMin("0") @DecimalMax("1000000") @Digits(integer = 7, fraction = 2)
+            BigDecimal costRupees) {}
 }

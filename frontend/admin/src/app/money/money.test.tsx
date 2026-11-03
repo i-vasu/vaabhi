@@ -85,7 +85,7 @@ describe("expenses", () => {
     await waitFor(() =>
       expect(lastSent(sent, "POST", "/money/expenses")?.body).toMatchObject({
         description: "Thread",
-        amountPaise: 25000,
+        amountRupees: 25000,
         category: "MATERIAL",
         mode: "CASH",
         paidTo: null,

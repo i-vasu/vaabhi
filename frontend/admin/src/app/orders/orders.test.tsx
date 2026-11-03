@@ -58,9 +58,9 @@ describe("order form rules", () => {
     expect(formFromDraft(7, { ...draft, items: [ok] }).form).toMatchObject({
       clientId: 7,
       deliveryDate: "2026-11-09",
-      items: [{ description: "Blouse", pricePaise: 50000, quantity: 1, measurements: null }],
+      items: [{ description: "Blouse", priceRupees: 50000, quantity: 1, measurements: null }],
       discountValue: 0,
-      advancePaise: 0,
+      advanceRupees: 0,
     });
   });
 });
@@ -99,13 +99,13 @@ describe("new order", () => {
           serviceProductId: 11,
           description: "3 dart blouse",
           quantity: 2,
-          pricePaise: 50000,
+          priceRupees: 50000,
           measurements: { bust: "34", waist: "29" },
         },
       ],
       discountKind: "PERCENT",
       discountValue: 1000,
-      advancePaise: 30000,
+      advanceRupees: 30000,
       advanceMode: "CASH",
     });
   });
@@ -158,7 +158,7 @@ describe("order page", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Record payment" }));
     await waitFor(() =>
       expect(lastSent(sent, "POST", "/orders/42/payments")?.body).toEqual({
-        amountPaise: 69000,
+        amountRupees: 69000,
         mode: "UPI",
         refund: false,
         note: null,

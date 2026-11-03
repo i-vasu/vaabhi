@@ -35,7 +35,7 @@ class StoreBagControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"lines\":[{\"sku\":\"A\",\"addonCode\":null,\"quantity\":1}]}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalPaise").value(0));
+                .andExpect(jsonPath("$.totalRupees").value(0));
     }
 
     @Test

@@ -23,8 +23,8 @@ const line = {
   addonCode: "blouse-standard",
   addonName: "Stitched blouse",
   blouseSize: "36",
-  unitPricePaise: 100,
-  addonPricePaise: 20,
+  unitPriceRupees: 100,
+  addonPriceRupees: 20,
   imageKey: null,
 };
 

@@ -2,6 +2,7 @@ package com.vaabhi.tailoring;
 
 import com.vaabhi.settings.GarmentTemplate;
 import com.vaabhi.settings.ShopListService;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.LinkedHashMap;
@@ -51,8 +52,8 @@ public class ClientService {
     private static final String STATS = """
             SELECT c.id, c.first_name, c.last_name, c.phone, c.photo_key, c.client_type, c.created_at,
                    COUNT(o.id) AS order_count,
-                   COALESCE(SUM(o.total_paise), 0) AS spent_paise,
-                   COALESCE(SUM(GREATEST(o.total_paise - o.paid_paise, 0)), 0) AS outstanding_paise,
+                   COALESCE(SUM(o.total_rupees), 0) AS spent_rupees,
+                   COALESCE(SUM(GREATEST(o.total_rupees - o.paid_rupees, 0)), 0) AS outstanding_rupees,
                    MAX(o.order_date) AS last_order_date
             FROM client c
             LEFT JOIN shop_order o ON o.client_id = c.id AND o.status <> 'CANCELLED'
@@ -67,8 +68,8 @@ public class ClientService {
             ClientForm.ClientType clientType,
             OffsetDateTime createdAt,
             int orderCount,
-            long spentPaise,
-            long outstandingPaise,
+            BigDecimal spentRupees,
+            BigDecimal outstandingRupees,
             @Nullable LocalDate lastOrderDate) {
 
         ClientSummary summary() {
@@ -79,8 +80,8 @@ public class ClientService {
                     photoKey,
                     clientType,
                     orderCount,
-                    spentPaise,
-                    outstandingPaise,
+                    spentRupees,
+                    outstandingRupees,
                     lastOrderDate);
         }
     }
@@ -106,8 +107,8 @@ public class ClientService {
         var order = switch (sort) {
             case RECENT -> "COALESCE(MAX(o.order_date), c.created_at::date) DESC, c.id DESC";
             case NAME -> "lower(c.first_name), lower(c.last_name), c.id";
-            case VALUE -> "spent_paise DESC, c.id DESC";
-            case OWING -> "outstanding_paise DESC, c.id DESC";
+            case VALUE -> "spent_rupees DESC, c.id DESC";
+            case OWING -> "outstanding_rupees DESC, c.id DESC";
         };
         params.put("limit", pageSize);
         params.put("offset", (page - 1) * pageSize);
@@ -200,8 +201,8 @@ public class ClientService {
                 row.occasionDate(),
                 row.createdAt(),
                 stats.orderCount(),
-                stats.spentPaise(),
-                stats.outstandingPaise(),
+                stats.spentRupees(),
+                stats.outstandingRupees(),
                 measurements(id));
     }
 

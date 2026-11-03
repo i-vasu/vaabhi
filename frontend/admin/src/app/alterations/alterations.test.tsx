@@ -47,7 +47,7 @@ describe("new alteration", () => {
       clientId: 7,
       orderId: 42,
       paid: false,
-      items: [{ kind: "LENGTH", garment: "3 dart blouse", costPaise: 0 }],
+      items: [{ kind: "LENGTH", garment: "3 dart blouse", costRupees: 0 }],
       undertakingAccepted: true,
     });
   });
@@ -72,7 +72,7 @@ describe("new alteration", () => {
       expect(lastSent(sent, "POST", "/alterations")?.body).toMatchObject({
         paid: true,
         orderId: null,
-        items: [{ costPaise: 25000 }, { costPaise: 15000 }],
+        items: [{ costRupees: 25000 }, { costRupees: 15000 }],
       }),
     );
   });
@@ -93,7 +93,7 @@ describe("alteration page", () => {
     await waitFor(() =>
       expect(lastSent(sent, "POST", "/alterations/9/progress")?.body).toEqual({
         status: "DELIVERED",
-        collectPaise: 40000,
+        collectRupees: 40000,
         mode: "UPI",
       }),
     );
@@ -108,7 +108,7 @@ describe("alteration page", () => {
     await waitFor(() =>
       expect(lastSent(sent, "POST", "/alterations/9/progress")?.body).toEqual({
         status: "CANCELLED",
-        collectPaise: 0,
+        collectRupees: 0,
         mode: null,
       }),
     );

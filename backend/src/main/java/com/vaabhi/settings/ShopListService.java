@@ -94,7 +94,7 @@ public class ShopListService {
 
     @Transactional(readOnly = true)
     public List<DeliveryPackage> deliveryPackages() {
-        return jdbc.sql("SELECT id, name, price_paise, days FROM delivery_package WHERE active ORDER BY position, id")
+        return jdbc.sql("SELECT id, name, price_rupees, days FROM delivery_package WHERE active ORDER BY position, id")
                 .query(DeliveryPackage.class)
                 .list();
     }
@@ -106,20 +106,20 @@ public class ShopListService {
         for (int i = 0; i < packages.size(); i++) {
             var pkg = packages.get(i);
             if (pkg.id() != null && exists("delivery_package", pkg.id())) {
-                jdbc.sql("UPDATE delivery_package SET name = :name, price_paise = :price, days = :days,"
+                jdbc.sql("UPDATE delivery_package SET name = :name, price_rupees = :price, days = :days,"
                                 + " position = :position, active = TRUE WHERE id = :id")
                         .param(NAME, pkg.name().trim())
-                        .param("price", pkg.pricePaise())
+                        .param("price", pkg.priceRupees())
                         .param("days", pkg.days())
                         .param(POSITION, i + 1)
                         .param(ID, pkg.id())
                         .update();
                 keep.add(pkg.id());
             } else {
-                keep.add(jdbc.sql("INSERT INTO delivery_package (name, price_paise, days, position)"
+                keep.add(jdbc.sql("INSERT INTO delivery_package (name, price_rupees, days, position)"
                                 + " VALUES (:name, :price, :days, :position) RETURNING id")
                         .param(NAME, pkg.name().trim())
-                        .param("price", pkg.pricePaise())
+                        .param("price", pkg.priceRupees())
                         .param("days", pkg.days())
                         .param(POSITION, i + 1)
                         .query(Long.class)

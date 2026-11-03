@@ -49,6 +49,18 @@ vaabhi:
     secret-access-key: ${R2_SECRET_ACCESS_KEY:}
     bucket: ${R2_BUCKET:vaabhi-media}
 
+  # Online payments for storefront checkout (Razorpay dashboard → Settings → API Keys and → Webhooks).
+  # Without the keys, checkout answers 503 "Online payment is not set up".
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID:}
+    key-secret: ${RAZORPAY_KEY_SECRET:}
+    webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:}
+
+  # Storefront shipping: free from this order value (items, in rupees), otherwise the flat fee.
+  checkout:
+    free-shipping-from-rupees: ${FREE_SHIPPING_FROM_RUPEES:1999}
+    shipping-rupees: ${SHIPPING_RUPEES:99}
+
   # Customer sign-in. Without GOOGLE_CLIENT_ID, Google sign-in answers 503 (phone sign-in still works).
   auth:
     google-client-id: ${GOOGLE_CLIENT_ID:}

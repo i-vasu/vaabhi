@@ -10,12 +10,12 @@ import { rupees } from "@/lib/settings";
  */
 
 export const SERIES = [
-  { key: "bookedPaise", label: "Booked", color: "#3987e5" },
-  { key: "collectedPaise", label: "Collected", color: "#d95926" },
-  { key: "expensesPaise", label: "Spent", color: "#199e70" },
+  { key: "bookedRupees", label: "Booked", color: "#3987e5" },
+  { key: "collectedRupees", label: "Collected", color: "#d95926" },
+  { key: "expensesRupees", label: "Spent", color: "#199e70" },
 ] as const;
 
-type MonthRow = { month: string; bookedPaise: number; collectedPaise: number; expensesPaise: number };
+type MonthRow = { month: string; bookedRupees: number; collectedRupees: number; expensesRupees: number };
 
 const monthName = new Intl.DateTimeFormat("en-IN", { month: "short", timeZone: "UTC" });
 export const shortMonth = (month: string) => monthName.format(new Date(`${month}-01T00:00:00Z`));
@@ -114,24 +114,24 @@ export function MonthBars({ months }: { months: MonthRow[] }) {
 }
 
 /** Money owed by how late it is: one bar per bucket, label and amount in text beside it. */
-export function AgeingBars({ buckets }: { buckets: { label: string; count: number; paise: number }[] }) {
-  const most = Math.max(1, ...buckets.map((b) => b.paise));
+export function AgeingBars({ buckets }: { buckets: { label: string; count: number; rupees: number }[] }) {
+  const most = Math.max(1, ...buckets.map((b) => b.rupees));
   return (
     <figure className="rounded-2xl border border-line bg-panel p-4">
       <figcaption className="mb-3 font-medium">What customers owe, by how late</figcaption>
       <ul className="flex flex-col gap-3">
         {buckets.map((b) => (
-          <li key={b.label} title={`${b.label}: ${rupees(b.paise)} on ${b.count}`}>
+          <li key={b.label} title={`${b.label}: ${rupees(b.rupees)} on ${b.count}`}>
             <div className="mb-1 flex justify-between text-sm">
               <span className="text-ink-soft">{b.label}</span>
               <span className="tabular-nums text-ink">
-                {rupees(b.paise)} <span className="text-ink-faint">· {b.count}</span>
+                {rupees(b.rupees)} <span className="text-ink-faint">· {b.count}</span>
               </span>
             </div>
             <div className="h-2 rounded-full bg-panel-2" aria-hidden>
               <div
                 className="h-2 rounded-full"
-                style={{ width: `${(b.paise / most) * 100}%`, background: SERIES[0].color }}
+                style={{ width: `${(b.rupees / most) * 100}%`, background: SERIES[0].color }}
               />
             </div>
           </li>

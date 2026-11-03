@@ -1,7 +1,9 @@
 package com.vaabhi.engage;
 
+import com.vaabhi.shared.rupees.Rupees;
 import com.vaabhi.tailoring.ClientService;
 import com.vaabhi.tailoring.OrderEvent;
+import java.math.BigDecimal;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
@@ -25,7 +27,7 @@ public class RewardService {
     @Transactional(readOnly = true)
     public Rewards.RewardSettings settings() {
         return jdbc.sql(
-                        "SELECT enabled, points_per_100 AS points_per100, paise_per_point FROM reward_settings WHERE id = 1")
+                        "SELECT enabled, points_per_100 AS points_per100, rupees_per_point FROM reward_settings WHERE id = 1")
                 .query(Rewards.RewardSettings.class)
                 .single();
     }
@@ -34,18 +36,18 @@ public class RewardService {
     public Rewards.RewardSettings saveSettings(Rewards.RewardSettings settings) {
         jdbc.sql("""
                         UPDATE reward_settings SET enabled = :enabled, points_per_100 = :points,
-                            paise_per_point = :paise WHERE id = 1
+                            rupees_per_point = :rupees WHERE id = 1
                         """)
                 .param("enabled", settings.enabled())
                 .param("points", settings.pointsPer100())
-                .param("paise", settings.paisePerPoint())
+                .param("rupees", settings.rupeesPerPoint())
                 .update();
         return settings();
     }
 
     /** Points for an amount: whole ₹100s × points per ₹100. */
-    static int pointsFor(long amountPaise, int pointsPer100) {
-        return (int) (amountPaise / 10_000) * pointsPer100;
+    static int pointsFor(BigDecimal amountRupees, int pointsPer100) {
+        return amountRupees.divideToIntegralValue(BigDecimal.valueOf(100)).intValue() * pointsPer100;
     }
 
     @EventListener
@@ -58,7 +60,7 @@ public class RewardService {
             return;
         }
         var settings = settings();
-        int points = pointsFor(event.amountPaise(), settings.pointsPer100());
+        int points = pointsFor(event.amountRupees(), settings.pointsPer100());
         if (!settings.enabled() || points <= 0) {
             return;
         }
@@ -99,11 +101,12 @@ public class RewardService {
     }
 
     /**
-     * Redeems points on a new order and returns their value in paise; the order takes it off its total. Locks the
+     * Redeems points on a new order and returns their value in rupees; the order takes it off its total. Locks the
      * customer's points so two bookings cannot spend the same balance.
      */
     @Transactional
-    public long redeemOnOrder(long clientId, long orderId, String orderNumber, int points, @Nullable String actor) {
+    public BigDecimal redeemOnOrder(
+            long clientId, long orderId, String orderNumber, int points, @Nullable String actor) {
         var settings = settings();
         if (!settings.enabled()) {
             throw CouponService.bad("Loyalty points are switched off");
@@ -126,7 +129,7 @@ public class RewardService {
                 .param("note", "Order " + orderNumber)
                 .param("by", actor)
                 .update();
-        return (long) points * settings.paisePerPoint();
+        return Rupees.times(settings.rupeesPerPoint(), points);
     }
 
     private int balance(long clientId) {
@@ -150,7 +153,7 @@ public class RewardService {
                 .list();
         int balance = entries.stream().mapToInt(Rewards.RewardEntry::points).sum();
         return new Rewards.RewardAccount(
-                clientId, balance, (long) balance * settings().paisePerPoint(), entries);
+                clientId, balance, Rupees.times(settings().rupeesPerPoint(), balance), entries);
     }
 
     /**

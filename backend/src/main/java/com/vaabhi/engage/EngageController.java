@@ -1,6 +1,7 @@
 package com.vaabhi.engage;
 
 import jakarta.validation.Valid;
+import java.math.BigDecimal;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
@@ -54,10 +55,10 @@ class EngageController {
         return coupons.save(id, form);
     }
 
-    /** Whether a code applies to an order of {@code amountPaise} today. */
+    /** Whether a code applies to an order of {@code amountRupees} today. */
     @GetMapping("/coupons/check")
-    Coupon.CouponCheck checkCoupon(@RequestParam String code, @RequestParam long amountPaise) {
-        return coupons.check(code, amountPaise);
+    Coupon.CouponCheck checkCoupon(@RequestParam String code, @RequestParam BigDecimal amountRupees) {
+        return coupons.check(code, amountRupees);
     }
 
     @GetMapping("/rewards/settings")

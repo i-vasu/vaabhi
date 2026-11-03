@@ -92,7 +92,7 @@ describe("ProductEditor", () => {
       categorySlug: "sarees",
       sareeLengthM: 5.5,
       attributes: { fabric: ["silk"] },
-      variants: [{ colourName: "Ruby", colourFamily: "red", size: null, pricePaise: 1425000, stockQty: 4 }],
+      variants: [{ colourName: "Ruby", colourFamily: "red", size: null, priceRupees: 1425000, stockQty: 4 }],
     });
     expect(sent?.addons.map((a) => a.code)).toEqual(["blouse-unstitched", "blouse-standard", "blouse-custom"]);
   });
@@ -188,13 +188,13 @@ describe("ProductEditor", () => {
       http.get(`${PRODUCTS}/7`, () => HttpResponse.json(product({ media: MEDIA }))),
       http.put(`${PRODUCTS}/7`, async ({ request }) => {
         const form = (await request.json()) as ProductForm;
-        if (form.variants[0]!.mrpPaise < form.variants[0]!.pricePaise) {
+        if (form.variants[0]!.mrpRupees < form.variants[0]!.priceRupees) {
           return HttpResponse.json(
             {
               status: 400,
               detail: "MRP must be at least the selling price",
               errors: [
-                { field: "variants[0].mrpPaise", message: "MRP must be at least the selling price" },
+                { field: "variants[0].mrpRupees", message: "MRP must be at least the selling price" },
                 { field: "name", message: "Name is too long" },
               ],
             },
@@ -321,13 +321,13 @@ describe("ProductEditor", () => {
       blouseIncluded: false,
       blouseLengthM: null,
       attributes: {},
-      variants: [{ sku: "VB-RUBY-1", pricePaise: 1500000, active: false }],
+      variants: [{ sku: "VB-RUBY-1", priceRupees: 1500000, active: false }],
       addons: [
         {
           code: "fall-pico",
           name: "Fall and pico",
           description: "Done for you",
-          pricePaise: 25000,
+          priceRupees: 25000,
           input: "SIZE",
           active: false,
         },

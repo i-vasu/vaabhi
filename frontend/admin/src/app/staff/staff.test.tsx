@@ -60,7 +60,7 @@ describe("staff form rules", () => {
     );
     // Someone who can already sign in keeps their password when none is typed.
     expect(formFromDraft({ ...named, signIn: true, email: "r@v.in" }, true).form?.password).toBeNull();
-    expect(formFromDraft({ ...named, payType: "PIECE", salary: "500" }, false).form?.salaryPaise).toBe(0);
+    expect(formFromDraft({ ...named, payType: "PIECE", salary: "500" }, false).form?.salaryRupees).toBe(0);
   });
 
   it("formats minutes", () => {
@@ -95,8 +95,8 @@ describe("staff pages", () => {
       name: "Ravi Tailor",
       role: "STAFF",
       payType: "MONTHLY",
-      salaryPaise: 1500000,
-      hourlyPaise: 12000,
+      salaryRupees: 1500000,
+      hourlyRupees: 12000,
       email: "ravi@vaabhi.local",
       password: "a-long-password",
       weeklyOff: null,
@@ -179,10 +179,10 @@ describe("requests", () => {
     expect(requestFromDraft({ ...base, toDate: "2026-11-01" }).error).toBe("The last day is before the first.");
     expect(requestFromDraft({ ...base, kind: "PERMISSION", hours: "12" }).error).toBe("Permission is 0.5 to 8 hours.");
     expect(requestFromDraft({ ...base, kind: "ADVANCE" }).error).toBe("Enter the advance amount.");
-    expect(requestFromDraft(base).form).toMatchObject({ toDate: "2026-11-10", hours: null, amountPaise: null });
+    expect(requestFromDraft(base).form).toMatchObject({ toDate: "2026-11-10", hours: null, amountRupees: null });
     expect(requestFromDraft({ ...base, kind: "ADVANCE", amount: "2000" }).form).toMatchObject({
       toDate: null,
-      amountPaise: 200000,
+      amountRupees: 200000,
     });
   });
 
@@ -202,7 +202,7 @@ describe("requests", () => {
       expect(lastSent(sent, "POST", "/staff/requests")?.body).toMatchObject({
         staffId: 2,
         kind: "ADVANCE",
-        amountPaise: 150000,
+        amountRupees: 150000,
       }),
     );
   });

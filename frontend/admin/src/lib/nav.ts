@@ -317,7 +317,15 @@ export const moreSections: { title: string; items: NavItem[] }[] = [
   },
   {
     title: "Catalogue",
-    items: [products],
+    items: [
+      products,
+      {
+        href: "/online-orders/",
+        label: "Online orders",
+        icon: BagIcon,
+        description: "Orders placed and paid on the website",
+      },
+    ],
   },
   {
     title: "Updates",

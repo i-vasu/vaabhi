@@ -3,6 +3,7 @@ package com.vaabhi.money;
 import com.vaabhi.settings.NumberSequence;
 import com.vaabhi.settings.NumberingService;
 import com.vaabhi.settings.SettingsService;
+import com.vaabhi.shared.rupees.Rupees;
 import com.vaabhi.tailoring.ClientService;
 import com.vaabhi.tailoring.Order;
 import com.vaabhi.tailoring.OrderEvent;
@@ -62,32 +63,28 @@ public class InvoiceService {
     // --- GST ----------------------------------------------------------------------------------------------------
 
     /** Taxable value, CGST, SGST and what the customer pays, for an amount at a GST rate (percent). */
-    record Tax(long taxablePaise, long cgstPaise, long sgstPaise, long totalPaise) {}
+    record Tax(BigDecimal taxableRupees, BigDecimal cgstRupees, BigDecimal sgstRupees, BigDecimal totalRupees) {}
 
     /**
-     * Splits {@code amountPaise} into taxable value and GST. When prices include tax the amount stays what the
+     * Splits {@code amountRupees} into taxable value and GST. When prices include tax the amount stays what the
      * customer pays; otherwise GST is added on top. The tax is halved into CGST and SGST (SGST takes the odd paisa).
      */
-    static Tax tax(long amountPaise, BigDecimal ratePercent, boolean pricesIncludeTax) {
+    static Tax tax(BigDecimal amountRupees, BigDecimal ratePercent, boolean pricesIncludeTax) {
+        var amount = Rupees.of(amountRupees);
         if (ratePercent.signum() == 0) {
-            return new Tax(amountPaise, 0, 0, amountPaise);
+            return new Tax(amount, Rupees.ZERO, Rupees.ZERO, amount);
         }
-        var amount = BigDecimal.valueOf(amountPaise);
-        long taxable;
-        long gst;
+        BigDecimal taxable;
+        BigDecimal gst;
         if (pricesIncludeTax) {
-            taxable = amount.multiply(HUNDRED)
-                    .divide(HUNDRED.add(ratePercent), 0, RoundingMode.HALF_UP)
-                    .longValueExact();
-            gst = amountPaise - taxable;
+            taxable = amount.multiply(HUNDRED).divide(HUNDRED.add(ratePercent), Rupees.SCALE, RoundingMode.HALF_UP);
+            gst = amount.subtract(taxable);
         } else {
-            taxable = amountPaise;
-            gst = amount.multiply(ratePercent)
-                    .divide(HUNDRED, 0, RoundingMode.HALF_UP)
-                    .longValueExact();
+            taxable = amount;
+            gst = Rupees.percentOf(amount, ratePercent);
         }
-        long cgst = gst / 2;
-        return new Tax(taxable, cgst, gst - cgst, taxable + gst);
+        var cgst = gst.divide(BigDecimal.valueOf(2), Rupees.SCALE, RoundingMode.DOWN);
+        return new Tax(taxable, cgst, gst.subtract(cgst), taxable.add(gst));
     }
 
     // --- issuing ------------------------------------------------------------------------------------------------
@@ -103,11 +100,11 @@ public class InvoiceService {
         }
         var billing = settings.billing();
         var rate = billing.gstApplies() ? billing.defaultGstRate() : BigDecimal.ZERO;
-        var tax = tax(order.totalPaise(), rate, billing.pricesIncludeTax());
+        var tax = tax(order.totalRupees(), rate, billing.pricesIncludeTax());
         var number = numbering.next(NumberSequence.Kind.INVOICE);
         long id = jdbc.sql("""
-                        INSERT INTO invoice (number, order_id, client_id, issued_on, order_total_paise, gst_rate,
-                            prices_include_tax, taxable_paise, cgst_paise, sgst_paise, total_paise, shop_gstin,
+                        INSERT INTO invoice (number, order_id, client_id, issued_on, order_total_rupees, gst_rate,
+                            prices_include_tax, taxable_rupees, cgst_rupees, sgst_rupees, total_rupees, shop_gstin,
                             client_gstin, created_by)
                         VALUES (:number, :order, :client, :issuedOn, :orderTotal, :rate, :inclusive, :taxable, :cgst,
                             :sgst, :total, :shopGstin, :clientGstin, :by)
@@ -117,13 +114,13 @@ public class InvoiceService {
                 .param("order", orderId)
                 .param("client", order.client().id())
                 .param("issuedOn", LocalDate.now(clock))
-                .param("orderTotal", order.totalPaise())
+                .param("orderTotal", order.totalRupees())
                 .param("rate", rate)
                 .param("inclusive", billing.pricesIncludeTax())
-                .param("taxable", tax.taxablePaise())
-                .param("cgst", tax.cgstPaise())
-                .param("sgst", tax.sgstPaise())
-                .param("total", tax.totalPaise())
+                .param("taxable", tax.taxableRupees())
+                .param("cgst", tax.cgstRupees())
+                .param("sgst", tax.sgstRupees())
+                .param("total", tax.totalRupees())
                 .param("shopGstin", billing.gstApplies() ? billing.gstin() : null)
                 .param("clientGstin", clients.get(order.client().id()).gstin())
                 .param("by", actor)
@@ -132,16 +129,16 @@ public class InvoiceService {
         int position = 0;
         for (var line : lines(order)) {
             jdbc.sql("""
-                            INSERT INTO invoice_line (invoice_id, position, description, quantity, unit_paise,
-                                amount_paise)
+                            INSERT INTO invoice_line (invoice_id, position, description, quantity, unit_rupees,
+                                amount_rupees)
                             VALUES (:invoice, :position, :description, :quantity, :unit, :amount)
                             """)
                     .param("invoice", id)
                     .param("position", ++position)
                     .param("description", line.description())
                     .param("quantity", line.quantity())
-                    .param("unit", line.unitPaise())
-                    .param("amount", line.amountPaise())
+                    .param("unit", line.unitRupees())
+                    .param("amount", line.amountRupees())
                     .update();
         }
         return get(id);
@@ -155,11 +152,11 @@ public class InvoiceService {
             lines.add(new InvoiceLine(
                     description.length() > 160 ? description.substring(0, 160) : description,
                     item.quantity(),
-                    item.pricePaise(),
-                    item.pricePaise() * item.quantity()));
+                    item.priceRupees(),
+                    Rupees.times(item.priceRupees(), item.quantity())));
         }
-        if (order.deliveryChargePaise() > 0) {
-            lines.add(new InvoiceLine("Delivery", 1, order.deliveryChargePaise(), order.deliveryChargePaise()));
+        if (order.deliveryChargeRupees().signum() > 0) {
+            lines.add(new InvoiceLine("Delivery", 1, order.deliveryChargeRupees(), order.deliveryChargeRupees()));
         }
         return lines;
     }
@@ -173,7 +170,8 @@ public class InvoiceService {
             issue(event.orderId(), event.actor());
         } else if (event.type() == OrderEvent.Type.CANCELLED) {
             liveInvoiceId(event.orderId()).ifPresent(id -> cancel(id, event.actor()));
-        } else if (event.type() == OrderEvent.Type.CHANGED && liveInvoiceId(event.orderId()).isPresent()) {
+        } else if (event.type() == OrderEvent.Type.CHANGED
+                && liveInvoiceId(event.orderId()).isPresent()) {
             // An issued invoice is a tax record: the order cannot change under it (this rolls the change back).
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT, "This order has an invoice; cancel the invoice before changing the order");
@@ -215,14 +213,14 @@ public class InvoiceService {
             String orderNumber,
             long clientId,
             LocalDate issuedOn,
-            long orderTotalPaise,
+            BigDecimal orderTotalRupees,
             BigDecimal gstRate,
             boolean pricesIncludeTax,
-            long taxablePaise,
-            long cgstPaise,
-            long sgstPaise,
-            long totalPaise,
-            long paidPaise,
+            BigDecimal taxableRupees,
+            BigDecimal cgstRupees,
+            BigDecimal sgstRupees,
+            BigDecimal totalRupees,
+            BigDecimal paidRupees,
             @Nullable String shopGstin,
             @Nullable String clientGstin,
             @Nullable String createdBy,
@@ -234,8 +232,8 @@ public class InvoiceService {
     public Invoice get(long id) {
         var row = jdbc.sql("""
                         SELECT v.id, v.number, v.order_id, o.number AS order_number, v.client_id, v.issued_on,
-                               v.order_total_paise, v.gst_rate, v.prices_include_tax, v.taxable_paise, v.cgst_paise,
-                               v.sgst_paise, v.total_paise, o.paid_paise, v.shop_gstin, v.client_gstin, v.created_by,
+                               v.order_total_rupees, v.gst_rate, v.prices_include_tax, v.taxable_rupees, v.cgst_rupees,
+                               v.sgst_rupees, v.total_rupees, o.paid_rupees, v.shop_gstin, v.client_gstin, v.created_by,
                                v.created_at, v.cancelled_at, v.cancelled_by
                         FROM invoice v JOIN shop_order o ON o.id = v.order_id
                         WHERE v.id = :id
@@ -245,10 +243,10 @@ public class InvoiceService {
                 .optional()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
         var lines = jdbc.sql("""
-                        SELECT description, quantity, unit_paise, amount_paise FROM invoice_line
+                        SELECT description, quantity, unit_rupees, amount_rupees FROM invoice_line
                         WHERE invoice_id = :id ORDER BY position
                         """).param(ID, id).query(InvoiceLine.class).list();
-        long linesPaise = lines.stream().mapToLong(InvoiceLine::amountPaise).sum();
+        var linesRupees = Rupees.sum(lines, InvoiceLine::amountRupees);
         return new Invoice(
                 row.id(),
                 row.number(),
@@ -257,16 +255,16 @@ public class InvoiceService {
                 clients.summary(row.clientId()),
                 row.issuedOn(),
                 lines,
-                linesPaise - row.orderTotalPaise(),
-                row.orderTotalPaise(),
+                linesRupees.subtract(row.orderTotalRupees()),
+                row.orderTotalRupees(),
                 row.gstRate(),
                 row.pricesIncludeTax(),
-                row.taxablePaise(),
-                row.cgstPaise(),
-                row.sgstPaise(),
-                row.totalPaise(),
-                row.paidPaise(),
-                row.totalPaise() - row.paidPaise(),
+                row.taxableRupees(),
+                row.cgstRupees(),
+                row.sgstRupees(),
+                row.totalRupees(),
+                row.paidRupees(),
+                row.totalRupees().subtract(row.paidRupees()),
                 row.shopGstin(),
                 row.clientGstin(),
                 row.createdBy(),
@@ -284,11 +282,13 @@ public class InvoiceService {
             String firstName,
             @Nullable String lastName,
             LocalDate issuedOn,
-            long taxablePaise,
-            long taxPaise,
-            long totalPaise,
-            long paidPaise,
+            BigDecimal taxableRupees,
+            BigDecimal taxRupees,
+            BigDecimal totalRupees,
+            BigDecimal paidRupees,
             boolean cancelled) {}
+
+    private record RegisterTotals(long count, BigDecimal total, BigDecimal tax) {}
 
     /** The invoice register, newest first, with totals of the live invoices that match. */
     @Transactional(readOnly = true)
@@ -307,19 +307,20 @@ public class InvoiceService {
                 """;
         var totals = jdbc.sql("""
                         SELECT COUNT(*) AS n,
-                               COALESCE(SUM(v.total_paise) FILTER (WHERE v.cancelled_at IS NULL), 0) AS total,
-                               COALESCE(SUM(v.cgst_paise + v.sgst_paise) FILTER (WHERE v.cancelled_at IS NULL), 0) AS tax
+                               COALESCE(SUM(v.total_rupees) FILTER (WHERE v.cancelled_at IS NULL), 0) AS total,
+                               COALESCE(SUM(v.cgst_rupees + v.sgst_rupees) FILTER (WHERE v.cancelled_at IS NULL), 0) AS tax
                         """ + where)
                 .params(params)
-                .query((rs, n) -> new long[] {rs.getLong("n"), rs.getLong("total"), rs.getLong("tax")})
+                .query((rs, n) ->
+                        new RegisterTotals(rs.getLong("n"), rs.getBigDecimal("total"), rs.getBigDecimal("tax")))
                 .single();
         params.put("limit", pageSize);
         params.put("offset", (page - 1) * pageSize);
         var items = jdbc
                 .sql("""
                         SELECT v.id, v.number, v.order_id, o.number AS order_number, v.client_id, c.first_name,
-                               c.last_name, v.issued_on, v.taxable_paise, v.cgst_paise + v.sgst_paise AS tax_paise,
-                               v.total_paise, o.paid_paise, v.cancelled_at IS NOT NULL AS cancelled
+                               c.last_name, v.issued_on, v.taxable_rupees, v.cgst_rupees + v.sgst_rupees AS tax_rupees,
+                               v.total_rupees, o.paid_rupees, v.cancelled_at IS NOT NULL AS cancelled
                         """ + where + " ORDER BY v.issued_on DESC, v.id DESC LIMIT :limit OFFSET :offset")
                 .params(params)
                 .query(SummaryRow.class)
@@ -335,13 +336,14 @@ public class InvoiceService {
                                 ? row.firstName()
                                 : row.firstName() + " " + row.lastName(),
                         row.issuedOn(),
-                        row.taxablePaise(),
-                        row.taxPaise(),
-                        row.totalPaise(),
-                        row.cancelled() ? 0 : row.totalPaise() - row.paidPaise(),
+                        row.taxableRupees(),
+                        row.taxRupees(),
+                        row.totalRupees(),
+                        row.cancelled() ? Rupees.ZERO : row.totalRupees().subtract(row.paidRupees()),
                         row.cancelled()))
                 .toList();
-        return new InvoicePage(items, totals[0], page, pageSize, totals[1], totals[2]);
+        return new InvoicePage(
+                items, totals.count(), page, pageSize, Rupees.of(totals.total()), Rupees.of(totals.tax()));
     }
 
     /** Case-insensitive "contains" pattern with LIKE wildcards escaped; null for no filter. */

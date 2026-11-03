@@ -1,5 +1,6 @@
 package com.vaabhi.tailoring;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.jspecify.annotations.Nullable;
 
@@ -20,6 +21,6 @@ public record OrderSummary(
         @Nullable LocalDate trialDate,
         int itemCount,
         String itemsLabel,
-        long totalPaise,
-        long balancePaise,
+        BigDecimal totalRupees,
+        BigDecimal balanceRupees,
         boolean overdue) {}

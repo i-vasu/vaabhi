@@ -1,5 +1,6 @@
 package com.vaabhi.payroll;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -8,12 +9,12 @@ import java.util.List;
  * frozen payslips.
  *
  * @param month first day of the month
- * @param unpaidPaise net still to pay on finalised payslips
+ * @param unpaidRupees net still to pay on finalised payslips
  */
 public record PayrollMonth(
         LocalDate month,
         boolean finalized,
         List<Payslip> slips,
-        long totalNetPaise,
-        long paidPaise,
-        long unpaidPaise) {}
+        BigDecimal totalNetRupees,
+        BigDecimal paidRupees,
+        BigDecimal unpaidRupees) {}

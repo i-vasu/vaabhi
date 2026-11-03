@@ -1,18 +1,21 @@
 package com.vaabhi.engage;
 
-import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.jspecify.annotations.Nullable;
 
 /**
  * A discount code.
  *
- * @param value paise for AMOUNT, basis points (10 % = 1000) for PERCENT
+ * @param value rupees for AMOUNT, percent for PERCENT (10.5 = 10.5 %)
  * @param uses orders (not cancelled) booked with this code
  */
 public record Coupon(
@@ -20,8 +23,8 @@ public record Coupon(
         String code,
         @Nullable String description,
         Kind kind,
-        long value,
-        long minOrderPaise,
+        BigDecimal value,
+        BigDecimal minOrderRupees,
         @Nullable LocalDate validFrom,
         @Nullable LocalDate validTo,
         @Nullable Integer maxUses,
@@ -40,8 +43,13 @@ public record Coupon(
 
             @Nullable @Size(max = 200) String description,
             @NotNull Kind kind,
-            @Min(1) @Max(100_000_000) long value,
-            @Min(0) @Max(100_000_000) long minOrderPaise,
+
+            @DecimalMin("0.01") @DecimalMax("1000000") @Digits(integer = 7, fraction = 2)
+            BigDecimal value,
+
+            @DecimalMin("0") @DecimalMax("1000000") @Digits(integer = 7, fraction = 2)
+            BigDecimal minOrderRupees,
+
             @Nullable LocalDate validFrom,
             @Nullable LocalDate validTo,
             @Nullable @Min(1) Integer maxUses,
@@ -51,13 +59,13 @@ public record Coupon(
      * Whether a code can be used on an order now.
      *
      * @param reason why not, when it cannot
-     * @param discountPaise what it takes off {@code amountPaise}
+     * @param discountRupees what it takes off {@code amountRupees}
      */
     public record CouponCheck(
             String code,
             boolean valid,
             @Nullable String reason,
             @Nullable Kind kind,
-            long value,
-            long discountPaise) {}
+            @Nullable BigDecimal value,
+            BigDecimal discountRupees) {}
 }

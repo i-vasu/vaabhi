@@ -16,7 +16,7 @@ import {
 import type { Tone } from "@/components/ui";
 import { api } from "./api";
 import { resizeToWebp, type Rendition } from "./image-resize";
-import { describeError } from "./settings";
+import { describeError, roundRupees } from "./settings";
 
 // --- labels ---------------------------------------------------------------------------------------------------
 
@@ -89,34 +89,39 @@ export function formatPhone(phone: string): string {
 
 // --- money ----------------------------------------------------------------------------------------------------
 
-export type Totals = { itemsPaise: number; deliveryPaise: number; discountPaise: number; totalPaise: number };
+export type Totals = { itemsRupees: number; deliveryRupees: number; discountRupees: number; totalRupees: number };
 
 /**
  * The same sums the API makes when it books an order, so the form shows the total that will be saved.
- * `discountValue` is paise for AMOUNT and basis points (10 % = 1000) for PERCENT.
+ * `discountValue` is rupees for AMOUNT and percent for PERCENT (10.5 = 10.5 %).
  */
 export function orderTotals(
-  items: { pricePaise: number; quantity: number }[],
-  deliveryPaise: number,
+  items: { priceRupees: number; quantity: number }[],
+  deliveryRupees: number,
   kind: DiscountKind,
   discountValue: number,
   base: BillingSettings["discountAppliesTo"],
 ): Totals {
-  const itemsPaise = items.reduce((sum, item) => sum + item.pricePaise * item.quantity, 0);
-  const discountBase = base === "ORDER_TOTAL" ? itemsPaise + deliveryPaise : itemsPaise;
-  const discountPaise =
+  const itemsRupees = roundRupees(items.reduce((sum, item) => sum + item.priceRupees * item.quantity, 0));
+  const discountBase = roundRupees(base === "ORDER_TOTAL" ? itemsRupees + deliveryRupees : itemsRupees);
+  const discountRupees =
     kind === "PERCENT"
-      ? Math.round((discountBase * Math.min(discountValue, 10_000)) / 10_000)
+      ? roundRupees((discountBase * Math.min(discountValue, 100)) / 100)
       : Math.min(discountValue, discountBase);
-  return { itemsPaise, deliveryPaise, discountPaise, totalPaise: itemsPaise + deliveryPaise - discountPaise };
+  return {
+    itemsRupees,
+    deliveryRupees,
+    discountRupees,
+    totalRupees: roundRupees(itemsRupees + deliveryRupees - discountRupees),
+  };
 }
 
-/** "12.5" (percent typed by a person) → 1250 basis points, or null. */
+/** "12.5" (percent typed by a person) → 12.5, or null. */
 export function parsePercent(text: string): number | null {
   const cleaned = text.replace(/[%\s]/g, "");
   if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) return null;
-  const value = Math.round(Number(cleaned) * 100);
-  return value <= 10_000 ? value : null;
+  const value = Number(cleaned);
+  return value <= 100 ? value : null;
 }
 
 // --- photos ---------------------------------------------------------------------------------------------------
@@ -208,8 +213,8 @@ export function summaryOf(client: Client): ClientSummary {
     photoKey: client.photoKey,
     clientType: client.clientType,
     orderCount: client.orderCount,
-    spentPaise: client.spentPaise,
-    outstandingPaise: client.outstandingPaise,
+    spentRupees: client.spentRupees,
+    outstandingRupees: client.outstandingRupees,
     lastOrderDate: null,
   };
 }

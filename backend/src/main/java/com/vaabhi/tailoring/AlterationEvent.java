@@ -1,11 +1,12 @@
 package com.vaabhi.tailoring;
 
+import java.math.BigDecimal;
 import org.jspecify.annotations.Nullable;
 
 /**
  * Something happened to an alteration. Notifications, money and the activity log listen.
  *
- * @param amountPaise the amount collected for PAYMENT_RECEIVED, otherwise the alteration total
+ * @param amountRupees the amount collected for PAYMENT_RECEIVED, otherwise the alteration total
  */
 public record AlterationEvent(
         Type type,
@@ -13,7 +14,7 @@ public record AlterationEvent(
         String number,
         long clientId,
         String clientName,
-        long amountPaise,
+        BigDecimal amountRupees,
         @Nullable String actor) {
     public enum Type {
         BOOKED,

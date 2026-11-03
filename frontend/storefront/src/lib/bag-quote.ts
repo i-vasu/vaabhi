@@ -28,6 +28,6 @@ export function bagStitchingDays(quote: BagQuote | null): { min: number; max: nu
 /** True when the shop's price for the line moved since it was added. */
 export function priceChanged(local: BagLine, quoted: BagQuoteLine | undefined): boolean {
   return (
-    isBuyable(quoted) && quoted!.pricePaise + quoted!.addonPricePaise !== local.unitPricePaise + local.addonPricePaise
+    isBuyable(quoted) && quoted!.priceRupees + quoted!.addonPriceRupees !== local.unitPriceRupees + local.addonPriceRupees
   );
 }

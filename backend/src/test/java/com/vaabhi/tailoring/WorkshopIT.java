@@ -92,8 +92,8 @@ class WorkshopIT {
         var today = LocalDate.now();
         var order = send(post("/api/v1/admin/orders"), """
                         {"clientId":%d,"orderDate":"%s","deliveryDate":"%s","items":[
-                          {"description":"Blouse for %s","quantity":%d,"pricePaise":50000}],
-                         "discountKind":"AMOUNT","discountValue":0,"advancePaise":0,"advanceMode":"CASH"}
+                          {"description":"Blouse for %s","quantity":%d,"priceRupees":50000}],
+                         "discountKind":"AMOUNT","discountValue":0,"advanceRupees":0,"advanceMode":"CASH"}
                         """.formatted(
                                 id(client, "$.id"),
                                 dueInDays < 0 ? today.plusDays(dueInDays) : today,

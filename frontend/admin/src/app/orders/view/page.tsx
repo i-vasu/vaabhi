@@ -72,7 +72,7 @@ function OrderView({ id }: { id: number }) {
         <div className="ml-auto flex flex-wrap gap-2">
           {o.status !== "CANCELLED" && (
             <button type="button" className={buttonPrimary} onClick={() => setSheet("payment")}>
-              {o.balancePaise > 0 ? "Take payment" : "Payment / refund"}
+              {o.balanceRupees > 0 ? "Take payment" : "Payment / refund"}
             </button>
           )}
           {open && (
@@ -134,7 +134,7 @@ function OrderView({ id }: { id: number }) {
                 {item.colour && <span className="text-ink-soft"> · {item.colour}</span>}
               </p>
               <p className="text-sm text-ink-soft">
-                {rupees(item.pricePaise * item.quantity)}
+                {rupees(item.priceRupees * item.quantity)}
                 {item.note && ` · ${item.note}`}
                 {item.assignedTo && <span className="text-ink"> · with {item.assignedTo.name}</span>}
               </p>
@@ -165,26 +165,26 @@ function OrderView({ id }: { id: number }) {
 
       <SectionLabel>Money</SectionLabel>
       <dl className="rounded-2xl border border-line bg-panel p-4 text-sm">
-        <Line label="Items" value={rupees(o.itemsPaise)} />
-        {o.deliveryChargePaise > 0 && <Line label="Delivery" value={rupees(o.deliveryChargePaise)} />}
-        {o.discountPaise > 0 && (
+        <Line label="Items" value={rupees(o.itemsRupees)} />
+        {o.deliveryChargeRupees > 0 && <Line label="Delivery" value={rupees(o.deliveryChargeRupees)} />}
+        {o.discountRupees > 0 && (
           <Line
-            label={o.discountKind === "PERCENT" ? `Discount (${o.discountValue / 100}%)` : "Discount"}
-            value={`− ${rupees(o.discountPaise)}`}
+            label={o.discountKind === "PERCENT" ? `Discount (${o.discountValue}%)` : "Discount"}
+            value={`− ${rupees(o.discountRupees)}`}
           />
         )}
         {o.couponCode && <Line label="Coupon" value={o.couponCode} />}
-        <Line label="Total" value={rupees(o.totalPaise)} strong />
-        <Line label="Paid" value={rupees(o.paidPaise)} />
-        <Line label={o.balancePaise < 0 ? "To refund" : "Balance"} value={rupees(Math.abs(o.balancePaise))} strong />
+        <Line label="Total" value={rupees(o.totalRupees)} strong />
+        <Line label="Paid" value={rupees(o.paidRupees)} />
+        <Line label={o.balanceRupees < 0 ? "To refund" : "Balance"} value={rupees(Math.abs(o.balanceRupees))} strong />
       </dl>
       {o.payments.length > 0 && (
         <ul className="mt-3 divide-y divide-line rounded-2xl border border-line bg-panel text-sm">
           {o.payments.map((payment) => (
             <li key={payment.id} className="flex flex-wrap gap-x-3 px-4 py-3">
-              <span className={payment.amountPaise < 0 ? "text-bad" : "text-ok"}>
-                {payment.amountPaise < 0 ? "− " : ""}
-                {rupees(Math.abs(payment.amountPaise))}
+              <span className={payment.amountRupees < 0 ? "text-bad" : "text-ok"}>
+                {payment.amountRupees < 0 ? "− " : ""}
+                {rupees(Math.abs(payment.amountRupees))}
               </span>
               <span>{payment.kind === "ADVANCE" ? "Advance" : payment.kind === "REFUND" ? "Refund" : "Payment"}</span>
               <span className="text-ink-soft">{PAYMENT_MODES.find((m) => m.value === payment.mode)?.label}</span>
@@ -263,7 +263,7 @@ function OrderView({ id }: { id: number }) {
         <Sheet open title={`Cancel ${o.number}?`} onClose={() => setSheet(null)}>
           <p className="text-ink-soft">
             The order stays on the customer&apos;s record as cancelled.
-            {o.paidPaise > 0 && ` ${rupees(o.paidPaise)} was paid; record a refund afterwards if you give it back.`}
+            {o.paidRupees > 0 && ` ${rupees(o.paidRupees)} was paid; record a refund afterwards if you give it back.`}
           </p>
           <ErrorNote>{action.error}</ErrorNote>
           <div className="mt-4 flex gap-2">
@@ -338,10 +338,10 @@ function PaymentSheet({
   busy: boolean;
   error: string | null;
   onClose: () => void;
-  onSubmit: (payment: { amountPaise: number; mode: PaymentMode; refund: boolean; note: string | null }) => void;
+  onSubmit: (payment: { amountRupees: number; mode: PaymentMode; refund: boolean; note: string | null }) => void;
 }) {
-  const [refund, setRefund] = useState(order.balancePaise < 0);
-  const [amount, setAmount] = useState(order.balancePaise !== 0 ? String(Math.abs(order.balancePaise) / 100) : "");
+  const [refund, setRefund] = useState(order.balanceRupees < 0);
+  const [amount, setAmount] = useState(order.balanceRupees !== 0 ? String(Math.abs(order.balanceRupees)) : "");
   const [mode, setMode] = useState<PaymentMode>("CASH");
   const [note, setNote] = useState("");
   const [invalid, setInvalid] = useState<string | null>(null);
@@ -363,7 +363,7 @@ function PaymentSheet({
           inputMode="decimal"
           value={amount}
           error={invalid ?? undefined}
-          hint={order.balancePaise > 0 ? `${rupees(order.balancePaise)} due` : undefined}
+          hint={order.balanceRupees > 0 ? `${rupees(order.balanceRupees)} due` : undefined}
           onChange={(event) => setAmount(event.target.value)}
         />
         <SelectField label="Paid by" options={PAYMENT_MODES} value={mode} onChange={setMode} />
@@ -374,13 +374,13 @@ function PaymentSheet({
           className={buttonPrimary}
           disabled={busy}
           onClick={() => {
-            const amountPaise = parseRupees(amount);
-            if (!amountPaise) {
+            const amountRupees = parseRupees(amount);
+            if (!amountRupees) {
               setInvalid("Enter the amount");
               return;
             }
             setInvalid(null);
-            onSubmit({ amountPaise, mode, refund, note: note.trim() || null });
+            onSubmit({ amountRupees, mode, refund, note: note.trim() || null });
           }}
         >
           {busy ? "Saving…" : refund ? "Record refund" : "Record payment"}

@@ -61,9 +61,9 @@ export default function ExpensesPage() {
       ) : (
         <>
           <div className="mb-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <StatTile label="Spent" value={rupees(e.totalPaise)} />
+            <StatTile label="Spent" value={rupees(e.totalRupees)} />
             {e.byCategory.slice(0, 2).map((c) => (
-              <StatTile key={c.category} label={categoryLabel(c.category)} value={rupees(c.amountPaise)} />
+              <StatTile key={c.category} label={categoryLabel(c.category)} value={rupees(c.amountRupees)} />
             ))}
           </div>
           <SectionLabel>{e.items.length} expenses</SectionLabel>
@@ -83,7 +83,7 @@ export default function ExpensesPage() {
                   <ListRow
                     title={expense.description}
                     subtitle={`${formatDate(expense.spentOn)} · ${categoryLabel(expense.category)}${expense.paidTo ? ` · ${expense.paidTo}` : ""}`}
-                    trailing={<span className="font-medium text-ink">{rupees(expense.amountPaise)}</span>}
+                    trailing={<span className="font-medium text-ink">{rupees(expense.amountRupees)}</span>}
                   />
                 </button>
               ))}
@@ -120,20 +120,20 @@ function ExpenseSheet({
   const [spentOn, setSpentOn] = useState(expense?.spentOn ?? defaultDate);
   const [category, setCategory] = useState<ExpenseCategory>(expense?.category ?? "MATERIAL");
   const [description, setDescription] = useState(expense?.description ?? "");
-  const [amount, setAmount] = useState(expense ? String(expense.amountPaise / 100) : "");
+  const [amount, setAmount] = useState(expense ? String(expense.amountRupees) : "");
   const [mode, setMode] = useState<PaymentMode>(expense?.mode ?? "CASH");
   const [paidTo, setPaidTo] = useState(expense?.paidTo ?? "");
   const action = useAction();
 
   async function save() {
-    const amountPaise = parseRupees(amount);
+    const amountRupees = parseRupees(amount);
     if (!description.trim()) return action.setError("Say what it was for.");
-    if (!amountPaise) return action.setError("Enter the amount.");
+    if (!amountRupees) return action.setError("Enter the amount.");
     const form: ExpenseForm = {
       spentOn,
       category,
       description: description.trim(),
-      amountPaise,
+      amountRupees,
       mode,
       paidTo: paidTo.trim() || null,
     };

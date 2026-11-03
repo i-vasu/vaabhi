@@ -58,7 +58,7 @@ export default function ProductionPage() {
                 <li key={p.staffId} className="rounded-2xl border border-line bg-panel p-4">
                   <span className="block font-medium">{p.name}</span>
                   <span className="block text-sm text-ink-soft">
-                    {p.pieces} pieces · {rupees(p.amountPaise)}
+                    {p.pieces} pieces · {rupees(p.amountRupees)}
                   </span>
                 </li>
               ))}
@@ -81,7 +81,7 @@ export default function ProductionPage() {
                     {e.orderNumber}
                   </Link>
                   <span className="ml-auto tabular-nums">
-                    {e.ratePaise > 0 ? rupees(e.amountPaise) : <span className="text-ink-faint">no rate</span>}
+                    {e.rateRupees > 0 ? rupees(e.amountRupees) : <span className="text-ink-faint">no rate</span>}
                   </span>
                 </li>
               ))}

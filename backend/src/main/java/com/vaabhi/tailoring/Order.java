@@ -1,5 +1,6 @@
 package com.vaabhi.tailoring;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
@@ -10,8 +11,8 @@ import org.jspecify.annotations.Nullable;
  * A booked order with its items, money and payments.
  *
  * @param rewardPoints loyalty points redeemed at booking
- * @param rewardPaise what those points took off the total
- * @param balancePaise total minus everything paid (negative after a refund owed)
+ * @param rewardRupees what those points took off the total
+ * @param balanceRupees total minus everything paid (negative after a refund owed)
  * @param cancelSettlement for a cancelled order, what happened to the money paid on it
  */
 public record Order(
@@ -24,17 +25,17 @@ public record Order(
         @Nullable LocalTime dueTime,
         @Nullable LocalDate trialDate,
         @Nullable Long deliveryPackageId,
-        long deliveryChargePaise,
-        long itemsPaise,
+        BigDecimal deliveryChargeRupees,
+        BigDecimal itemsRupees,
         OrderForm.DiscountKind discountKind,
-        long discountValue,
-        long discountPaise,
+        BigDecimal discountValue,
+        BigDecimal discountRupees,
         @Nullable String couponCode,
         int rewardPoints,
-        long rewardPaise,
-        long totalPaise,
-        long paidPaise,
-        long balancePaise,
+        BigDecimal rewardRupees,
+        BigDecimal totalRupees,
+        BigDecimal paidRupees,
+        BigDecimal balanceRupees,
         @Nullable String notes,
         @Nullable String createdBy,
         OffsetDateTime createdAt,

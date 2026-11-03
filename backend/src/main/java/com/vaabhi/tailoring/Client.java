@@ -1,5 +1,6 @@
 package com.vaabhi.tailoring;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -8,7 +9,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * A shop customer with their measurements and money position.
  *
- * @param outstandingPaise what open orders still owe
+ * @param outstandingRupees what open orders still owe
  */
 public record Client(
         long id,
@@ -32,6 +33,6 @@ public record Client(
         @Nullable LocalDate occasionDate,
         OffsetDateTime createdAt,
         int orderCount,
-        long spentPaise,
-        long outstandingPaise,
+        BigDecimal spentRupees,
+        BigDecimal outstandingRupees,
         List<Measurement> measurements) {}

@@ -4,7 +4,7 @@ import { discountLabel, formatPrice } from "./format";
 
 /**
  * The listing's state lives in the URL, so filtered pages are shareable, survive reloads and work without
- * JavaScript. Prices in the URL are rupees (`priceMax=5000`); the API takes paise.
+ * JavaScript. Prices in the URL and the API are rupees (`priceMax=5000`).
  */
 export type ListingState = {
   /** Selected codes by filter group: facets (fabric, occasion…), colour and size. */
@@ -131,8 +131,8 @@ export function activeFilterCount(state: ListingState): number {
 export function apiParams(state: ListingState, page: number): ListingParams {
   const params: ListingParams = { sort: state.sort, page, pageSize: PAGE_SIZE, inStock: state.inStock || undefined };
   for (const [group, codes] of Object.entries(state.selected)) params[group] = codes.join(",");
-  if (state.priceMin !== undefined) params.priceMin = state.priceMin * 100;
-  if (state.priceMax !== undefined) params.priceMax = state.priceMax * 100;
+  if (state.priceMin !== undefined) params.priceMin = state.priceMin;
+  if (state.priceMax !== undefined) params.priceMax = state.priceMax;
   return params;
 }
 
@@ -216,8 +216,8 @@ function stockNote(product: ProductSummary): string | undefined {
 }
 
 export function productCardProps(product: ProductSummary): ProductCardProps {
-  const price = product.pricePaise / 100;
-  const mrp = product.mrpPaise / 100;
+  const price = product.priceRupees;
+  const mrp = product.mrpRupees;
   const detail = [product.subtitle, stockNote(product)].filter(Boolean).join(" · ");
   const src = product.image ? mediaUrl(product.image.key) : undefined;
   const colour = product.colours[0]?.hex;

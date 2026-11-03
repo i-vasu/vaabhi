@@ -127,17 +127,21 @@ export async function uploadSettingsImage(
   return upload.key;
 }
 
-/** Paise → "₹ 1,250" (whole rupees) or "₹ 1,250.50". */
-export function rupees(paise: number): string {
-  const value = paise / 100;
-  return `₹ ${value.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
+/** 1250 → "₹ 1,250", 1250.5 → "₹ 1,250.5" (amounts are rupees with up to two decimals). */
+export function rupees(amount: number): string {
+  return `₹ ${amount.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 }
 
-/** "1,250.50" typed by a person → paise, or null when it is not a number. */
+/** Rounds to paise (two decimals), so sums of rupee amounts do not drift (0.1 + 0.2). */
+export function roundRupees(amount: number): number {
+  return Math.round(amount * 100) / 100;
+}
+
+/** "1,250.50" typed by a person → 1250.5 rupees, or null when it is not a number. */
 export function parseRupees(text: string): number | null {
   const cleaned = text.replace(/[₹,\s]/g, "");
   if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) return null;
-  return Math.round(Number(cleaned) * 100);
+  return roundRupees(Number(cleaned));
 }
 
 /** Empty inputs become null so optional fields are cleared rather than saved as "". */

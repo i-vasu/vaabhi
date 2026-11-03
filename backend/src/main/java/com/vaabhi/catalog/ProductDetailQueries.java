@@ -39,8 +39,8 @@ class ProductDetailQueries {
             String colourName,
             String colourHex,
             @Nullable String size,
-            int pricePaise,
-            int mrpPaise,
+            BigDecimal priceRupees,
+            BigDecimal mrpRupees,
             int stockQty) {}
 
     Optional<ProductDetailResponse> find(String slug) {
@@ -59,7 +59,7 @@ class ProductDetailQueries {
 
         var variantRows =
                 jdbc.sql("""
-                        SELECT sku, colour_name, colour_hex, size, price_paise, mrp_paise, stock_qty
+                        SELECT sku, colour_name, colour_hex, size, price_rupees, mrp_rupees, stock_qty
                         FROM product_variant
                         WHERE product_id = :id AND active
                         ORDER BY position, id
@@ -68,7 +68,7 @@ class ProductDetailQueries {
             return Optional.empty();
         }
         var cheapest = variantRows.stream()
-                .min((a, b) -> Integer.compare(a.pricePaise(), b.pricePaise()))
+                .min((a, b) -> a.priceRupees().compareTo(b.priceRupees()))
                 .orElseThrow();
         var variants = variantRows.stream()
                 .map(v -> new VariantResponse(
@@ -76,8 +76,8 @@ class ProductDetailQueries {
                         v.colourName(),
                         v.colourHex(),
                         v.size(),
-                        v.pricePaise(),
-                        v.mrpPaise(),
+                        v.priceRupees(),
+                        v.mrpRupees(),
                         v.stockQty() > 0,
                         Stock.stockLeft(v.stockQty())))
                 .toList();
@@ -89,9 +89,9 @@ class ProductDetailQueries {
                 row.description(),
                 row.badge() == null ? null : Badge.valueOf(row.badge()),
                 new CategoryRef(row.categorySlug(), row.categoryName()),
-                cheapest.pricePaise(),
-                cheapest.mrpPaise(),
-                Stock.discountPercent(cheapest.pricePaise(), cheapest.mrpPaise()),
+                cheapest.priceRupees(),
+                cheapest.mrpRupees(),
+                Stock.discountPercent(cheapest.priceRupees(), cheapest.mrpRupees()),
                 row.careInstructions(),
                 row.sareeLengthM(),
                 row.blouseIncluded(),
@@ -158,11 +158,11 @@ class ProductDetailQueries {
                 String kind,
                 String name,
                 @Nullable String description,
-                int pricePaise,
+                BigDecimal priceRupees,
                 String input) {}
 
         return jdbc.sql("""
-                        SELECT code, kind, name, description, price_paise, input
+                        SELECT code, kind, name, description, price_rupees, input
                         FROM product_addon
                         WHERE product_id = :id AND active
                         ORDER BY position, id
@@ -172,7 +172,7 @@ class ProductDetailQueries {
                         AddonKind.valueOf(r.kind()),
                         r.name(),
                         r.description(),
-                        r.pricePaise(),
+                        r.priceRupees(),
                         AddonInput.valueOf(r.input())))
                 .toList();
     }

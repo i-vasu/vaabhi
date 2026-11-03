@@ -1,11 +1,15 @@
 package com.vaabhi.staff;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import org.jspecify.annotations.Nullable;
@@ -24,8 +28,13 @@ public record StaffForm(
         @Nullable @Size(max = 60) String designation,
         @Nullable LocalDate joinedOn,
         @NotNull PayType payType,
-        @Min(0) @Max(100_000_000) long salaryPaise,
-        @Min(0) @Max(10_000_000) long hourlyPaise,
+
+        @DecimalMin("0") @DecimalMax("1000000") @Digits(integer = 7, fraction = 2)
+        BigDecimal salaryRupees,
+
+        @DecimalMin("0") @DecimalMax("100000") @Digits(integer = 7, fraction = 2)
+        BigDecimal hourlyRupees,
+
         @NotNull LocalTime shiftStart,
         @NotNull LocalTime shiftEnd,
         @Min(0) @Max(180) int lateGraceMinutes,

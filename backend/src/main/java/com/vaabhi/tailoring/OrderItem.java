@@ -1,6 +1,7 @@
 package com.vaabhi.tailoring;
 
 import com.vaabhi.settings.ProductionStage;
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
@@ -17,7 +18,7 @@ public record OrderItem(
         @Nullable Long serviceProductId,
         String description,
         int quantity,
-        long pricePaise,
+        BigDecimal priceRupees,
         @Nullable String colour,
         @Nullable String note,
         @Nullable Map<String, String> measurements,

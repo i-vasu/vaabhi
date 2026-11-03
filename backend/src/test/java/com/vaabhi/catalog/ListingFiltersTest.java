@@ -28,7 +28,8 @@ class ListingFiltersTest {
     void noFiltersIsAlwaysTrueWithPrice() {
         var filters = new ListingFilters(5, query(Map.of(), Set.of(), Set.of(), false), DEFINITIONS);
 
-        assertThat(filters.where(null)).isEqualTo("TRUE AND l.price_paise >= :priceMin AND l.price_paise <= :priceMax");
+        assertThat(filters.where(null))
+                .isEqualTo("TRUE AND l.price_rupees >= :priceMin AND l.price_rupees <= :priceMax");
         assertThat(filters.where(Dimension.PRICE)).isEqualTo("TRUE");
         assertThat(filters.params()).containsEntry("categoryId", 5L).containsEntry("priceMin", 1000);
     }

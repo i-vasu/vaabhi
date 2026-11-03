@@ -28,7 +28,7 @@ export function RewardsSection({ clientId }: { clientId: number }) {
       </SectionLabel>
       <div className="rounded-2xl border border-line bg-panel p-4">
         <p className="text-lg font-semibold">
-          {a.balance} points <span className="text-sm font-normal text-ink-soft">worth {rupees(a.valuePaise)}</span>
+          {a.balance} points <span className="text-sm font-normal text-ink-soft">worth {rupees(a.valueRupees)}</span>
         </p>
         <ul className="mt-2 text-sm text-ink-soft">
           {a.entries.slice(0, 5).map((e) => (

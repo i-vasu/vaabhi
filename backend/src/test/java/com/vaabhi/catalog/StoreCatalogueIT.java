@@ -42,15 +42,11 @@ class StoreCatalogueIT {
                         SELECT slug FROM product p WHERE status = 'PUBLISHED'
                           AND EXISTS (SELECT 1 FROM product_variant v WHERE v.product_id = p.id AND v.active)
                         ORDER BY published_at DESC, id DESC LIMIT 3
-                        """)
-                .query(String.class)
-                .list();
+                        """).query(String.class).list();
         long published = jdbc.sql("""
                         SELECT COUNT(*) FROM product p WHERE status = 'PUBLISHED'
                           AND EXISTS (SELECT 1 FROM product_variant v WHERE v.product_id = p.id AND v.active)
-                        """)
-                .query(Long.class)
-                .single();
+                        """).query(Long.class).single();
 
         mockMvc.perform(get("/api/v1/store/new-arrivals").param("pageSize", "3"))
                 .andExpect(status().isOk())
@@ -76,8 +72,8 @@ class StoreCatalogueIT {
                 .andExpect(jsonPath("$.items[*].slug", not(hasItem("tissue-silk-saree-draft"))))
                 .andExpect(jsonPath("$.items[0].slug").value("kanjeevaram-silk-saree-temple-border"))
                 .andExpect(jsonPath("$.items[0].colours.length()").value(2))
-                .andExpect(jsonPath("$.priceRange.minPaise").value(160000))
-                .andExpect(jsonPath("$.priceRange.maxPaise").value(2490000));
+                .andExpect(jsonPath("$.priceRange.minRupees").value(160000))
+                .andExpect(jsonPath("$.priceRange.maxRupees").value(2490000));
     }
 
     @Test
@@ -123,8 +119,8 @@ class StoreCatalogueIT {
         mockMvc.perform(get(SAREES).param("priceMin", "500000").param("priceMax", "1000000"))
                 .andExpect(status().isOk())
                 .andExpect(
-                        jsonPath("$.items[*].pricePaise", everyItem(org.hamcrest.Matchers.lessThanOrEqualTo(1000000))))
-                .andExpect(jsonPath("$.priceRange.maxPaise").value(2490000));
+                        jsonPath("$.items[*].priceRupees", everyItem(org.hamcrest.Matchers.lessThanOrEqualTo(1000000))))
+                .andExpect(jsonPath("$.priceRange.maxRupees").value(2490000));
     }
 
     @Test
@@ -139,7 +135,7 @@ class StoreCatalogueIT {
                 .andExpect(jsonPath("$.addons[*].code")
                         .value(org.hamcrest.Matchers.contains("blouse-unstitched", "blouse-standard", "blouse-custom")))
                 .andExpect(jsonPath("$.addons[2].input").value("MEASUREMENTS"))
-                .andExpect(jsonPath("$.addons[2].pricePaise").value(180000));
+                .andExpect(jsonPath("$.addons[2].priceRupees").value(180000));
     }
 
     @Test

@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import com.vaabhi.TestcontainersConfiguration;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -82,15 +83,15 @@ class MoneyIT {
     }
 
     /** Books 2 × ₹500 and a ₹100 item with ₹100 off (total ₹1,000), paying an advance; returns the order id. */
-    private long order(long clientId, long advancePaise) throws Exception {
+    private long order(long clientId, BigDecimal advanceRupees) throws Exception {
         var today = LocalDate.now();
         return id(
                 send(post("/api/v1/admin/orders"), """
                                 {"clientId":%d,"orderDate":"%s","deliveryDate":"%s","items":[
-                                  {"description":"Blouse","colour":"Teal","quantity":2,"pricePaise":50000},
-                                  {"description":"Fall & pico","quantity":1,"pricePaise":10000}],
-                                 "discountKind":"AMOUNT","discountValue":10000,"advancePaise":%d,"advanceMode":"UPI"}
-                                """.formatted(clientId, today, today.plusDays(5), advancePaise))
+                                  {"description":"Blouse","colour":"Teal","quantity":2,"priceRupees":50000},
+                                  {"description":"Fall & pico","quantity":1,"priceRupees":10000}],
+                                 "discountKind":"AMOUNT","discountValue":10000,"advanceRupees":%d,"advanceMode":"UPI"}
+                                """.formatted(clientId, today, today.plusDays(5), advanceRupees))
                         .andExpect(status().isCreated()),
                 "$.id");
     }
@@ -120,13 +121,13 @@ class MoneyIT {
                 .andExpect(jsonPath("$.number").isNotEmpty())
                 .andExpect(jsonPath("$.lines.length()").value(2))
                 .andExpect(jsonPath("$.lines[0].description").value("Blouse (Teal)"))
-                .andExpect(jsonPath("$.lines[0].amountPaise").value(100000))
-                .andExpect(jsonPath("$.discountPaise").value(10000))
-                .andExpect(jsonPath("$.orderTotalPaise").value(100000))
-                .andExpect(jsonPath("$.cgstPaise").value(0))
-                .andExpect(jsonPath("$.totalPaise").value(100000))
-                .andExpect(jsonPath("$.paidPaise").value(20000))
-                .andExpect(jsonPath("$.balancePaise").value(80000))
+                .andExpect(jsonPath("$.lines[0].amountRupees").value(100000))
+                .andExpect(jsonPath("$.discountRupees").value(10000))
+                .andExpect(jsonPath("$.orderTotalRupees").value(100000))
+                .andExpect(jsonPath("$.cgstRupees").value(0))
+                .andExpect(jsonPath("$.totalRupees").value(100000))
+                .andExpect(jsonPath("$.paidRupees").value(20000))
+                .andExpect(jsonPath("$.balanceRupees").value(80000))
                 .andExpect(jsonPath("$.createdBy").value("Asha Rao"));
         long invoiceId = id(invoice, "$.id");
         String number = JsonPath.read(body(invoice), "$.number");
@@ -134,7 +135,7 @@ class MoneyIT {
         send(post("/api/v1/admin/money/orders/" + orderId + "/invoice"), "").andExpect(status().isConflict());
         read("/invoices", Map.of("q", number))
                 .andExpect(jsonPath("$.items[0].id").value(invoiceId))
-                .andExpect(jsonPath("$.items[0].balancePaise").value(80000));
+                .andExpect(jsonPath("$.items[0].balanceRupees").value(80000));
 
         send(post("/api/v1/admin/money/invoices/" + invoiceId + "/cancel"), "")
                 .andExpect(jsonPath("$.cancelledAt").exists())
@@ -162,16 +163,16 @@ class MoneyIT {
             send(post("/api/v1/admin/money/orders/" + orderId + "/invoice"), "")
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.gstRate").value(12))
-                    .andExpect(jsonPath("$.taxablePaise").value(100000))
-                    .andExpect(jsonPath("$.cgstPaise").value(6000))
-                    .andExpect(jsonPath("$.sgstPaise").value(6000))
-                    .andExpect(jsonPath("$.totalPaise").value(112000))
+                    .andExpect(jsonPath("$.taxableRupees").value(100000))
+                    .andExpect(jsonPath("$.cgstRupees").value(6000))
+                    .andExpect(jsonPath("$.sgstRupees").value(6000))
+                    .andExpect(jsonPath("$.totalRupees").value(112000))
                     .andExpect(jsonPath("$.shopGstin").value("27ABCDE1234F1Z5"));
 
             // What is owed follows the invoice, GST included, and is flagged as already handed over.
             read("/outstanding", Map.of("clientId", Long.toString(clientId)))
-                    .andExpect(jsonPath("$.totalPaise").value(112000))
-                    .andExpect(jsonPath("$.handedOverPaise").value(112000))
+                    .andExpect(jsonPath("$.totalRupees").value(112000))
+                    .andExpect(jsonPath("$.handedOverRupees").value(112000))
                     .andExpect(jsonPath("$.items[0].kind").value("ORDER"))
                     .andExpect(jsonPath("$.items[0].invoiceNumber").isNotEmpty());
         } finally {
@@ -198,22 +199,22 @@ class MoneyIT {
         long orderId = order(clientId, 30000);
         var alteration = send(post("/api/v1/admin/alterations"), """
                         {"clientId":%d,"readyBy":"%s","paid":true,"undertakingAccepted":true,
-                         "items":[{"kind":"REPAIR","garment":"Saree","costPaise":15000}]}
+                         "items":[{"kind":"REPAIR","garment":"Saree","costRupees":15000}]}
                         """.formatted(
                                 clientId, LocalDate.now().plusDays(1)))
                 .andExpect(status().isCreated());
         long alterationId = id(alteration, "$.id");
 
         read("/outstanding", Map.of("clientId", Long.toString(clientId)))
-                .andExpect(jsonPath("$.totalPaise").value(70000 + 15000))
-                .andExpect(jsonPath("$.handedOverPaise").value(0))
+                .andExpect(jsonPath("$.totalRupees").value(70000 + 15000))
+                .andExpect(jsonPath("$.handedOverRupees").value(0))
                 .andExpect(jsonPath("$.items.length()").value(2))
                 .andExpect(jsonPath("$.items[0].kind").value("ALTERATION"))
                 .andExpect(jsonPath("$.items[1].id").value(orderId))
-                .andExpect(jsonPath("$.items[1].duePaise").value(70000));
+                .andExpect(jsonPath("$.items[1].dueRupees").value(70000));
 
         send(post("/api/v1/admin/alterations/" + alterationId + "/progress"), """
-                        {"status":"DELIVERED","collectPaise":15000,"mode":"UPI"}
+                        {"status":"DELIVERED","collectRupees":15000,"mode":"UPI"}
                         """)
                 .andExpect(status().isOk());
         read("/outstanding", Map.of("clientId", Long.toString(clientId)))
@@ -227,17 +228,17 @@ class MoneyIT {
         String orderNumber = JsonPath.read(
                 body(mockMvc.perform(get("/api/v1/admin/orders/" + orderId).with(OWNER))), "$.number");
         send(post("/api/v1/admin/orders/" + orderId + "/payments"), """
-                        {"amountPaise":5000,"mode":"UPI","refund":true}
+                        {"amountRupees":5000,"mode":"UPI","refund":true}
                         """).andExpect(status().isCreated());
         long alterationId = id(
                 send(post("/api/v1/admin/alterations"), """
                                 {"clientId":%d,"readyBy":"%s","paid":true,"undertakingAccepted":true,
-                                 "items":[{"kind":"LENGTH","garment":"Kurti","costPaise":8000}]}
+                                 "items":[{"kind":"LENGTH","garment":"Kurti","costRupees":8000}]}
                                 """.formatted(clientId, LocalDate.now()))
                         .andExpect(status().isCreated()),
                 "$.id");
         send(post("/api/v1/admin/alterations/" + alterationId + "/progress"), """
-                        {"status":"DELIVERED","collectPaise":8000,"mode":"CARD"}
+                        {"status":"DELIVERED","collectRupees":8000,"mode":"CARD"}
                         """)
                 .andExpect(status().isOk());
 
@@ -246,7 +247,7 @@ class MoneyIT {
         List<Map<String, Object>> mine = JsonPath.read(ledger, "$.entries[?(@.reference == '" + orderNumber + "')]");
         assertThat(mine).extracting(e -> e.get("kind")).containsExactly("ORDER_PAYMENT", "REFUND");
         assertThat(mine)
-                .extracting(e -> ((Number) e.get("amountPaise")).longValue())
+                .extracting(e -> ((Number) e.get("amountRupees")).longValue())
                 .containsExactly(25000L, -5000L);
         List<Map<String, Object>> altered = JsonPath.read(
                 ledger, "$.entries[?(@.sourceId == " + alterationId + " && @.kind == 'ALTERATION_PAYMENT')]");
@@ -254,11 +255,11 @@ class MoneyIT {
                 .singleElement()
                 .satisfies(e -> assertThat(e.get("mode")).isEqualTo("CARD"));
 
-        long opening = ((Number) JsonPath.read(ledger, "$.openingPaise")).longValue();
-        long in = ((Number) JsonPath.read(ledger, "$.inPaise")).longValue();
-        long out = ((Number) JsonPath.read(ledger, "$.outPaise")).longValue();
-        long closing = ((Number) JsonPath.read(ledger, "$.closingPaise")).longValue();
-        List<Number> balances = JsonPath.read(ledger, "$.entries[*].balancePaise");
+        long opening = ((Number) JsonPath.read(ledger, "$.openingRupees")).longValue();
+        long in = ((Number) JsonPath.read(ledger, "$.inRupees")).longValue();
+        long out = ((Number) JsonPath.read(ledger, "$.outRupees")).longValue();
+        long closing = ((Number) JsonPath.read(ledger, "$.closingRupees")).longValue();
+        List<Number> balances = JsonPath.read(ledger, "$.entries[*].balanceRupees");
         assertThat(closing)
                 .isEqualTo(opening + in - out)
                 .isEqualTo(balances.getLast().longValue());
@@ -274,43 +275,43 @@ class MoneyIT {
     void recordsEditsAndRemovesExpensesAndTheyReachTheLedger() throws Exception {
         // A month in the past that no other test writes to, so totals are exact.
         var created = send(post("/api/v1/admin/money/expenses"), """
-                        {"spentOn":"2001-03-05","category":"RENT","description":"Shop rent","amountPaise":1500000,
+                        {"spentOn":"2001-03-05","category":"RENT","description":"Shop rent","amountRupees":1500000,
                          "mode":"BANK","paidTo":"Landlord"}
                         """)
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.createdBy").value("Asha Rao"));
         long rent = id(created, "$.id");
         send(post("/api/v1/admin/money/expenses"), """
-                        {"spentOn":"2001-03-09","category":"MATERIAL","description":"Thread","amountPaise":20000,
+                        {"spentOn":"2001-03-09","category":"MATERIAL","description":"Thread","amountRupees":20000,
                          "mode":"CASH"}
                         """).andExpect(status().isCreated());
         send(post("/api/v1/admin/money/expenses"), """
-                        {"spentOn":"2001-03-09","category":"MATERIAL","description":"","amountPaise":0,"mode":"CASH"}
+                        {"spentOn":"2001-03-09","category":"MATERIAL","description":"","amountRupees":0,"mode":"CASH"}
                         """).andExpect(status().isBadRequest());
 
         var march = Map.of("from", "2001-03-01", "to", "2001-03-31");
         read("/expenses", march)
-                .andExpect(jsonPath("$.totalPaise").value(1520000))
+                .andExpect(jsonPath("$.totalRupees").value(1520000))
                 .andExpect(jsonPath("$.items[0].description").value("Thread"))
                 .andExpect(jsonPath("$.byCategory[0].category").value("RENT"));
         read("/ledger", Map.of("from", "2001-03-01", "to", "2001-03-31", "kind", "EXPENSE"))
-                .andExpect(jsonPath("$.openingPaise").value(0))
-                .andExpect(jsonPath("$.outPaise").value(1520000))
-                .andExpect(jsonPath("$.closingPaise").value(-1520000))
+                .andExpect(jsonPath("$.openingRupees").value(0))
+                .andExpect(jsonPath("$.outRupees").value(1520000))
+                .andExpect(jsonPath("$.closingRupees").value(-1520000))
                 .andExpect(jsonPath("$.entries[0].reference").value("Shop rent"))
                 .andExpect(jsonPath("$.entries[0].party").value("Landlord"))
-                .andExpect(jsonPath("$.byMode[?(@.mode == 'BANK')].outPaise").value(1500000));
+                .andExpect(jsonPath("$.byMode[?(@.mode == 'BANK')].outRupees").value(1500000));
 
         send(put("/api/v1/admin/money/expenses/" + rent), """
                         {"spentOn":"2001-03-05","category":"RENT","description":"Shop rent (March)",
-                         "amountPaise":1400000,"mode":"BANK","paidTo":" "}
+                         "amountRupees":1400000,"mode":"BANK","paidTo":" "}
                         """)
-                .andExpect(jsonPath("$.amountPaise").value(1400000))
+                .andExpect(jsonPath("$.amountRupees").value(1400000))
                 .andExpect(jsonPath("$.paidTo").doesNotExist());
         mockMvc.perform(delete("/api/v1/admin/money/expenses/" + rent).with(OWNER))
                 .andExpect(status().isNoContent());
         mockMvc.perform(delete("/api/v1/admin/money/expenses/" + rent).with(OWNER))
                 .andExpect(status().isNotFound());
-        read("/expenses", march).andExpect(jsonPath("$.totalPaise").value(20000));
+        read("/expenses", march).andExpect(jsonPath("$.totalRupees").value(20000));
     }
 }

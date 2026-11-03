@@ -36,7 +36,7 @@ describe("price list", () => {
         templateId: 1,
         code: null,
         name: "Padded blouse",
-        pricePaise: 90000,
+        priceRupees: 90000,
         photoKey: null,
         stageCosts: [{ stageId: 2, paise: 20000 }],
       }),

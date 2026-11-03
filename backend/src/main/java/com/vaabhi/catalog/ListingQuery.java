@@ -1,5 +1,6 @@
 package com.vaabhi.catalog;
 
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Set;
 import org.jspecify.annotations.Nullable;
@@ -18,8 +19,8 @@ public record ListingQuery(
         Set<String> colours,
         Set<String> sizes,
         boolean inStock,
-        @Nullable Integer priceMinPaise,
-        @Nullable Integer priceMaxPaise,
+        @Nullable BigDecimal priceMinRupees,
+        @Nullable BigDecimal priceMaxRupees,
         ProductSort sort,
         int page,
         int pageSize) {

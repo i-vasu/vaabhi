@@ -81,10 +81,10 @@ export default function AlterationsPage() {
                 trailing={
                   !alteration.paid ? (
                     "Free"
-                  ) : alteration.balancePaise > 0 ? (
-                    <span className="text-warn">{rupees(alteration.balancePaise)} due</span>
+                  ) : alteration.balanceRupees > 0 ? (
+                    <span className="text-warn">{rupees(alteration.balanceRupees)} due</span>
                   ) : (
-                    rupees(alteration.totalPaise)
+                    rupees(alteration.totalRupees)
                   )
                 }
               />

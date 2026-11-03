@@ -12,12 +12,12 @@ import org.jspecify.annotations.Nullable;
  *
  * @param id null while the month is only a preview (not finalised)
  * @param month first day of the month
- * @param ratePaise monthly salary, daily wage, or 0 for piece work
+ * @param rateRupees monthly salary, daily wage, or 0 for piece work
  * @param daysPaid days the salary or wage is paid for
  * @param daysUnpaid absent and leave days (half days count half)
- * @param piecePaise piece pay (piece workers only); {@code pieces} is shown for everyone
- * @param advancePaise approved advances taken back this month
- * @param netPaise base + piece + overtime − late − advance (negative when advances exceed earnings)
+ * @param pieceRupees piece pay (piece workers only); {@code pieces} is shown for everyone
+ * @param advanceRupees approved advances taken back this month
+ * @param netRupees base + piece + overtime − late − advance (negative when advances exceed earnings)
  */
 public record Payslip(
         @Nullable Long id,
@@ -26,17 +26,17 @@ public record Payslip(
         @Nullable String designation,
         LocalDate month,
         PayType payType,
-        long ratePaise,
+        BigDecimal rateRupees,
         BigDecimal daysPaid,
         BigDecimal daysUnpaid,
-        long basePaise,
-        long piecePaise,
+        BigDecimal baseRupees,
+        BigDecimal pieceRupees,
         int pieces,
         int overtimeMinutes,
-        long overtimePaise,
+        BigDecimal overtimeRupees,
         int lateMinutes,
-        long latePaise,
-        long advancePaise,
-        long netPaise,
+        BigDecimal lateRupees,
+        BigDecimal advanceRupees,
+        BigDecimal netRupees,
         @Nullable OffsetDateTime paidAt,
         @Nullable PaymentMode paidMode) {}

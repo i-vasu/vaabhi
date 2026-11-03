@@ -22,7 +22,7 @@ export function formatCell(column: ReportColumn, value: unknown): string {
 /** A cell for CSV: plain numbers (money in rupees with two decimals), dates as yyyy-mm-dd. */
 function csvCell(column: ReportColumn, value: unknown): string {
   if (value === null || value === undefined) return "";
-  const text = column.type === "MONEY" ? (Number(value) / 100).toFixed(2) : String(value);
+  const text = column.type === "MONEY" ? Number(value).toFixed(2) : String(value);
   return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 

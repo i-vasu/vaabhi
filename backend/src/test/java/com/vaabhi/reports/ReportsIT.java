@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import com.vaabhi.TestcontainersConfiguration;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +57,7 @@ class ReportsIT {
     }
 
     /** Books and delivers an order (invoiced on delivery), paying part of it; returns [orderId, clientId]. */
-    private long[] deliveredOrder(String name, long pricePaise, long paidPaise) throws Exception {
+    private long[] deliveredOrder(String name, BigDecimal priceRupees, BigDecimal paidRupees) throws Exception {
         long client = ((Number) JsonPath.read(
                         body(send(post("/api/v1/admin/clients"), """
                                 {"phone":"98764%05d","firstName":"%s","gender":"FEMALE","clientType":"RETAIL"}
@@ -68,10 +69,10 @@ class ReportsIT {
         long order = ((Number) JsonPath.read(
                         body(send(post("/api/v1/admin/orders"), """
                                 {"clientId":%d,"orderDate":"%s","deliveryDate":"%s","items":[
-                                  {"description":"Report blouse","quantity":1,"pricePaise":%d}],
-                                 "discountKind":"AMOUNT","discountValue":0,"advancePaise":%d,"advanceMode":"UPI"}
+                                  {"description":"Report blouse","quantity":1,"priceRupees":%d}],
+                                 "discountKind":"AMOUNT","discountValue":0,"advanceRupees":%d,"advanceMode":"UPI"}
                                 """.formatted(
-                                                client, today, today, pricePaise, paidPaise))
+                                                client, today, today, priceRupees, paidRupees))
                                 .andExpect(status().isCreated())),
                         "$.id"))
                 .longValue();
@@ -146,15 +147,15 @@ class ReportsIT {
         deliveredOrder("Overview", 60_000, 20_000);
         var after = body(mockMvc.perform(get("/api/v1/admin/reports/overview").with(OWNER)));
 
-        assertThat(delta(before, after, "$.bookedPaise")).isEqualTo(60_000);
-        assertThat(delta(before, after, "$.collectedPaise")).isEqualTo(20_000);
+        assertThat(delta(before, after, "$.bookedRupees")).isEqualTo(60_000);
+        assertThat(delta(before, after, "$.collectedRupees")).isEqualTo(20_000);
         assertThat(delta(before, after, "$.ordersBooked")).isEqualTo(1);
         assertThat(delta(before, after, "$.ordersDelivered")).isEqualTo(1);
-        assertThat(delta(before, after, "$.outstandingPaise")).isEqualTo(40_000);
+        assertThat(delta(before, after, "$.outstandingRupees")).isEqualTo(40_000);
         assertThat(JsonPath.<List<Object>>read(after, "$.months")).hasSize(6);
-        assertThat(delta(before, after, "$.months[5].bookedPaise")).isEqualTo(60_000);
+        assertThat(delta(before, after, "$.months[5].bookedRupees")).isEqualTo(60_000);
         assertThat(JsonPath.<List<Object>>read(after, "$.ageing")).hasSize(5);
-        assertThat(delta(before, after, "$.ageing[0].paise")).isEqualTo(40_000);
+        assertThat(delta(before, after, "$.ageing[0].rupees")).isEqualTo(40_000);
     }
 
     private static long delta(String before, String after, String path) {

@@ -32,8 +32,8 @@ function StockLedger({ id }: { id: number }) {
             {qty(i.onHand)} {unitLabel(i.unit)}
           </Fact>
           <Fact label="Reorder at">{qty(i.reorderLevel)}</Fact>
-          <Fact label="Cost per unit">{rupees(i.costPaise)}</Fact>
-          <Fact label="Value">{rupees(i.valuePaise)}</Fact>
+          <Fact label="Cost per unit">{rupees(i.costRupees)}</Fact>
+          <Fact label="Value">{rupees(i.valueRupees)}</Fact>
         </dl>
       )}
       <SectionLabel>Stock ledger</SectionLabel>

@@ -41,14 +41,14 @@ export function alterationFromDraft(
   const items = [];
   for (const [index, row] of draft.items.entries()) {
     if (!row.garment.trim()) return { form: null, error: `Garment ${index + 1}: say what it is.` };
-    const costPaise = !draft.paid || row.cost.trim() === "" ? 0 : parseRupees(row.cost);
-    if (costPaise === null) return { form: null, error: `Garment ${index + 1}: enter the charge as a number.` };
+    const costRupees = !draft.paid || row.cost.trim() === "" ? 0 : parseRupees(row.cost);
+    if (costRupees === null) return { form: null, error: `Garment ${index + 1}: enter the charge as a number.` };
     items.push({
       kind: row.kind,
       garment: row.garment.trim(),
       instructions: row.instructions.trim() || null,
       photoKey: row.photoKey,
-      costPaise,
+      costRupees,
     });
   }
   if (!draft.accepted) return { form: null, error: "The customer must accept the alteration terms." };

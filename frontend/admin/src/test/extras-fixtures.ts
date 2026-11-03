@@ -22,10 +22,10 @@ export const lining: StockItem = {
   category: "Lining",
   unit: "M",
   reorderLevel: 5,
-  costPaise: 12000,
+  costRupees: 12000,
   onHand: 3.5,
   low: true,
-  valuePaise: 42000,
+  valueRupees: 42000,
 };
 
 export const movement: StockMovement = {
@@ -48,7 +48,7 @@ export const coupon: Coupon = {
   description: "Festival",
   kind: "PERCENT",
   value: 1000,
-  minOrderPaise: 50000,
+  minOrderRupees: 50000,
   validFrom: null,
   validTo: "2026-11-15",
   maxUses: 100,
@@ -59,7 +59,7 @@ export const coupon: Coupon = {
 export const rewards: RewardAccount = {
   clientId: 7,
   balance: 24,
-  valuePaise: 2400,
+  valueRupees: 2400,
   entries: [
     {
       id: 1,
@@ -138,26 +138,26 @@ export const reportList: ReportInfo[] = [
 ];
 
 export const reportsOverview: ReportsOverview = {
-  bookedPaise: 250000,
-  collectedPaise: 180000,
-  expensesPaise: 40000,
+  bookedRupees: 250000,
+  collectedRupees: 180000,
+  expensesRupees: 40000,
   ordersBooked: 4,
   ordersDelivered: 2,
-  averageOrderPaise: 62500,
+  averageOrderRupees: 62500,
   newCustomers: 3,
-  outstandingPaise: 70000,
+  outstandingRupees: 70000,
   months: ["2026-06", "2026-07", "2026-08", "2026-09", "2026-10", "2026-11"].map((month, i) => ({
     month,
-    bookedPaise: 100000 * i,
-    collectedPaise: 80000 * i,
-    expensesPaise: 20000 * i,
+    bookedRupees: 100000 * i,
+    collectedRupees: 80000 * i,
+    expensesRupees: 20000 * i,
   })),
   ageing: [
-    { label: "Not due yet", count: 1, paise: 50000 },
-    { label: "1–7 days late", count: 1, paise: 20000 },
-    { label: "8–30 days late", count: 0, paise: 0 },
-    { label: "31–60 days late", count: 0, paise: 0 },
-    { label: "Over 60 days late", count: 0, paise: 0 },
+    { label: "Not due yet", count: 1, rupees: 50000 },
+    { label: "1–7 days late", count: 1, rupees: 20000 },
+    { label: "8–30 days late", count: 0, rupees: 0 },
+    { label: "31–60 days late", count: 0, rupees: 0 },
+    { label: "Over 60 days late", count: 0, rupees: 0 },
   ],
 };
 
@@ -217,9 +217,9 @@ export function serveExtras(sent: Sent[], account: RewardAccount = rewards): voi
     http.put(`${base}/engage/coupons/:id`, reply(coupon)),
     http.get(
       `${base}/engage/coupons/check`,
-      reply({ code: "DIWALI10", valid: true, reason: null, kind: "PERCENT", value: 1000, discountPaise: 11000 }),
+      reply({ code: "DIWALI10", valid: true, reason: null, kind: "PERCENT", value: 1000, discountRupees: 11000 }),
     ),
-    http.get(`${base}/engage/rewards/settings`, reply({ enabled: true, pointsPer100: 1, paisePerPoint: 100 })),
+    http.get(`${base}/engage/rewards/settings`, reply({ enabled: true, pointsPer100: 1, rupeesPerPoint: 100 })),
     http.put(`${base}/engage/rewards/settings`, async ({ request }) => {
       const body = await request.clone().json();
       await record(request);

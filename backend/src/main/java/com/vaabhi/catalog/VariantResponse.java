@@ -1,5 +1,6 @@
 package com.vaabhi.catalog;
 
+import java.math.BigDecimal;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -12,7 +13,7 @@ public record VariantResponse(
         String colourName,
         String colourHex,
         @Nullable String size,
-        int pricePaise,
-        int mrpPaise,
+        BigDecimal priceRupees,
+        BigDecimal mrpRupees,
         boolean inStock,
         @Nullable Integer stockLeft) {}

@@ -3,6 +3,7 @@ package com.vaabhi.catalog;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -51,10 +52,10 @@ class StoreProductController {
             @Parameter(description = "Only products with stock in the selected colour/size")
                     @RequestParam(defaultValue = "false")
                     boolean inStock,
-            @Parameter(description = "Minimum price in paise") @RequestParam(required = false) @Nullable
-                    Integer priceMin,
-            @Parameter(description = "Maximum price in paise") @RequestParam(required = false) @Nullable
-                    Integer priceMax,
+            @Parameter(description = "Minimum price in rupees") @RequestParam(required = false) @Nullable
+                    BigDecimal priceMin,
+            @Parameter(description = "Maximum price in rupees") @RequestParam(required = false) @Nullable
+                    BigDecimal priceMax,
             @Parameter(
                             schema =
                                     @Schema(
@@ -121,9 +122,9 @@ class StoreProductController {
         }
     }
 
-    private static void validatePrice(@Nullable Integer priceMin, @Nullable Integer priceMax) {
-        var negative = (priceMin != null && priceMin < 0) || (priceMax != null && priceMax < 0);
-        var inverted = priceMin != null && priceMax != null && priceMin > priceMax;
+    private static void validatePrice(@Nullable BigDecimal priceMin, @Nullable BigDecimal priceMax) {
+        var negative = (priceMin != null && priceMin.signum() < 0) || (priceMax != null && priceMax.signum() < 0);
+        var inverted = priceMin != null && priceMax != null && priceMin.compareTo(priceMax) > 0;
         if (negative || inverted) {
             throw badRequest("priceMin and priceMax must be positive and priceMin ≤ priceMax");
         }

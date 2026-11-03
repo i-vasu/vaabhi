@@ -161,7 +161,7 @@ describe("product cards", () => {
   });
 
   it("shows stock state and handles missing data", () => {
-    const low = productCardProps(product({ stockLeft: 2, badge: "NEW", mrpPaise: 1850000 }));
+    const low = productCardProps(product({ stockLeft: 2, badge: "NEW", mrpRupees: 1850000 }));
     expect(low.detail).toBe("Temple border, pure zari · Only 2 left");
     expect(low.mrp).toBeUndefined();
     expect(low.badge?.tone).toBe("festive");

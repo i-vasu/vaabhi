@@ -74,10 +74,10 @@ export default function PriceListPage() {
                     title={product.name}
                     subtitle={
                       product.stageCosts.length > 0
-                        ? `${product.code} · profit ${rupees(product.profitPaise)}`
+                        ? `${product.code} · profit ${rupees(product.profitRupees)}`
                         : product.code
                     }
-                    trailing={<span className="font-medium text-ink">{rupees(product.pricePaise)}</span>}
+                    trailing={<span className="font-medium text-ink">{rupees(product.priceRupees)}</span>}
                   />
                 </button>
               ))}
@@ -117,28 +117,28 @@ function ProductSheet({
   const [templateId, setTemplateId] = useState(product?.templateId ?? templates[0]?.id ?? 0);
   const [name, setName] = useState(product?.name ?? "");
   const [code, setCode] = useState(product?.code ?? "");
-  const [price, setPrice] = useState(product ? String(product.pricePaise / 100) : "");
+  const [price, setPrice] = useState(product ? String(product.priceRupees) : "");
   const [photoKey, setPhotoKey] = useState<string | null>(product?.photoKey ?? null);
   const [costs, setCosts] = useState<Record<number, string>>(() =>
-    Object.fromEntries((product?.stageCosts ?? []).map((cost) => [cost.stageId, String(cost.paise / 100)])),
+    Object.fromEntries((product?.stageCosts ?? []).map((cost) => [cost.stageId, String(cost.rupees)])),
   );
   const action = useAction();
 
-  const pricePaise = parseRupees(price);
-  const costPaise = Object.values(costs).reduce((sum, text) => sum + (parseRupees(text) ?? 0), 0);
+  const priceRupees = parseRupees(price);
+  const costRupees = Object.values(costs).reduce((sum, text) => sum + (parseRupees(text) ?? 0), 0);
 
   async function save() {
     if (!name.trim()) return action.setError("Enter the name.");
-    if (pricePaise === null) return action.setError("Enter the price.");
+    if (priceRupees === null) return action.setError("Enter the price.");
     const form: ServiceProductForm = {
       templateId,
       code: code.trim() || null,
       name: name.trim(),
-      pricePaise,
+      priceRupees,
       photoKey,
       stageCosts: stages
-        .map((stage) => ({ stageId: stage.id!, paise: parseRupees(costs[stage.id!] ?? "") ?? 0 }))
-        .filter((cost) => cost.paise > 0),
+        .map((stage) => ({ stageId: stage.id!, rupees: parseRupees(costs[stage.id!] ?? "") ?? 0 }))
+        .filter((cost) => cost.rupees > 0),
     };
     const saved = await action.run(() =>
       product ? api.admin.serviceProducts.update(product.id, form) : api.admin.serviceProducts.create(form),
@@ -187,11 +187,11 @@ function ProductSheet({
                 />
               ))}
             </div>
-            {pricePaise !== null && costPaise > 0 && (
+            {priceRupees !== null && costRupees > 0 && (
               <p className="mt-2 text-sm">
                 Profit per piece:{" "}
-                <span className={pricePaise - costPaise < 0 ? "text-bad" : "text-ok"}>
-                  {rupees(pricePaise - costPaise)}
+                <span className={priceRupees - costRupees < 0 ? "text-bad" : "text-ok"}>
+                  {rupees(priceRupees - costRupees)}
                 </span>
               </p>
             )}

@@ -24,8 +24,8 @@ export function requestFromDraft(draft: {
     return { form: null, error: "The last day is before the first." };
   const hours = draft.kind === "PERMISSION" ? Number(draft.hours) : null;
   if (hours !== null && !(hours >= 0.5 && hours <= 8)) return { form: null, error: "Permission is 0.5 to 8 hours." };
-  const amountPaise = draft.kind === "ADVANCE" ? parseRupees(draft.amount) : null;
-  if (draft.kind === "ADVANCE" && !amountPaise) return { form: null, error: "Enter the advance amount." };
+  const amountRupees = draft.kind === "ADVANCE" ? parseRupees(draft.amount) : null;
+  if (draft.kind === "ADVANCE" && !amountRupees) return { form: null, error: "Enter the advance amount." };
   return {
     error: null,
     form: {
@@ -34,7 +34,7 @@ export function requestFromDraft(draft: {
       fromDate: draft.fromDate,
       toDate: span ? draft.toDate || draft.fromDate : null,
       hours,
-      amountPaise,
+      amountRupees,
       reason: draft.reason.trim() || null,
     },
   };
@@ -140,7 +140,7 @@ export function RequestSummary({ request: r, showName = false }: { request: Staf
         {formatDate(r.fromDate)}
         {r.toDate !== r.fromDate && ` – ${formatDate(r.toDate)}`}
         {r.hours && ` · ${r.hours} h`}
-        {r.amountPaise && ` · ${rupees(r.amountPaise)}`}
+        {r.amountRupees && ` · ${rupees(r.amountRupees)}`}
         {r.reason && ` · ${r.reason}`}
         {r.decisionNote && ` · “${r.decisionNote}”`}
       </span>

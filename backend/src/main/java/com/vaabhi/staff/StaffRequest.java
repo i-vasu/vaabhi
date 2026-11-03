@@ -9,7 +9,7 @@ import org.jspecify.annotations.Nullable;
  * A request from a staff member.
  *
  * @param hours PERMISSION: hours away during the day
- * @param amountPaise ADVANCE: amount asked for
+ * @param amountRupees ADVANCE: amount asked for
  * @param recoveredMonth ADVANCE: first day of the payroll month it was taken back in
  */
 public record StaffRequest(
@@ -20,7 +20,7 @@ public record StaffRequest(
         LocalDate fromDate,
         LocalDate toDate,
         @Nullable BigDecimal hours,
-        @Nullable Long amountPaise,
+        @Nullable BigDecimal amountRupees,
         @Nullable String reason,
         Status status,
         @Nullable String requestedBy,

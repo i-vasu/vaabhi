@@ -38,7 +38,7 @@ class AdminProductControllerTest {
              "badge":null,"careInstructions":null,"sareeLengthM":5.5,"blouseIncluded":true,"blouseLengthM":0.8,
              "attributes":{"fabric":["silk"]},
              "variants":[{"sku":null,"colourName":"Red","colourHex":"#B3261E","colourFamily":"red","size":null,
-                          "pricePaise":100000,"mrpPaise":120000,"stockQty":2,"active":true}],
+                          "priceRupees":100000,"mrpRupees":120000,"stockQty":2,"active":true}],
              "addons":[]}
             """;
 
@@ -104,7 +104,7 @@ class AdminProductControllerTest {
     void reportsEachInvalidField() throws Exception {
         var invalid = VALID.replace("\"name\":\"Silk saree\"", "\"name\":\"\"")
                 .replace("\"colourHex\":\"#B3261E\"", "\"colourHex\":\"red\"")
-                .replace("\"pricePaise\":100000", "\"pricePaise\":0");
+                .replace("\"priceRupees\":100000", "\"priceRupees\":0");
 
         mockMvc.perform(put("/api/v1/admin/products/7")
                         .with(ADMIN)

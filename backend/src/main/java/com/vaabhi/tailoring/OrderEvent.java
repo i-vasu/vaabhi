@@ -1,5 +1,6 @@
 package com.vaabhi.tailoring;
 
+import java.math.BigDecimal;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -7,7 +8,7 @@ import org.jspecify.annotations.Nullable;
  * CHANGED (items, delivery or discount changed after booking) is refused by the money module while the order has a
  * live invoice.
  *
- * @param amountPaise the payment amount for PAYMENT_RECEIVED, otherwise the order total
+ * @param amountRupees the payment amount for PAYMENT_RECEIVED, otherwise the order total
  */
 public record OrderEvent(
         Type type,
@@ -15,7 +16,7 @@ public record OrderEvent(
         String number,
         long clientId,
         String clientName,
-        long amountPaise,
+        BigDecimal amountRupees,
         @Nullable String actor) {
 
     public enum Type {

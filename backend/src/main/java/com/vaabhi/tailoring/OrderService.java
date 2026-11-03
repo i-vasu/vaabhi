@@ -8,6 +8,9 @@ import com.vaabhi.settings.NumberingService;
 import com.vaabhi.settings.ProductionStage;
 import com.vaabhi.settings.SettingsService;
 import com.vaabhi.settings.ShopListService;
+import com.vaabhi.shared.rupees.Rupees;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -77,28 +80,29 @@ public class OrderService {
     // --- money --------------------------------------------------------------------------------------------------
 
     /** Items, delivery charge, discount and total for a booking. */
-    record Totals(long itemsPaise, long deliveryPaise, long discountPaise, long totalPaise) {}
+    record Totals(
+            BigDecimal itemsRupees, BigDecimal deliveryRupees, BigDecimal discountRupees, BigDecimal totalRupees) {}
 
     static Totals totals(
             List<OrderItemForm> items,
-            long deliveryPaise,
+            BigDecimal deliveryRupees,
             OrderForm.DiscountKind kind,
-            long discountValue,
+            BigDecimal discountValue,
             BillingSettings.DiscountBase base) {
-        long itemsPaise = items.stream()
-                .mapToLong(item -> item.pricePaise() * item.quantity())
-                .sum();
-        long discountBase = base == BillingSettings.DiscountBase.ORDER_TOTAL ? itemsPaise + deliveryPaise : itemsPaise;
-        long discount;
+        var itemsRupees = Rupees.sum(items, item -> Rupees.times(item.priceRupees(), item.quantity()));
+        var delivery = Rupees.of(deliveryRupees);
+        var discountBase = base == BillingSettings.DiscountBase.ORDER_TOTAL ? itemsRupees.add(delivery) : itemsRupees;
+        BigDecimal discount;
         if (kind == OrderForm.DiscountKind.PERCENT) {
-            if (discountValue > 10_000) {
+            if (discountValue.compareTo(BigDecimal.valueOf(100)) > 0) {
                 throw bad("A discount cannot be more than 100%");
             }
-            discount = Math.round(discountBase * discountValue / 10_000.0);
+            discount = Rupees.percentOf(discountBase, discountValue);
         } else {
-            discount = Math.min(discountValue, discountBase);
+            discount = Rupees.min(Rupees.of(discountValue), discountBase);
         }
-        return new Totals(itemsPaise, deliveryPaise, discount, itemsPaise + deliveryPaise - discount);
+        return new Totals(
+                itemsRupees, delivery, discount, itemsRupees.add(delivery).subtract(discount));
     }
 
     /** The coupon code as stored: trimmed and upper-cased, or null when none was given. */
@@ -116,7 +120,7 @@ public class OrderService {
         if (perk == null) {
             throw bad("Coupons are not available");
         }
-        perk.requireCoupon(code, totals.itemsPaise() + totals.deliveryPaise());
+        perk.requireCoupon(code, totals.itemsRupees().add(totals.deliveryRupees()));
     }
 
     // --- create -------------------------------------------------------------------------------------------------
@@ -149,13 +153,13 @@ public class OrderService {
 
         var totals = totals(
                 form.items(),
-                pkg == null ? 0 : pkg.pricePaise(),
+                pkg == null ? Rupees.ZERO : pkg.priceRupees(),
                 form.discountKind(),
                 form.discountValue(),
                 settings.billing().discountAppliesTo());
         var coupon = couponCode(form.couponCode());
         requireCoupon(coupon, totals);
-        if (form.advancePaise() > totals.totalPaise()) {
+        if (form.advanceRupees().compareTo(totals.totalRupees()) > 0) {
             throw bad("The advance cannot be more than the order total");
         }
 
@@ -163,8 +167,8 @@ public class OrderService {
         var number = numbering.next(NumberSequence.Kind.ORDER);
         long orderId = jdbc.sql("""
                         INSERT INTO shop_order (number, client_id, order_date, delivery_date, due_time, trial_date,
-                            delivery_package_id, delivery_charge_paise, items_paise, discount_kind, discount_value,
-                            discount_paise, coupon_code, total_paise, paid_paise, notes, created_by)
+                            delivery_package_id, delivery_charge_rupees, items_rupees, discount_kind, discount_value,
+                            discount_rupees, coupon_code, total_rupees, paid_rupees, notes, created_by)
                         VALUES (:number, :client, :orderDate, :deliveryDate, :dueTime, :trialDate, :pkg, :delivery,
                             :items, :discountKind, :discountValue, :discount, :coupon, :total, :paid, :notes, :by)
                         RETURNING id
@@ -176,35 +180,35 @@ public class OrderService {
                 .param("dueTime", form.dueTime())
                 .param("trialDate", form.trialDate())
                 .param("pkg", pkg == null ? null : pkg.id())
-                .param("delivery", totals.deliveryPaise())
-                .param("items", totals.itemsPaise())
+                .param("delivery", totals.deliveryRupees())
+                .param("items", totals.itemsRupees())
                 .param("discountKind", form.discountKind().name())
                 .param("discountValue", form.discountValue())
-                .param("discount", totals.discountPaise())
+                .param("discount", totals.discountRupees())
                 .param("coupon", coupon)
-                .param("total", totals.totalPaise())
-                .param("paid", form.advancePaise())
+                .param("total", totals.totalRupees())
+                .param("paid", form.advanceRupees())
                 .param("notes", ClientService.blankToNull(form.notes()))
                 .param("by", actor)
                 .query(Long.class)
                 .single();
 
-        long total = totals.totalPaise();
+        var total = totals.totalRupees();
         if (form.redeemPoints() > 0) {
             var perk = perks.getIfAvailable();
             if (perk == null) {
                 throw bad("Loyalty points are not available");
             }
-            long value = perk.redeem(client.id(), orderId, number, form.redeemPoints(), actor);
-            if (value > total) {
+            var value = perk.redeem(client.id(), orderId, number, form.redeemPoints(), actor);
+            if (value.compareTo(total) > 0) {
                 throw bad("Those points are worth more than the order total");
             }
-            total -= value;
-            if (form.advancePaise() > total) {
+            total = total.subtract(value);
+            if (form.advanceRupees().compareTo(total) > 0) {
                 throw bad("The advance cannot be more than the order total");
             }
             jdbc.sql("""
-                            UPDATE shop_order SET reward_points = :points, reward_paise = :value, total_paise = :total
+                            UPDATE shop_order SET reward_points = :points, reward_rupees = :value, total_rupees = :total
                             WHERE id = :id
                             """)
                     .param("points", form.redeemPoints())
@@ -218,8 +222,8 @@ public class OrderService {
         for (var item : form.items()) {
             insertItem(orderId, ++position, item, templates, firstStage.id());
         }
-        if (form.advancePaise() > 0) {
-            insertPayment(orderId, form.advancePaise(), form.advanceMode(), OrderPayment.Kind.ADVANCE, null, actor);
+        if (form.advanceRupees().signum() > 0) {
+            insertPayment(orderId, form.advanceRupees(), form.advanceMode(), OrderPayment.Kind.ADVANCE, null, actor);
         }
         events.publishEvent(
                 new OrderEvent(OrderEvent.Type.PLACED, orderId, number, client.id(), client.name(), total, actor));
@@ -235,7 +239,7 @@ public class OrderService {
         var template = item.templateId() == null ? null : templates.get(item.templateId());
         jdbc.sql("""
                         INSERT INTO order_item (order_id, position, template_id, service_product_id, description,
-                            quantity, price_paise, colour, note, measurements, cloth_photo_key, stage_id)
+                            quantity, price_rupees, colour, note, measurements, cloth_photo_key, stage_id)
                         VALUES (:order, :position, :template, :product, :description, :quantity, :price, :colour,
                             :note, CAST(:measurements AS jsonb), :photo, :stage)
                         """)
@@ -245,7 +249,7 @@ public class OrderService {
                 .param("product", item.serviceProductId())
                 .param("description", item.description().trim())
                 .param("quantity", item.quantity())
-                .param("price", item.pricePaise())
+                .param("price", item.priceRupees())
                 .param("colour", ClientService.blankToNull(item.colour()))
                 .param("note", ClientService.blankToNull(item.note()))
                 .param("measurements", measurementsJson(template, item.measurements()))
@@ -301,7 +305,7 @@ public class OrderService {
             if (isHandedOver(old)
                     && (!old.description().equals(item.description().trim())
                             || old.quantity() != item.quantity()
-                            || old.pricePaise() != item.pricePaise())) {
+                            || old.priceRupees() != item.priceRupees())) {
                 throw bad(old.description() + " was already handed over; it cannot be changed");
             }
         }
@@ -325,21 +329,21 @@ public class OrderService {
         var forms = change.items().stream().map(OrderItemChange::form).toList();
         var templates = checkItems(forms);
 
-        long deliveryPaise;
+        BigDecimal deliveryRupees;
         if (change.deliveryPackageId() == null) {
-            deliveryPaise = 0;
+            deliveryRupees = Rupees.ZERO;
         } else if (change.deliveryPackageId().equals(before.deliveryPackageId())) {
-            deliveryPaise = before.deliveryChargePaise();
+            deliveryRupees = before.deliveryChargeRupees();
         } else {
-            deliveryPaise = lists.deliveryPackages().stream()
+            deliveryRupees = lists.deliveryPackages().stream()
                     .filter(p -> change.deliveryPackageId().equals(p.id()))
                     .findFirst()
                     .orElseThrow(() -> bad("That delivery package is no longer offered"))
-                    .pricePaise();
+                    .priceRupees();
         }
         var totals = totals(
                 forms,
-                deliveryPaise,
+                deliveryRupees,
                 change.discountKind(),
                 change.discountValue(),
                 settings.billing().discountAppliesTo());
@@ -347,10 +351,10 @@ public class OrderService {
         if (coupon != null && !coupon.equals(couponCode(before.couponCode()))) {
             requireCoupon(coupon, totals);
         }
-        if (before.rewardPaise() > totals.totalPaise()) {
+        if (before.rewardRupees().compareTo(totals.totalRupees()) > 0) {
             throw bad("The points redeemed on this order are worth more than the new total");
         }
-        long total = totals.totalPaise() - before.rewardPaise();
+        var total = totals.totalRupees().subtract(before.rewardRupees());
 
         if (!removed.isEmpty()) {
             jdbc.sql("DELETE FROM order_item WHERE order_id = :order AND id = ANY(:items)")
@@ -371,7 +375,7 @@ public class OrderService {
             jdbc.sql("""
                             UPDATE order_item SET position = :position, template_id = :template,
                                 service_product_id = :product, description = :description, quantity = :quantity,
-                                price_paise = :price, colour = :colour, note = :note,
+                                price_rupees = :price, colour = :colour, note = :note,
                                 measurements = CAST(:measurements AS jsonb), cloth_photo_key = :photo
                             WHERE id = :id AND order_id = :order
                             """)
@@ -380,7 +384,7 @@ public class OrderService {
                     .param("product", form.serviceProductId())
                     .param("description", form.description().trim())
                     .param("quantity", form.quantity())
-                    .param("price", form.pricePaise())
+                    .param("price", form.priceRupees())
                     .param("colour", ClientService.blankToNull(form.colour()))
                     .param("note", ClientService.blankToNull(form.note()))
                     .param("measurements", measurementsJson(template, form.measurements()))
@@ -390,18 +394,18 @@ public class OrderService {
                     .update();
         }
         jdbc.sql("""
-                        UPDATE shop_order SET delivery_package_id = :pkg, delivery_charge_paise = :delivery,
-                            items_paise = :items, discount_kind = :discountKind, discount_value = :discountValue,
-                            discount_paise = :discount, coupon_code = :coupon, total_paise = :total,
+                        UPDATE shop_order SET delivery_package_id = :pkg, delivery_charge_rupees = :delivery,
+                            items_rupees = :items, discount_kind = :discountKind, discount_value = :discountValue,
+                            discount_rupees = :discount, coupon_code = :coupon, total_rupees = :total,
                             updated_at = now()
                         WHERE id = :id
                         """)
                 .param("pkg", change.deliveryPackageId())
-                .param("delivery", totals.deliveryPaise())
-                .param("items", totals.itemsPaise())
+                .param("delivery", totals.deliveryRupees())
+                .param("items", totals.itemsRupees())
                 .param("discountKind", change.discountKind().name())
                 .param("discountValue", change.discountValue())
-                .param("discount", totals.discountPaise())
+                .param("discount", totals.discountRupees())
                 .param("coupon", coupon)
                 .param("total", total)
                 .param(ID, orderId)
@@ -452,16 +456,16 @@ public class OrderService {
             @Nullable LocalTime dueTime,
             @Nullable LocalDate trialDate,
             @Nullable Long deliveryPackageId,
-            long deliveryChargePaise,
-            long itemsPaise,
+            BigDecimal deliveryChargeRupees,
+            BigDecimal itemsRupees,
             OrderForm.DiscountKind discountKind,
-            long discountValue,
-            long discountPaise,
+            BigDecimal discountValue,
+            BigDecimal discountRupees,
             @Nullable String couponCode,
             int rewardPoints,
-            long rewardPaise,
-            long totalPaise,
-            long paidPaise,
+            BigDecimal rewardRupees,
+            BigDecimal totalRupees,
+            BigDecimal paidRupees,
             @Nullable String notes,
             @Nullable String createdBy,
             OffsetDateTime createdAt,
@@ -476,7 +480,7 @@ public class OrderService {
             @Nullable Long serviceProductId,
             String description,
             int quantity,
-            long pricePaise,
+            BigDecimal priceRupees,
             @Nullable String colour,
             @Nullable String note,
             @Nullable String measurements,
@@ -495,7 +499,7 @@ public class OrderService {
                 .orElseThrow(OrderService::notFound);
         var stages = allStages();
         var items = jdbc.sql("""
-                        SELECT i.id, i.template_id, i.service_product_id, i.description, i.quantity, i.price_paise,
+                        SELECT i.id, i.template_id, i.service_product_id, i.description, i.quantity, i.price_rupees,
                                i.colour, i.note, i.measurements::text AS measurements, i.cloth_photo_key, i.stage_id,
                                i.stage_changed_at, i.assigned_staff_id, s.name AS assigned_staff_name
                         FROM order_item i LEFT JOIN staff_account s ON s.id = i.assigned_staff_id
@@ -507,7 +511,7 @@ public class OrderService {
                         item.serviceProductId(),
                         item.description(),
                         item.quantity(),
-                        item.pricePaise(),
+                        item.priceRupees(),
                         item.colour(),
                         item.note(),
                         item.measurements() == null ? null : json.readValue(item.measurements(), VALUES),
@@ -519,7 +523,7 @@ public class OrderService {
                                 : new Assignee(item.assignedStaffId(), String.valueOf(item.assignedStaffName()))))
                 .toList();
         var payments = jdbc.sql("""
-                        SELECT id, amount_paise, mode, kind, note, received_by, received_at FROM order_payment
+                        SELECT id, amount_rupees, mode, kind, note, received_by, received_at FROM order_payment
                         WHERE order_id = :id ORDER BY received_at, id
                         """).param(ID, id).query(OrderPayment.class).list();
         return new Order(
@@ -532,17 +536,17 @@ public class OrderService {
                 row.dueTime(),
                 row.trialDate(),
                 row.deliveryPackageId(),
-                row.deliveryChargePaise(),
-                row.itemsPaise(),
+                row.deliveryChargeRupees(),
+                row.itemsRupees(),
                 row.discountKind(),
                 row.discountValue(),
-                row.discountPaise(),
+                row.discountRupees(),
                 row.couponCode(),
                 row.rewardPoints(),
-                row.rewardPaise(),
-                row.totalPaise(),
-                row.paidPaise(),
-                row.totalPaise() - row.paidPaise(),
+                row.rewardRupees(),
+                row.totalRupees(),
+                row.paidRupees(),
+                row.totalRupees().subtract(row.paidRupees()),
                 row.notes(),
                 row.createdBy(),
                 row.createdAt(),
@@ -586,8 +590,8 @@ public class OrderService {
             @Nullable LocalDate trialDate,
             int itemCount,
             @Nullable String itemsLabel,
-            long totalPaise,
-            long paidPaise) {}
+            BigDecimal totalRupees,
+            BigDecimal paidRupees) {}
 
     @Transactional(readOnly = true)
     public OrderPage list(
@@ -637,7 +641,7 @@ public class OrderService {
         var items = jdbc
                 .sql("""
                         SELECT o.id, o.number, o.client_id, c.first_name, c.last_name, c.phone, o.status, o.order_date,
-                               o.delivery_date, o.trial_date, o.total_paise, o.paid_paise,
+                               o.delivery_date, o.trial_date, o.total_rupees, o.paid_rupees,
                                (SELECT COALESCE(SUM(i.quantity), 0) FROM order_item i WHERE i.order_id = o.id)
                                    AS item_count,
                                (SELECT string_agg(i.description, ', ' ORDER BY i.position) FROM order_item i
@@ -659,8 +663,8 @@ public class OrderService {
                         row.trialDate(),
                         row.itemCount(),
                         row.itemsLabel() == null ? "" : row.itemsLabel(),
-                        row.totalPaise(),
-                        row.totalPaise() - row.paidPaise(),
+                        row.totalRupees(),
+                        row.totalRupees().subtract(row.paidRupees()),
                         isOpen(row.status()) && row.deliveryDate().isBefore(today)))
                 .toList();
         return new OrderPage(items, total, page, pageSize);
@@ -779,7 +783,7 @@ public class OrderService {
                     after.number(),
                     after.client().id(),
                     after.client().name(),
-                    after.totalPaise(),
+                    after.totalRupees(),
                     actor));
         }
     }
@@ -802,9 +806,9 @@ public class OrderService {
         }
         if (order.status() != OrderStatus.CANCELLED) {
             var settlement = Order.CancelSettlement.NONE;
-            if (order.paidPaise() > 0) {
+            if (order.paidRupees().signum() > 0) {
                 if (form == null || form.settlement() == null) {
-                    throw bad("₹" + rupees(order.paidPaise())
+                    throw bad("₹" + rupees(order.paidRupees())
                             + " was paid on this order; choose to refund it or keep it");
                 }
                 if (form.settlement() == CancelForm.Settlement.REFUND) {
@@ -813,7 +817,7 @@ public class OrderService {
                     }
                     addPayment(
                             orderId,
-                            new PaymentForm(order.paidPaise(), form.refundMode(), true, "Order cancelled"),
+                            new PaymentForm(order.paidRupees(), form.refundMode(), true, "Order cancelled"),
                             actor);
                     settlement = Order.CancelSettlement.REFUNDED;
                 } else {
@@ -835,7 +839,7 @@ public class OrderService {
                     order.number(),
                     order.client().id(),
                     order.client().name(),
-                    order.totalPaise(),
+                    order.totalRupees(),
                     actor));
         }
         return get(orderId);
@@ -870,8 +874,8 @@ public class OrderService {
         if (order.status() == OrderStatus.CANCELLED && !form.refund()) {
             throw bad("This order was cancelled; only refunds can be recorded");
         }
-        long amount = form.refund() ? -form.amountPaise() : form.amountPaise();
-        if (form.refund() && form.amountPaise() > order.paidPaise()) {
+        var amount = form.refund() ? form.amountRupees().negate() : form.amountRupees();
+        if (form.refund() && form.amountRupees().compareTo(order.paidRupees()) > 0) {
             throw bad("A refund cannot be more than what was paid");
         }
         insertPayment(
@@ -881,7 +885,7 @@ public class OrderService {
                 form.refund() ? OrderPayment.Kind.REFUND : OrderPayment.Kind.PAYMENT,
                 ClientService.blankToNull(form.note()),
                 actor);
-        jdbc.sql("UPDATE shop_order SET paid_paise = paid_paise + :amount, updated_at = now() WHERE id = :id")
+        jdbc.sql("UPDATE shop_order SET paid_rupees = paid_rupees + :amount, updated_at = now() WHERE id = :id")
                 .param("amount", amount)
                 .param(ID, orderId)
                 .update();
@@ -898,17 +902,17 @@ public class OrderService {
 
     private void insertPayment(
             long orderId,
-            long amountPaise,
+            BigDecimal amountRupees,
             PaymentMode mode,
             OrderPayment.Kind kind,
             @Nullable String note,
             @Nullable String actor) {
         jdbc.sql("""
-                        INSERT INTO order_payment (order_id, amount_paise, mode, kind, note, received_by)
+                        INSERT INTO order_payment (order_id, amount_rupees, mode, kind, note, received_by)
                         VALUES (:order, :amount, :mode, :kind, :note, :by)
                         """)
                 .param("order", orderId)
-                .param("amount", amountPaise)
+                .param("amount", amountRupees)
                 .param("mode", mode.name())
                 .param("kind", kind.name())
                 .param("note", note)
@@ -918,11 +922,12 @@ public class OrderService {
 
     // --- helpers ------------------------------------------------------------------------------------------------
 
-    /** 50000 → "500", 50050 → "500.50". */
-    static String rupees(long paise) {
-        return paise % 100 == 0
-                ? String.valueOf(paise / 100)
-                : String.format(Locale.ROOT, "%d.%02d", paise / 100, Math.abs(paise % 100));
+    /** 500.00 → "500", 500.50 → "500.50". */
+    static String rupees(BigDecimal rupees) {
+        var amount = Rupees.of(rupees);
+        return amount.remainder(BigDecimal.ONE).signum() == 0
+                ? amount.setScale(0, RoundingMode.UNNECESSARY).toPlainString()
+                : amount.toPlainString();
     }
 
     static ResponseStatusException bad(String message) {

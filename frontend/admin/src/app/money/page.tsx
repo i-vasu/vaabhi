@@ -26,22 +26,22 @@ export default function MoneyPage() {
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <StatTile label="Money in" value={rupees(l.inPaise)} tone="ok" />
-            <StatTile label="Money out" value={rupees(l.outPaise)} tone={l.outPaise > 0 ? "warn" : "default"} />
+            <StatTile label="Money in" value={rupees(l.inRupees)} tone="ok" />
+            <StatTile label="Money out" value={rupees(l.outRupees)} tone={l.outRupees > 0 ? "warn" : "default"} />
             <StatTile
               label="Net"
-              value={rupees(l.inPaise - l.outPaise)}
-              tone={l.inPaise - l.outPaise < 0 ? "bad" : "default"}
+              value={rupees(l.inRupees - l.outRupees)}
+              tone={l.inRupees - l.outRupees < 0 ? "bad" : "default"}
             />
             <StatTile
               label="Customers owe"
-              value={dues.value ? rupees(dues.value.totalPaise) : "…"}
+              value={dues.value ? rupees(dues.value.totalRupees) : "…"}
               hint={
-                dues.value && dues.value.handedOverPaise > 0
-                  ? `${rupees(dues.value.handedOverPaise)} already handed over`
+                dues.value && dues.value.handedOverRupees > 0
+                  ? `${rupees(dues.value.handedOverRupees)} already handed over`
                   : undefined
               }
-              tone={dues.value && dues.value.handedOverPaise > 0 ? "warn" : "default"}
+              tone={dues.value && dues.value.handedOverRupees > 0 ? "warn" : "default"}
             />
           </div>
           {l.byMode.length > 0 && (
@@ -54,8 +54,8 @@ export default function MoneyPage() {
                       {PAYMENT_MODES.find((p) => p.value === m.mode)?.label}
                     </dt>
                     <dd className="mt-1 tabular-nums">
-                      <span className="text-ok">+{rupees(m.inPaise)}</span>
-                      {m.outPaise > 0 && <span className="block text-warn">−{rupees(m.outPaise)}</span>}
+                      <span className="text-ok">+{rupees(m.inRupees)}</span>
+                      {m.outRupees > 0 && <span className="block text-warn">−{rupees(m.outRupees)}</span>}
                     </dd>
                   </div>
                 ))}

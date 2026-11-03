@@ -59,8 +59,8 @@ function AlterationView({ id }: { id: number }) {
   }
   const a = alteration.value;
   const next = NEXT[a.status];
-  const move = async (status: OrderStatus, collectPaise = 0, mode: PaymentMode | null = null) => {
-    const updated = await action.run(() => api.admin.alterations.progress(id, { status, collectPaise, mode }));
+  const move = async (status: OrderStatus, collectRupees = 0, mode: PaymentMode | null = null) => {
+    const updated = await action.run(() => api.admin.alterations.progress(id, { status, collectRupees, mode }));
     if (updated) {
       alteration.setValue(updated);
       setSheet(null);
@@ -82,7 +82,7 @@ function AlterationView({ id }: { id: number }) {
             type="button"
             className={`${buttonPrimary} ml-auto`}
             disabled={action.busy}
-            onClick={() => (next === "DELIVERED" && a.balancePaise > 0 ? setSheet("deliver") : void move(next))}
+            onClick={() => (next === "DELIVERED" && a.balanceRupees > 0 ? setSheet("deliver") : void move(next))}
           >
             {ACTION_LABELS[next]}
           </button>
@@ -92,8 +92,8 @@ function AlterationView({ id }: { id: number }) {
 
       <dl className="mt-4 grid grid-cols-2 gap-4 rounded-2xl border border-line bg-panel p-4 sm:grid-cols-4">
         <Fact label="Ready by">{formatDate(a.readyBy)}</Fact>
-        <Fact label="Charge">{a.paid ? rupees(a.totalPaise) : "Free"}</Fact>
-        {a.paid && <Fact label="Due">{rupees(a.balancePaise)}</Fact>}
+        <Fact label="Charge">{a.paid ? rupees(a.totalRupees) : "Free"}</Fact>
+        {a.paid && <Fact label="Due">{rupees(a.balanceRupees)}</Fact>}
         {a.orderId && a.orderNumber && (
           <Fact label="Order">
             <Link href={`/orders/view/?id=${a.orderId}`} className="text-accent-ink underline">
@@ -123,7 +123,7 @@ function AlterationView({ id }: { id: number }) {
               </p>
               {item.instructions && <p className="text-sm text-ink-soft">{item.instructions}</p>}
             </div>
-            {a.paid && <span className="text-sm tabular-nums">{rupees(item.costPaise)}</span>}
+            {a.paid && <span className="text-sm tabular-nums">{rupees(item.costRupees)}</span>}
           </div>
         ))}
       </ListCard>
@@ -148,7 +148,7 @@ function AlterationView({ id }: { id: number }) {
           busy={action.busy}
           error={action.error}
           onClose={() => setSheet(null)}
-          onDeliver={(paise, mode) => void move("DELIVERED", paise, mode)}
+          onDeliver={(amount, mode) => void move("DELIVERED", amount, mode)}
         />
       )}
       {sheet === "cancel" && (
@@ -187,9 +187,9 @@ function DeliverSheet({
   busy: boolean;
   error: string | null;
   onClose: () => void;
-  onDeliver: (collectPaise: number, mode: PaymentMode) => void;
+  onDeliver: (collectRupees: number, mode: PaymentMode) => void;
 }) {
-  const [amount, setAmount] = useState(String(alteration.balancePaise / 100));
+  const [amount, setAmount] = useState(String(alteration.balanceRupees));
   const [mode, setMode] = useState<PaymentMode>("CASH");
   const collect = amount.trim() === "" ? 0 : parseRupees(amount);
   return (
@@ -199,7 +199,7 @@ function DeliverSheet({
           label="Collected now (₹)"
           inputMode="decimal"
           value={amount}
-          hint={`${rupees(alteration.balancePaise)} due`}
+          hint={`${rupees(alteration.balanceRupees)} due`}
           error={collect === null ? "Enter the amount as a number" : undefined}
           onChange={(event) => setAmount(event.target.value)}
         />

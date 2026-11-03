@@ -1,5 +1,6 @@
 package com.vaabhi.reports;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -8,7 +9,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * A tabular report.
  *
- * @param rows one map per row, keyed by column key; MONEY values are paise
+ * @param rows one map per row, keyed by column key; MONEY values are rupees
  * @param totals column key → total, for the columns that have one
  * @param note anything the reader should know about how it is counted
  */
@@ -37,25 +38,26 @@ public record Report(
     public record ReportInfo(String name, String title, String description) {}
 
     /** Booked, collected and spent in one month. */
-    public record MonthFigures(String month, long bookedPaise, long collectedPaise, long expensesPaise) {}
+    public record MonthFigures(
+            String month, BigDecimal bookedRupees, BigDecimal collectedRupees, BigDecimal expensesRupees) {}
 
     /** Money owed, by how late it is. */
-    public record AgeingBucket(String label, int count, long paise) {}
+    public record AgeingBucket(String label, int count, BigDecimal rupees) {}
 
     /**
      * The reports hub.
      *
-     * @param averageOrderPaise booked ÷ orders booked this month
+     * @param averageOrderRupees booked ÷ orders booked this month
      */
     public record ReportsOverview(
-            long bookedPaise,
-            long collectedPaise,
-            long expensesPaise,
+            BigDecimal bookedRupees,
+            BigDecimal collectedRupees,
+            BigDecimal expensesRupees,
             int ordersBooked,
             int ordersDelivered,
-            long averageOrderPaise,
+            BigDecimal averageOrderRupees,
             int newCustomers,
-            long outstandingPaise,
+            BigDecimal outstandingRupees,
             List<MonthFigures> months,
             List<AgeingBucket> ageing) {}
 }

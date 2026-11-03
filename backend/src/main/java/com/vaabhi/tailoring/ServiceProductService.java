@@ -4,6 +4,8 @@ import com.vaabhi.settings.NumberSequence;
 import com.vaabhi.settings.NumberingService;
 import com.vaabhi.settings.ProductionStage;
 import com.vaabhi.settings.ShopListService;
+import com.vaabhi.shared.rupees.Rupees;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -42,29 +44,29 @@ public class ServiceProductService {
             String garment,
             String code,
             String name,
-            long pricePaise,
+            BigDecimal priceRupees,
             @Nullable String photoKey,
             String stageCosts) {}
 
     private static final String SELECT = """
-            SELECT p.id, p.template_id, t.name AS garment, p.code, p.name, p.price_paise, p.photo_key,
+            SELECT p.id, p.template_id, t.name AS garment, p.code, p.name, p.price_rupees, p.photo_key,
                    p.stage_costs::text AS stage_costs
             FROM service_product p JOIN garment_template t ON t.id = p.template_id
             """;
 
     private ServiceProduct toProduct(Row row) {
         var costs = json.readValue(row.stageCosts(), COSTS);
-        long totalCost = costs.stream().mapToLong(StageCost::paise).sum();
+        var totalCost = Rupees.sum(costs, StageCost::rupees);
         return new ServiceProduct(
                 row.id(),
                 row.templateId(),
                 row.garment(),
                 row.code(),
                 row.name(),
-                row.pricePaise(),
+                row.priceRupees(),
                 row.photoKey(),
                 costs,
-                row.pricePaise() - totalCost);
+                row.priceRupees().subtract(totalCost));
     }
 
     /** Active products, optionally of one garment or matching a search (name or code). */
@@ -104,31 +106,32 @@ public class ServiceProductService {
         var code = form.code() == null || form.code().isBlank()
                 ? (id == null ? numbering.next(NumberSequence.Kind.ITEM) : get(id).code())
                 : form.code().trim();
-        var costs = json.writeValueAsString(
-                form.stageCosts().stream().filter(cost -> cost.paise() > 0).toList());
+        var costs = json.writeValueAsString(form.stageCosts().stream()
+                .filter(cost -> cost.rupees().signum() > 0)
+                .toList());
         try {
             if (id == null) {
                 id = jdbc.sql("""
-                                INSERT INTO service_product (template_id, code, name, price_paise, photo_key, stage_costs)
+                                INSERT INTO service_product (template_id, code, name, price_rupees, photo_key, stage_costs)
                                 VALUES (:template, :code, :name, :price, :photo, CAST(:costs AS jsonb)) RETURNING id
                                 """)
                         .param("template", form.templateId())
                         .param("code", code)
                         .param("name", form.name().trim())
-                        .param("price", form.pricePaise())
+                        .param("price", form.priceRupees())
                         .param("photo", form.photoKey())
                         .param("costs", costs)
                         .query(Long.class)
                         .single();
             } else if (jdbc.sql("""
                                     UPDATE service_product SET template_id = :template, code = :code, name = :name,
-                                        price_paise = :price, photo_key = :photo, stage_costs = CAST(:costs AS jsonb)
+                                        price_rupees = :price, photo_key = :photo, stage_costs = CAST(:costs AS jsonb)
                                     WHERE id = :id AND active
                                     """)
                             .param("template", form.templateId())
                             .param("code", code)
                             .param("name", form.name().trim())
-                            .param("price", form.pricePaise())
+                            .param("price", form.priceRupees())
                             .param("photo", form.photoKey())
                             .param("costs", costs)
                             .param(ID, id)

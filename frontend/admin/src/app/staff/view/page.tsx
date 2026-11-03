@@ -54,7 +54,7 @@ function StaffView({ id }: { id: number }) {
           {PAY_TYPES.find((p) => p.value === m.payType)?.label}
           {m.payType !== "PIECE" && (
             <span className="block text-sm text-ink-soft">
-              {rupees(m.salaryPaise)} {m.payType === "DAILY" ? "a day" : "a month"}
+              {rupees(m.salaryRupees)} {m.payType === "DAILY" ? "a day" : "a month"}
             </span>
           )}
         </Fact>
@@ -63,7 +63,7 @@ function StaffView({ id }: { id: number }) {
           <span className="block text-sm text-ink-soft">{m.lateGraceMinutes} min grace</span>
         </Fact>
         {m.weeklyOff && <Fact label="Weekly off">{WEEKDAYS[m.weeklyOff - 1]}</Fact>}
-        {m.hourlyPaise > 0 && <Fact label="Overtime">{rupees(m.hourlyPaise)} an hour</Fact>}
+        {m.hourlyRupees > 0 && <Fact label="Overtime">{rupees(m.hourlyRupees)} an hour</Fact>}
         {m.joinedOn && <Fact label="Joined">{formatDate(m.joinedOn)}</Fact>}
         <Fact label="Dashboard">
           {m.canSignIn ? m.email : "No sign-in"}
@@ -106,7 +106,7 @@ function StaffView({ id }: { id: number }) {
               <span className="text-ink-soft">
                 {formatDate(r.fromDate)}
                 {r.toDate !== r.fromDate && ` – ${formatDate(r.toDate)}`}
-                {r.amountPaise && ` · ${rupees(r.amountPaise)}`}
+                {r.amountRupees && ` · ${rupees(r.amountRupees)}`}
               </span>
               <span className="ml-auto">
                 <Pill tone={REQUEST_TONES[r.status]}>{r.status.toLowerCase()}</Pill>
@@ -131,11 +131,11 @@ function Statement({ staffId }: { staffId: number }) {
       {s && (
         <>
           <p className="mb-2">
-            {s.balancePaise === 0
+            {s.balanceRupees === 0
               ? "All settled."
-              : s.balancePaise > 0
-                ? `The shop owes ${rupees(s.balancePaise)}.`
-                : `${rupees(-s.balancePaise)} advance still to earn back.`}
+              : s.balanceRupees > 0
+                ? `The shop owes ${rupees(s.balanceRupees)}.`
+                : `${rupees(-s.balanceRupees)} advance still to earn back.`}
           </p>
           {s.entries.length > 0 && (
             <ul className="divide-y divide-line rounded-2xl border border-line bg-panel text-sm">
@@ -143,9 +143,9 @@ function Statement({ staffId }: { staffId: number }) {
                 <li key={i} className="flex gap-3 px-4 py-3">
                   <span className="text-ink-soft">{formatDate(e.date)}</span>
                   <span className="flex-1">{e.description}</span>
-                  <span className={`tabular-nums ${e.amountPaise < 0 ? "text-warn" : "text-ok"}`}>
-                    {e.amountPaise < 0 ? "− " : "+ "}
-                    {rupees(Math.abs(e.amountPaise))}
+                  <span className={`tabular-nums ${e.amountRupees < 0 ? "text-warn" : "text-ok"}`}>
+                    {e.amountRupees < 0 ? "− " : "+ "}
+                    {rupees(Math.abs(e.amountRupees))}
                   </span>
                 </li>
               ))}

@@ -1,9 +1,13 @@
 package com.vaabhi.tailoring;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
@@ -19,7 +23,10 @@ public record OrderItemForm(
         @Nullable Long serviceProductId,
         @NotBlank @Size(max = 120) String description,
         @Min(1) @Max(999) int quantity,
-        @Min(0) @Max(100_000_000) long pricePaise,
+
+        @DecimalMin("0") @DecimalMax("1000000") @Digits(integer = 7, fraction = 2)
+        BigDecimal priceRupees,
+
         @Nullable @Size(max = 60) String colour,
         @Nullable @Size(max = 500) String note,
         @Nullable @Size(max = 60) Map<String, @Size(max = 40) String> measurements,

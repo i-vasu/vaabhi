@@ -55,8 +55,8 @@ export function draftFromMember(member: StaffMember): StaffDraft {
     designation: member.designation ?? "",
     joinedOn: member.joinedOn ?? "",
     payType: member.payType,
-    salary: member.salaryPaise ? String(member.salaryPaise / 100) : "",
-    hourly: member.hourlyPaise ? String(member.hourlyPaise / 100) : "",
+    salary: member.salaryRupees ? String(member.salaryRupees) : "",
+    hourly: member.hourlyRupees ? String(member.hourlyRupees) : "",
     shiftStart: hhmm(member.shiftStart),
     shiftEnd: hhmm(member.shiftEnd),
     grace: String(member.lateGraceMinutes),
@@ -75,9 +75,9 @@ export function formFromDraft(
   canSignInNow: boolean,
 ): { form: StaffForm; error: null } | { form: null; error: string } {
   if (!draft.name.trim()) return { form: null, error: "Enter the name." };
-  const salaryPaise = draft.salary.trim() === "" ? 0 : parseRupees(draft.salary);
-  const hourlyPaise = draft.hourly.trim() === "" ? 0 : parseRupees(draft.hourly);
-  if (salaryPaise === null || hourlyPaise === null) return { form: null, error: "Enter pay as numbers." };
+  const salaryRupees = draft.salary.trim() === "" ? 0 : parseRupees(draft.salary);
+  const hourlyRupees = draft.hourly.trim() === "" ? 0 : parseRupees(draft.hourly);
+  if (salaryRupees === null || hourlyRupees === null) return { form: null, error: "Enter pay as numbers." };
   const grace = Number(draft.grace || "0");
   if (!Number.isInteger(grace) || grace < 0 || grace > 180) return { form: null, error: "Grace is 0 to 180 minutes." };
   if (draft.signIn && !draft.email.trim()) return { form: null, error: "Add an email to sign in with." };
@@ -94,8 +94,8 @@ export function formFromDraft(
       designation: orNull(draft.designation),
       joinedOn: draft.joinedOn || null,
       payType: draft.payType,
-      salaryPaise: draft.payType === "PIECE" ? 0 : salaryPaise,
-      hourlyPaise,
+      salaryRupees: draft.payType === "PIECE" ? 0 : salaryRupees,
+      hourlyRupees,
       shiftStart: draft.shiftStart,
       shiftEnd: draft.shiftEnd,
       lateGraceMinutes: grace,
@@ -193,7 +193,7 @@ export function StaffEditor({ member }: { member?: StaffMember }) {
             label={pay.rate}
             inputMode="decimal"
             value={draft.salary}
-            error={fieldError("salaryPaise")}
+            error={fieldError("salaryRupees")}
             onChange={(e) => update({ salary: e.target.value })}
           />
         )}

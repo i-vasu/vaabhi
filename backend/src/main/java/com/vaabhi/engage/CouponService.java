@@ -1,5 +1,7 @@
 package com.vaabhi.engage;
 
+import com.vaabhi.shared.rupees.Rupees;
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -19,7 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class CouponService {
 
     private static final String SELECT = """
-            SELECT c.id, c.code, c.description, c.kind, c.value, c.min_order_paise, c.valid_from, c.valid_to,
+            SELECT c.id, c.code, c.description, c.kind, c.value, c.min_order_rupees, c.valid_from, c.valid_to,
                    c.max_uses, c.active,
                    (SELECT COUNT(*) FROM shop_order o WHERE upper(o.coupon_code) = c.code AND o.status <> 'CANCELLED')
                        AS uses
@@ -43,7 +45,7 @@ public class CouponService {
 
     @Transactional
     public Coupon save(@Nullable Long id, Coupon.CouponForm form) {
-        if (form.kind() == Coupon.Kind.PERCENT && form.value() > 10_000) {
+        if (form.kind() == Coupon.Kind.PERCENT && form.value().compareTo(BigDecimal.valueOf(100)) > 0) {
             throw bad("A percentage cannot be more than 100%");
         }
         if (form.validFrom() != null && form.validTo() != null && form.validTo().isBefore(form.validFrom())) {
@@ -52,12 +54,12 @@ public class CouponService {
         var code = form.code().trim().toUpperCase();
         try {
             var sql = id == null ? """
-                      INSERT INTO coupon (code, description, kind, value, min_order_paise, valid_from, valid_to,
+                      INSERT INTO coupon (code, description, kind, value, min_order_rupees, valid_from, valid_to,
                           max_uses, active)
                       VALUES (:code, :description, :kind, :value, :min, :from, :to, :max, :active) RETURNING id
                       """ : """
                       UPDATE coupon SET code = :code, description = :description, kind = :kind, value = :value,
-                          min_order_paise = :min, valid_from = :from, valid_to = :to, max_uses = :max, active = :active
+                          min_order_rupees = :min, valid_from = :from, valid_to = :to, max_uses = :max, active = :active
                       WHERE id = :id RETURNING id
                       """;
             id = jdbc.sql(sql)
@@ -69,7 +71,7 @@ public class CouponService {
                                     : form.description().trim())
                     .param("kind", form.kind().name())
                     .param("value", form.value())
-                    .param("min", form.minOrderPaise())
+                    .param("min", form.minOrderRupees())
                     .param("from", form.validFrom())
                     .param("to", form.validTo())
                     .param("max", form.maxUses())
@@ -92,9 +94,9 @@ public class CouponService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Coupon not found"));
     }
 
-    /** Whether {@code code} applies to an order of {@code amountPaise} today, and what it takes off. */
+    /** Whether {@code code} applies to an order of {@code amountRupees} today, and what it takes off. */
     @Transactional(readOnly = true)
-    public Coupon.CouponCheck check(String code, long amountPaise) {
+    public Coupon.CouponCheck check(String code, BigDecimal amountRupees) {
         var normalized = code.trim().toUpperCase();
         var coupon = jdbc.sql(SELECT + " WHERE c.code = :code")
                 .param("code", normalized)
@@ -113,15 +115,16 @@ public class CouponService {
             reason = "This coupon ended on " + coupon.validTo();
         } else if (coupon.maxUses() != null && coupon.uses() >= coupon.maxUses()) {
             reason = "This coupon has been used up";
-        } else if (amountPaise < coupon.minOrderPaise()) {
-            reason = "Needs an order of at least ₹" + coupon.minOrderPaise() / 100;
+        } else if (amountRupees.compareTo(coupon.minOrderRupees()) < 0) {
+            reason = "Needs an order of at least ₹"
+                    + coupon.minOrderRupees().stripTrailingZeros().toPlainString();
         }
         if (reason != null) {
-            return new Coupon.CouponCheck(normalized, false, reason, null, 0, 0);
+            return new Coupon.CouponCheck(normalized, false, reason, null, null, Rupees.ZERO);
         }
-        long discount = coupon.kind() == Coupon.Kind.PERCENT
-                ? Math.round(amountPaise * coupon.value() / 10_000.0)
-                : Math.min(coupon.value(), amountPaise);
+        var discount = coupon.kind() == Coupon.Kind.PERCENT
+                ? Rupees.percentOf(amountRupees, coupon.value())
+                : Rupees.min(coupon.value(), amountRupees);
         return new Coupon.CouponCheck(normalized, true, null, coupon.kind(), coupon.value(), discount);
     }
 
@@ -130,12 +133,12 @@ public class CouponService {
      * so a second booking waits and then counts the first one's use.
      */
     @Transactional
-    public void requireForBooking(String code, long amountPaise) {
+    public void requireForBooking(String code, BigDecimal amountRupees) {
         jdbc.sql("SELECT id FROM coupon WHERE code = :code FOR UPDATE")
                 .param("code", code.trim().toUpperCase())
                 .query(Long.class)
                 .optional();
-        var check = check(code, amountPaise);
+        var check = check(code, amountRupees);
         if (!check.valid()) {
             throw bad("Coupon " + check.code() + ": " + check.reason());
         }

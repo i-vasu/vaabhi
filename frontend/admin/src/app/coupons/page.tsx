@@ -21,7 +21,7 @@ import { parseRupees, rupees } from "@/lib/settings";
 import { formatDate, parsePercent, useAction, useLoad } from "@/lib/tailoring";
 
 function couponValue(c: Pick<Coupon, "kind" | "value">): string {
-  return c.kind === "PERCENT" ? `${c.value / 100}% off` : `${rupees(c.value)} off`;
+  return c.kind === "PERCENT" ? `${c.value}% off` : `${rupees(c.value)} off`;
 }
 
 export default function CouponsPage() {
@@ -60,7 +60,7 @@ export default function CouponsPage() {
                 }
                 subtitle={[
                   couponValue(c),
-                  c.minOrderPaise > 0 && `on ${rupees(c.minOrderPaise)}+`,
+                  c.minOrderRupees > 0 && `on ${rupees(c.minOrderRupees)}+`,
                   c.validTo && `until ${formatDate(c.validTo)}`,
                   c.description,
                 ]
@@ -98,9 +98,9 @@ function CouponSheet({
   const [code, setCode] = useState(coupon?.code ?? "");
   const [kind, setKind] = useState<CouponForm["kind"]>(coupon?.kind ?? "PERCENT");
   const [value, setValue] = useState(
-    coupon ? String(coupon.kind === "PERCENT" ? coupon.value / 100 : coupon.value / 100) : "",
+    coupon ? String(coupon.value) : "",
   );
-  const [min, setMin] = useState(coupon?.minOrderPaise ? String(coupon.minOrderPaise / 100) : "");
+  const [min, setMin] = useState(coupon?.minOrderRupees ? String(coupon.minOrderRupees) : "");
   const [from, setFrom] = useState(coupon?.validFrom ?? "");
   const [to, setTo] = useState(coupon?.validTo ?? "");
   const [maxUses, setMaxUses] = useState(coupon?.maxUses ? String(coupon.maxUses) : "");
@@ -112,14 +112,14 @@ function CouponSheet({
     const amount = kind === "PERCENT" ? parsePercent(value) : parseRupees(value);
     if (!code.trim()) return action.setError("Enter the code.");
     if (!amount) return action.setError("Enter the discount.");
-    const minOrderPaise = min.trim() === "" ? 0 : parseRupees(min);
-    if (minOrderPaise === null) return action.setError("Enter the minimum order as a number.");
+    const minOrderRupees = min.trim() === "" ? 0 : parseRupees(min);
+    if (minOrderRupees === null) return action.setError("Enter the minimum order as a number.");
     const form: CouponForm = {
       code: code.trim(),
       description: description.trim() || null,
       kind,
       value: amount,
-      minOrderPaise,
+      minOrderRupees,
       validFrom: from || null,
       validTo: to || null,
       maxUses: maxUses ? Number(maxUses) : null,

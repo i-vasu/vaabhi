@@ -76,7 +76,7 @@ describe("stock", () => {
         category: null,
         unit: "PCS",
         reorderLevel: 10,
-        costPaise: 2500,
+        costRupees: 2500,
       }),
     );
   });
@@ -105,7 +105,7 @@ describe("coupons and rewards", () => {
         code: "SAVE200",
         kind: "AMOUNT",
         value: 20000,
-        minOrderPaise: 0,
+        minOrderRupees: 0,
         active: true,
       }),
     );
@@ -134,7 +134,7 @@ describe("coupons and rewards", () => {
       expect(lastSent(sent, "PUT", "/engage/rewards/settings")?.body).toEqual({
         enabled: true,
         pointsPer100: 2,
-        paisePerPoint: 100,
+        rupeesPerPoint: 100,
       }),
     );
   });

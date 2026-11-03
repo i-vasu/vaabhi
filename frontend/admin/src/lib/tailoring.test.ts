@@ -4,26 +4,26 @@ import { addDays, formatDate, formatPhone, idParam, orderTotals, parsePercent, s
 
 describe("order totals", () => {
   const items = [
-    { pricePaise: 50000, quantity: 2 },
-    { pricePaise: 10000, quantity: 1 },
+    { priceRupees: 50000, quantity: 2 },
+    { priceRupees: 10000, quantity: 1 },
   ];
 
   it("takes a percentage off the items by default", () => {
     expect(orderTotals(items, 20000, "PERCENT", 1000, "ITEMS_BEFORE_TAX")).toEqual({
-      itemsPaise: 110000,
-      deliveryPaise: 20000,
-      discountPaise: 11000,
-      totalPaise: 119000,
+      itemsRupees: 110000,
+      deliveryRupees: 20000,
+      discountRupees: 11000,
+      totalRupees: 119000,
     });
   });
 
   it("can discount the delivery charge too", () => {
-    expect(orderTotals(items, 20000, "PERCENT", 1000, "ORDER_TOTAL").discountPaise).toBe(13000);
+    expect(orderTotals(items, 20000, "PERCENT", 1000, "ORDER_TOTAL").discountRupees).toBe(13000);
   });
 
   it("never takes off more than there is", () => {
-    expect(orderTotals(items, 0, "AMOUNT", 500000, "ITEMS_BEFORE_TAX").totalPaise).toBe(0);
-    expect(orderTotals(items, 0, "PERCENT", 20000, "ITEMS_BEFORE_TAX").totalPaise).toBe(0);
+    expect(orderTotals(items, 0, "AMOUNT", 500000, "ITEMS_BEFORE_TAX").totalRupees).toBe(0);
+    expect(orderTotals(items, 0, "PERCENT", 20000, "ITEMS_BEFORE_TAX").totalRupees).toBe(0);
   });
 });
 

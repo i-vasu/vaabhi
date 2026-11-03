@@ -2,8 +2,7 @@ package com.vaabhi.staff;
 
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
@@ -22,5 +21,8 @@ public record RequestForm(
         @NotNull LocalDate fromDate,
         @Nullable LocalDate toDate,
         @Nullable @DecimalMin("0.5") @DecimalMax("8") BigDecimal hours,
-        @Nullable @Min(100) @Max(100_000_000) Long amountPaise,
+
+        @Nullable @DecimalMin("1") @DecimalMax("1000000") @Digits(integer = 7, fraction = 2)
+        BigDecimal amountRupees,
+
         @Nullable @Size(max = 500) String reason) {}

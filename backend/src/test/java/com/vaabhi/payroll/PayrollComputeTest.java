@@ -17,7 +17,7 @@ class PayrollComputeTest {
 
     private static final YearMonth NOVEMBER = YearMonth.of(2026, 11); // 30 days
 
-    private static StaffMember member(PayType payType, long salaryPaise, long hourlyPaise) {
+    private static StaffMember member(PayType payType, BigDecimal salaryRupees, BigDecimal hourlyRupees) {
         return new StaffMember(
                 7,
                 "Ravi",
@@ -27,8 +27,8 @@ class PayrollComputeTest {
                 "Tailor",
                 null,
                 payType,
-                salaryPaise,
-                hourlyPaise,
+                salaryRupees,
+                hourlyRupees,
                 LocalTime.of(10, 0),
                 LocalTime.of(19, 0),
                 10,
@@ -49,14 +49,14 @@ class PayrollComputeTest {
                 member(PayType.MONTHLY, 1_500_000, 0), NOVEMBER, days(20, 1, 2, 1, 0, 0), 0, 0, 0);
         assertThat(slip.daysUnpaid()).isEqualByComparingTo(new BigDecimal("3.5"));
         assertThat(slip.daysPaid()).isEqualByComparingTo(new BigDecimal("26.5"));
-        assertThat(slip.basePaise()).isEqualTo(1_325_000);
-        assertThat(slip.netPaise()).isEqualTo(1_325_000);
+        assertThat(slip.baseRupees()).isEqualTo(1_325_000);
+        assertThat(slip.netRupees()).isEqualTo(1_325_000);
     }
 
     @Test
     void unmarkedMonthPaysFullSalary() {
         var slip = PayrollService.compute(member(PayType.MONTHLY, 1_500_000, 0), NOVEMBER, null, 0, 0, 0);
-        assertThat(slip.basePaise()).isEqualTo(1_500_000);
+        assertThat(slip.baseRupees()).isEqualTo(1_500_000);
     }
 
     @Test
@@ -64,20 +64,20 @@ class PayrollComputeTest {
         // ₹600 a day × (22 + 0.5) days.
         var slip = PayrollService.compute(member(PayType.DAILY, 60_000, 0), NOVEMBER, days(22, 1, 3, 0, 0, 0), 0, 0, 0);
         assertThat(slip.daysPaid()).isEqualByComparingTo(new BigDecimal("22.5"));
-        assertThat(slip.basePaise()).isEqualTo(1_350_000);
+        assertThat(slip.baseRupees()).isEqualTo(1_350_000);
     }
 
     @Test
     void pieceWorkersArePaidTheirPiecesAndOthersOnlySeeTheCount() {
         var piece =
                 PayrollService.compute(member(PayType.PIECE, 0, 0), NOVEMBER, days(20, 0, 0, 0, 0, 0), 14, 420_000, 0);
-        assertThat(piece.basePaise()).isZero();
-        assertThat(piece.piecePaise()).isEqualTo(420_000);
-        assertThat(piece.netPaise()).isEqualTo(420_000);
+        assertThat(piece.baseRupees()).isZero();
+        assertThat(piece.pieceRupees()).isEqualTo(420_000);
+        assertThat(piece.netRupees()).isEqualTo(420_000);
 
         var monthly = PayrollService.compute(member(PayType.MONTHLY, 1_000_000, 0), NOVEMBER, null, 14, 420_000, 0);
         assertThat(monthly.pieces()).isEqualTo(14);
-        assertThat(monthly.piecePaise()).isZero();
+        assertThat(monthly.pieceRupees()).isZero();
     }
 
     @Test
@@ -85,14 +85,14 @@ class PayrollComputeTest {
         // ₹120 an hour: 150 min overtime = ₹300; 45 min late = ₹90; ₹2,000 advance back.
         var slip = PayrollService.compute(
                 member(PayType.MONTHLY, 1_500_000, 12_000), NOVEMBER, days(26, 0, 0, 0, 45, 150), 0, 0, 200_000);
-        assertThat(slip.overtimePaise()).isEqualTo(30_000);
-        assertThat(slip.latePaise()).isEqualTo(9_000);
-        assertThat(slip.netPaise()).isEqualTo(1_500_000 + 30_000 - 9_000 - 200_000);
+        assertThat(slip.overtimeRupees()).isEqualTo(30_000);
+        assertThat(slip.lateRupees()).isEqualTo(9_000);
+        assertThat(slip.netRupees()).isEqualTo(1_500_000 + 30_000 - 9_000 - 200_000);
     }
 
     @Test
     void anAdvanceLargerThanThePayLeavesANegativeNet() {
         var slip = PayrollService.compute(member(PayType.PIECE, 0, 0), NOVEMBER, null, 1, 5_000, 20_000);
-        assertThat(slip.netPaise()).isEqualTo(-15_000);
+        assertThat(slip.netRupees()).isEqualTo(-15_000);
     }
 }

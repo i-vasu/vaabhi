@@ -53,10 +53,10 @@ export default function LedgerPage() {
       ) : (
         <>
           <dl aria-label="Ledger totals" className="mb-4 rounded-2xl border border-line bg-panel p-4 text-sm">
-            <AmountLine label="Opening balance" value={rupees(l.openingPaise)} />
-            <AmountLine label="Money in" value={`+ ${rupees(l.inPaise)}`} />
-            <AmountLine label="Money out" value={`− ${rupees(l.outPaise)}`} />
-            <AmountLine label="Closing balance" value={rupees(l.closingPaise)} strong />
+            <AmountLine label="Opening balance" value={rupees(l.openingRupees)} />
+            <AmountLine label="Money in" value={`+ ${rupees(l.inRupees)}`} />
+            <AmountLine label="Money out" value={`− ${rupees(l.outRupees)}`} />
+            <AmountLine label="Closing balance" value={rupees(l.closingRupees)} strong />
           </dl>
           {l.entries.length === 0 ? (
             <p className="text-ink-soft">Nothing this month.</p>
@@ -95,13 +95,13 @@ export default function LedgerPage() {
                           {PAYMENT_MODES.find((m) => m.value === entry.mode)?.label}
                         </td>
                         <td
-                          className={`whitespace-nowrap px-4 py-3 text-right tabular-nums ${entry.amountPaise < 0 ? "text-warn" : "text-ok"}`}
+                          className={`whitespace-nowrap px-4 py-3 text-right tabular-nums ${entry.amountRupees < 0 ? "text-warn" : "text-ok"}`}
                         >
-                          {entry.amountPaise < 0 ? "− " : "+ "}
-                          {rupees(Math.abs(entry.amountPaise))}
+                          {entry.amountRupees < 0 ? "− " : "+ "}
+                          {rupees(Math.abs(entry.amountRupees))}
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
-                          {rupees(entry.balancePaise)}
+                          {rupees(entry.balanceRupees)}
                         </td>
                       </tr>
                     );

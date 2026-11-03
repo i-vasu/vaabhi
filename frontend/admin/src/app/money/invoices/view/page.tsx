@@ -24,7 +24,7 @@ function InvoiceView({ id }: { id: number }) {
     );
   }
   const v = invoice.value;
-  const gst = v.cgstPaise + v.sgstPaise;
+  const gst = v.cgstRupees + v.sgstRupees;
   const half = (Number(v.gstRate) / 2).toString();
 
   return (
@@ -69,8 +69,8 @@ function InvoiceView({ id }: { id: number }) {
               <tr key={index}>
                 <td className="px-4 py-3">{line.description}</td>
                 <td className="px-4 py-3 text-right tabular-nums">{line.quantity}</td>
-                <td className="px-4 py-3 text-right tabular-nums">{rupees(line.unitPaise)}</td>
-                <td className="px-4 py-3 text-right tabular-nums">{rupees(line.amountPaise)}</td>
+                <td className="px-4 py-3 text-right tabular-nums">{rupees(line.unitRupees)}</td>
+                <td className="px-4 py-3 text-right tabular-nums">{rupees(line.amountRupees)}</td>
               </tr>
             ))}
           </tbody>
@@ -78,18 +78,18 @@ function InvoiceView({ id }: { id: number }) {
       </div>
 
       <dl aria-label="Invoice totals" className="mt-4 rounded-2xl border border-line bg-panel p-4 text-sm">
-        {v.discountPaise > 0 && <AmountLine label="Discount" value={`− ${rupees(v.discountPaise)}`} />}
+        {v.discountRupees > 0 && <AmountLine label="Discount" value={`− ${rupees(v.discountRupees)}`} />}
         {gst > 0 && (
           <>
-            <AmountLine label="Taxable value" value={rupees(v.taxablePaise)} />
-            <AmountLine label={`CGST ${half}%`} value={rupees(v.cgstPaise)} />
-            <AmountLine label={`SGST ${half}%`} value={rupees(v.sgstPaise)} />
+            <AmountLine label="Taxable value" value={rupees(v.taxableRupees)} />
+            <AmountLine label={`CGST ${half}%`} value={rupees(v.cgstRupees)} />
+            <AmountLine label={`SGST ${half}%`} value={rupees(v.sgstRupees)} />
           </>
         )}
-        <AmountLine label="Total" value={rupees(v.totalPaise)} strong />
+        <AmountLine label="Total" value={rupees(v.totalRupees)} strong />
         {gst > 0 && v.pricesIncludeTax && <p className="text-xs text-ink-faint">Prices include GST.</p>}
-        <AmountLine label="Paid" value={rupees(v.paidPaise)} />
-        <AmountLine label="Balance" value={rupees(Math.max(0, v.balancePaise))} strong />
+        <AmountLine label="Paid" value={rupees(v.paidRupees)} />
+        <AmountLine label="Balance" value={rupees(Math.max(0, v.balanceRupees))} strong />
       </dl>
 
       <p className="mt-3 text-sm text-ink-faint">
@@ -99,7 +99,7 @@ function InvoiceView({ id }: { id: number }) {
 
       {!v.cancelledAt && (
         <div className="mt-6 flex flex-wrap gap-2 print:hidden">
-          {v.balancePaise > 0 && (
+          {v.balanceRupees > 0 && (
             <Link href={`/orders/view/?id=${v.orderId}`} className={buttonPrimary}>
               Take payment
             </Link>

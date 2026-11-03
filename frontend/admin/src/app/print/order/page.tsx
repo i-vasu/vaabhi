@@ -49,7 +49,7 @@ function OrderSlip({ id }: { id: number }) {
           <div key={item.id} className="mb-2">
             <PaperLine
               label={`${item.quantity > 1 ? `${item.quantity} × ` : ""}${item.description}${item.colour ? ` (${item.colour})` : ""}`}
-              value={rupees(item.pricePaise * item.quantity)}
+              value={rupees(item.priceRupees * item.quantity)}
             />
             {printing.showMeasurements && item.measurements && (
               <p className="text-black/70">
@@ -63,11 +63,11 @@ function OrderSlip({ id }: { id: number }) {
         ))}
       </div>
       <div className="border-t border-black/20 pt-2">
-        {o.deliveryChargePaise > 0 && <PaperLine label="Delivery" value={rupees(o.deliveryChargePaise)} />}
-        {o.discountPaise > 0 && <PaperLine label="Discount" value={`− ${rupees(o.discountPaise)}`} />}
-        <PaperLine label="Total" value={rupees(o.totalPaise)} strong />
-        <PaperLine label="Paid" value={rupees(o.paidPaise)} />
-        <PaperLine label="Balance" value={rupees(Math.max(0, o.balancePaise))} strong />
+        {o.deliveryChargeRupees > 0 && <PaperLine label="Delivery" value={rupees(o.deliveryChargeRupees)} />}
+        {o.discountRupees > 0 && <PaperLine label="Discount" value={`− ${rupees(o.discountRupees)}`} />}
+        <PaperLine label="Total" value={rupees(o.totalRupees)} strong />
+        <PaperLine label="Paid" value={rupees(o.paidRupees)} />
+        <PaperLine label="Balance" value={rupees(Math.max(0, o.balanceRupees))} strong />
       </div>
       {printing.showBankDetails && documents.upiId && <p className="mt-3">UPI: {documents.upiId}</p>}
       {printing.showTerms && documents.terms && (

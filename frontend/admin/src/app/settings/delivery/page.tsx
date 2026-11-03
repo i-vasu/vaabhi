@@ -22,7 +22,7 @@ export default function DeliveryPackagesPage() {
 
   const replace = (index: number, pkg: DeliveryPackage) =>
     list.setValue(packages.map((p, i) => (i === index ? pkg : p)));
-  const add = () => list.setValue([...packages, { id: null, name: "", pricePaise: 0, days: 7 }]);
+  const add = () => list.setValue([...packages, { id: null, name: "", priceRupees: 0, days: 7 }]);
 
   return (
     <section className="mx-auto max-w-3xl">
@@ -58,10 +58,10 @@ export default function DeliveryPackagesPage() {
                 <TextField
                   label="Charge ₹"
                   inputMode="decimal"
-                  defaultValue={String(pkg.pricePaise / 100)}
+                  defaultValue={String(pkg.priceRupees)}
                   onChange={(event) => {
-                    const paise = parseRupees(event.target.value);
-                    if (paise !== null) replace(index, { ...pkg, pricePaise: paise });
+                    const price = parseRupees(event.target.value);
+                    if (price !== null) replace(index, { ...pkg, priceRupees: price });
                   }}
                 />
                 <TextField

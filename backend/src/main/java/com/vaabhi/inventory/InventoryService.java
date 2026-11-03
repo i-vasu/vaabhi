@@ -1,7 +1,7 @@
 package com.vaabhi.inventory;
 
+import com.vaabhi.shared.rupees.Rupees;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 import org.springframework.dao.DuplicateKeyException;
@@ -16,7 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class InventoryService {
 
     private static final String ITEMS = """
-            SELECT i.id, i.name, i.sku, i.category, i.unit, i.reorder_level, i.cost_paise,
+            SELECT i.id, i.name, i.sku, i.category, i.unit, i.reorder_level, i.cost_rupees,
                    COALESCE(SUM(m.quantity), 0) AS on_hand
             FROM stock_item i LEFT JOIN stock_movement m ON m.item_id = i.id
             """;
@@ -34,7 +34,7 @@ public class InventoryService {
             @Nullable String category,
             StockItem.Unit unit,
             BigDecimal reorderLevel,
-            long costPaise,
+            BigDecimal costRupees,
             BigDecimal onHand) {
 
         StockItem item() {
@@ -45,14 +45,10 @@ public class InventoryService {
                     category,
                     unit,
                     reorderLevel,
-                    costPaise,
+                    costRupees,
                     onHand,
                     onHand.compareTo(reorderLevel) <= 0,
-                    onHand.signum() <= 0
-                            ? 0
-                            : onHand.multiply(BigDecimal.valueOf(costPaise))
-                                    .setScale(0, RoundingMode.HALF_UP)
-                                    .longValueExact());
+                    onHand.signum() <= 0 ? Rupees.ZERO : Rupees.times(costRupees, onHand));
         }
     }
 
@@ -84,7 +80,7 @@ public class InventoryService {
         try {
             if (id == null) {
                 id = jdbc.sql("""
-                                INSERT INTO stock_item (name, sku, category, unit, reorder_level, cost_paise)
+                                INSERT INTO stock_item (name, sku, category, unit, reorder_level, cost_rupees)
                                 VALUES (:name, :sku, :category, :unit, :reorder, :cost) RETURNING id
                                 """)
                         .param("name", form.name().trim())
@@ -92,14 +88,14 @@ public class InventoryService {
                         .param("category", blankToNull(form.category()))
                         .param("unit", form.unit().name())
                         .param("reorder", form.reorderLevel())
-                        .param("cost", form.costPaise())
+                        .param("cost", form.costRupees())
                         .query(Long.class)
                         .single();
             } else {
                 get(id);
                 jdbc.sql("""
                                 UPDATE stock_item SET name = :name, sku = :sku, category = :category, unit = :unit,
-                                    reorder_level = :reorder, cost_paise = :cost
+                                    reorder_level = :reorder, cost_rupees = :cost
                                 WHERE id = :id
                                 """)
                         .param("name", form.name().trim())
@@ -107,7 +103,7 @@ public class InventoryService {
                         .param("category", blankToNull(form.category()))
                         .param("unit", form.unit().name())
                         .param("reorder", form.reorderLevel())
-                        .param("cost", form.costPaise())
+                        .param("cost", form.costRupees())
                         .param("id", id)
                         .update();
             }

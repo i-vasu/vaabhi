@@ -179,8 +179,12 @@ export type SettingsSections = {
 export type OtpSent = Schemas["OtpSent"];
 export type AuthSession = Schemas["AuthSession"];
 export type CustomerProfile = Schemas["CustomerProfile"];
+export type CheckoutRequest = Schemas["CheckoutRequest"];
+export type CheckoutStart = Schemas["CheckoutStart"];
+export type PaymentConfirmation = Schemas["PaymentConfirmation"];
+export type WebOrder = Schemas["WebOrder"];
 
-/** Field-level message from the API, e.g. `{ field: "variants[0].pricePaise", message: "must be greater than 0" }`. */
+/** Field-level message from the API, e.g. `{ field: "variants[0].priceRupees", message: "must be greater than 0" }`. */
 export type FieldError = { field: string; message: string };
 
 /** Listing filters and paging. Facet filters (fabric, occasion, …) take comma-separated value codes. */
@@ -320,8 +324,33 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
           headers: { ...bearer(accessToken), "Content-Type": "application/json" },
           body: JSON.stringify({ name }),
         }),
+      /** Places the order from the bag; the answer opens Razorpay Checkout. */
+      startCheckout: (accessToken: string, checkout: CheckoutRequest) =>
+        request<CheckoutStart>("/api/v1/customer/checkout", {
+          method: "POST",
+          headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+          body: JSON.stringify(checkout),
+          cache: "no-store",
+        }),
+      /** Confirms the payment Razorpay Checkout returned. */
+      confirmPayment: (accessToken: string, number: string, payment: PaymentConfirmation) =>
+        request<WebOrder>(`/api/v1/customer/orders/${encodeURIComponent(number)}/payment`, {
+          method: "POST",
+          headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+          body: JSON.stringify(payment),
+          cache: "no-store",
+        }),
+      listOrders: (accessToken: string) =>
+        request<WebOrder[]>("/api/v1/customer/orders", { headers: bearer(accessToken), cache: "no-store" }),
+      getOrder: (accessToken: string, number: string) =>
+        request<WebOrder>(`/api/v1/customer/orders/${encodeURIComponent(number)}`, {
+          headers: bearer(accessToken),
+          cache: "no-store",
+        }),
     },
     admin: {
+      /** Online (storefront) orders, newest first. */
+      onlineOrders: () => request<WebOrder[]>("/api/v1/admin/online-orders"),
       /** The signed-in staff member. */
       me: () => request<StaffProfile>("/api/v1/admin/me"),
       changePassword: (change: PasswordChange) => send<void>("PUT", "/api/v1/admin/me/password", change),
@@ -351,8 +380,8 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         coupons: () => request<Coupon[]>("/api/v1/admin/engage/coupons"),
         createCoupon: (form: CouponForm) => send<Coupon>("POST", "/api/v1/admin/engage/coupons", form),
         updateCoupon: (id: number, form: CouponForm) => send<Coupon>("PUT", `/api/v1/admin/engage/coupons/${id}`, form),
-        checkCoupon: (code: string, amountPaise: number) =>
-          request<CouponCheck>(`/api/v1/admin/engage/coupons/check${queryString({ code, amountPaise })}`),
+        checkCoupon: (code: string, amountRupees: number) =>
+          request<CouponCheck>(`/api/v1/admin/engage/coupons/check${queryString({ code, amountRupees })}`),
         rewardSettings: () => request<RewardSettings>("/api/v1/admin/engage/rewards/settings"),
         saveRewardSettings: (settings: RewardSettings) =>
           send<RewardSettings>("PUT", "/api/v1/admin/engage/rewards/settings", settings),

@@ -86,10 +86,10 @@ function Orders() {
                 }
                 subtitle={`${order.itemsLabel} · ${formatPhone(order.clientPhone)} · due ${formatDate(order.deliveryDate)}`}
                 trailing={
-                  order.balancePaise > 0 && order.status !== "CANCELLED" ? (
-                    <span className="text-warn">{rupees(order.balancePaise)} due</span>
+                  order.balanceRupees > 0 && order.status !== "CANCELLED" ? (
+                    <span className="text-warn">{rupees(order.balanceRupees)} due</span>
                   ) : (
-                    rupees(order.totalPaise)
+                    rupees(order.totalRupees)
                   )
                 }
               />

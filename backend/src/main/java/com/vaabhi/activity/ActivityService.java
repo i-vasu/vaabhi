@@ -7,6 +7,7 @@ import com.vaabhi.staff.StaffRequest;
 import com.vaabhi.tailoring.AlterationEvent;
 import com.vaabhi.tailoring.OrderEvent;
 import com.vaabhi.tailoring.OrderService;
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,10 +48,10 @@ public class ActivityService {
         this.requests = requests;
     }
 
-    private static String rupees(long paise) {
+    private static String rupees(BigDecimal rupees) {
         var format = NumberFormat.getNumberInstance(Locale.forLanguageTag("en-IN"));
         format.setMaximumFractionDigits(2);
-        return "₹" + format.format(paise / 100.0);
+        return "₹" + format.format(rupees);
     }
 
     void record(String kind, String title, @Nullable String actor, @Nullable String refType, @Nullable Long refId) {
@@ -70,16 +71,16 @@ public class ActivityService {
     void on(OrderEvent e) {
         var title = switch (e.type()) {
             case PLACED ->
-                "Order " + e.number() + " booked for " + e.clientName() + " (" + rupees(e.amountPaise()) + ")";
+                "Order " + e.number() + " booked for " + e.clientName() + " (" + rupees(e.amountRupees()) + ")";
             case CHANGED ->
-                "Order " + e.number() + " for " + e.clientName() + " changed (" + rupees(e.amountPaise()) + ")";
+                "Order " + e.number() + " for " + e.clientName() + " changed (" + rupees(e.amountRupees()) + ")";
             case READY -> "Order " + e.number() + " for " + e.clientName() + " is ready";
             case DELIVERED -> "Order " + e.number() + " delivered to " + e.clientName();
             case CANCELLED -> "Order " + e.number() + " for " + e.clientName() + " was cancelled";
             case PAYMENT_RECEIVED ->
-                e.amountPaise() < 0
-                        ? "Refund of " + rupees(-e.amountPaise()) + " on " + e.number()
-                        : rupees(e.amountPaise()) + " received for " + e.number() + " from " + e.clientName();
+                e.amountRupees().signum() < 0
+                        ? "Refund of " + rupees(e.amountRupees().negate()) + " on " + e.number()
+                        : rupees(e.amountRupees()) + " received for " + e.number() + " from " + e.clientName();
         };
         var kind = e.type() == OrderEvent.Type.PAYMENT_RECEIVED
                 ? "PAYMENT_RECEIVED"
@@ -94,7 +95,7 @@ public class ActivityService {
             case READY -> "Alteration " + e.number() + " for " + e.clientName() + " is ready";
             case DELIVERED -> "Alteration " + e.number() + " handed over to " + e.clientName();
             case CANCELLED -> "Alteration " + e.number() + " was cancelled";
-            case PAYMENT_RECEIVED -> rupees(e.amountPaise()) + " received for alteration " + e.number();
+            case PAYMENT_RECEIVED -> rupees(e.amountRupees()) + " received for alteration " + e.number();
         };
         var kind = e.type() == AlterationEvent.Type.PAYMENT_RECEIVED ? "PAYMENT_RECEIVED" : "ALTERATION_" + e.type();
         record(kind, title, e.actor(), "ALTERATION", e.alterationId());

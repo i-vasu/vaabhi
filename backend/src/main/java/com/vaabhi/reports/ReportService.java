@@ -2,15 +2,19 @@ package com.vaabhi.reports;
 
 import com.vaabhi.money.LedgerService;
 import com.vaabhi.payroll.PayrollService;
+import com.vaabhi.shared.rupees.Rupees;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
@@ -19,7 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 /**
  * The reports. Each one is a single query over a date range (inclusive, in the shop's time zone) returning rows
- * keyed by column; money is in paise, dates are yyyy-mm-dd text.
+ * keyed by column; money is in rupees, dates are yyyy-mm-dd text.
  */
 @Service
 public class ReportService {
@@ -92,6 +96,11 @@ public class ReportService {
         return jdbc.sql(sql).params(params).query().listOfRows();
     }
 
+    /** A money column from a generic row: rupees with two decimals (zero when null). */
+    private static BigDecimal money(@Nullable Object value) {
+        return value == null ? Rupees.ZERO : Rupees.of(new BigDecimal(value.toString()));
+    }
+
     /** Sums the given numeric columns over the rows. */
     static Map<String, Object> totals(List<Map<String, Object>> rows, String... keys) {
         Map<String, Object> totals = new LinkedHashMap<>();
@@ -124,8 +133,8 @@ public class ReportService {
             case "sales" -> {
                 var rows = rows("""
                         SELECT to_char(v.issued_on, 'YYYY-MM-DD') AS day, COUNT(*) AS invoices,
-                               SUM(v.taxable_paise) AS taxable, SUM(v.cgst_paise + v.sgst_paise) AS gst,
-                               SUM(v.total_paise) AS total
+                               SUM(v.taxable_rupees) AS taxable, SUM(v.cgst_rupees + v.sgst_rupees) AS gst,
+                               SUM(v.total_rupees) AS total
                         FROM invoice v WHERE v.cancelled_at IS NULL AND v.issued_on BETWEEN :from AND :to
                         GROUP BY v.issued_on ORDER BY v.issued_on
                         """, p);
@@ -147,8 +156,8 @@ public class ReportService {
             case "gst" -> {
                 var rows = rows("""
                         SELECT v.number, to_char(v.issued_on, 'YYYY-MM-DD') AS date, %s AS customer,
-                               v.client_gstin AS gstin, v.gst_rate AS rate, v.taxable_paise AS taxable,
-                               v.cgst_paise AS cgst, v.sgst_paise AS sgst, v.total_paise AS total
+                               v.client_gstin AS gstin, v.gst_rate AS rate, v.taxable_rupees AS taxable,
+                               v.cgst_rupees AS cgst, v.sgst_rupees AS sgst, v.total_rupees AS total
                         FROM invoice v JOIN client c ON c.id = v.client_id
                         WHERE v.cancelled_at IS NULL AND v.issued_on BETWEEN :from AND :to
                         ORDER BY v.issued_on, v.number
@@ -177,8 +186,8 @@ public class ReportService {
                         SELECT o.number, to_char(o.order_date, 'YYYY-MM-DD') AS date, %s AS customer,
                                (SELECT string_agg(i.description, ', ' ORDER BY i.position) FROM order_item i
                                 WHERE i.order_id = o.id) AS items,
-                               o.status, o.total_paise AS total, o.paid_paise AS paid,
-                               o.total_paise - o.paid_paise AS balance
+                               o.status, o.total_rupees AS total, o.paid_rupees AS paid,
+                               o.total_rupees - o.paid_rupees AS balance
                         FROM shop_order o JOIN client c ON c.id = o.client_id
                         WHERE o.order_date BETWEEN :from AND :to AND o.status <> 'CANCELLED'
                         ORDER BY o.order_date, o.id
@@ -203,7 +212,7 @@ public class ReportService {
             }
             case "orders" -> {
                 var rows = rows("""
-                        SELECT o.status, COUNT(*) AS orders, SUM(o.total_paise) AS value
+                        SELECT o.status, COUNT(*) AS orders, SUM(o.total_rupees) AS value
                         FROM shop_order o WHERE o.order_date BETWEEN :from AND :to
                         GROUP BY o.status ORDER BY COUNT(*) DESC
                         """, p);
@@ -222,7 +231,7 @@ public class ReportService {
                         SELECT o.number, %s AS customer, to_char(o.delivery_date, 'YYYY-MM-DD') AS promised,
                                to_char((o.delivered_at AT TIME ZONE :zone)::date, 'YYYY-MM-DD') AS delivered,
                                GREATEST(0, (o.delivered_at AT TIME ZONE :zone)::date - o.delivery_date) AS days_late,
-                               o.total_paise AS total
+                               o.total_rupees AS total
                         FROM shop_order o JOIN client c ON c.id = o.client_id
                         WHERE o.status = 'DELIVERED' AND o.delivered_at >= :start AND o.delivered_at < :end
                         ORDER BY o.delivered_at
@@ -248,8 +257,8 @@ public class ReportService {
             }
             case "customers" -> {
                 var rows = rows("""
-                        SELECT %s AS customer, c.phone, COUNT(o.id) AS orders, SUM(o.total_paise) AS spent,
-                               SUM(GREATEST(o.total_paise - o.paid_paise, 0)) AS owing
+                        SELECT %s AS customer, c.phone, COUNT(o.id) AS orders, SUM(o.total_rupees) AS spent,
+                               SUM(GREATEST(o.total_rupees - o.paid_rupees, 0)) AS owing
                         FROM shop_order o JOIN client c ON c.id = o.client_id
                         WHERE o.order_date BETWEEN :from AND :to AND o.status <> 'CANCELLED'
                         GROUP BY c.id ORDER BY spent DESC LIMIT 500
@@ -276,7 +285,7 @@ public class ReportService {
             case "alterations" -> {
                 var rows = rows("""
                         SELECT i.kind, COUNT(DISTINCT a.id) AS alterations, COUNT(*) AS garments,
-                               SUM(i.cost_paise) AS charged
+                               SUM(i.cost_rupees) AS charged
                         FROM alteration a JOIN alteration_item i ON i.alteration_id = a.id
                         WHERE a.created_at >= :start AND a.created_at < :end AND a.status <> 'CANCELLED'
                         GROUP BY i.kind ORDER BY COUNT(*) DESC
@@ -327,11 +336,11 @@ public class ReportService {
                         r.put("staff", e.staffName());
                         r.put("stage", e.stageName());
                         r.put("pieces", 0L);
-                        r.put("amount", 0L);
+                        r.put("amount", Rupees.ZERO);
                         return r;
                     });
                     row.put("pieces", (Long) row.get("pieces") + e.quantity());
-                    row.put("amount", (Long) row.get("amount") + e.amountPaise());
+                    row.put("amount", ((BigDecimal) row.get("amount")).add(e.amountRupees()));
                 }
                 var rows = new ArrayList<>(grouped.values());
                 yield new Report(
@@ -384,7 +393,7 @@ public class ReportService {
                                                                 AND m.moved_at < :end), 0) AS moved_in,
                                COALESCE(-SUM(m.quantity) FILTER (WHERE m.quantity < 0 AND m.moved_at >= :start
                                                                  AND m.moved_at < :end), 0) AS moved_out,
-                               i.reorder_level, ROUND(GREATEST(COALESCE(SUM(m.quantity), 0), 0) * i.cost_paise) AS value
+                               i.reorder_level, ROUND(GREATEST(COALESCE(SUM(m.quantity), 0), 0) * i.cost_rupees) AS value
                         FROM stock_item i LEFT JOIN stock_movement m ON m.item_id = i.id
                         WHERE i.active GROUP BY i.id ORDER BY lower(i.name)
                         """, p);
@@ -430,8 +439,8 @@ public class ReportService {
             case "profitability" -> {
                 var rows = rows("""
                         SELECT p.code, p.name, t.name AS garment, SUM(i.quantity) AS pieces,
-                               SUM(i.price_paise * i.quantity) AS revenue,
-                               SUM(i.quantity) * (SELECT COALESCE(SUM((c ->> 'paise')::bigint), 0)
+                               SUM(i.price_rupees * i.quantity) AS revenue,
+                               SUM(i.quantity) * (SELECT COALESCE(SUM((c ->> 'rupees')::numeric), 0)
                                                   FROM jsonb_array_elements(p.stage_costs) c) AS piece_cost
                         FROM order_item i JOIN service_product p ON p.id = i.service_product_id
                         JOIN garment_template t ON t.id = p.template_id JOIN shop_order o ON o.id = i.order_id
@@ -439,10 +448,16 @@ public class ReportService {
                         GROUP BY p.id, p.code, p.name, t.name ORDER BY revenue DESC
                         """, p);
                 for (var row : rows) {
-                    long revenue = ((Number) row.get("revenue")).longValue();
-                    long profit = revenue - ((Number) row.get("piece_cost")).longValue();
+                    var revenue = money(row.get("revenue"));
+                    var profit = revenue.subtract(money(row.get("piece_cost")));
                     row.put("profit", profit);
-                    row.put("margin", revenue == 0 ? 0 : Math.round(1000.0 * profit / revenue) / 10.0);
+                    row.put(
+                            "margin",
+                            revenue.signum() == 0
+                                    ? 0
+                                    : profit.multiply(BigDecimal.valueOf(100))
+                                            .divide(revenue, 1, RoundingMode.HALF_UP)
+                                            .doubleValue());
                 }
                 yield new Report(
                         name,
@@ -476,12 +491,12 @@ public class ReportService {
                     r.put("reference", e.reference());
                     r.put("party", e.party());
                     r.put("mode", e.mode().name());
-                    r.put("amount", e.amountPaise());
-                    r.put("balance", e.balancePaise());
+                    r.put("amount", e.amountRupees());
+                    r.put("balance", e.balanceRupees());
                     rows.add(r);
                 }
                 Map<String, Object> totals = new LinkedHashMap<>();
-                totals.put("amount", l.inPaise() - l.outPaise());
+                totals.put("amount", l.inRupees().subtract(l.outRupees()));
                 yield new Report(
                         name,
                         info.title(),
@@ -497,14 +512,14 @@ public class ReportService {
                                 money("balance", "Balance")),
                         rows,
                         totals,
-                        "Opening balance " + l.openingPaise() / 100 + " rupees; closing " + l.closingPaise() / 100
-                                + ".");
+                        "Opening balance ₹" + l.openingRupees().toPlainString() + "; closing ₹"
+                                + l.closingRupees().toPlainString() + ".");
             }
             case "expenses" -> {
                 var rows = rows("""
-                        SELECT category, COUNT(*) AS entries, SUM(amount_paise) AS amount
+                        SELECT category, COUNT(*) AS entries, SUM(amount_rupees) AS amount
                         FROM expense WHERE spent_on BETWEEN :from AND :to
-                        GROUP BY category ORDER BY SUM(amount_paise) DESC
+                        GROUP BY category ORDER BY SUM(amount_rupees) DESC
                         """, p);
                 yield new Report(
                         name,
@@ -556,21 +571,21 @@ public class ReportService {
         var p = range(month.atDay(1), today);
         var figures = jdbc.sql("""
                         SELECT
-                          (SELECT COALESCE(SUM(total_paise), 0) FROM shop_order
+                          (SELECT COALESCE(SUM(total_rupees), 0) FROM shop_order
                              WHERE order_date BETWEEN :from AND :to AND status <> 'CANCELLED') AS booked,
                           (SELECT COUNT(*) FROM shop_order
                              WHERE order_date BETWEEN :from AND :to AND status <> 'CANCELLED') AS booked_count,
                           (SELECT COUNT(*) FROM shop_order
                              WHERE delivered_at >= :start AND delivered_at < :end) AS delivered_count,
-                          (SELECT COALESCE(SUM(amount_paise), 0) FROM order_payment
+                          (SELECT COALESCE(SUM(amount_rupees), 0) FROM order_payment
                              WHERE received_at >= :start AND received_at < :end)
-                          + (SELECT COALESCE(SUM(amount_paise), 0) FROM alteration_payment
+                          + (SELECT COALESCE(SUM(amount_rupees), 0) FROM alteration_payment
                              WHERE received_at >= :start AND received_at < :end) AS collected,
-                          (SELECT COALESCE(SUM(amount_paise), 0) FROM expense
+                          (SELECT COALESCE(SUM(amount_rupees), 0) FROM expense
                              WHERE spent_on BETWEEN :from AND :to) AS expenses,
                           (SELECT COUNT(*) FROM client WHERE created_at >= :start AND created_at < :end) AS new_clients
                         """).params(p).query().singleRow();
-        long booked = ((Number) figures.get("booked")).longValue();
+        var booked = money(figures.get("booked"));
         int bookedCount = ((Number) figures.get("booked_count")).intValue();
 
         var months = new ArrayList<Report.MonthFigures>();
@@ -579,46 +594,44 @@ public class ReportService {
             var mp = range(m.atDay(1), m.atEndOfMonth());
             var row = jdbc.sql("""
                             SELECT
-                              (SELECT COALESCE(SUM(total_paise), 0) FROM shop_order
+                              (SELECT COALESCE(SUM(total_rupees), 0) FROM shop_order
                                  WHERE order_date BETWEEN :from AND :to AND status <> 'CANCELLED') AS booked,
-                              (SELECT COALESCE(SUM(amount_paise), 0) FROM order_payment
+                              (SELECT COALESCE(SUM(amount_rupees), 0) FROM order_payment
                                  WHERE received_at >= :start AND received_at < :end)
-                              + (SELECT COALESCE(SUM(amount_paise), 0) FROM alteration_payment
+                              + (SELECT COALESCE(SUM(amount_rupees), 0) FROM alteration_payment
                                  WHERE received_at >= :start AND received_at < :end) AS collected,
-                              (SELECT COALESCE(SUM(amount_paise), 0) FROM expense
+                              (SELECT COALESCE(SUM(amount_rupees), 0) FROM expense
                                  WHERE spent_on BETWEEN :from AND :to) AS expenses
                             """).params(mp).query().singleRow();
             months.add(new Report.MonthFigures(
-                    m.toString(),
-                    ((Number) row.get("booked")).longValue(),
-                    ((Number) row.get("collected")).longValue(),
-                    ((Number) row.get("expenses")).longValue()));
+                    m.toString(), money(row.get("booked")), money(row.get("collected")), money(row.get("expenses"))));
         }
 
         var dues = ledger.outstanding(null);
         String[] labels = {"Not due yet", "1–7 days late", "8–30 days late", "31–60 days late", "Over 60 days late"};
         int[] counts = new int[labels.length];
-        long[] paise = new long[labels.length];
+        var rupees = new BigDecimal[labels.length];
+        Arrays.fill(rupees, Rupees.ZERO);
         for (var due : dues.items()) {
             int d = due.daysLate();
             int bucket = d == 0 ? 0 : d <= 7 ? 1 : d <= 30 ? 2 : d <= 60 ? 3 : 4;
             counts[bucket]++;
-            paise[bucket] += due.duePaise();
+            rupees[bucket] = rupees[bucket].add(due.dueRupees());
         }
         var ageing = new ArrayList<Report.AgeingBucket>();
         for (int i = 0; i < labels.length; i++) {
-            ageing.add(new Report.AgeingBucket(labels[i], counts[i], paise[i]));
+            ageing.add(new Report.AgeingBucket(labels[i], counts[i], rupees[i]));
         }
 
         return new Report.ReportsOverview(
                 booked,
-                ((Number) figures.get("collected")).longValue(),
-                ((Number) figures.get("expenses")).longValue(),
+                money(figures.get("collected")),
+                money(figures.get("expenses")),
                 bookedCount,
                 ((Number) figures.get("delivered_count")).intValue(),
-                bookedCount == 0 ? 0 : booked / bookedCount,
+                bookedCount == 0 ? Rupees.ZERO : Rupees.divide(booked, BigDecimal.valueOf(bookedCount)),
                 ((Number) figures.get("new_clients")).intValue(),
-                dues.totalPaise(),
+                dues.totalRupees(),
                 months,
                 ageing);
     }

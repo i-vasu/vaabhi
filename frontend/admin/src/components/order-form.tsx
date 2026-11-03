@@ -111,8 +111,8 @@ export function formFromDraft(
   for (const [index, row] of draft.items.entries()) {
     const label = `Item ${index + 1}`;
     if (!row.description.trim()) return { form: null, error: `${label}: say what is being stitched.` };
-    const pricePaise = parseRupees(row.price);
-    if (pricePaise === null) return { form: null, error: `${label}: enter the price.` };
+    const priceRupees = parseRupees(row.price);
+    if (priceRupees === null) return { form: null, error: `${label}: enter the price.` };
     const quantity = Number(row.quantity);
     if (!Number.isInteger(quantity) || quantity < 1) return { form: null, error: `${label}: enter the quantity.` };
     const measurements = Object.fromEntries(
@@ -123,7 +123,7 @@ export function formFromDraft(
       serviceProductId: row.serviceProductId,
       description: row.description.trim(),
       quantity,
-      pricePaise,
+      priceRupees,
       colour: row.colour.trim() || null,
       note: row.note.trim() || null,
       measurements: Object.keys(measurements).length > 0 ? measurements : null,
@@ -137,8 +137,8 @@ export function formFromDraft(
         ? parsePercent(draft.discount)
         : parseRupees(draft.discount);
   if (discountValue === null) return { form: null, error: "Enter the discount as a number." };
-  const advancePaise = draft.advance.trim() === "" ? 0 : parseRupees(draft.advance);
-  if (advancePaise === null) return { form: null, error: "Enter the advance as a number." };
+  const advanceRupees = draft.advance.trim() === "" ? 0 : parseRupees(draft.advance);
+  if (advanceRupees === null) return { form: null, error: "Enter the advance as a number." };
   if (!draft.deliveryDate) return { form: null, error: "Pick a delivery date." };
   return {
     error: null,
@@ -155,7 +155,7 @@ export function formFromDraft(
       couponCode: draft.couponCode.trim() || null,
       // The API now takes reward points to redeem on the booking; this form does not offer it yet.
       redeemPoints: 0,
-      advancePaise,
+      advanceRupees,
       advanceMode: draft.advanceMode,
       notes: draft.notes.trim() || null,
     },
@@ -193,19 +193,19 @@ export function OrderEditor({ initialClient }: { initialClient: ClientSummary | 
 
   const pkg = packages.find((p) => p.id === draft.deliveryPackageId);
   const priced = draft.items.map((row) => ({
-    pricePaise: parseRupees(row.price) ?? 0,
+    priceRupees: parseRupees(row.price) ?? 0,
     quantity: Math.max(0, Math.floor(Number(row.quantity) || 0)),
   }));
   const discountValue =
     (draft.discountKind === "PERCENT" ? parsePercent(draft.discount) : parseRupees(draft.discount)) ?? 0;
   const totals = orderTotals(
     priced,
-    pkg?.pricePaise ?? 0,
+    pkg?.priceRupees ?? 0,
     draft.discountKind,
     discountValue,
     billing.discountAppliesTo,
   );
-  const advancePaise = parseRupees(draft.advance) ?? 0;
+  const advanceRupees = parseRupees(draft.advance) ?? 0;
 
   async function save() {
     const result = formFromDraft(client?.id ?? null, draft, measurements);
@@ -267,7 +267,7 @@ export function OrderEditor({ initialClient }: { initialClient: ClientSummary | 
             { value: "", label: "None" },
             ...packages.map((p) => ({
               value: String(p.id),
-              label: `${p.name} · ${p.days} days${p.pricePaise > 0 ? ` · +${rupees(p.pricePaise)}` : ""}`,
+              label: `${p.name} · ${p.days} days${p.priceRupees > 0 ? ` · +${rupees(p.priceRupees)}` : ""}`,
             })),
           ]}
           value={draft.deliveryPackageId === null ? "" : String(draft.deliveryPackageId)}
@@ -352,14 +352,14 @@ export function OrderEditor({ initialClient }: { initialClient: ClientSummary | 
                 try {
                   const check = await api.admin.engage.checkCoupon(
                     draft.couponCode.trim(),
-                    totals.itemsPaise + totals.deliveryPaise,
+                    totals.itemsRupees + totals.deliveryRupees,
                   );
-                  setCoupon(check.valid ? `${check.code}: ${rupees(check.discountPaise)} off` : check.reason);
+                  setCoupon(check.valid ? `${check.code}: ${rupees(check.discountRupees)} off` : check.reason);
                   if (check.valid && check.kind) {
                     update({
                       couponCode: check.code,
                       discountKind: check.kind,
-                      discount: String(check.value / 100),
+                      discount: String(check.value ?? ""),
                     });
                   }
                 } catch (e) {
@@ -382,7 +382,7 @@ export function OrderEditor({ initialClient }: { initialClient: ClientSummary | 
           label="Advance (₹)"
           inputMode="decimal"
           value={draft.advance}
-          error={advancePaise > totals.totalPaise ? "More than the order total" : undefined}
+          error={advanceRupees > totals.totalRupees ? "More than the order total" : undefined}
           onChange={(event) => update({ advance: event.target.value })}
         />
         <SelectField
@@ -400,12 +400,12 @@ export function OrderEditor({ initialClient }: { initialClient: ClientSummary | 
       />
 
       <dl aria-label="Order total" className="rounded-2xl border border-line bg-panel p-4 text-sm">
-        <Line label="Items" value={rupees(totals.itemsPaise)} />
-        {totals.deliveryPaise > 0 && <Line label="Delivery" value={rupees(totals.deliveryPaise)} />}
-        {totals.discountPaise > 0 && <Line label="Discount" value={`− ${rupees(totals.discountPaise)}`} />}
-        <Line label="Total" value={rupees(totals.totalPaise)} strong />
-        {advancePaise > 0 && <Line label="Advance" value={`− ${rupees(advancePaise)}`} />}
-        {advancePaise > 0 && <Line label="Balance" value={rupees(totals.totalPaise - advancePaise)} strong />}
+        <Line label="Items" value={rupees(totals.itemsRupees)} />
+        {totals.deliveryRupees > 0 && <Line label="Delivery" value={rupees(totals.deliveryRupees)} />}
+        {totals.discountRupees > 0 && <Line label="Discount" value={`− ${rupees(totals.discountRupees)}`} />}
+        <Line label="Total" value={rupees(totals.totalRupees)} strong />
+        {advanceRupees > 0 && <Line label="Advance" value={`− ${rupees(advanceRupees)}`} />}
+        {advanceRupees > 0 && <Line label="Balance" value={rupees(totals.totalRupees - advanceRupees)} strong />}
       </dl>
       <SaveBar saving={saving} saved={false} error={error} onSave={() => void save()} label="Book order" />
     </div>
@@ -476,7 +476,7 @@ function ItemEditor({
           label="From price list"
           options={[
             { value: "", label: "Custom" },
-            ...choices.map((p) => ({ value: String(p.id), label: `${p.name} · ${rupees(p.pricePaise)}` })),
+            ...choices.map((p) => ({ value: String(p.id), label: `${p.name} · ${rupees(p.priceRupees)}` })),
           ]}
           value={row.serviceProductId === null ? "" : String(row.serviceProductId)}
           onChange={(value) => {
@@ -489,7 +489,7 @@ function ItemEditor({
               serviceProductId: product.id,
               templateId: product.templateId,
               description: product.name,
-              price: String(product.pricePaise / 100),
+              price: String(product.priceRupees),
               ...(product.templateId !== row.templateId ? { measurements: null } : {}),
             });
           }}

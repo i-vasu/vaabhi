@@ -15,20 +15,20 @@ export const quoteLine = (o: Partial<BagQuoteLine> = {}): BagQuoteLine => ({
   colourName: "Rani pink",
   colourHex: "#C2185B",
   size: null,
-  pricePaise: 100000,
-  mrpPaise: 120000,
+  priceRupees: 100000,
+  mrpRupees: 120000,
   addonName: null,
-  addonPricePaise: 0,
+  addonPriceRupees: 0,
   addonInput: null,
   imageKey: null,
   ...o,
 });
 
-const local = { unitPricePaise: 100000, addonPricePaise: 0 } as BagLine;
+const local = { unitPriceRupees: 100000, addonPriceRupees: 0 } as BagLine;
 
 describe("bag quote helpers", () => {
   it("posts the bag to the storefront route", async () => {
-    const quote: BagQuote = { lines: [], itemsPaise: 0, addonsPaise: 0, mrpPaise: 0, totalPaise: 0 };
+    const quote: BagQuote = { lines: [], itemsRupees: 0, addonsRupees: 0, mrpRupees: 0, totalRupees: 0 };
     const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify(quote)));
     await expect(
       fetchQuote([{ ...local, sku: "A", addonCode: "x", quantity: 2 } as BagLine], fetcher),
@@ -46,8 +46,8 @@ describe("bag quote helpers", () => {
     expect(isBuyable(quoteLine({ status: "OUT_OF_STOCK" }))).toBe(false);
     expect(isBuyable(undefined)).toBe(false);
     expect(priceChanged(local, quoteLine())).toBe(false);
-    expect(priceChanged(local, quoteLine({ pricePaise: 90000 }))).toBe(true);
-    expect(priceChanged(local, quoteLine({ status: "UNAVAILABLE", pricePaise: 0 }))).toBe(false);
+    expect(priceChanged(local, quoteLine({ priceRupees: 90000 }))).toBe(true);
+    expect(priceChanged(local, quoteLine({ status: "UNAVAILABLE", priceRupees: 0 }))).toBe(false);
   });
 
   it("uses the longest stitching time in the bag", () => {
@@ -58,10 +58,10 @@ describe("bag quote helpers", () => {
         quoteLine({ addonInput: "MEASUREMENTS", status: "OUT_OF_STOCK" }),
         quoteLine(),
       ],
-      itemsPaise: 0,
-      addonsPaise: 0,
-      mrpPaise: 0,
-      totalPaise: 0,
+      itemsRupees: 0,
+      addonsRupees: 0,
+      mrpRupees: 0,
+      totalRupees: 0,
     };
     expect(bagStitchingDays(quote)).toEqual({ min: 5, max: 7 });
   });

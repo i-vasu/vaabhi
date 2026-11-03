@@ -10,11 +10,11 @@ import org.jspecify.annotations.Nullable;
 /**
  * A tax invoice for an order, with its amounts as they were when it was issued.
  *
- * @param discountPaise the lines minus the order total
- * @param orderTotalPaise what the order charged (items + delivery − discount)
- * @param taxablePaise value before GST
- * @param totalPaise what the customer pays in all (order total, plus GST when prices exclude it)
- * @param paidPaise what has been paid on the order so far (live)
+ * @param discountRupees the lines minus the order total
+ * @param orderTotalRupees what the order charged (items + delivery − discount)
+ * @param taxableRupees value before GST
+ * @param totalRupees what the customer pays in all (order total, plus GST when prices exclude it)
+ * @param paidRupees what has been paid on the order so far (live)
  */
 public record Invoice(
         long id,
@@ -24,16 +24,16 @@ public record Invoice(
         ClientSummary client,
         LocalDate issuedOn,
         List<InvoiceLine> lines,
-        long discountPaise,
-        long orderTotalPaise,
+        BigDecimal discountRupees,
+        BigDecimal orderTotalRupees,
         BigDecimal gstRate,
         boolean pricesIncludeTax,
-        long taxablePaise,
-        long cgstPaise,
-        long sgstPaise,
-        long totalPaise,
-        long paidPaise,
-        long balancePaise,
+        BigDecimal taxableRupees,
+        BigDecimal cgstRupees,
+        BigDecimal sgstRupees,
+        BigDecimal totalRupees,
+        BigDecimal paidRupees,
+        BigDecimal balanceRupees,
         @Nullable String shopGstin,
         @Nullable String clientGstin,
         @Nullable String createdBy,
