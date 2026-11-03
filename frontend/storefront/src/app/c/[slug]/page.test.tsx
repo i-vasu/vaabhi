@@ -96,7 +96,11 @@ describe("CategoryPage", () => {
     server.use(
       http.get(LISTING, () =>
         HttpResponse.json(
-          listing({ total: 0, items: [], category: { id: 1, slug: "sarees", name: "Sarees", description: null } }),
+          listing({
+            total: 0,
+            items: [],
+            category: { id: 1, slug: "sarees", name: "Sarees", description: null, imageKey: null },
+          }),
         ),
       ),
     );

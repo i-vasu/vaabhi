@@ -5,6 +5,8 @@ type Schemas = components["schemas"];
 export type Category = Schemas["CategoryResponse"];
 export type ProductListing = Schemas["ProductListingResponse"];
 export type ProductSummary = Schemas["ProductSummary"];
+export type Badge = NonNullable<ProductSummary["badge"]>;
+export type NewArrivalsPage = Schemas["NewArrivalsPage"];
 export type FilterGroup = Schemas["FilterGroup"];
 export type FilterOption = Schemas["FilterOption"];
 export type ProductDetail = Schemas["ProductDetailResponse"];
@@ -28,6 +30,8 @@ export type AdminMedia = Schemas["AdminMedia"];
 export type MediaUpload = Schemas["MediaUpload"];
 export type MediaUploadRequest = Schemas["MediaUploadRequest"];
 export type MediaUpdate = Schemas["MediaUpdate"];
+export type VideoUpload = Schemas["VideoUpload"];
+export type VideoUploadRequest = Schemas["VideoUploadRequest"];
 /** The signed-in staff member with the dashboard areas their role may use. */
 export type StaffProfile = Schemas["SignedInStaff"];
 export type Permission = StaffProfile["permissions"][number];
@@ -286,6 +290,12 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         ),
       getProduct: (slug: string, init?: RequestOptions) =>
         request<ProductDetail>(`/api/v1/store/products/${encodeURIComponent(slug)}`, init),
+      /** Products with a badge across the catalogue, most popular first (Bestsellers by default). */
+      listFeatured: (params: { badge?: Badge; limit?: number } = {}, init?: RequestOptions) =>
+        request<ProductSummary[]>(`/api/v1/store/featured${queryString(params)}`, init),
+      /** Every published product, most recently published first. */
+      listNewArrivals: (params: { page?: number; pageSize?: number } = {}, init?: RequestOptions) =>
+        request<NewArrivalsPage>(`/api/v1/store/new-arrivals${queryString(params)}`, init),
       /** Current prices and stock for the bag kept in the browser. */
       quoteBag: (bag: BagQuoteRequest) => send<BagQuote>("POST", "/api/v1/store/bag/quote", bag),
     },
@@ -500,6 +510,8 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         send<AdminProduct>("POST", `/api/v1/admin/products/${id}/${action}`),
       startMediaUpload: (id: number, request: MediaUploadRequest) =>
         send<MediaUpload>("POST", `/api/v1/admin/products/${id}/media/uploads`, request),
+      startVideoUpload: (id: number, request: VideoUploadRequest) =>
+        send<VideoUpload>("POST", `/api/v1/admin/products/${id}/media/video-uploads`, request),
       completeMediaUpload: (id: number, mediaId: number) =>
         send<AdminMedia[]>("POST", `/api/v1/admin/products/${id}/media/${mediaId}/complete`),
       updateMedia: (id: number, updates: MediaUpdate[]) =>

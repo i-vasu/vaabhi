@@ -8,6 +8,7 @@ import {
   isOneSize,
   oneSizeLine,
   photosFor,
+  videoFor,
   selectedVariant,
   stockLine,
 } from "./product";
@@ -37,6 +38,16 @@ describe("product rules", () => {
     expect(isOneSize(lehenga())).toBe(false);
     expect(selectedVariant(lehenga(), "Red", null)).toBeUndefined();
     expect(selectedVariant(lehenga(), "Red", "M")?.sku).toBe("VB-RED-M");
+  });
+
+  it("picks the video for the colour, else any video; photos never include it", () => {
+    const clip = (key: string, colourName: string | null) =>
+      ({ kind: "VIDEO", key, alt: "Drape", colourName, width: null, height: null }) as const;
+    expect(videoFor(saree(), "Mustard")).toBeUndefined();
+    const withVideo = saree({ media: [...saree().media, clip("products/1/v-mustard", "Mustard")] });
+    expect(videoFor(withVideo, "Mustard")?.key).toBe("products/1/v-mustard");
+    expect(videoFor(withVideo, "Rani pink")?.key).toBe("products/1/v-mustard");
+    expect(photosFor(withVideo, "Mustard").map((m) => m.kind)).toEqual(["IMAGE", "IMAGE"]);
   });
 
   it("shows photos for the colour plus untagged ones", () => {

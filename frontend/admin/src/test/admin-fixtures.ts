@@ -2,8 +2,8 @@ import type { AdminProduct, CatalogOptions } from "@vaabhi/api-client";
 
 export const options: CatalogOptions = {
   categories: [
-    { id: 1, slug: "sarees", name: "Sarees", description: null },
-    { id: 2, slug: "lehengas", name: "Lehengas", description: null },
+    { id: 1, slug: "sarees", name: "Sarees", description: null, imageKey: null },
+    { id: 2, slug: "lehengas", name: "Lehengas", description: null, imageKey: null },
   ],
   facets: [
     {

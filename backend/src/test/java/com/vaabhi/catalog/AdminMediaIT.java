@@ -194,6 +194,59 @@ class AdminMediaIT {
     }
 
     @Test
+    void oneVideoPerProductUploadedAsASingleFileThenShownInTheStore() throws Exception {
+        var productId = jdbc.sql("SELECT id FROM product WHERE slug = 'banarasi-katan-silk-saree'")
+                .query(Long.class)
+                .single();
+        var video = "{\"alt\":\"Banarasi saree, drape\",\"colourName\":null,\"contentType\":\"video/mp4\"}";
+        var body = mockMvc.perform(post("/api/v1/admin/products/" + productId + "/media/video-uploads")
+                        .with(ADMIN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(video))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.media.kind").value("VIDEO"))
+                .andExpect(jsonPath("$.media.status").value("PENDING"))
+                .andExpect(jsonPath("$.media.width").doesNotExist())
+                .andExpect(jsonPath("$.uploadUrl", startsWith("https://r2.test/products/" + productId + "/")))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        long mediaId = ((Number) JsonPath.read(body, "$.media.id")).longValue();
+        var key = keyOf(productId, mediaId);
+
+        mockMvc.perform(post("/api/v1/admin/products/" + productId + "/media/" + mediaId + "/complete")
+                        .with(ADMIN))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.detail").value("Upload incomplete: missing the video file"));
+        storage.put(key + "/video");
+        mockMvc.perform(post("/api/v1/admin/products/" + productId + "/media/" + mediaId + "/complete")
+                        .with(ADMIN))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.id == " + mediaId + ")].status").value("READY"));
+        mockMvc.perform(get("/api/v1/store/products/banarasi-katan-silk-saree"))
+                .andExpect(jsonPath("$.media[?(@.kind == 'VIDEO')].key").value(key));
+
+        // A second video is refused; a wrong file type is refused before that.
+        mockMvc.perform(post("/api/v1/admin/products/" + productId + "/media/video-uploads")
+                        .with(ADMIN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(video))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("media"));
+        mockMvc.perform(post("/api/v1/admin/products/" + productId + "/media/video-uploads")
+                        .with(ADMIN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"alt\":\"x\",\"colourName\":null,\"contentType\":\"image/gif\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("contentType"));
+
+        mockMvc.perform(delete("/api/v1/admin/products/" + productId + "/media/" + mediaId)
+                        .with(ADMIN))
+                .andExpect(status().isOk());
+        assertThat(storage.objects).noneMatch(k -> k.startsWith(key));
+    }
+
+    @Test
     void exposesTheStorageBeanUsedByTheApp(@Autowired ObjectStorage objectStorage) {
         assertThat(objectStorage).isSameAs(storage);
     }

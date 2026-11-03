@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { ApiError, type AdminProduct, type CatalogOptions, type FieldError } from "@vaabhi/api-client";
 import { Button, cn } from "@vaabhi/ui";
 import { api } from "@/lib/api";
-import { ProductPhotos } from "./product-photos";
+import { mediaReady, ProductPhotos, releasePreview, uploadQueued, type QueuedMedia } from "./product-photos";
 import {
   BADGES,
   emptyState,
@@ -41,18 +41,23 @@ function describe(error: unknown): string {
   return "Could not reach the API. Check your connection and try again.";
 }
 
-/** Create (no id) or edit a product. Saving always keeps the current status; publishing is a separate step. */
-export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: string }>) {
+/**
+ * Create (no id) or edit a product. Saving always keeps the current status; publishing is a separate step and
+ * needs at least one photo and a video. Photos and the video picked before the first save upload right after it.
+ */
+export function ProductEditor({ id, notice, problem }: Readonly<{ id?: number; notice?: string; problem?: string }>) {
   const router = useRouter();
   const [options, setOptions] = useState<CatalogOptions | null>(null);
   const [product, setProduct] = useState<AdminProduct | null>(null);
   const [state, setState] = useState<EditorState>(emptyState());
   const [load, setLoad] = useState<LoadState>({ kind: "loading" });
   const [errors, setErrors] = useState<FieldError[]>([]);
-  const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(
-    notice ? { tone: "ok", text: notice } : null,
-  );
+  const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(() => {
+    if (problem) return { tone: "error", text: problem };
+    return notice ? { tone: "ok", text: notice } : null;
+  });
   const [busy, setBusy] = useState(false);
+  const [queued, setQueued] = useState<QueuedMedia[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,23 +101,69 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
     }
   }
 
+  /**
+   * Uploads the photos and video picked before the first save, one at a time. Returns the product's media
+   * afterwards and a line per file that failed.
+   */
+  async function uploadWaiting(saved: AdminProduct): Promise<{ media: AdminProduct["media"]; failed: string[] }> {
+    let media = saved.media;
+    const failed: string[] = [];
+    if (queued.length === 0) return { media, failed };
+    setBusy(true);
+    const colours = [...new Set(saved.variants.map((v) => v.colourName))];
+    const left: QueuedMedia[] = [];
+    // Photos first: the video goes after them, and the first photo is the listing photo.
+    for (const item of [...queued].sort((a, b) => Number(a.kind === "VIDEO") - Number(b.kind === "VIDEO"))) {
+      setMessage({ tone: "ok", text: `Uploading ${item.file.name}…` });
+      try {
+        media = await uploadQueued(saved.id, item, saved.name, colours);
+        releasePreview(item);
+      } catch (error) {
+        failed.push(
+          `${item.file.name}: ${error instanceof ApiError || !(error instanceof Error) ? describe(error) : error.message}`,
+        );
+        left.push(item);
+      }
+    }
+    setQueued(left);
+    setProduct((p) => (p ? { ...p, media } : p));
+    setBusy(false);
+    return { media, failed };
+  }
+
   /** A new product moves to its edit URL once the whole action is done (the page reloads it from the API). */
-  function done(saved: AdminProduct, text: string) {
+  function done(saved: AdminProduct, text: string, failed: string[] = []) {
+    const problemText = failed.length ? `Some files did not upload. ${failed.join(" · ")}` : undefined;
     if (product) {
-      setMessage({ tone: "ok", text });
+      setMessage(problemText ? { tone: "error", text: problemText } : { tone: "ok", text });
     } else {
-      router.replace(`/products/edit/?id=${saved.id}&notice=${encodeURIComponent(text)}`);
+      const extra = problemText ? `&problem=${encodeURIComponent(problemText)}` : "";
+      router.replace(`/products/edit/?id=${saved.id}&notice=${encodeURIComponent(text)}${extra}`);
     }
   }
 
   async function submit() {
     const saved = await save();
-    if (saved) done(saved, "Saved.");
+    if (!saved) return;
+    const { failed } = await uploadWaiting(saved);
+    done(saved, "Saved.", failed);
   }
 
   async function changeStatus(action: "publish" | "unpublish" | "archive") {
     const saved = await save();
     if (!saved) return;
+    const { media, failed } = await uploadWaiting(saved);
+    if (action === "publish") {
+      if (failed.length) {
+        done(saved, "Saved as a draft.", failed);
+        return;
+      }
+      const ready = mediaReady(media, []);
+      if (!ready.hasPhoto || !ready.hasVideo) {
+        done(saved, "Saved as a draft.", ["Add at least one photo and a video before publishing."]);
+        return;
+      }
+    }
     setBusy(true);
     try {
       const changed = await api.admin.setStatus(saved.id, action);
@@ -140,6 +191,11 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
 
   const status = product?.status ?? "DRAFT";
   const fieldError = (field: string) => errorsFor(errors, field)[0];
+  const ready = mediaReady(product?.media ?? [], queued);
+  const canPublish = ready.hasPhoto && ready.hasVideo;
+  let publishHint = "";
+  if (!ready.hasPhoto) publishHint = "Add photos and a video to publish.";
+  else if (!ready.hasVideo) publishHint = "Add a video to publish.";
 
   return (
     <form
@@ -149,43 +205,22 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
         void submit();
       }}
     >
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Link href="/products/" className="text-sm text-ink-soft hover:underline">
-            ← Products
-          </Link>
-          <h1 className="text-2xl font-semibold">{product ? product.name : "New product"}</h1>
-          <StatusBadge status={status} />
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {status === "PUBLISHED" && product && (
-            <a
-              href={`${STOREFRONT_URL}/p/${product.slug}`}
-              target="_blank"
-              rel="noreferrer"
-              className="text-sm underline"
-            >
-              View in store
-            </a>
-          )}
-          {status !== "ARCHIVED" && product && (
-            <Button variant="secondary" disabled={busy} onClick={() => void changeStatus("archive")}>
-              Archive
-            </Button>
-          )}
-          {status === "PUBLISHED" ? (
-            <Button variant="secondary" disabled={busy} onClick={() => void changeStatus("unpublish")}>
-              Unpublish
-            </Button>
-          ) : (
-            <Button variant="secondary" disabled={busy} onClick={() => void changeStatus("publish")}>
-              Save &amp; publish
-            </Button>
-          )}
-          <Button type="submit" disabled={busy}>
-            {busy ? "Saving…" : "Save"}
-          </Button>
-        </div>
+      <header className="flex flex-wrap items-center gap-3">
+        <Link href="/products/" className="text-sm text-ink-soft hover:underline">
+          ← Products
+        </Link>
+        <h1 className="text-2xl font-semibold">{product ? product.name : "New product"}</h1>
+        <StatusBadge status={status} />
+        {status === "PUBLISHED" && product && (
+          <a
+            href={`${STOREFRONT_URL}/p/${product.slug}`}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm underline"
+          >
+            View in store
+          </a>
+        )}
       </header>
 
       {message?.tone === "error" && (
@@ -368,7 +403,35 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
         colours={[...new Set(state.variants.map((v) => v.colourName))]}
         media={product?.media ?? []}
         onChange={(media) => setProduct((p) => (p ? { ...p, media } : p))}
+        queued={queued}
+        onQueue={setQueued}
       />
+
+      {/* Kept in reach at the bottom of the screen; on phones it sits above the app's tab bar. */}
+      <div
+        role="group"
+        aria-label="Product actions"
+        className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-20 -mx-4 flex flex-wrap items-center justify-end gap-2 border-t border-line bg-app/95 px-4 py-3 backdrop-blur md:bottom-0 md:-mx-8 md:px-8"
+      >
+        {status !== "PUBLISHED" && publishHint && <span className="mr-auto text-xs text-ink-soft">{publishHint}</span>}
+        {status !== "ARCHIVED" && product && (
+          <Button variant="secondary" disabled={busy} onClick={() => void changeStatus("archive")}>
+            Archive
+          </Button>
+        )}
+        {status === "PUBLISHED" ? (
+          <Button variant="secondary" disabled={busy} onClick={() => void changeStatus("unpublish")}>
+            Unpublish
+          </Button>
+        ) : (
+          <Button variant="secondary" disabled={busy || !canPublish} onClick={() => void changeStatus("publish")}>
+            Save &amp; publish
+          </Button>
+        )}
+        <Button type="submit" disabled={busy}>
+          {busy ? "Saving…" : "Save"}
+        </Button>
+      </div>
     </form>
   );
 }

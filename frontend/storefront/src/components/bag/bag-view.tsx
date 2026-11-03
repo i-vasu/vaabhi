@@ -18,6 +18,7 @@ import {
 } from "@/lib/bag";
 import { bagStitchingDays, fetchQuote, isBuyable, priceChanged } from "@/lib/bag-quote";
 import { formatPrice } from "@/lib/format";
+import { useMediaBase } from "@/components/media-base";
 import { mediaUrl, shade } from "@/lib/listing";
 import { SHIPPING_AND_RETURNS } from "@/lib/policies";
 
@@ -36,6 +37,7 @@ type Undo = { text: string; restore: ReturnType<typeof removeLine> };
 /** The bag: lines kept in this browser, priced and checked against the shop on every visit. */
 export function BagView() {
   const lines = useSyncExternalStore(bagStore.subscribe, bagStore.read, bagStore.serverValue);
+  const mediaBase = useMediaBase();
   const [load, setLoad] = useState<Load>({ state: "loading" });
   const [undo, setUndo] = useState<Undo | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -110,7 +112,7 @@ export function BagView() {
               const mrp = q && buyable ? q.mrpPaise + q.addonPricePaise : unit;
               const max = q ? Math.min(MAX_QUANTITY, q.maxQuantity) : MAX_QUANTITY;
               const addonPaise = q && buyable ? q.addonPricePaise : line.addonPricePaise;
-              const image = (q?.imageKey ?? line.imageKey) && mediaUrl((q?.imageKey ?? line.imageKey)!, 400);
+              const image = (q?.imageKey ?? line.imageKey) && mediaUrl((q?.imageKey ?? line.imageKey)!, 400, mediaBase);
               return (
                 <li
                   key={lineKey(line)}

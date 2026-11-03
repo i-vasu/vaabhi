@@ -153,6 +153,8 @@ export function formFromDraft(
       discountKind: draft.discountKind,
       discountValue,
       couponCode: draft.couponCode.trim() || null,
+      // The API now takes reward points to redeem on the booking; this form does not offer it yet.
+      redeemPoints: 0,
       advancePaise,
       advanceMode: draft.advanceMode,
       notes: draft.notes.trim() || null,

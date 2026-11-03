@@ -4,6 +4,166 @@
  */
 
 export interface paths {
+    "/api/v1/customer/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getProfile"];
+        put: operations["updateProfile"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/workshop/staff/{staffId}/stages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["saveWorkshopStaffStages"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/workshop/items/{itemId}/assignee": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["assignWorkItem"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/storefront/categories/{id}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["setCategoryImage"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/storefront/banners/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateBanner"];
+        post?: never;
+        delete: operations["deleteBanner"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/storefront/banners/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["reorderBanners"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/stock/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getStockItem"];
+        put: operations["updateStockItem"];
+        post?: never;
+        delete: operations["deleteStockItem"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getStaff"];
+        put: operations["updateStaff"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/roles/{role}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["saveRolePermissions"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/attendance/{day}/{staffId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["markAttendance"];
+        post?: never;
+        delete: operations["clearAttendance"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/settings/watermark": {
         parameters: {
             query?: never;
@@ -212,6 +372,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/service-products/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateServiceProduct"];
+        post?: never;
+        delete: operations["deleteServiceProduct"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/products/{productId}/media": {
         parameters: {
             query?: never;
@@ -244,6 +420,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getOrder"];
+        put: operations["changeOrder"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["rescheduleOrder"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/expenses/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateExpense"];
+        post?: never;
+        delete: operations["deleteExpense"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/me/password": {
         parameters: {
             query?: never;
@@ -253,6 +477,70 @@ export interface paths {
         };
         get?: never;
         put: operations["changeOwnPassword"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/gallery/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateGalleryPhoto"];
+        post?: never;
+        delete: operations["deleteGalleryPhoto"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/engage/rewards/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getRewardSettings"];
+        put: operations["saveRewardSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/engage/coupons/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateCoupon"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/clients/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getClient"];
+        put: operations["updateClient"];
         post?: never;
         delete?: never;
         options?: never;
@@ -292,7 +580,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/settings/images": {
+    "/api/v1/auth/refresh": {
         parameters: {
             query?: never;
             header?: never;
@@ -301,46 +589,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["startSettingsImageUpload"];
+        post: operations["refreshSession"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/settings/garment-templates": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getGarmentTemplates"];
-        put?: never;
-        post: operations["createGarmentTemplate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/products": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listAdminProducts"];
-        put?: never;
-        post: operations["createProduct"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/products/{productId}/media/{mediaId}/complete": {
+    "/api/v1/auth/otp/verify": {
         parameters: {
             query?: never;
             header?: never;
@@ -349,14 +605,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["completeMediaUpload"];
+        post: operations["verifyOtp"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/products/{productId}/media/uploads": {
+    "/api/v1/auth/otp/request": {
         parameters: {
             query?: never;
             header?: never;
@@ -365,14 +621,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["startMediaUpload"];
+        post: operations["requestOtp"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/products/{id}/unpublish": {
+    "/api/v1/auth/logout": {
         parameters: {
             query?: never;
             header?: never;
@@ -381,14 +637,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["unpublishProduct"];
+        post: operations["logout"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/products/{id}/publish": {
+    "/api/v1/auth/google": {
         parameters: {
             query?: never;
             header?: never;
@@ -397,407 +653,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["publishProduct"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/products/{id}/archive": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["archiveProduct"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/store/products/{slug}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getProduct"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/store/categories": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/store/categories/{slug}/products": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listProducts"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["currentStaff"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/catalog/options": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["catalogOptions"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/products/{productId}/media/{mediaId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete: operations["deleteMedia"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/service-products/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["updateServiceProduct"];
-        post?: never;
-        delete: operations["deleteServiceProduct"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/orders/{id}/schedule": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["rescheduleOrder"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/clients/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getClient"];
-        put: operations["updateClient"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/tailoring/images": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["startTailoringImageUpload"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/service-products": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listServiceProducts"];
-        put?: never;
-        post: operations["createServiceProduct"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/orders": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listOrders"];
-        put?: never;
-        post: operations["createOrder"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/orders/{id}/stage": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["moveOrderItems"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/orders/{id}/payments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["addOrderPayment"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/orders/{id}/deliver": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["deliverOrder"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/orders/{id}/cancel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["cancelOrder"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/clients": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listClients"];
-        put?: never;
-        post: operations["createClient"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/clients/{id}/measurements": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["addMeasurement"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/alterations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listAlterations"];
-        put?: never;
-        post: operations["createAlteration"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/alterations/{id}/progress": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["progressAlteration"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/orders/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getOrder"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/alterations/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getAlteration"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/workshop/staff/{staffId}/stages": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["saveWorkshopStaffStages"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/workshop/items/{itemId}/assignee": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["assignWorkItem"];
-        post?: never;
+        post: operations["signInWithGoogle"];
         delete?: never;
         options?: never;
         head?: never;
@@ -820,87 +676,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/workshop/staff": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listWorkshopStaff"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/workshop/overview": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getWorkshopOverview"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/workshop/board": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getWorkBoard"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/money/expenses/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["updateExpense"];
-        post?: never;
-        delete: operations["deleteExpense"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/money/orders/{orderId}/invoice": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getOrderInvoice"];
-        put?: never;
-        post: operations["issueOrderInvoice"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/money/invoices/{id}/cancel": {
+    "/api/v1/admin/tailoring/images": {
         parameters: {
             query?: never;
             header?: never;
@@ -909,110 +685,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["cancelInvoice"];
+        post: operations["startTailoringImageUpload"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/money/expenses": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listExpenses"];
-        put?: never;
-        post: operations["createExpense"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/money/outstanding": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getOutstanding"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/money/ledger": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getLedger"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/money/invoices": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listInvoices"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/money/invoices/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getInvoice"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/staff/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getStaff"];
-        put: operations["updateStaff"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/staff/roles/{role}": {
+    "/api/v1/admin/storefront/uploads": {
         parameters: {
             query?: never;
             header?: never;
@@ -1020,25 +700,57 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put: operations["saveRolePermissions"];
-        post?: never;
+        put?: never;
+        post: operations["startSiteImageUpload"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/staff/attendance/{day}/{staffId}": {
+    "/api/v1/admin/storefront/banners": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put: operations["markAttendance"];
-        post?: never;
-        delete: operations["clearAttendance"];
+        get: operations["listBanners"];
+        put?: never;
+        post: operations["createBanner"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/stock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listStock"];
+        put?: never;
+        post: operations["createStockItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/stock/{id}/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getStockLedger"];
+        put?: never;
+        post: operations["moveStock"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1140,6 +852,166 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/settings/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["startSettingsImageUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/garment-templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getGarmentTemplates"];
+        put?: never;
+        post: operations["createGarmentTemplate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/service-products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listServiceProducts"];
+        put?: never;
+        post: operations["createServiceProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listAdminProducts"];
+        put?: never;
+        post: operations["createProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{productId}/media/{mediaId}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["completeMediaUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{productId}/media/video-uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["startVideoUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{productId}/media/uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["startMediaUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{id}/unpublish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["unpublishProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["publishProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["archiveProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/payroll/payslips/{id}/pay": {
         parameters: {
             query?: never;
@@ -1188,6 +1060,134 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listOrders"];
+        put?: never;
+        post: operations["createOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/stage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["moveOrderItems"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["addOrderPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/deliver": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["deliverOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["cancelOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/orders/{orderId}/invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getOrderInvoice"];
+        put?: never;
+        post: operations["issueOrderInvoice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/invoices/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["cancelInvoice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/expenses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listExpenses"];
+        put?: never;
+        post: operations["createExpense"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/me/requests": {
         parameters: {
             query?: never;
@@ -1198,214 +1198,6 @@ export interface paths {
         get: operations["listOwnRequests"];
         put?: never;
         post: operations["createOwnRequest"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/staff/roles": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listRolePermissions"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/staff/attendance": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getDayAttendance"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/staff/attendance/month/{month}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getMonthAttendance"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/payroll/staff/{staffId}/statement": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getStaffStatement"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/payroll/production": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getProduction"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/payroll/months/{month}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getPayrollMonth"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/staff/{id}/sign-in": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete: operations["removeStaffSignIn"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/stock/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getStockItem"];
-        put: operations["updateStockItem"];
-        post?: never;
-        delete: operations["deleteStockItem"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/gallery/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["updateGalleryPhoto"];
-        post?: never;
-        delete: operations["deleteGalleryPhoto"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/engage/rewards/settings": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getRewardSettings"];
-        put: operations["saveRewardSettings"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/engage/coupons/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["updateCoupon"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/stock": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listStock"];
-        put?: never;
-        post: operations["createStockItem"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/stock/{id}/movements": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getStockLedger"];
-        put?: never;
-        post: operations["moveStock"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1508,14 +1300,78 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/me/notifications": {
+    "/api/v1/admin/clients": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["getNotifications"];
+        get: operations["listClients"];
+        put?: never;
+        post: operations["createClient"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/clients/{id}/measurements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["addMeasurement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/alterations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listAlterations"];
+        put?: never;
+        post: operations["createAlteration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/alterations/{id}/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["progressAlteration"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/store/products/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getProduct"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1524,14 +1380,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/engage/coupons/check": {
+    "/api/v1/store/new-arrivals": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["checkCoupon"];
+        get: operations["listNewArrivals"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1540,14 +1396,174 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/activity": {
+    "/api/v1/store/home": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["getActivityLog"];
+        get: operations["getHomeContent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/store/featured": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listFeaturedProducts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/store/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/store/categories/{slug}/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listProducts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/workshop/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listWorkshopStaff"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/workshop/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getWorkshopOverview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/workshop/board": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getWorkBoard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/storefront/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listStorefrontCategories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listRolePermissions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getDayAttendance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/attendance/month/{month}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMonthAttendance"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1604,15 +1620,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/customer/me": {
+    "/api/v1/admin/payroll/staff/{staffId}/statement": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["getProfile"];
-        put: operations["updateProfile"];
+        get: operations["getStaffStatement"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -1620,71 +1636,199 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/auth/refresh": {
+    "/api/v1/admin/payroll/production": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["getProduction"];
         put?: never;
-        post: operations["refreshSession"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/auth/otp/verify": {
+    "/api/v1/admin/payroll/months/{month}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["getPayrollMonth"];
         put?: never;
-        post: operations["verifyOtp"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/auth/otp/request": {
+    "/api/v1/admin/money/outstanding": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["getOutstanding"];
         put?: never;
-        post: operations["requestOtp"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/auth/logout": {
+    "/api/v1/admin/money/ledger": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["getLedger"];
         put?: never;
-        post: operations["logout"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/auth/google": {
+    "/api/v1/admin/money/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listInvoices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/invoices/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getInvoice"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["currentStaff"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/me/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getNotifications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/engage/coupons/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["checkCoupon"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["catalogOptions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/alterations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAlteration"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getActivityLog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/staff/{id}/sign-in": {
         parameters: {
             query?: never;
             header?: never;
@@ -1693,8 +1837,24 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["signInWithGoogle"];
-        delete?: never;
+        post?: never;
+        delete: operations["removeStaffSignIn"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{productId}/media/{mediaId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteMedia"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1704,13 +1864,37 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        WatermarkSettings: {
-            enabled: boolean;
-            text: string | null;
+        ProfileUpdate: {
+            name: string;
+        };
+        CustomerProfile: {
+            /** Format: int64 */
+            id: number;
+            name: string | null;
+            email: string | null;
+            phone: string | null;
+        };
+        StaffStages: {
+            stageIds: number[];
+        };
+        WorkshopStaff: {
+            /** Format: int64 */
+            id: number;
+            name: string;
             /** @enum {string} */
-            position: "BOTTOM_RIGHT" | "BOTTOM_LEFT" | "CENTER" | "TOP_RIGHT";
+            role: "OWNER" | "MANAGER" | "STAFF";
+            stageIds: number[];
             /** Format: int32 */
-            opacityPercent: number;
+            workingOn: number;
+        };
+        AssignForm: {
+            /** Format: int64 */
+            staffId: number | null;
+        };
+        Assignee: {
+            /** Format: int64 */
+            id: number;
+            name: string;
         };
         ProductionStage: {
             /** Format: int64 */
@@ -1718,6 +1902,223 @@ export interface components {
             name: string;
             /** @enum {string} */
             kind: "WORK" | "READY" | "DELIVERED";
+        };
+        WorkItem: {
+            /** Format: int64 */
+            itemId: number;
+            /** Format: int64 */
+            orderId: number;
+            orderNumber: string;
+            /** Format: int64 */
+            clientId: number;
+            clientName: string;
+            description: string;
+            /** Format: int32 */
+            quantity: number;
+            colour: string | null;
+            garment: string | null;
+            clothPhotoKey: string | null;
+            stage: components["schemas"]["ProductionStage"];
+            /** Format: date-time */
+            stageSince: string;
+            /** Format: date */
+            deliveryDate: string;
+            /** Format: date */
+            trialDate: string | null;
+            dueToday: boolean;
+            overdue: boolean;
+            assignedTo: components["schemas"]["Assignee"] | null;
+        };
+        CategoryImageForm: {
+            imageKey: string | null;
+        };
+        CategoryResponse: {
+            /** Format: int64 */
+            id: number;
+            slug: string;
+            name: string;
+            description: string | null;
+            imageKey: string | null;
+        };
+        BannerForm: {
+            /** @enum {string} */
+            slot: "HERO" | "OCCASION" | "CRAFT";
+            eyebrow: string | null;
+            title: string;
+            subtitle: string | null;
+            ctaLabel: string | null;
+            link: string | null;
+            imageKey: string;
+            altText: string | null;
+            active: boolean;
+            /** Format: date */
+            startsOn: string | null;
+            /** Format: date */
+            endsOn: string | null;
+        };
+        Banner: {
+            /** Format: int64 */
+            id: number;
+            /** @enum {string} */
+            slot: "HERO" | "OCCASION" | "CRAFT";
+            /** Format: int32 */
+            position: number;
+            eyebrow: string | null;
+            title: string;
+            subtitle: string | null;
+            ctaLabel: string | null;
+            link: string | null;
+            imageKey: string;
+            altText: string | null;
+            active: boolean;
+            /** Format: date */
+            startsOn: string | null;
+            /** Format: date */
+            endsOn: string | null;
+            live: boolean;
+        };
+        BannerOrder: {
+            /** @enum {string} */
+            slot: "HERO" | "OCCASION" | "CRAFT";
+            ids: number[];
+        };
+        StockItemForm: {
+            name: string;
+            sku: string | null;
+            category: string | null;
+            /** @enum {string} */
+            unit: "PCS" | "M" | "CM" | "KG" | "G" | "L" | "ROLL" | "BOX" | "SET";
+            reorderLevel: number;
+            /** Format: int64 */
+            costPaise: number;
+        };
+        StockItem: {
+            /** Format: int64 */
+            id: number;
+            name: string;
+            sku: string | null;
+            category: string | null;
+            /** @enum {string} */
+            unit: "PCS" | "M" | "CM" | "KG" | "G" | "L" | "ROLL" | "BOX" | "SET";
+            reorderLevel: number;
+            /** Format: int64 */
+            costPaise: number;
+            onHand: number;
+            low: boolean;
+            /** Format: int64 */
+            valuePaise: number;
+        };
+        StaffForm: {
+            name: string;
+            phone: string | null;
+            /** Format: email */
+            email: string | null;
+            /** @enum {string} */
+            role: "OWNER" | "MANAGER" | "STAFF";
+            designation: string | null;
+            /** Format: date */
+            joinedOn: string | null;
+            /** @enum {string} */
+            payType: "MONTHLY" | "DAILY" | "PIECE";
+            /** Format: int64 */
+            salaryPaise: number;
+            /** Format: int64 */
+            hourlyPaise: number;
+            /** Format: time-local */
+            shiftStart: string;
+            /** Format: time-local */
+            shiftEnd: string;
+            /** Format: int32 */
+            lateGraceMinutes: number;
+            /** Format: int32 */
+            weeklyOff: number | null;
+            password: string | null;
+        };
+        StaffMember: {
+            /** Format: int64 */
+            id: number;
+            name: string;
+            phone: string | null;
+            email: string | null;
+            /** @enum {string} */
+            role: "OWNER" | "MANAGER" | "STAFF";
+            designation: string | null;
+            /** Format: date */
+            joinedOn: string | null;
+            /** @enum {string} */
+            payType: "MONTHLY" | "DAILY" | "PIECE";
+            /** Format: int64 */
+            salaryPaise: number;
+            /** Format: int64 */
+            hourlyPaise: number;
+            /** Format: time-local */
+            shiftStart: string;
+            /** Format: time-local */
+            shiftEnd: string;
+            /** Format: int32 */
+            lateGraceMinutes: number;
+            /** Format: int32 */
+            weeklyOff: number | null;
+            active: boolean;
+            canSignIn: boolean;
+            /** Format: date-time */
+            lastLoginAt: string | null;
+        };
+        PermissionsForm: {
+            permissions: ("ORDERS" | "WORKSHOP" | "MONEY" | "STAFF" | "PAYROLL" | "CATALOGUE" | "SETTINGS" | "STOCK" | "MARKETING" | "REPORTS")[];
+        };
+        RolePermissions: {
+            /** @enum {string} */
+            role: "OWNER" | "MANAGER" | "STAFF";
+            permissions: ("ORDERS" | "WORKSHOP" | "MONEY" | "STAFF" | "PAYROLL" | "CATALOGUE" | "SETTINGS" | "STOCK" | "MARKETING" | "REPORTS")[];
+            editable: boolean;
+        };
+        AttendanceForm: {
+            /** @enum {string} */
+            status: "PRESENT" | "HALF_DAY" | "ABSENT" | "LEAVE" | "OFF" | "HOLIDAY" | "COMP_OFF";
+            /** Format: time-local */
+            checkIn: string | null;
+            /** Format: time-local */
+            checkOut: string | null;
+            note: string | null;
+        };
+        AttendanceEntry: {
+            /** Format: int64 */
+            staffId: number;
+            name: string;
+            designation: string | null;
+            /** Format: time-local */
+            shiftStart: string;
+            /** Format: time-local */
+            shiftEnd: string;
+            /** @enum {string|null} */
+            status: "PRESENT" | "HALF_DAY" | "ABSENT" | "LEAVE" | "OFF" | "HOLIDAY" | "COMP_OFF" | null;
+            /** @enum {string|null} */
+            suggested: "PRESENT" | "HALF_DAY" | "ABSENT" | "LEAVE" | "OFF" | "HOLIDAY" | "COMP_OFF" | null;
+            /** Format: time-local */
+            checkIn: string | null;
+            /** Format: time-local */
+            checkOut: string | null;
+            /** Format: int32 */
+            lateMinutes: number;
+            /** Format: int32 */
+            overtimeMinutes: number;
+            note: string | null;
+            markedBy: string | null;
+        };
+        DayAttendance: {
+            /** Format: date */
+            day: string;
+            holiday: string | null;
+            entries: components["schemas"]["AttendanceEntry"][];
+        };
+        WatermarkSettings: {
+            enabled: boolean;
+            text: string | null;
+            /** @enum {string} */
+            position: "BOTTOM_RIGHT" | "BOTTOM_LEFT" | "CENTER" | "TOP_RIGHT";
+            /** Format: int32 */
+            opacityPercent: number;
         };
         ShopProfile: {
             ownerName: string;
@@ -1852,6 +2253,37 @@ export interface components {
             discountAppliesTo: "ORDER_TOTAL" | "ITEMS_BEFORE_TAX";
             autoInvoice: boolean;
         };
+        ServiceProductForm: {
+            /** Format: int64 */
+            templateId: number;
+            code: string | null;
+            name: string;
+            /** Format: int64 */
+            pricePaise: number;
+            photoKey: string | null;
+            stageCosts: components["schemas"]["StageCost"][];
+        };
+        StageCost: {
+            /** Format: int64 */
+            stageId: number;
+            /** Format: int64 */
+            paise: number;
+        };
+        ServiceProduct: {
+            /** Format: int64 */
+            id: number;
+            /** Format: int64 */
+            templateId: number;
+            garment: string;
+            code: string;
+            name: string;
+            /** Format: int64 */
+            pricePaise: number;
+            photoKey: string | null;
+            stageCosts: components["schemas"]["StageCost"][];
+            /** Format: int64 */
+            profitPaise: number;
+        };
         MediaUpdate: {
             /** Format: int64 */
             id: number;
@@ -1944,312 +2376,34 @@ export interface components {
             /** Format: date-time */
             updatedAt: string;
         };
-        PasswordChange: {
-            currentPassword: string;
-            newPassword: string;
+        OrderChange: {
+            /** Format: int64 */
+            deliveryPackageId: number | null;
+            items: components["schemas"]["OrderItemChange"][];
+            /** @enum {string} */
+            discountKind: "AMOUNT" | "PERCENT";
+            /** Format: int64 */
+            discountValue: number;
+            couponCode: string | null;
         };
-        BagQuoteRequest: {
-            lines: components["schemas"]["BagRequestLine"][];
-        };
-        BagRequestLine: {
-            sku: string;
-            addonCode: string | null;
+        OrderItemChange: {
+            /** Format: int64 */
+            id: number | null;
+            /** Format: int64 */
+            templateId: number | null;
+            /** Format: int64 */
+            serviceProductId: number | null;
+            description: string;
             /** Format: int32 */
             quantity: number;
-        };
-        BagQuote: {
-            lines: components["schemas"]["BagQuoteLine"][];
-            /** Format: int32 */
-            itemsPaise: number;
-            /** Format: int32 */
-            addonsPaise: number;
-            /** Format: int32 */
-            mrpPaise: number;
-            /** Format: int32 */
-            totalPaise: number;
-        };
-        BagQuoteLine: {
-            sku: string;
-            addonCode: string | null;
-            /** @enum {string} */
-            status: "AVAILABLE" | "LIMITED" | "OUT_OF_STOCK" | "UNAVAILABLE";
-            /** Format: int32 */
-            quantity: number;
-            /** Format: int32 */
-            maxQuantity: number;
-            /** Format: int32 */
-            stockLeft: number | null;
-            slug: string | null;
-            name: string | null;
-            colourName: string | null;
-            colourHex: string | null;
-            size: string | null;
-            /** Format: int32 */
-            pricePaise: number;
-            /** Format: int32 */
-            mrpPaise: number;
-            addonName: string | null;
-            /** Format: int32 */
-            addonPricePaise: number;
-            /** @enum {string|null} */
-            addonInput: "NONE" | "SIZE" | "MEASUREMENTS" | null;
-            imageKey: string | null;
-        };
-        StaffLoginRequest: {
-            /** Format: email */
-            email: string;
-            password: string;
-        };
-        StaffSession: {
-            accessToken: string;
-            /** Format: int64 */
-            expiresIn: number;
-            staff: components["schemas"]["SignedInStaff"];
-        };
-        SettingsImageRequest: {
-            /** @enum {string} */
-            purpose: "LOGO" | "UPI_QR";
-        };
-        SettingsImageUpload: {
-            key: string;
-            uploadUrl: string;
-            /** Format: date-time */
-            expiresAt: string;
-        };
-        MediaUploadRequest: {
-            alt: string;
-            colourName: string | null;
-            /** Format: int32 */
-            width: number;
-            /** Format: int32 */
-            height: number;
-        };
-        MediaUpload: {
-            media: components["schemas"]["AdminMedia"];
-            renditions: components["schemas"]["Rendition"][];
-            /** Format: date-time */
-            expiresAt: string;
-        };
-        Rendition: {
-            /** Format: int32 */
-            width: number;
-            uploadUrl: string;
-        };
-        AddonResponse: {
-            code: string;
-            /** @enum {string} */
-            kind: "BLOUSE";
-            name: string;
-            description: string | null;
-            /** Format: int32 */
-            pricePaise: number;
-            /** @enum {string} */
-            input: "NONE" | "SIZE" | "MEASUREMENTS";
-        };
-        AttributeResponse: {
-            code: string;
-            name: string;
-            values: components["schemas"]["AttributeValue"][];
-        };
-        AttributeValue: {
-            code: string;
-            name: string;
-        };
-        CategoryRef: {
-            slug: string;
-            name: string;
-        };
-        MediaResponse: {
-            /** @enum {string} */
-            kind: "IMAGE" | "VIDEO";
-            key: string;
-            alt: string;
-            colourName: string | null;
-            /** Format: int32 */
-            width: number | null;
-            /** Format: int32 */
-            height: number | null;
-        };
-        ProductDetailResponse: {
-            slug: string;
-            name: string;
-            subtitle: string | null;
-            description: string | null;
-            /** @enum {string|null} */
-            badge: "NEW" | "BESTSELLER" | "BRIDAL" | "HANDLOOM" | null;
-            category: components["schemas"]["CategoryRef"];
-            /** Format: int32 */
-            pricePaise: number;
-            /** Format: int32 */
-            mrpPaise: number;
-            /** Format: int32 */
-            discountPercent: number;
-            careInstructions: string | null;
-            sareeLengthM: number | null;
-            blouseIncluded: boolean;
-            blouseLengthM: number | null;
-            attributes: components["schemas"]["AttributeResponse"][];
-            variants: components["schemas"]["VariantResponse"][];
-            media: components["schemas"]["MediaResponse"][];
-            addons: components["schemas"]["AddonResponse"][];
-        };
-        VariantResponse: {
-            sku: string;
-            colourName: string;
-            colourHex: string;
-            size: string | null;
-            /** Format: int32 */
-            pricePaise: number;
-            /** Format: int32 */
-            mrpPaise: number;
-            inStock: boolean;
-            /** Format: int32 */
-            stockLeft: number | null;
-        };
-        CategoryResponse: {
-            /** Format: int64 */
-            id: number;
-            slug: string;
-            name: string;
-            description: string | null;
-        };
-        ColourSwatch: {
-            name: string;
-            hex: string;
-        };
-        FilterGroup: {
-            code: string;
-            name: string;
-            /** @enum {string} */
-            type: "COLOUR" | "SIZE" | "FACET";
-            options: components["schemas"]["FilterOption"][];
-        };
-        FilterOption: {
-            code: string;
-            name: string;
-            hex: string | null;
-            /** Format: int64 */
-            count: number;
-            selected: boolean;
-        };
-        PriceRange: {
-            /** Format: int32 */
-            minPaise: number;
-            /** Format: int32 */
-            maxPaise: number;
-        };
-        ProductListingResponse: {
-            category: components["schemas"]["CategoryResponse"];
-            items: components["schemas"]["ProductSummary"][];
-            /** Format: int64 */
-            total: number;
-            /** Format: int32 */
-            page: number;
-            /** Format: int32 */
-            pageSize: number;
-            sort: string;
-            filters: components["schemas"]["FilterGroup"][];
-            priceRange: components["schemas"]["PriceRange"] | null;
-        };
-        ProductSummary: {
-            slug: string;
-            name: string;
-            subtitle: string | null;
-            /** @enum {string|null} */
-            badge: "NEW" | "BESTSELLER" | "BRIDAL" | "HANDLOOM" | null;
-            /** Format: int32 */
-            pricePaise: number;
-            /** Format: int32 */
-            mrpPaise: number;
-            /** Format: int32 */
-            discountPercent: number;
-            colours: components["schemas"]["ColourSwatch"][];
-            inStock: boolean;
-            /** Format: int32 */
-            stockLeft: number | null;
-            image: components["schemas"]["MediaResponse"] | null;
-        };
-        AdminProductPage: {
-            items: components["schemas"]["AdminProductSummary"][];
-            /** Format: int64 */
-            total: number;
-            /** Format: int32 */
-            page: number;
-            /** Format: int32 */
-            pageSize: number;
-        };
-        AdminProductSummary: {
-            /** Format: int64 */
-            id: number;
-            slug: string;
-            name: string;
-            category: components["schemas"]["CategoryRef"];
-            /** @enum {string} */
-            status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
-            /** Format: int32 */
-            variantCount: number;
-            /** Format: int64 */
-            stockTotal: number;
-            /** Format: int32 */
-            minPricePaise: number | null;
-            /** Format: date-time */
-            updatedAt: string;
-        };
-        CatalogOptions: {
-            categories: components["schemas"]["CategoryResponse"][];
-            facets: components["schemas"]["FacetOption"][];
-            colourFamilies: components["schemas"]["ColourOption"][];
-            sizes: string[];
-        };
-        ColourOption: {
-            code: string;
-            name: string;
-            hex: string;
-        };
-        FacetOption: {
-            code: string;
-            name: string;
-            values: components["schemas"]["AttributeValue"][];
-        };
-        ServiceProductForm: {
-            /** Format: int64 */
-            templateId: number;
-            code: string | null;
-            name: string;
             /** Format: int64 */
             pricePaise: number;
-            photoKey: string | null;
-            stageCosts: components["schemas"]["StageCost"][];
-        };
-        StageCost: {
-            /** Format: int64 */
-            stageId: number;
-            /** Format: int64 */
-            paise: number;
-        };
-        ServiceProduct: {
-            /** Format: int64 */
-            id: number;
-            /** Format: int64 */
-            templateId: number;
-            garment: string;
-            code: string;
-            name: string;
-            /** Format: int64 */
-            pricePaise: number;
-            photoKey: string | null;
-            stageCosts: components["schemas"]["StageCost"][];
-            /** Format: int64 */
-            profitPaise: number;
-        };
-        OrderSchedule: {
-            /** Format: date */
-            deliveryDate: string;
-            /** Format: time-local */
-            dueTime: string | null;
-            /** Format: date */
-            trialDate: string | null;
-            notes: string | null;
+            colour: string | null;
+            note: string | null;
+            measurements: {
+                [key: string]: string;
+            } | null;
+            clothPhotoKey: string | null;
         };
         ClientSummary: {
             /** Format: int64 */
@@ -2296,6 +2450,10 @@ export interface components {
             /** Format: int64 */
             discountPaise: number;
             couponCode: string | null;
+            /** Format: int32 */
+            rewardPoints: number;
+            /** Format: int64 */
+            rewardPaise: number;
             /** Format: int64 */
             totalPaise: number;
             /** Format: int64 */
@@ -2308,6 +2466,11 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             deliveredAt: string | null;
+            /** Format: date-time */
+            cancelledAt: string | null;
+            /** @enum {string|null} */
+            cancelSettlement: "NONE" | "REFUNDED" | "KEPT" | null;
+            cancelReason: string | null;
             items: components["schemas"]["OrderItem"][];
             payments: components["schemas"]["OrderPayment"][];
         };
@@ -2347,6 +2510,126 @@ export interface components {
             receivedBy: string | null;
             /** Format: date-time */
             receivedAt: string;
+        };
+        OrderSchedule: {
+            /** Format: date */
+            deliveryDate: string;
+            /** Format: time-local */
+            dueTime: string | null;
+            /** Format: date */
+            trialDate: string | null;
+            notes: string | null;
+        };
+        ExpenseForm: {
+            /** Format: date */
+            spentOn: string;
+            /** @enum {string} */
+            category: "RENT" | "SALARY" | "MATERIAL" | "UTILITIES" | "TRANSPORT" | "MAINTENANCE" | "MARKETING" | "OTHER";
+            description: string;
+            /** Format: int64 */
+            amountPaise: number;
+            /** @enum {string} */
+            mode: "CASH" | "UPI" | "CARD" | "BANK";
+            paidTo: string | null;
+        };
+        Expense: {
+            /** Format: int64 */
+            id: number;
+            /** Format: date */
+            spentOn: string;
+            /** @enum {string} */
+            category: "RENT" | "SALARY" | "MATERIAL" | "UTILITIES" | "TRANSPORT" | "MAINTENANCE" | "MARKETING" | "OTHER";
+            description: string;
+            /** Format: int64 */
+            amountPaise: number;
+            /** @enum {string} */
+            mode: "CASH" | "UPI" | "CARD" | "BANK";
+            paidTo: string | null;
+            createdBy: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        PasswordChange: {
+            currentPassword: string;
+            newPassword: string;
+        };
+        GalleryForm: {
+            /** @enum {string} */
+            kind: "DESIGN" | "CUSTOMER";
+            title: string;
+            tags: string | null;
+            /** Format: int64 */
+            templateId: number | null;
+            /** Format: int64 */
+            clientId: number | null;
+            /** Format: int64 */
+            orderId: number | null;
+            photoKey: string;
+        };
+        GalleryPhoto: {
+            /** Format: int64 */
+            id: number;
+            /** @enum {string} */
+            kind: "DESIGN" | "CUSTOMER";
+            title: string;
+            tags: string | null;
+            /** Format: int64 */
+            templateId: number | null;
+            garment: string | null;
+            /** Format: int64 */
+            clientId: number | null;
+            clientName: string | null;
+            /** Format: int64 */
+            orderId: number | null;
+            photoKey: string;
+            createdBy: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        RewardSettings: {
+            enabled: boolean;
+            /** Format: int32 */
+            pointsPer100: number;
+            /** Format: int32 */
+            paisePerPoint: number;
+        };
+        CouponForm: {
+            code: string;
+            description: string | null;
+            /** @enum {string} */
+            kind: "AMOUNT" | "PERCENT";
+            /** Format: int64 */
+            value: number;
+            /** Format: int64 */
+            minOrderPaise: number;
+            /** Format: date */
+            validFrom: string | null;
+            /** Format: date */
+            validTo: string | null;
+            /** Format: int32 */
+            maxUses: number | null;
+            active: boolean;
+        };
+        Coupon: {
+            /** Format: int64 */
+            id: number;
+            code: string;
+            description: string | null;
+            /** @enum {string} */
+            kind: "AMOUNT" | "PERCENT";
+            /** Format: int64 */
+            value: number;
+            /** Format: int64 */
+            minOrderPaise: number;
+            /** Format: date */
+            validFrom: string | null;
+            /** Format: date */
+            validTo: string | null;
+            /** Format: int32 */
+            maxUses: number | null;
+            active: boolean;
+            /** Format: int32 */
+            uses: number;
         };
         ClientForm: {
             phone: string;
@@ -2422,6 +2705,114 @@ export interface components {
             /** Format: date-time */
             takenAt: string;
         };
+        BagQuoteRequest: {
+            lines: components["schemas"]["BagRequestLine"][];
+        };
+        BagRequestLine: {
+            sku: string;
+            addonCode: string | null;
+            /** Format: int32 */
+            quantity: number;
+        };
+        BagQuote: {
+            lines: components["schemas"]["BagQuoteLine"][];
+            /** Format: int32 */
+            itemsPaise: number;
+            /** Format: int32 */
+            addonsPaise: number;
+            /** Format: int32 */
+            mrpPaise: number;
+            /** Format: int32 */
+            totalPaise: number;
+        };
+        BagQuoteLine: {
+            sku: string;
+            addonCode: string | null;
+            /** @enum {string} */
+            status: "AVAILABLE" | "LIMITED" | "OUT_OF_STOCK" | "UNAVAILABLE";
+            /** Format: int32 */
+            quantity: number;
+            /** Format: int32 */
+            maxQuantity: number;
+            /** Format: int32 */
+            stockLeft: number | null;
+            slug: string | null;
+            name: string | null;
+            colourName: string | null;
+            colourHex: string | null;
+            size: string | null;
+            /** Format: int32 */
+            pricePaise: number;
+            /** Format: int32 */
+            mrpPaise: number;
+            addonName: string | null;
+            /** Format: int32 */
+            addonPricePaise: number;
+            /** @enum {string|null} */
+            addonInput: "NONE" | "SIZE" | "MEASUREMENTS" | null;
+            imageKey: string | null;
+        };
+        StaffLoginRequest: {
+            /** Format: email */
+            email: string;
+            password: string;
+        };
+        SignedInStaff: {
+            /** Format: int64 */
+            id: number;
+            name: string;
+            email: string | null;
+            /** @enum {string} */
+            role: "OWNER" | "MANAGER" | "STAFF";
+            permissions: ("ORDERS" | "WORKSHOP" | "MONEY" | "STAFF" | "PAYROLL" | "CATALOGUE" | "SETTINGS" | "STOCK" | "MARKETING" | "REPORTS")[];
+        };
+        StaffSession: {
+            accessToken: string;
+            /** Format: int64 */
+            expiresIn: number;
+            staff: components["schemas"]["SignedInStaff"];
+        };
+        RefreshRequest: {
+            refreshToken: string;
+        };
+        AuthSession: {
+            accessToken: string;
+            /** Format: int64 */
+            accessTokenExpiresIn: number;
+            refreshToken: string;
+            /** Format: int64 */
+            refreshTokenExpiresIn: number;
+            customer: components["schemas"]["CustomerProfile"];
+            newCustomer: boolean;
+        };
+        OtpVerification: {
+            phone: string;
+            code: string;
+        };
+        OtpRequest: {
+            /** @example 98765 43210 */
+            phone: string;
+        };
+        OtpSent: {
+            phone: string;
+            /** Format: int64 */
+            expiresInSeconds: number;
+            /** Format: int64 */
+            resendAfterSeconds: number;
+        };
+        GoogleSignIn: {
+            credential: string;
+        };
+        BulkMove: {
+            /** Format: int64 */
+            stageId: number;
+            itemIds: number[];
+        };
+        BoardColumn: {
+            stage: components["schemas"]["ProductionStage"];
+            removed: boolean;
+            items: components["schemas"]["WorkItem"][];
+        };
         TailoringImageRequest: {
             /** @enum {string} */
             purpose: "CLIENT" | "CLOTH" | "ALTERATION" | "PRODUCT";
@@ -2431,6 +2822,183 @@ export interface components {
             uploadUrl: string;
             /** Format: date-time */
             expiresAt: string;
+        };
+        Rendition: {
+            /** Format: int32 */
+            width: number;
+            uploadUrl: string;
+        };
+        SiteImageUpload: {
+            key: string;
+            renditions: components["schemas"]["Rendition"][];
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        StockMovementForm: {
+            /** @enum {string} */
+            kind: "IN" | "OUT" | "ADJUST";
+            quantity: number;
+            /** Format: int64 */
+            orderId: number | null;
+            note: string | null;
+        };
+        StockMovement: {
+            /** Format: int64 */
+            id: number;
+            /** Format: int64 */
+            itemId: number;
+            itemName: string;
+            /** @enum {string} */
+            kind: "IN" | "OUT" | "ADJUST";
+            quantity: number;
+            balance: number;
+            /** Format: int64 */
+            orderId: number | null;
+            orderNumber: string | null;
+            note: string | null;
+            movedBy: string | null;
+            /** Format: date-time */
+            movedAt: string;
+        };
+        RequestForm: {
+            /** Format: int64 */
+            staffId: number | null;
+            /** @enum {string} */
+            kind: "LEAVE" | "PERMISSION" | "OFF_DAY" | "COMP_OFF" | "ADVANCE";
+            /** Format: date */
+            fromDate: string;
+            /** Format: date */
+            toDate: string | null;
+            hours: number | null;
+            /** Format: int64 */
+            amountPaise: number | null;
+            reason: string | null;
+        };
+        StaffRequest: {
+            /** Format: int64 */
+            id: number;
+            /** Format: int64 */
+            staffId: number;
+            staffName: string;
+            /** @enum {string} */
+            kind: "LEAVE" | "PERMISSION" | "OFF_DAY" | "COMP_OFF" | "ADVANCE";
+            /** Format: date */
+            fromDate: string;
+            /** Format: date */
+            toDate: string;
+            hours: number | null;
+            /** Format: int64 */
+            amountPaise: number | null;
+            reason: string | null;
+            /** @enum {string} */
+            status: "PENDING" | "APPROVED" | "REJECTED";
+            requestedBy: string | null;
+            decidedBy: string | null;
+            /** Format: date-time */
+            decidedAt: string | null;
+            decisionNote: string | null;
+            /** Format: date */
+            recoveredMonth: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        RequestDecision: {
+            approve: boolean;
+            note: string | null;
+        };
+        BulkAttendance: {
+            /** @enum {string} */
+            status: "PRESENT" | "HALF_DAY" | "ABSENT" | "LEAVE" | "OFF" | "HOLIDAY" | "COMP_OFF";
+            staffIds: number[];
+        };
+        SettingsImageRequest: {
+            /** @enum {string} */
+            purpose: "LOGO" | "UPI_QR";
+        };
+        SettingsImageUpload: {
+            key: string;
+            uploadUrl: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        VideoUploadRequest: {
+            alt: string;
+            colourName: string | null;
+            contentType: string;
+        };
+        VideoUpload: {
+            media: components["schemas"]["AdminMedia"];
+            uploadUrl: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        MediaUploadRequest: {
+            alt: string;
+            colourName: string | null;
+            /** Format: int32 */
+            width: number;
+            /** Format: int32 */
+            height: number;
+        };
+        MediaUpload: {
+            media: components["schemas"]["AdminMedia"];
+            renditions: components["schemas"]["Rendition"][];
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        PayForm: {
+            /** @enum {string} */
+            mode: "CASH" | "UPI" | "CARD" | "BANK";
+        };
+        Payslip: {
+            /** Format: int64 */
+            id: number | null;
+            /** Format: int64 */
+            staffId: number;
+            name: string;
+            designation: string | null;
+            /** Format: date */
+            month: string;
+            /** @enum {string} */
+            payType: "MONTHLY" | "DAILY" | "PIECE";
+            /** Format: int64 */
+            ratePaise: number;
+            daysPaid: number;
+            daysUnpaid: number;
+            /** Format: int64 */
+            basePaise: number;
+            /** Format: int64 */
+            piecePaise: number;
+            /** Format: int32 */
+            pieces: number;
+            /** Format: int32 */
+            overtimeMinutes: number;
+            /** Format: int64 */
+            overtimePaise: number;
+            /** Format: int32 */
+            lateMinutes: number;
+            /** Format: int64 */
+            latePaise: number;
+            /** Format: int64 */
+            advancePaise: number;
+            /** Format: int64 */
+            netPaise: number;
+            /** Format: date-time */
+            paidAt: string | null;
+            /** @enum {string|null} */
+            paidMode: "CASH" | "UPI" | "CARD" | "BANK" | null;
+        };
+        PayrollMonth: {
+            /** Format: date */
+            month: string;
+            finalized: boolean;
+            slips: components["schemas"]["Payslip"][];
+            /** Format: int64 */
+            totalNetPaise: number;
+            /** Format: int64 */
+            paidPaise: number;
+            /** Format: int64 */
+            unpaidPaise: number;
         };
         OrderForm: {
             /** Format: int64 */
@@ -2451,6 +3019,8 @@ export interface components {
             /** Format: int64 */
             discountValue: number;
             couponCode: string | null;
+            /** Format: int32 */
+            redeemPoints: number;
             /** Format: int64 */
             advancePaise: number;
             /** @enum {string} */
@@ -2486,6 +3056,134 @@ export interface components {
             mode: "CASH" | "UPI" | "CARD" | "BANK";
             refund: boolean;
             note: string | null;
+        };
+        CancelForm: {
+            /** @enum {string|null} */
+            settlement: "REFUND" | "KEEP" | null;
+            /** @enum {string|null} */
+            refundMode: "CASH" | "UPI" | "CARD" | "BANK" | null;
+            reason: string | null;
+        };
+        Invoice: {
+            /** Format: int64 */
+            id: number;
+            number: string;
+            /** Format: int64 */
+            orderId: number;
+            orderNumber: string;
+            client: components["schemas"]["ClientSummary"];
+            /** Format: date */
+            issuedOn: string;
+            lines: components["schemas"]["InvoiceLine"][];
+            /** Format: int64 */
+            discountPaise: number;
+            /** Format: int64 */
+            orderTotalPaise: number;
+            gstRate: number;
+            pricesIncludeTax: boolean;
+            /** Format: int64 */
+            taxablePaise: number;
+            /** Format: int64 */
+            cgstPaise: number;
+            /** Format: int64 */
+            sgstPaise: number;
+            /** Format: int64 */
+            totalPaise: number;
+            /** Format: int64 */
+            paidPaise: number;
+            /** Format: int64 */
+            balancePaise: number;
+            shopGstin: string | null;
+            clientGstin: string | null;
+            createdBy: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            cancelledAt: string | null;
+            cancelledBy: string | null;
+        };
+        InvoiceLine: {
+            description: string;
+            /** Format: int32 */
+            quantity: number;
+            /** Format: int64 */
+            unitPaise: number;
+            /** Format: int64 */
+            amountPaise: number;
+        };
+        GalleryUpload: {
+            key: string;
+            uploadUrl: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        RewardChange: {
+            /** @enum {string} */
+            kind: "EARNED" | "REDEEMED" | "ADJUSTED" | "RETURNED";
+            /** Format: int32 */
+            points: number;
+            /** Format: int64 */
+            orderId: number | null;
+            note: string | null;
+        };
+        RewardAccount: {
+            /** Format: int64 */
+            clientId: number;
+            /** Format: int32 */
+            balance: number;
+            /** Format: int64 */
+            valuePaise: number;
+            entries: components["schemas"]["RewardEntry"][];
+        };
+        RewardEntry: {
+            /** Format: int64 */
+            id: number;
+            /** @enum {string} */
+            kind: "EARNED" | "REDEEMED" | "ADJUSTED" | "RETURNED";
+            /** Format: int32 */
+            points: number;
+            /** Format: int64 */
+            orderId: number | null;
+            orderNumber: string | null;
+            note: string | null;
+            createdBy: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        MessageForm: {
+            /** @enum {string} */
+            purpose: "ORDER_PLACED" | "ORDER_READY" | "ORDER_DELIVERED" | "PAYMENT" | "REVIEW" | "REWARD" | "CUSTOM";
+            /** Format: int64 */
+            orderId: number | null;
+            /** Format: int64 */
+            clientId: number | null;
+            code: string | null;
+            body: string | null;
+            /** @enum {string|null} */
+            channel: "WHATSAPP" | "SMS" | null;
+        };
+        Message: {
+            /** Format: int64 */
+            id: number;
+            /** @enum {string} */
+            channel: "WHATSAPP" | "SMS";
+            /** @enum {string} */
+            purpose: "ORDER_PLACED" | "ORDER_READY" | "ORDER_DELIVERED" | "PAYMENT" | "REVIEW" | "REWARD" | "CUSTOM";
+            /** Format: int64 */
+            clientId: number | null;
+            clientName: string | null;
+            /** Format: int64 */
+            orderId: number | null;
+            orderNumber: string | null;
+            toPhone: string;
+            body: string;
+            /** @enum {string} */
+            status: "LINK" | "SENT" | "FAILED";
+            link: string | null;
+            error: string | null;
+            createdBy: string | null;
+            /** Format: date-time */
+            createdAt: string;
         };
         MeasurementForm: {
             /** Format: int64 */
@@ -2563,6 +3261,346 @@ export interface components {
             /** @enum {string|null} */
             mode: "CASH" | "UPI" | "CARD" | "BANK" | null;
         };
+        AddonResponse: {
+            code: string;
+            /** @enum {string} */
+            kind: "BLOUSE";
+            name: string;
+            description: string | null;
+            /** Format: int32 */
+            pricePaise: number;
+            /** @enum {string} */
+            input: "NONE" | "SIZE" | "MEASUREMENTS";
+        };
+        AttributeResponse: {
+            code: string;
+            name: string;
+            values: components["schemas"]["AttributeValue"][];
+        };
+        AttributeValue: {
+            code: string;
+            name: string;
+        };
+        CategoryRef: {
+            slug: string;
+            name: string;
+        };
+        MediaResponse: {
+            /** @enum {string} */
+            kind: "IMAGE" | "VIDEO";
+            key: string;
+            alt: string;
+            colourName: string | null;
+            /** Format: int32 */
+            width: number | null;
+            /** Format: int32 */
+            height: number | null;
+        };
+        ProductDetailResponse: {
+            slug: string;
+            name: string;
+            subtitle: string | null;
+            description: string | null;
+            /** @enum {string|null} */
+            badge: "NEW" | "BESTSELLER" | "BRIDAL" | "HANDLOOM" | null;
+            category: components["schemas"]["CategoryRef"];
+            /** Format: int32 */
+            pricePaise: number;
+            /** Format: int32 */
+            mrpPaise: number;
+            /** Format: int32 */
+            discountPercent: number;
+            careInstructions: string | null;
+            sareeLengthM: number | null;
+            blouseIncluded: boolean;
+            blouseLengthM: number | null;
+            attributes: components["schemas"]["AttributeResponse"][];
+            variants: components["schemas"]["VariantResponse"][];
+            media: components["schemas"]["MediaResponse"][];
+            addons: components["schemas"]["AddonResponse"][];
+        };
+        VariantResponse: {
+            sku: string;
+            colourName: string;
+            colourHex: string;
+            size: string | null;
+            /** Format: int32 */
+            pricePaise: number;
+            /** Format: int32 */
+            mrpPaise: number;
+            inStock: boolean;
+            /** Format: int32 */
+            stockLeft: number | null;
+        };
+        ColourSwatch: {
+            name: string;
+            hex: string;
+        };
+        NewArrivalsPage: {
+            items: components["schemas"]["ProductSummary"][];
+            /** Format: int64 */
+            total: number;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+        };
+        ProductSummary: {
+            slug: string;
+            name: string;
+            subtitle: string | null;
+            /** @enum {string|null} */
+            badge: "NEW" | "BESTSELLER" | "BRIDAL" | "HANDLOOM" | null;
+            /** Format: int32 */
+            pricePaise: number;
+            /** Format: int32 */
+            mrpPaise: number;
+            /** Format: int32 */
+            discountPercent: number;
+            colours: components["schemas"]["ColourSwatch"][];
+            inStock: boolean;
+            /** Format: int32 */
+            stockLeft: number | null;
+            image: components["schemas"]["MediaResponse"] | null;
+        };
+        HomeContent: {
+            hero: components["schemas"]["Banner"][];
+            occasions: components["schemas"]["Banner"][];
+            craft: components["schemas"]["Banner"] | null;
+        };
+        FilterGroup: {
+            code: string;
+            name: string;
+            /** @enum {string} */
+            type: "COLOUR" | "SIZE" | "FACET";
+            options: components["schemas"]["FilterOption"][];
+        };
+        FilterOption: {
+            code: string;
+            name: string;
+            hex: string | null;
+            /** Format: int64 */
+            count: number;
+            selected: boolean;
+        };
+        PriceRange: {
+            /** Format: int32 */
+            minPaise: number;
+            /** Format: int32 */
+            maxPaise: number;
+        };
+        ProductListingResponse: {
+            category: components["schemas"]["CategoryResponse"];
+            items: components["schemas"]["ProductSummary"][];
+            /** Format: int64 */
+            total: number;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+            sort: string;
+            filters: components["schemas"]["FilterGroup"][];
+            priceRange: components["schemas"]["PriceRange"] | null;
+        };
+        StageLoad: {
+            stage: components["schemas"]["ProductionStage"];
+            /** Format: int32 */
+            items: number;
+            /** Format: int32 */
+            overdue: number;
+        };
+        WorkshopOverview: {
+            /** Format: int32 */
+            inProduction: number;
+            /** Format: int32 */
+            unassigned: number;
+            /** Format: int32 */
+            readyItems: number;
+            /** Format: int32 */
+            dueToday: number;
+            /** Format: int32 */
+            overdue: number;
+            /** Format: int32 */
+            trialsToday: number;
+            stageLoad: components["schemas"]["StageLoad"][];
+            staffLoad: components["schemas"]["WorkshopStaff"][];
+        };
+        MonthAttendance: {
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            rows: components["schemas"]["Row"][];
+        };
+        Row: {
+            /** Format: int64 */
+            staffId: number;
+            name: string;
+            days: ("PRESENT" | "HALF_DAY" | "ABSENT" | "LEAVE" | "OFF" | "HOLIDAY" | "COMP_OFF")[];
+            /** Format: int32 */
+            present: number;
+            /** Format: int32 */
+            halfDays: number;
+            /** Format: int32 */
+            absent: number;
+            /** Format: int32 */
+            leave: number;
+            /** Format: int32 */
+            offDays: number;
+            /** Format: int32 */
+            unmarked: number;
+            /** Format: int32 */
+            lateMinutes: number;
+            /** Format: int32 */
+            overtimeMinutes: number;
+        };
+        ReportInfo: {
+            name: string;
+            title: string;
+            description: string;
+        };
+        Column: {
+            key: string;
+            label: string;
+            /** @enum {string} */
+            type: "TEXT" | "NUMBER" | "MONEY" | "DATE" | "PERCENT";
+        };
+        Report: {
+            name: string;
+            title: string;
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            columns: components["schemas"]["Column"][];
+            rows: {
+                [key: string]: unknown;
+            }[];
+            totals: {
+                [key: string]: unknown;
+            };
+            note: string | null;
+        };
+        AgeingBucket: {
+            label: string;
+            /** Format: int32 */
+            count: number;
+            /** Format: int64 */
+            paise: number;
+        };
+        MonthFigures: {
+            month: string;
+            /** Format: int64 */
+            bookedPaise: number;
+            /** Format: int64 */
+            collectedPaise: number;
+            /** Format: int64 */
+            expensesPaise: number;
+        };
+        ReportsOverview: {
+            /** Format: int64 */
+            bookedPaise: number;
+            /** Format: int64 */
+            collectedPaise: number;
+            /** Format: int64 */
+            expensesPaise: number;
+            /** Format: int32 */
+            ordersBooked: number;
+            /** Format: int32 */
+            ordersDelivered: number;
+            /** Format: int64 */
+            averageOrderPaise: number;
+            /** Format: int32 */
+            newCustomers: number;
+            /** Format: int64 */
+            outstandingPaise: number;
+            months: components["schemas"]["MonthFigures"][];
+            ageing: components["schemas"]["AgeingBucket"][];
+        };
+        AdminProductPage: {
+            items: components["schemas"]["AdminProductSummary"][];
+            /** Format: int64 */
+            total: number;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+        };
+        AdminProductSummary: {
+            /** Format: int64 */
+            id: number;
+            slug: string;
+            name: string;
+            category: components["schemas"]["CategoryRef"];
+            /** @enum {string} */
+            status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+            /** Format: int32 */
+            variantCount: number;
+            /** Format: int64 */
+            stockTotal: number;
+            /** Format: int32 */
+            minPricePaise: number | null;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        Entry: {
+            /** Format: date */
+            date: string;
+            /** @enum {string} */
+            kind: "EARNED" | "ADVANCE" | "PAID";
+            description: string;
+            /** Format: int64 */
+            amountPaise: number;
+            /** Format: int64 */
+            balancePaise: number;
+        };
+        StaffStatement: {
+            /** Format: int64 */
+            staffId: number;
+            name: string;
+            entries: components["schemas"]["Entry"][];
+            /** Format: int64 */
+            balancePaise: number;
+        };
+        ProductionEntry: {
+            /** Format: date-time */
+            at: string;
+            /** Format: int64 */
+            staffId: number;
+            staffName: string;
+            /** Format: int64 */
+            orderId: number;
+            orderNumber: string;
+            /** Format: int64 */
+            itemId: number;
+            description: string;
+            /** Format: int32 */
+            quantity: number;
+            /** Format: int64 */
+            stageId: number;
+            stageName: string;
+            /** Format: int64 */
+            ratePaise: number;
+            /** Format: int64 */
+            amountPaise: number;
+        };
+        ProductionLedger: {
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            entries: components["schemas"]["ProductionEntry"][];
+            byStaff: components["schemas"]["StaffPieces"][];
+        };
+        StaffPieces: {
+            /** Format: int64 */
+            staffId: number;
+            name: string;
+            /** Format: int32 */
+            pieces: number;
+            /** Format: int64 */
+            amountPaise: number;
+        };
         OrderPage: {
             items: components["schemas"]["OrderSummary"][];
             /** Format: int64 */
@@ -2596,203 +3634,6 @@ export interface components {
             /** Format: int64 */
             balancePaise: number;
             overdue: boolean;
-        };
-        ClientPage: {
-            items: components["schemas"]["ClientSummary"][];
-            /** Format: int64 */
-            total: number;
-            /** Format: int32 */
-            page: number;
-            /** Format: int32 */
-            pageSize: number;
-        };
-        AlterationPage: {
-            items: components["schemas"]["AlterationSummary"][];
-            /** Format: int64 */
-            total: number;
-            /** Format: int32 */
-            page: number;
-            /** Format: int32 */
-            pageSize: number;
-        };
-        AlterationSummary: {
-            /** Format: int64 */
-            id: number;
-            number: string;
-            /** Format: int64 */
-            clientId: number;
-            clientName: string;
-            clientPhone: string;
-            /** @enum {string} */
-            status: "BOOKED" | "IN_PROGRESS" | "READY" | "DELIVERED" | "CANCELLED";
-            /** Format: date */
-            readyBy: string;
-            /** Format: int32 */
-            itemCount: number;
-            itemsLabel: string;
-            paid: boolean;
-            /** Format: int64 */
-            totalPaise: number;
-            /** Format: int64 */
-            balancePaise: number;
-            overdue: boolean;
-        };
-        StaffStages: {
-            stageIds: number[];
-        };
-        WorkshopStaff: {
-            /** Format: int64 */
-            id: number;
-            name: string;
-            /** @enum {string} */
-            role: "OWNER" | "MANAGER" | "STAFF";
-            stageIds: number[];
-            /** Format: int32 */
-            workingOn: number;
-        };
-        AssignForm: {
-            /** Format: int64 */
-            staffId: number | null;
-        };
-        Assignee: {
-            /** Format: int64 */
-            id: number;
-            name: string;
-        };
-        WorkItem: {
-            /** Format: int64 */
-            itemId: number;
-            /** Format: int64 */
-            orderId: number;
-            orderNumber: string;
-            /** Format: int64 */
-            clientId: number;
-            clientName: string;
-            description: string;
-            /** Format: int32 */
-            quantity: number;
-            colour: string | null;
-            garment: string | null;
-            clothPhotoKey: string | null;
-            stage: components["schemas"]["ProductionStage"];
-            /** Format: date-time */
-            stageSince: string;
-            /** Format: date */
-            deliveryDate: string;
-            /** Format: date */
-            trialDate: string | null;
-            dueToday: boolean;
-            overdue: boolean;
-            assignedTo: components["schemas"]["Assignee"] | null;
-        };
-        BulkMove: {
-            /** Format: int64 */
-            stageId: number;
-            itemIds: number[];
-        };
-        BoardColumn: {
-            stage: components["schemas"]["ProductionStage"];
-            removed: boolean;
-            items: components["schemas"]["WorkItem"][];
-        };
-        StageLoad: {
-            stage: components["schemas"]["ProductionStage"];
-            /** Format: int32 */
-            items: number;
-            /** Format: int32 */
-            overdue: number;
-        };
-        WorkshopOverview: {
-            /** Format: int32 */
-            inProduction: number;
-            /** Format: int32 */
-            unassigned: number;
-            /** Format: int32 */
-            readyItems: number;
-            /** Format: int32 */
-            dueToday: number;
-            /** Format: int32 */
-            overdue: number;
-            /** Format: int32 */
-            trialsToday: number;
-            stageLoad: components["schemas"]["StageLoad"][];
-            staffLoad: components["schemas"]["WorkshopStaff"][];
-        };
-        ExpenseForm: {
-            /** Format: date */
-            spentOn: string;
-            /** @enum {string} */
-            category: "RENT" | "SALARY" | "MATERIAL" | "UTILITIES" | "TRANSPORT" | "MAINTENANCE" | "MARKETING" | "OTHER";
-            description: string;
-            /** Format: int64 */
-            amountPaise: number;
-            /** @enum {string} */
-            mode: "CASH" | "UPI" | "CARD" | "BANK";
-            paidTo: string | null;
-        };
-        Expense: {
-            /** Format: int64 */
-            id: number;
-            /** Format: date */
-            spentOn: string;
-            /** @enum {string} */
-            category: "RENT" | "SALARY" | "MATERIAL" | "UTILITIES" | "TRANSPORT" | "MAINTENANCE" | "MARKETING" | "OTHER";
-            description: string;
-            /** Format: int64 */
-            amountPaise: number;
-            /** @enum {string} */
-            mode: "CASH" | "UPI" | "CARD" | "BANK";
-            paidTo: string | null;
-            createdBy: string | null;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        Invoice: {
-            /** Format: int64 */
-            id: number;
-            number: string;
-            /** Format: int64 */
-            orderId: number;
-            orderNumber: string;
-            client: components["schemas"]["ClientSummary"];
-            /** Format: date */
-            issuedOn: string;
-            lines: components["schemas"]["InvoiceLine"][];
-            /** Format: int64 */
-            discountPaise: number;
-            /** Format: int64 */
-            orderTotalPaise: number;
-            gstRate: number;
-            pricesIncludeTax: boolean;
-            /** Format: int64 */
-            taxablePaise: number;
-            /** Format: int64 */
-            cgstPaise: number;
-            /** Format: int64 */
-            sgstPaise: number;
-            /** Format: int64 */
-            totalPaise: number;
-            /** Format: int64 */
-            paidPaise: number;
-            /** Format: int64 */
-            balancePaise: number;
-            shopGstin: string | null;
-            clientGstin: string | null;
-            createdBy: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            cancelledAt: string | null;
-            cancelledBy: string | null;
-        };
-        InvoiceLine: {
-            description: string;
-            /** Format: int32 */
-            quantity: number;
-            /** Format: int64 */
-            unitPaise: number;
-            /** Format: int64 */
-            amountPaise: number;
         };
         Due: {
             /** @enum {string} */
@@ -2911,515 +3752,6 @@ export interface components {
             totalPaise: number;
             byCategory: components["schemas"]["CategoryTotal"][];
         };
-        StaffForm: {
-            name: string;
-            phone: string | null;
-            /** Format: email */
-            email: string | null;
-            /** @enum {string} */
-            role: "OWNER" | "MANAGER" | "STAFF";
-            designation: string | null;
-            /** Format: date */
-            joinedOn: string | null;
-            /** @enum {string} */
-            payType: "MONTHLY" | "DAILY" | "PIECE";
-            /** Format: int64 */
-            salaryPaise: number;
-            /** Format: int64 */
-            hourlyPaise: number;
-            /** Format: time-local */
-            shiftStart: string;
-            /** Format: time-local */
-            shiftEnd: string;
-            /** Format: int32 */
-            lateGraceMinutes: number;
-            /** Format: int32 */
-            weeklyOff: number | null;
-            password: string | null;
-        };
-        StaffMember: {
-            /** Format: int64 */
-            id: number;
-            name: string;
-            phone: string | null;
-            email: string | null;
-            /** @enum {string} */
-            role: "OWNER" | "MANAGER" | "STAFF";
-            designation: string | null;
-            /** Format: date */
-            joinedOn: string | null;
-            /** @enum {string} */
-            payType: "MONTHLY" | "DAILY" | "PIECE";
-            /** Format: int64 */
-            salaryPaise: number;
-            /** Format: int64 */
-            hourlyPaise: number;
-            /** Format: time-local */
-            shiftStart: string;
-            /** Format: time-local */
-            shiftEnd: string;
-            /** Format: int32 */
-            lateGraceMinutes: number;
-            /** Format: int32 */
-            weeklyOff: number | null;
-            active: boolean;
-            canSignIn: boolean;
-            /** Format: date-time */
-            lastLoginAt: string | null;
-        };
-        PermissionsForm: {
-            permissions: ("ORDERS" | "WORKSHOP" | "MONEY" | "STAFF" | "PAYROLL" | "CATALOGUE" | "SETTINGS" | "STOCK" | "MARKETING" | "REPORTS")[];
-        };
-        RolePermissions: {
-            /** @enum {string} */
-            role: "OWNER" | "MANAGER" | "STAFF";
-            permissions: ("ORDERS" | "WORKSHOP" | "MONEY" | "STAFF" | "PAYROLL" | "CATALOGUE" | "SETTINGS" | "STOCK" | "MARKETING" | "REPORTS")[];
-            editable: boolean;
-        };
-        AttendanceForm: {
-            /** @enum {string} */
-            status: "PRESENT" | "HALF_DAY" | "ABSENT" | "LEAVE" | "OFF" | "HOLIDAY" | "COMP_OFF";
-            /** Format: time-local */
-            checkIn: string | null;
-            /** Format: time-local */
-            checkOut: string | null;
-            note: string | null;
-        };
-        AttendanceEntry: {
-            /** Format: int64 */
-            staffId: number;
-            name: string;
-            designation: string | null;
-            /** Format: time-local */
-            shiftStart: string;
-            /** Format: time-local */
-            shiftEnd: string;
-            /** @enum {string|null} */
-            status: "PRESENT" | "HALF_DAY" | "ABSENT" | "LEAVE" | "OFF" | "HOLIDAY" | "COMP_OFF" | null;
-            /** @enum {string|null} */
-            suggested: "PRESENT" | "HALF_DAY" | "ABSENT" | "LEAVE" | "OFF" | "HOLIDAY" | "COMP_OFF" | null;
-            /** Format: time-local */
-            checkIn: string | null;
-            /** Format: time-local */
-            checkOut: string | null;
-            /** Format: int32 */
-            lateMinutes: number;
-            /** Format: int32 */
-            overtimeMinutes: number;
-            note: string | null;
-            markedBy: string | null;
-        };
-        DayAttendance: {
-            /** Format: date */
-            day: string;
-            holiday: string | null;
-            entries: components["schemas"]["AttendanceEntry"][];
-        };
-        SignedInStaff: {
-            /** Format: int64 */
-            id: number;
-            name: string;
-            email: string | null;
-            /** @enum {string} */
-            role: "OWNER" | "MANAGER" | "STAFF";
-            permissions: ("ORDERS" | "WORKSHOP" | "MONEY" | "STAFF" | "PAYROLL" | "CATALOGUE" | "SETTINGS" | "STOCK" | "MARKETING" | "REPORTS")[];
-        };
-        RequestForm: {
-            /** Format: int64 */
-            staffId: number | null;
-            /** @enum {string} */
-            kind: "LEAVE" | "PERMISSION" | "OFF_DAY" | "COMP_OFF" | "ADVANCE";
-            /** Format: date */
-            fromDate: string;
-            /** Format: date */
-            toDate: string | null;
-            hours: number | null;
-            /** Format: int64 */
-            amountPaise: number | null;
-            reason: string | null;
-        };
-        StaffRequest: {
-            /** Format: int64 */
-            id: number;
-            /** Format: int64 */
-            staffId: number;
-            staffName: string;
-            /** @enum {string} */
-            kind: "LEAVE" | "PERMISSION" | "OFF_DAY" | "COMP_OFF" | "ADVANCE";
-            /** Format: date */
-            fromDate: string;
-            /** Format: date */
-            toDate: string;
-            hours: number | null;
-            /** Format: int64 */
-            amountPaise: number | null;
-            reason: string | null;
-            /** @enum {string} */
-            status: "PENDING" | "APPROVED" | "REJECTED";
-            requestedBy: string | null;
-            decidedBy: string | null;
-            /** Format: date-time */
-            decidedAt: string | null;
-            decisionNote: string | null;
-            /** Format: date */
-            recoveredMonth: string | null;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        RequestDecision: {
-            approve: boolean;
-            note: string | null;
-        };
-        BulkAttendance: {
-            /** @enum {string} */
-            status: "PRESENT" | "HALF_DAY" | "ABSENT" | "LEAVE" | "OFF" | "HOLIDAY" | "COMP_OFF";
-            staffIds: number[];
-        };
-        PayForm: {
-            /** @enum {string} */
-            mode: "CASH" | "UPI" | "CARD" | "BANK";
-        };
-        Payslip: {
-            /** Format: int64 */
-            id: number | null;
-            /** Format: int64 */
-            staffId: number;
-            name: string;
-            designation: string | null;
-            /** Format: date */
-            month: string;
-            /** @enum {string} */
-            payType: "MONTHLY" | "DAILY" | "PIECE";
-            /** Format: int64 */
-            ratePaise: number;
-            daysPaid: number;
-            daysUnpaid: number;
-            /** Format: int64 */
-            basePaise: number;
-            /** Format: int64 */
-            piecePaise: number;
-            /** Format: int32 */
-            pieces: number;
-            /** Format: int32 */
-            overtimeMinutes: number;
-            /** Format: int64 */
-            overtimePaise: number;
-            /** Format: int32 */
-            lateMinutes: number;
-            /** Format: int64 */
-            latePaise: number;
-            /** Format: int64 */
-            advancePaise: number;
-            /** Format: int64 */
-            netPaise: number;
-            /** Format: date-time */
-            paidAt: string | null;
-            /** @enum {string|null} */
-            paidMode: "CASH" | "UPI" | "CARD" | "BANK" | null;
-        };
-        PayrollMonth: {
-            /** Format: date */
-            month: string;
-            finalized: boolean;
-            slips: components["schemas"]["Payslip"][];
-            /** Format: int64 */
-            totalNetPaise: number;
-            /** Format: int64 */
-            paidPaise: number;
-            /** Format: int64 */
-            unpaidPaise: number;
-        };
-        MonthAttendance: {
-            /** Format: date */
-            from: string;
-            /** Format: date */
-            to: string;
-            rows: components["schemas"]["Row"][];
-        };
-        Row: {
-            /** Format: int64 */
-            staffId: number;
-            name: string;
-            days: ("PRESENT" | "HALF_DAY" | "ABSENT" | "LEAVE" | "OFF" | "HOLIDAY" | "COMP_OFF")[];
-            /** Format: int32 */
-            present: number;
-            /** Format: int32 */
-            halfDays: number;
-            /** Format: int32 */
-            absent: number;
-            /** Format: int32 */
-            leave: number;
-            /** Format: int32 */
-            offDays: number;
-            /** Format: int32 */
-            unmarked: number;
-            /** Format: int32 */
-            lateMinutes: number;
-            /** Format: int32 */
-            overtimeMinutes: number;
-        };
-        Entry: {
-            /** Format: date */
-            date: string;
-            /** @enum {string} */
-            kind: "EARNED" | "ADVANCE" | "PAID";
-            description: string;
-            /** Format: int64 */
-            amountPaise: number;
-            /** Format: int64 */
-            balancePaise: number;
-        };
-        StaffStatement: {
-            /** Format: int64 */
-            staffId: number;
-            name: string;
-            entries: components["schemas"]["Entry"][];
-            /** Format: int64 */
-            balancePaise: number;
-        };
-        ProductionEntry: {
-            /** Format: date-time */
-            at: string;
-            /** Format: int64 */
-            staffId: number;
-            staffName: string;
-            /** Format: int64 */
-            orderId: number;
-            orderNumber: string;
-            /** Format: int64 */
-            itemId: number;
-            description: string;
-            /** Format: int32 */
-            quantity: number;
-            /** Format: int64 */
-            stageId: number;
-            stageName: string;
-            /** Format: int64 */
-            ratePaise: number;
-            /** Format: int64 */
-            amountPaise: number;
-        };
-        ProductionLedger: {
-            /** Format: date */
-            from: string;
-            /** Format: date */
-            to: string;
-            entries: components["schemas"]["ProductionEntry"][];
-            byStaff: components["schemas"]["StaffPieces"][];
-        };
-        StaffPieces: {
-            /** Format: int64 */
-            staffId: number;
-            name: string;
-            /** Format: int32 */
-            pieces: number;
-            /** Format: int64 */
-            amountPaise: number;
-        };
-        StockItemForm: {
-            name: string;
-            sku: string | null;
-            category: string | null;
-            /** @enum {string} */
-            unit: "PCS" | "M" | "CM" | "KG" | "G" | "L" | "ROLL" | "BOX" | "SET";
-            reorderLevel: number;
-            /** Format: int64 */
-            costPaise: number;
-        };
-        StockItem: {
-            /** Format: int64 */
-            id: number;
-            name: string;
-            sku: string | null;
-            category: string | null;
-            /** @enum {string} */
-            unit: "PCS" | "M" | "CM" | "KG" | "G" | "L" | "ROLL" | "BOX" | "SET";
-            reorderLevel: number;
-            /** Format: int64 */
-            costPaise: number;
-            onHand: number;
-            low: boolean;
-            /** Format: int64 */
-            valuePaise: number;
-        };
-        GalleryForm: {
-            /** @enum {string} */
-            kind: "DESIGN" | "CUSTOMER";
-            title: string;
-            tags: string | null;
-            /** Format: int64 */
-            templateId: number | null;
-            /** Format: int64 */
-            clientId: number | null;
-            /** Format: int64 */
-            orderId: number | null;
-            photoKey: string;
-        };
-        GalleryPhoto: {
-            /** Format: int64 */
-            id: number;
-            /** @enum {string} */
-            kind: "DESIGN" | "CUSTOMER";
-            title: string;
-            tags: string | null;
-            /** Format: int64 */
-            templateId: number | null;
-            garment: string | null;
-            /** Format: int64 */
-            clientId: number | null;
-            clientName: string | null;
-            /** Format: int64 */
-            orderId: number | null;
-            photoKey: string;
-            createdBy: string | null;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        RewardSettings: {
-            enabled: boolean;
-            /** Format: int32 */
-            pointsPer100: number;
-            /** Format: int32 */
-            paisePerPoint: number;
-        };
-        CouponForm: {
-            code: string;
-            description: string | null;
-            /** @enum {string} */
-            kind: "AMOUNT" | "PERCENT";
-            /** Format: int64 */
-            value: number;
-            /** Format: int64 */
-            minOrderPaise: number;
-            /** Format: date */
-            validFrom: string | null;
-            /** Format: date */
-            validTo: string | null;
-            /** Format: int32 */
-            maxUses: number | null;
-            active: boolean;
-        };
-        Coupon: {
-            /** Format: int64 */
-            id: number;
-            code: string;
-            description: string | null;
-            /** @enum {string} */
-            kind: "AMOUNT" | "PERCENT";
-            /** Format: int64 */
-            value: number;
-            /** Format: int64 */
-            minOrderPaise: number;
-            /** Format: date */
-            validFrom: string | null;
-            /** Format: date */
-            validTo: string | null;
-            /** Format: int32 */
-            maxUses: number | null;
-            active: boolean;
-            /** Format: int32 */
-            uses: number;
-        };
-        StockMovementForm: {
-            /** @enum {string} */
-            kind: "IN" | "OUT" | "ADJUST";
-            quantity: number;
-            /** Format: int64 */
-            orderId: number | null;
-            note: string | null;
-        };
-        StockMovement: {
-            /** Format: int64 */
-            id: number;
-            /** Format: int64 */
-            itemId: number;
-            itemName: string;
-            /** @enum {string} */
-            kind: "IN" | "OUT" | "ADJUST";
-            quantity: number;
-            balance: number;
-            /** Format: int64 */
-            orderId: number | null;
-            orderNumber: string | null;
-            note: string | null;
-            movedBy: string | null;
-            /** Format: date-time */
-            movedAt: string;
-        };
-        GalleryUpload: {
-            key: string;
-            uploadUrl: string;
-            /** Format: date-time */
-            expiresAt: string;
-        };
-        RewardChange: {
-            /** @enum {string} */
-            kind: "EARNED" | "REDEEMED" | "ADJUSTED";
-            /** Format: int32 */
-            points: number;
-            /** Format: int64 */
-            orderId: number | null;
-            note: string | null;
-        };
-        RewardAccount: {
-            /** Format: int64 */
-            clientId: number;
-            /** Format: int32 */
-            balance: number;
-            /** Format: int64 */
-            valuePaise: number;
-            entries: components["schemas"]["RewardEntry"][];
-        };
-        RewardEntry: {
-            /** Format: int64 */
-            id: number;
-            /** @enum {string} */
-            kind: "EARNED" | "REDEEMED" | "ADJUSTED";
-            /** Format: int32 */
-            points: number;
-            /** Format: int64 */
-            orderId: number | null;
-            orderNumber: string | null;
-            note: string | null;
-            createdBy: string | null;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        MessageForm: {
-            /** @enum {string} */
-            purpose: "ORDER_PLACED" | "ORDER_READY" | "ORDER_DELIVERED" | "PAYMENT" | "REVIEW" | "REWARD" | "CUSTOM";
-            /** Format: int64 */
-            orderId: number | null;
-            /** Format: int64 */
-            clientId: number | null;
-            code: string | null;
-            body: string | null;
-            /** @enum {string|null} */
-            channel: "WHATSAPP" | "SMS" | null;
-        };
-        Message: {
-            /** Format: int64 */
-            id: number;
-            /** @enum {string} */
-            channel: "WHATSAPP" | "SMS";
-            /** @enum {string} */
-            purpose: "ORDER_PLACED" | "ORDER_READY" | "ORDER_DELIVERED" | "PAYMENT" | "REVIEW" | "REWARD" | "CUSTOM";
-            /** Format: int64 */
-            clientId: number | null;
-            clientName: string | null;
-            /** Format: int64 */
-            orderId: number | null;
-            orderNumber: string | null;
-            toPhone: string;
-            body: string;
-            /** @enum {string} */
-            status: "LINK" | "SENT" | "FAILED";
-            link: string | null;
-            error: string | null;
-            createdBy: string | null;
-            /** Format: date-time */
-            createdAt: string;
-        };
         ActivityEntry: {
             /** Format: int64 */
             id: number;
@@ -3456,6 +3788,62 @@ export interface components {
             /** Format: int64 */
             discountPaise: number;
         };
+        ClientPage: {
+            items: components["schemas"]["ClientSummary"][];
+            /** Format: int64 */
+            total: number;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+        };
+        CatalogOptions: {
+            categories: components["schemas"]["CategoryResponse"][];
+            facets: components["schemas"]["FacetOption"][];
+            colourFamilies: components["schemas"]["ColourOption"][];
+            sizes: string[];
+        };
+        ColourOption: {
+            code: string;
+            name: string;
+            hex: string;
+        };
+        FacetOption: {
+            code: string;
+            name: string;
+            values: components["schemas"]["AttributeValue"][];
+        };
+        AlterationPage: {
+            items: components["schemas"]["AlterationSummary"][];
+            /** Format: int64 */
+            total: number;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+        };
+        AlterationSummary: {
+            /** Format: int64 */
+            id: number;
+            number: string;
+            /** Format: int64 */
+            clientId: number;
+            clientName: string;
+            clientPhone: string;
+            /** @enum {string} */
+            status: "BOOKED" | "IN_PROGRESS" | "READY" | "DELIVERED" | "CANCELLED";
+            /** Format: date */
+            readyBy: string;
+            /** Format: int32 */
+            itemCount: number;
+            itemsLabel: string;
+            paid: boolean;
+            /** Format: int64 */
+            totalPaise: number;
+            /** Format: int64 */
+            balancePaise: number;
+            overdue: boolean;
+        };
         ActivityPage: {
             items: components["schemas"]["ActivityEntry"][];
             /** Format: int64 */
@@ -3464,110 +3852,6 @@ export interface components {
             page: number;
             /** Format: int32 */
             pageSize: number;
-        };
-        ReportInfo: {
-            name: string;
-            title: string;
-            description: string;
-        };
-        Column: {
-            key: string;
-            label: string;
-            /** @enum {string} */
-            type: "TEXT" | "NUMBER" | "MONEY" | "DATE" | "PERCENT";
-        };
-        Report: {
-            name: string;
-            title: string;
-            /** Format: date */
-            from: string;
-            /** Format: date */
-            to: string;
-            columns: components["schemas"]["Column"][];
-            rows: {
-                [key: string]: unknown;
-            }[];
-            totals: {
-                [key: string]: unknown;
-            };
-            note: string | null;
-        };
-        AgeingBucket: {
-            label: string;
-            /** Format: int32 */
-            count: number;
-            /** Format: int64 */
-            paise: number;
-        };
-        MonthFigures: {
-            month: string;
-            /** Format: int64 */
-            bookedPaise: number;
-            /** Format: int64 */
-            collectedPaise: number;
-            /** Format: int64 */
-            expensesPaise: number;
-        };
-        ReportsOverview: {
-            /** Format: int64 */
-            bookedPaise: number;
-            /** Format: int64 */
-            collectedPaise: number;
-            /** Format: int64 */
-            expensesPaise: number;
-            /** Format: int32 */
-            ordersBooked: number;
-            /** Format: int32 */
-            ordersDelivered: number;
-            /** Format: int64 */
-            averageOrderPaise: number;
-            /** Format: int32 */
-            newCustomers: number;
-            /** Format: int64 */
-            outstandingPaise: number;
-            months: components["schemas"]["MonthFigures"][];
-            ageing: components["schemas"]["AgeingBucket"][];
-        };
-        ProfileUpdate: {
-            name: string;
-        };
-        CustomerProfile: {
-            /** Format: int64 */
-            id: number;
-            name: string | null;
-            email: string | null;
-            phone: string | null;
-        };
-        RefreshRequest: {
-            refreshToken: string;
-        };
-        AuthSession: {
-            accessToken: string;
-            /** Format: int64 */
-            accessTokenExpiresIn: number;
-            refreshToken: string;
-            /** Format: int64 */
-            refreshTokenExpiresIn: number;
-            customer: components["schemas"]["CustomerProfile"];
-            newCustomer: boolean;
-        };
-        OtpVerification: {
-            phone: string;
-            code: string;
-        };
-        OtpRequest: {
-            /** @example 98765 43210 */
-            phone: string;
-        };
-        OtpSent: {
-            phone: string;
-            /** Format: int64 */
-            expiresInSeconds: number;
-            /** Format: int64 */
-            resendAfterSeconds: number;
-        };
-        GoogleSignIn: {
-            credential: string;
         };
     };
     responses: never;
@@ -3578,6 +3862,390 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    getProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomerProfile"];
+                };
+            };
+        };
+    };
+    updateProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileUpdate"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomerProfile"];
+                };
+            };
+        };
+    };
+    saveWorkshopStaffStages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                staffId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffStages"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WorkshopStaff"];
+                };
+            };
+        };
+    };
+    assignWorkItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WorkItem"];
+                };
+            };
+        };
+    };
+    setCategoryImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryImageForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CategoryResponse"];
+                };
+            };
+        };
+    };
+    updateBanner: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BannerForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Banner"];
+                };
+            };
+        };
+    };
+    deleteBanner: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    reorderBanners: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BannerOrder"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Banner"][];
+                };
+            };
+        };
+    };
+    getStockItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StockItem"];
+                };
+            };
+        };
+    };
+    updateStockItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StockItemForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StockItem"];
+                };
+            };
+        };
+    };
+    deleteStockItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffMember"];
+                };
+            };
+        };
+    };
+    updateStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffMember"];
+                };
+            };
+        };
+    };
+    saveRolePermissions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                role: "OWNER" | "MANAGER" | "STAFF";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PermissionsForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RolePermissions"];
+                };
+            };
+        };
+    };
+    markAttendance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                day: string;
+                staffId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttendanceForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DayAttendance"];
+                };
+            };
+        };
+    };
+    clearAttendance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                day: string;
+                staffId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DayAttendance"];
+                };
+            };
+        };
+    };
     getWatermark: {
         parameters: {
             query?: never;
@@ -4152,6 +4820,52 @@ export interface operations {
             };
         };
     };
+    updateServiceProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ServiceProductForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ServiceProduct"];
+                };
+            };
+        };
+    };
+    deleteServiceProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     updateMedia: {
         parameters: {
             query?: never;
@@ -4226,246 +4940,7 @@ export interface operations {
             };
         };
     };
-    changeOwnPassword: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PasswordChange"];
-            };
-        };
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    quoteBag: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BagQuoteRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["BagQuote"];
-                };
-            };
-        };
-    };
-    staffLogin: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["StaffLoginRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["StaffSession"];
-                };
-            };
-        };
-    };
-    startSettingsImageUpload: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SettingsImageRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["SettingsImageUpload"];
-                };
-            };
-        };
-    };
-    getGarmentTemplates: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["GarmentTemplate"][];
-                };
-            };
-        };
-    };
-    createGarmentTemplate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["GarmentTemplate"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["GarmentTemplate"];
-                };
-            };
-        };
-    };
-    listAdminProducts: {
-        parameters: {
-            query?: {
-                status?: "DRAFT" | "PUBLISHED" | "ARCHIVED" | null;
-                /** @description Category slug */
-                category?: string | null;
-                /** @description Search name, URL or SKU */
-                q?: string | null;
-                page?: number;
-                pageSize?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["AdminProductPage"];
-                };
-            };
-        };
-    };
-    createProduct: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ProductForm"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["AdminProduct"];
-                };
-            };
-        };
-    };
-    completeMediaUpload: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                productId: number;
-                mediaId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["AdminMedia"][];
-                };
-            };
-        };
-    };
-    startMediaUpload: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                productId: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["MediaUploadRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["MediaUpload"];
-                };
-            };
-        };
-    };
-    unpublishProduct: {
+    getOrder: {
         parameters: {
             query?: never;
             header?: never;
@@ -4482,225 +4957,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["AdminProduct"];
+                    "*/*": components["schemas"]["Order"];
                 };
             };
         };
     };
-    publishProduct: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["AdminProduct"];
-                };
-            };
-        };
-    };
-    archiveProduct: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["AdminProduct"];
-                };
-            };
-        };
-    };
-    getProduct: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                slug: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ProductDetailResponse"];
-                };
-            };
-        };
-    };
-    list: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CategoryResponse"][];
-                };
-            };
-        };
-    };
-    listProducts: {
-        parameters: {
-            query?: {
-                /**
-                 * @description Comma-separated colour family codes
-                 * @example red,maroon
-                 */
-                colour?: string | null;
-                /**
-                 * @description Comma-separated sizes
-                 * @example M,L
-                 */
-                size?: string | null;
-                /** @description Only products with stock in the selected colour/size */
-                inStock?: boolean;
-                /** @description Minimum price in paise */
-                priceMin?: number | null;
-                /** @description Maximum price in paise */
-                priceMax?: number | null;
-                sort?: "popular" | "new" | "price_asc" | "price_desc" | "discount";
-                /** @description 1-based page number */
-                page?: number;
-                /** @description Products per page, at most 48 */
-                pageSize?: number;
-                /**
-                 * @description Comma-separated facet value codes (OR within the facet)
-                 * @example silk,cotton
-                 */
-                fabric?: string;
-                /**
-                 * @description Comma-separated facet value codes (OR within the facet)
-                 * @example wedding
-                 */
-                occasion?: string;
-                /**
-                 * @description Comma-separated facet value codes (OR within the facet)
-                 * @example banarasi
-                 */
-                weave?: string;
-                /**
-                 * @description Comma-separated facet value codes (OR within the facet)
-                 * @example zari
-                 */
-                work?: string;
-            };
-            header?: never;
-            path: {
-                slug: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ProductListingResponse"];
-                };
-            };
-        };
-    };
-    currentStaff: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["SignedInStaff"];
-                };
-            };
-        };
-    };
-    catalogOptions: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CatalogOptions"];
-                };
-            };
-        };
-    };
-    deleteMedia: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                productId: number;
-                mediaId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["AdminMedia"][];
-                };
-            };
-        };
-    };
-    updateServiceProduct: {
+    changeOrder: {
         parameters: {
             query?: never;
             header?: never;
@@ -4711,7 +4973,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceProductForm"];
+                "application/json": components["schemas"]["OrderChange"];
             };
         };
         responses: {
@@ -4721,28 +4983,8 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ServiceProduct"];
+                    "*/*": components["schemas"]["Order"];
                 };
-            };
-        };
-    };
-    deleteServiceProduct: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
         };
     };
@@ -4768,6 +5010,190 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["Order"];
+                };
+            };
+        };
+    };
+    updateExpense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpenseForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Expense"];
+                };
+            };
+        };
+    };
+    deleteExpense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    changeOwnPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordChange"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateGalleryPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GalleryForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GalleryPhoto"];
+                };
+            };
+        };
+    };
+    deleteGalleryPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getRewardSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RewardSettings"];
+                };
+            };
+        };
+    };
+    saveRewardSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RewardSettings"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RewardSettings"];
+                };
+            };
+        };
+    };
+    updateCoupon: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CouponForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Coupon"];
                 };
             };
         };
@@ -4820,7 +5246,7 @@ export interface operations {
             };
         };
     };
-    startTailoringImageUpload: {
+    quoteBag: {
         parameters: {
             query?: never;
             header?: never;
@@ -4829,7 +5255,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["TailoringImageRequest"];
+                "application/json": components["schemas"]["BagQuoteRequest"];
             };
         };
         responses: {
@@ -4839,35 +5265,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["TailoringImageUpload"];
+                    "*/*": components["schemas"]["BagQuote"];
                 };
             };
         };
     };
-    listServiceProducts: {
-        parameters: {
-            query?: {
-                templateId?: number | null;
-                q?: string | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ServiceProduct"][];
-                };
-            };
-        };
-    };
-    createServiceProduct: {
+    staffLogin: {
         parameters: {
             query?: never;
             header?: never;
@@ -4876,37 +5279,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceProductForm"];
+                "application/json": components["schemas"]["StaffLoginRequest"];
             };
         };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ServiceProduct"];
-                };
-            };
-        };
-    };
-    listOrders: {
-        parameters: {
-            query?: {
-                q?: string | null;
-                filter?: "ALL" | "OPEN" | "BOOKED" | "IN_PROGRESS" | "READY" | "DELIVERED" | "CANCELLED" | "OVERDUE" | "DUE_TODAY";
-                from?: string | null;
-                to?: string | null;
-                clientId?: number | null;
-                page?: number;
-                pageSize?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -4914,12 +5289,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["OrderPage"];
+                    "*/*": components["schemas"]["StaffSession"];
                 };
             };
         };
     };
-    createOrder: {
+    refreshSession: {
         parameters: {
             query?: never;
             header?: never;
@@ -4928,33 +5303,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["OrderForm"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Order"];
-                };
-            };
-        };
-    };
-    moveOrderItems: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["StageMove"];
+                "application/json": components["schemas"]["RefreshRequest"];
             };
         };
         responses: {
@@ -4964,107 +5313,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Order"];
+                    "*/*": components["schemas"]["AuthSession"];
                 };
             };
         };
     };
-    addOrderPayment: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PaymentForm"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Order"];
-                };
-            };
-        };
-    };
-    deliverOrder: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Order"];
-                };
-            };
-        };
-    };
-    cancelOrder: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Order"];
-                };
-            };
-        };
-    };
-    listClients: {
-        parameters: {
-            query?: {
-                q?: string | null;
-                sort?: "RECENT" | "NAME" | "VALUE" | "OWING";
-                page?: number;
-                pageSize?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ClientPage"];
-                };
-            };
-        };
-    };
-    createClient: {
+    verifyOtp: {
         parameters: {
             query?: never;
             header?: never;
@@ -5073,61 +5327,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ClientForm"];
+                "application/json": components["schemas"]["OtpVerification"];
             };
         };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Client"];
-                };
-            };
-        };
-    };
-    addMeasurement: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["MeasurementForm"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Measurement"];
-                };
-            };
-        };
-    };
-    listAlterations: {
-        parameters: {
-            query?: {
-                q?: string | null;
-                filter?: "ALL" | "OPEN" | "BOOKED" | "IN_PROGRESS" | "READY" | "DELIVERED" | "CANCELLED" | "OVERDUE" | "DUE_TODAY";
-                clientId?: number | null;
-                page?: number;
-                pageSize?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -5135,12 +5337,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["AlterationPage"];
+                    "*/*": components["schemas"]["AuthSession"];
                 };
             };
         };
     };
-    createAlteration: {
+    requestOtp: {
         parameters: {
             query?: never;
             header?: never;
@@ -5149,103 +5351,53 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AlterationForm"];
+                "application/json": components["schemas"]["OtpRequest"];
             };
         };
         responses: {
-            /** @description Created */
-            201: {
+            /** @description Accepted */
+            202: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Alteration"];
+                    "*/*": components["schemas"]["OtpSent"];
                 };
             };
         };
     };
-    progressAlteration: {
+    logout: {
         parameters: {
             query?: never;
             header?: never;
-            path: {
-                id: number;
-            };
+            path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AlterationProgress"];
+                "application/json": components["schemas"]["RefreshRequest"];
             };
         };
         responses: {
-            /** @description OK */
-            200: {
+            /** @description No Content */
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["Alteration"];
-                };
+                content?: never;
             };
         };
     };
-    getOrder: {
+    signInWithGoogle: {
         parameters: {
             query?: never;
             header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Order"];
-                };
-            };
-        };
-    };
-    getAlteration: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Alteration"];
-                };
-            };
-        };
-    };
-    saveWorkshopStaffStages: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                staffId: number;
-            };
+            path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["StaffStages"];
+                "application/json": components["schemas"]["GoogleSignIn"];
             };
         };
         responses: {
@@ -5255,33 +5407,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["WorkshopStaff"];
-                };
-            };
-        };
-    };
-    assignWorkItem: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                itemId: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AssignForm"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["WorkItem"];
+                    "*/*": components["schemas"]["AuthSession"];
                 };
             };
         };
@@ -5310,206 +5436,7 @@ export interface operations {
             };
         };
     };
-    listWorkshopStaff: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["WorkshopStaff"][];
-                };
-            };
-        };
-    };
-    getWorkshopOverview: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["WorkshopOverview"];
-                };
-            };
-        };
-    };
-    getWorkBoard: {
-        parameters: {
-            query?: {
-                staffId?: number | null;
-                q?: string | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["BoardColumn"][];
-                };
-            };
-        };
-    };
-    updateExpense: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ExpenseForm"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Expense"];
-                };
-            };
-        };
-    };
-    deleteExpense: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    getOrderInvoice: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                orderId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Invoice"];
-                };
-            };
-        };
-    };
-    issueOrderInvoice: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                orderId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Invoice"];
-                };
-            };
-        };
-    };
-    cancelInvoice: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Invoice"];
-                };
-            };
-        };
-    };
-    listExpenses: {
-        parameters: {
-            query?: {
-                from?: string | null;
-                to?: string | null;
-                category?: "RENT" | "SALARY" | "MATERIAL" | "UTILITIES" | "TRANSPORT" | "MAINTENANCE" | "MARKETING" | "OTHER" | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ExpenseList"];
-                };
-            };
-        };
-    };
-    createExpense: {
+    startTailoringImageUpload: {
         parameters: {
             query?: never;
             header?: never;
@@ -5518,7 +5445,73 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ExpenseForm"];
+                "application/json": components["schemas"]["TailoringImageRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TailoringImageUpload"];
+                };
+            };
+        };
+    };
+    startSiteImageUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SiteImageUpload"];
+                };
+            };
+        };
+    };
+    listBanners: {
+        parameters: {
+            query?: {
+                slot?: "HERO" | "OCCASION" | "CRAFT" | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Banner"][];
+                };
+            };
+        };
+    };
+    createBanner: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BannerForm"];
             };
         };
         responses: {
@@ -5528,65 +5521,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Expense"];
+                    "*/*": components["schemas"]["Banner"];
                 };
             };
         };
     };
-    getOutstanding: {
-        parameters: {
-            query?: {
-                clientId?: number | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Outstanding"];
-                };
-            };
-        };
-    };
-    getLedger: {
-        parameters: {
-            query?: {
-                from?: string | null;
-                to?: string | null;
-                kind?: "ORDER_PAYMENT" | "REFUND" | "ALTERATION_PAYMENT" | "EXPENSE" | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Ledger"];
-                };
-            };
-        };
-    };
-    listInvoices: {
+    listStock: {
         parameters: {
             query?: {
                 q?: string | null;
-                from?: string | null;
-                to?: string | null;
-                page?: number;
-                pageSize?: number;
+                low?: boolean;
             };
             header?: never;
             path?: never;
@@ -5600,12 +5544,36 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["InvoicePage"];
+                    "*/*": components["schemas"]["StockItem"][];
                 };
             };
         };
     };
-    getInvoice: {
+    createStockItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StockItemForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StockItem"];
+                };
+            };
+        };
+    };
+    getStockLedger: {
         parameters: {
             query?: never;
             header?: never;
@@ -5622,34 +5590,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Invoice"];
+                    "*/*": components["schemas"]["StockMovement"][];
                 };
             };
         };
     };
-    getStaff: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["StaffMember"];
-                };
-            };
-        };
-    };
-    updateStaff: {
+    moveStock: {
         parameters: {
             query?: never;
             header?: never;
@@ -5660,93 +5606,17 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["StaffForm"];
+                "application/json": components["schemas"]["StockMovementForm"];
             };
         };
         responses: {
-            /** @description OK */
-            200: {
+            /** @description Created */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["StaffMember"];
-                };
-            };
-        };
-    };
-    saveRolePermissions: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                role: "OWNER" | "MANAGER" | "STAFF";
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PermissionsForm"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["RolePermissions"];
-                };
-            };
-        };
-    };
-    markAttendance: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                day: string;
-                staffId: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AttendanceForm"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["DayAttendance"];
-                };
-            };
-        };
-    };
-    clearAttendance: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                day: string;
-                staffId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["DayAttendance"];
+                    "*/*": components["schemas"]["StockMovement"];
                 };
             };
         };
@@ -5940,6 +5810,314 @@ export interface operations {
             };
         };
     };
+    startSettingsImageUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SettingsImageRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SettingsImageUpload"];
+                };
+            };
+        };
+    };
+    getGarmentTemplates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GarmentTemplate"][];
+                };
+            };
+        };
+    };
+    createGarmentTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GarmentTemplate"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GarmentTemplate"];
+                };
+            };
+        };
+    };
+    listServiceProducts: {
+        parameters: {
+            query?: {
+                templateId?: number | null;
+                q?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ServiceProduct"][];
+                };
+            };
+        };
+    };
+    createServiceProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ServiceProductForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ServiceProduct"];
+                };
+            };
+        };
+    };
+    listAdminProducts: {
+        parameters: {
+            query?: {
+                status?: "DRAFT" | "PUBLISHED" | "ARCHIVED" | null;
+                /** @description Category slug */
+                category?: string | null;
+                /** @description Search name, URL or SKU */
+                q?: string | null;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminProductPage"];
+                };
+            };
+        };
+    };
+    createProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminProduct"];
+                };
+            };
+        };
+    };
+    completeMediaUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+                mediaId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminMedia"][];
+                };
+            };
+        };
+    };
+    startVideoUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VideoUploadRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["VideoUpload"];
+                };
+            };
+        };
+    };
+    startMediaUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaUploadRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MediaUpload"];
+                };
+            };
+        };
+    };
+    unpublishProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminProduct"];
+                };
+            };
+        };
+    };
+    publishProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminProduct"];
+                };
+            };
+        };
+    };
+    archiveProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminProduct"];
+                };
+            };
+        };
+    };
     payPayslip: {
         parameters: {
             query?: never;
@@ -6010,6 +6188,272 @@ export interface operations {
             };
         };
     };
+    listOrders: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                filter?: "ALL" | "OPEN" | "BOOKED" | "IN_PROGRESS" | "READY" | "DELIVERED" | "CANCELLED" | "OVERDUE" | "DUE_TODAY";
+                from?: string | null;
+                to?: string | null;
+                clientId?: number | null;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["OrderPage"];
+                };
+            };
+        };
+    };
+    createOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Order"];
+                };
+            };
+        };
+    };
+    moveOrderItems: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StageMove"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Order"];
+                };
+            };
+        };
+    };
+    addOrderPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PaymentForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Order"];
+                };
+            };
+        };
+    };
+    deliverOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Order"];
+                };
+            };
+        };
+    };
+    cancelOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CancelForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Order"];
+                };
+            };
+        };
+    };
+    getOrderInvoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Invoice"];
+                };
+            };
+        };
+    };
+    issueOrderInvoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Invoice"];
+                };
+            };
+        };
+    };
+    cancelInvoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Invoice"];
+                };
+            };
+        };
+    };
+    listExpenses: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                category?: "RENT" | "SALARY" | "MATERIAL" | "UTILITIES" | "TRANSPORT" | "MAINTENANCE" | "MARKETING" | "OTHER" | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ExpenseList"];
+                };
+            };
+        };
+    };
+    createExpense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpenseForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Expense"];
+                };
+            };
+        };
+    };
     listOwnRequests: {
         parameters: {
             query?: never;
@@ -6050,439 +6494,6 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["StaffRequest"];
-                };
-            };
-        };
-    };
-    listRolePermissions: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["RolePermissions"][];
-                };
-            };
-        };
-    };
-    getDayAttendance: {
-        parameters: {
-            query: {
-                day: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["DayAttendance"];
-                };
-            };
-        };
-    };
-    getMonthAttendance: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                month: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["MonthAttendance"];
-                };
-            };
-        };
-    };
-    getStaffStatement: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                staffId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["StaffStatement"];
-                };
-            };
-        };
-    };
-    getProduction: {
-        parameters: {
-            query?: {
-                from?: string | null;
-                to?: string | null;
-                staffId?: number | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ProductionLedger"];
-                };
-            };
-        };
-    };
-    getPayrollMonth: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                month: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PayrollMonth"];
-                };
-            };
-        };
-    };
-    removeStaffSignIn: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["StaffMember"];
-                };
-            };
-        };
-    };
-    getStockItem: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["StockItem"];
-                };
-            };
-        };
-    };
-    updateStockItem: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["StockItemForm"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["StockItem"];
-                };
-            };
-        };
-    };
-    deleteStockItem: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    updateGalleryPhoto: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["GalleryForm"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["GalleryPhoto"];
-                };
-            };
-        };
-    };
-    deleteGalleryPhoto: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    getRewardSettings: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["RewardSettings"];
-                };
-            };
-        };
-    };
-    saveRewardSettings: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RewardSettings"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["RewardSettings"];
-                };
-            };
-        };
-    };
-    updateCoupon: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CouponForm"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Coupon"];
-                };
-            };
-        };
-    };
-    listStock: {
-        parameters: {
-            query?: {
-                q?: string | null;
-                low?: boolean;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["StockItem"][];
-                };
-            };
-        };
-    };
-    createStockItem: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["StockItemForm"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["StockItem"];
-                };
-            };
-        };
-    };
-    getStockLedger: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["StockMovement"][];
-                };
-            };
-        };
-    };
-    moveStock: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["StockMovementForm"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["StockMovement"];
                 };
             };
         };
@@ -6713,55 +6724,11 @@ export interface operations {
             };
         };
     };
-    getNotifications: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["Notifications"];
-                };
-            };
-        };
-    };
-    checkCoupon: {
-        parameters: {
-            query: {
-                code: string;
-                amountPaise: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CouponCheck"];
-                };
-            };
-        };
-    };
-    getActivityLog: {
+    listClients: {
         parameters: {
             query?: {
-                kind?: string | null;
-                refType?: string | null;
-                refId?: number | null;
+                q?: string | null;
+                sort?: "RECENT" | "NAME" | "VALUE" | "OWING";
                 page?: number;
                 pageSize?: number;
             };
@@ -6777,7 +6744,455 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ActivityPage"];
+                    "*/*": components["schemas"]["ClientPage"];
+                };
+            };
+        };
+    };
+    createClient: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClientForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Client"];
+                };
+            };
+        };
+    };
+    addMeasurement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MeasurementForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Measurement"];
+                };
+            };
+        };
+    };
+    listAlterations: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                filter?: "ALL" | "OPEN" | "BOOKED" | "IN_PROGRESS" | "READY" | "DELIVERED" | "CANCELLED" | "OVERDUE" | "DUE_TODAY";
+                clientId?: number | null;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AlterationPage"];
+                };
+            };
+        };
+    };
+    createAlteration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AlterationForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Alteration"];
+                };
+            };
+        };
+    };
+    progressAlteration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AlterationProgress"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Alteration"];
+                };
+            };
+        };
+    };
+    getProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProductDetailResponse"];
+                };
+            };
+        };
+    };
+    listNewArrivals: {
+        parameters: {
+            query?: {
+                /** @description 1-based page number */
+                page?: number;
+                /** @description Products per page, at most 48 */
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NewArrivalsPage"];
+                };
+            };
+        };
+    };
+    getHomeContent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["HomeContent"];
+                };
+            };
+        };
+    };
+    listFeaturedProducts: {
+        parameters: {
+            query?: {
+                badge?: "NEW" | "BESTSELLER" | "BRIDAL" | "HANDLOOM";
+                /** @description How many, at most 24 */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProductSummary"][];
+                };
+            };
+        };
+    };
+    list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CategoryResponse"][];
+                };
+            };
+        };
+    };
+    listProducts: {
+        parameters: {
+            query?: {
+                /**
+                 * @description Comma-separated colour family codes
+                 * @example red,maroon
+                 */
+                colour?: string | null;
+                /**
+                 * @description Comma-separated sizes
+                 * @example M,L
+                 */
+                size?: string | null;
+                /** @description Only products with stock in the selected colour/size */
+                inStock?: boolean;
+                /** @description Minimum price in paise */
+                priceMin?: number | null;
+                /** @description Maximum price in paise */
+                priceMax?: number | null;
+                sort?: "popular" | "new" | "price_asc" | "price_desc" | "discount";
+                /** @description 1-based page number */
+                page?: number;
+                /** @description Products per page, at most 48 */
+                pageSize?: number;
+                /**
+                 * @description Comma-separated facet value codes (OR within the facet)
+                 * @example silk,cotton
+                 */
+                fabric?: string;
+                /**
+                 * @description Comma-separated facet value codes (OR within the facet)
+                 * @example wedding
+                 */
+                occasion?: string;
+                /**
+                 * @description Comma-separated facet value codes (OR within the facet)
+                 * @example banarasi
+                 */
+                weave?: string;
+                /**
+                 * @description Comma-separated facet value codes (OR within the facet)
+                 * @example zari
+                 */
+                work?: string;
+            };
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProductListingResponse"];
+                };
+            };
+        };
+    };
+    listWorkshopStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WorkshopStaff"][];
+                };
+            };
+        };
+    };
+    getWorkshopOverview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WorkshopOverview"];
+                };
+            };
+        };
+    };
+    getWorkBoard: {
+        parameters: {
+            query?: {
+                staffId?: number | null;
+                q?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BoardColumn"][];
+                };
+            };
+        };
+    };
+    listStorefrontCategories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CategoryResponse"][];
+                };
+            };
+        };
+    };
+    listRolePermissions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RolePermissions"][];
+                };
+            };
+        };
+    };
+    getDayAttendance: {
+        parameters: {
+            query: {
+                day: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DayAttendance"];
+                };
+            };
+        };
+    };
+    getMonthAttendance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                month: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MonthAttendance"];
                 };
             };
         };
@@ -6847,7 +7262,169 @@ export interface operations {
             };
         };
     };
-    getProfile: {
+    getStaffStatement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                staffId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffStatement"];
+                };
+            };
+        };
+    };
+    getProduction: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                staffId?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProductionLedger"];
+                };
+            };
+        };
+    };
+    getPayrollMonth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                month: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PayrollMonth"];
+                };
+            };
+        };
+    };
+    getOutstanding: {
+        parameters: {
+            query?: {
+                clientId?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Outstanding"];
+                };
+            };
+        };
+    };
+    getLedger: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                kind?: "ORDER_PAYMENT" | "REFUND" | "ALTERATION_PAYMENT" | "EXPENSE" | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Ledger"];
+                };
+            };
+        };
+    };
+    listInvoices: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                from?: string | null;
+                to?: string | null;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InvoicePage"];
+                };
+            };
+        };
+    };
+    getInvoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Invoice"];
+                };
+            };
+        };
+    };
+    currentStaff: {
         parameters: {
             query?: never;
             header?: never;
@@ -6862,23 +7439,19 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CustomerProfile"];
+                    "*/*": components["schemas"]["SignedInStaff"];
                 };
             };
         };
     };
-    updateProfile: {
+    getNotifications: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ProfileUpdate"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -6886,23 +7459,22 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CustomerProfile"];
+                    "*/*": components["schemas"]["Notifications"];
                 };
             };
         };
     };
-    refreshSession: {
+    checkCoupon: {
         parameters: {
-            query?: never;
+            query: {
+                code: string;
+                amountPaise: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RefreshRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -6910,23 +7482,19 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["AuthSession"];
+                    "*/*": components["schemas"]["CouponCheck"];
                 };
             };
         };
     };
-    verifyOtp: {
+    catalogOptions: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["OtpVerification"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -6934,69 +7502,21 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["AuthSession"];
+                    "*/*": components["schemas"]["CatalogOptions"];
                 };
             };
         };
     };
-    requestOtp: {
+    getAlteration: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                id: number;
+            };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["OtpRequest"];
-            };
-        };
-        responses: {
-            /** @description Accepted */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["OtpSent"];
-                };
-            };
-        };
-    };
-    logout: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RefreshRequest"];
-            };
-        };
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    signInWithGoogle: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["GoogleSignIn"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -7004,7 +7524,78 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["AuthSession"];
+                    "*/*": components["schemas"]["Alteration"];
+                };
+            };
+        };
+    };
+    getActivityLog: {
+        parameters: {
+            query?: {
+                kind?: string | null;
+                refType?: string | null;
+                refId?: number | null;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ActivityPage"];
+                };
+            };
+        };
+    };
+    removeStaffSignIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StaffMember"];
+                };
+            };
+        };
+    };
+    deleteMedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+                mediaId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminMedia"][];
                 };
             };
         };

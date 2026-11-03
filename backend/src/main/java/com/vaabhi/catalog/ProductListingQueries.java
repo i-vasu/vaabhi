@@ -113,6 +113,27 @@ class ProductListingQueries {
         return summaries(rows);
     }
 
+    /**
+     * Published products from every category, most recently published first (the storefront's New arrivals).
+     * A product keeps its first publish time when it is unpublished and published again.
+     */
+    NewArrivalsPage newArrivals(int page, int pageSize) {
+        var everyCategory = LISTED.replace("p.category_id = :categoryId", "TRUE");
+        var total = jdbc.sql(everyCategory + "SELECT COUNT(*) FROM listed")
+                .query(Long.class)
+                .single();
+        var rows = jdbc.sql(everyCategory + """
+                        SELECT l.id, l.slug, l.name, l.subtitle, l.badge, l.price_paise, l.mrp_paise, l.stock_total,
+                               l.in_stock
+                        FROM listed l ORDER BY l.published_at DESC, l.id DESC LIMIT :limit OFFSET :offset
+                        """)
+                .param("limit", pageSize)
+                .param("offset", (page - 1) * pageSize)
+                .query(ItemRow.class)
+                .list();
+        return new NewArrivalsPage(summaries(rows), total, page, pageSize);
+    }
+
     private List<ProductSummary> summaries(List<ItemRow> rows) {
         if (rows.isEmpty()) {
             return List.of();

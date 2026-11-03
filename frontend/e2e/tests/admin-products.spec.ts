@@ -9,7 +9,9 @@ test.describe("Admin products", () => {
     await signIn(page);
   });
 
-  test("creates, publishes and lists a product in the store", async ({ page, request }) => {
+  // Publishing needs a photo and a video, which CI cannot store (no R2 credentials): this covers everything up to
+  // that point. AdminCatalogueIT covers publish → visible in the store.
+  test("creates a draft with photos picked before saving; publishing waits for a video", async ({ page, request }) => {
     const name = `E2E Ruby Silk Saree ${Date.now()}`;
     await page.getByRole("link", { name: "Products", exact: true }).click();
     await page.getByRole("link", { name: "New product" }).click();
@@ -24,30 +26,28 @@ test.describe("Admin products", () => {
     await page.getByRole("button", { name: "Add colour" }).click();
     await page.getByRole("textbox", { name: "Stock for Ruby" }).fill("3");
     await page.getByRole("button", { name: "Add standard blouse options" }).click();
-    await page.getByRole("button", { name: "Save & publish" }).click();
+    const publish = page.getByRole("button", { name: "Save & publish" });
+    await expect(publish).toBeDisabled();
+    await expect(page.getByLabel("Add video")).toBeDisabled();
 
-    await expect(page).toHaveURL(/\/products\/edit\/\?id=\d+/);
-    await expect(page.getByText("Published", { exact: true })).toBeVisible();
-    const slug = await page.getByRole("textbox", { name: /URL name/ }).inputValue();
-
-    const detail = await request.get(`${urls.api}/api/v1/store/products/${slug}`);
-    expect(detail.ok()).toBeTruthy();
-    const body = await detail.json();
-    expect(body.pricePaise).toBe(1425000);
-    expect(body.addons).toHaveLength(3);
-
-    // Photos (a 6×8 maroon PNG): the browser resizes to WebP, then the API answers 503 because CI has no R2 credentials.
+    // A photo (a 6×8 maroon PNG) picked before the first save waits, and unlocks the video.
     const png = Buffer.from(
       "iVBORw0KGgoAAAANSUhEUgAAAAYAAAAICAIAAABVpBlvAAAAEUlEQVR4nGPI0zJFQwyDQQgAdS0mcc+VYwAAAAAASUVORK5CYII=",
       "base64",
     );
     await page.getByLabel("Add photos").setInputFiles({ name: "front.png", mimeType: "image/png", buffer: png });
-    await expect(
-      page.getByRole("list", { name: "Uploads" }).getByText(/front.png: failed. Photo storage is not configured/),
-    ).toBeVisible();
+    await expect(page.getByText("Uploads when you save", { exact: true })).toBeVisible();
+    await expect(page.getByLabel("Add video")).toBeEnabled();
+    await expect(publish).toBeDisabled();
 
-    await page.getByRole("button", { name: "Unpublish" }).click();
-    await expect(page.getByText("Draft.")).toBeVisible();
+    // Saving creates the draft, then uploads the photo: the API answers 503 because CI has no R2 credentials.
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(page).toHaveURL(/\/products\/edit\/\?id=\d+/);
+    await expect(page.getByRole("alert")).toContainText(/front.png: Photo storage is not configured/);
+    await expect(page.getByText("Draft", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Save & publish" })).toBeDisabled();
+
+    const slug = await page.getByRole("textbox", { name: /URL name/ }).inputValue();
     expect((await request.get(`${urls.api}/api/v1/store/products/${slug}`)).status()).toBe(404);
   });
 

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Inter } from "next/font/google";
 import { Faro, appVersion } from "@vaabhi/observability";
+import { MediaBaseProvider } from "@/components/media-base";
 import { SiteFooter } from "@/components/site-footer";
+import { serverMediaBase } from "@/lib/listing";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
@@ -26,9 +28,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" className={`${cormorant.variable} ${inter.variable}`}>
       <body className="min-h-screen">
         <Faro appName="vaabhi-storefront" />
-        <SiteHeader />
-        <main>{children}</main>
-        <SiteFooter />
+        <MediaBaseProvider base={serverMediaBase()}>
+          <SiteHeader />
+          <main>{children}</main>
+          <SiteFooter />
+        </MediaBaseProvider>
       </body>
     </html>
   );

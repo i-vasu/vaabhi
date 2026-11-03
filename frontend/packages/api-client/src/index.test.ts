@@ -39,6 +39,15 @@ describe("createApiClient", () => {
     expect(fetchMock.mock.calls[1]![0]).toBe("https://api.example.com/api/v1/store/products/banarasi%2Fsaree");
     expect(fetchMock.mock.calls[2]![0]).toBe("https://api.example.com/api/v1/store/bag/quote");
     expect(fetchMock.mock.calls[2]![1].method).toBe("POST");
+
+    await api.store.listFeatured();
+    await api.store.listFeatured({ badge: "NEW", limit: 4 });
+    await api.store.listNewArrivals({ page: 2, pageSize: 24 });
+    expect(fetchMock.mock.calls.slice(3).map(([url]) => url)).toEqual([
+      "https://api.example.com/api/v1/store/featured",
+      "https://api.example.com/api/v1/store/featured?badge=NEW&limit=4",
+      "https://api.example.com/api/v1/store/new-arrivals?page=2&pageSize=24",
+    ]);
   });
 });
 
@@ -59,6 +68,7 @@ describe("admin client", () => {
     await api.admin.updateProduct(7, form);
     await api.admin.setStatus(7, "publish");
     await api.admin.startMediaUpload(7, { alt: "Front", colourName: null, width: 1600, height: 2133 });
+    await api.admin.startVideoUpload(7, { alt: "Drape", colourName: null, contentType: "video/mp4" });
     await api.admin.completeMediaUpload(7, 3);
     await api.admin.updateMedia(7, [{ id: 3, alt: "Front", colourName: null }]);
     await api.admin.deleteMedia(7, 3);
@@ -73,6 +83,7 @@ describe("admin client", () => {
       "PUT https://api.example.com/api/v1/admin/products/7",
       "POST https://api.example.com/api/v1/admin/products/7/publish",
       "POST https://api.example.com/api/v1/admin/products/7/media/uploads",
+      "POST https://api.example.com/api/v1/admin/products/7/media/video-uploads",
       "POST https://api.example.com/api/v1/admin/products/7/media/3/complete",
       "PUT https://api.example.com/api/v1/admin/products/7/media",
       "DELETE https://api.example.com/api/v1/admin/products/7/media/3",

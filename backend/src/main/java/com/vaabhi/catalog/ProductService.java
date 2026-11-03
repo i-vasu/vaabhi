@@ -40,6 +40,11 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
+    public NewArrivalsPage newArrivals(int page, int pageSize) {
+        return listingQueries.newArrivals(page, pageSize);
+    }
+
+    @Transactional(readOnly = true)
     public ProductDetailResponse getProduct(String slug) {
         return detailQueries.find(slug).orElseThrow(() -> new CatalogNotFoundException("Product", slug));
     }

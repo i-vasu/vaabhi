@@ -103,6 +103,15 @@ class StoreProductController {
         return productService.featured(badge, limit);
     }
 
+    /** Every published product, most recently published first. */
+    @GetMapping("/new-arrivals")
+    NewArrivalsPage listNewArrivals(
+            @Parameter(description = "1-based page number") @RequestParam(defaultValue = "1") int page,
+            @Parameter(description = "Products per page, at most 48") @RequestParam(defaultValue = "24") int pageSize) {
+        validatePaging(page, pageSize);
+        return productService.newArrivals(page, pageSize);
+    }
+
     private static void validatePaging(int page, int pageSize) {
         if (page < 1) {
             throw badRequest("page must be 1 or more");

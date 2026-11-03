@@ -6,7 +6,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
-/** SQL for product photos. */
+/** SQL for product photos and videos. */
 @Component
 class ProductMediaStore {
 
@@ -39,21 +39,30 @@ class ProductMediaStore {
                 .single();
     }
 
-    long insertPending(long productId, String key, MediaUploadRequest request) {
+    @SuppressWarnings("java:S107") // one parameter per column
+    long insertPending(
+            long productId,
+            MediaKind kind,
+            String key,
+            String alt,
+            @Nullable String colourName,
+            @Nullable Integer width,
+            @Nullable Integer height) {
         return jdbc.sql("""
                         INSERT INTO product_media (product_id, kind, storage_key, colour_name, alt_text, width, height,
                                                    position, status)
-                        VALUES (:productId, 'IMAGE', :key, :colour, :alt, :width, :height,
+                        VALUES (:productId, :kind, :key, :colour, :alt, :width, :height,
                                 (SELECT COALESCE(MAX(position), -1) + 1 FROM product_media WHERE product_id = :productId),
                                 'PENDING')
                         RETURNING id
                         """)
                 .param(PRODUCT_ID, productId)
+                .param("kind", kind.name())
                 .param("key", key)
-                .param("colour", blankToNull(request.colourName()))
-                .param("alt", request.alt().trim())
-                .param("width", request.width())
-                .param("height", request.height())
+                .param("colour", blankToNull(colourName))
+                .param("alt", alt.trim())
+                .param("width", width)
+                .param("height", height)
                 .query(Long.class)
                 .single();
     }

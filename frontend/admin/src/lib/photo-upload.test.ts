@@ -1,7 +1,7 @@
 import { http, HttpResponse } from "msw";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { API, server } from "@/test/server";
-import { mediaUrl, uploadPhoto } from "./photo-upload";
+import { mediaUrl, uploadPhoto, uploadVideo, videoUrl } from "./photo-upload";
 
 const renditions = [400, 800, 1600].map((width) => ({
   width,
@@ -98,5 +98,54 @@ describe("uploadPhoto", () => {
     expect(mediaUrl("products/7/abc")).toBe("https://media.vaabhi.com/products/7/abc/400.webp");
     vi.stubEnv("NEXT_PUBLIC_MEDIA_URL", "https://cdn.example/");
     expect(mediaUrl("k", 1600)).toBe("https://cdn.example/k/1600.webp");
+    expect(videoUrl("k")).toBe("https://cdn.example/k/video");
+  });
+});
+
+describe("uploadVideo", () => {
+  const start = `${API}/api/v1/admin/products/7/media/video-uploads`;
+  const video = { ...media, id: 11, kind: "VIDEO", width: null, height: null };
+
+  it("uploads the file as is, with its type, then completes", async () => {
+    let started: unknown;
+    let put: { type: string | null; body: string } | undefined;
+    server.use(
+      http.post(start, async ({ request }) => {
+        started = await request.json();
+        return HttpResponse.json(
+          { media: video, uploadUrl: "https://r2.test/k/video?sig=1", expiresAt: "2026-10-31T11:00:00Z" },
+          { status: 201 },
+        );
+      }),
+      http.put("https://r2.test/k/video", async ({ request }) => {
+        put = { type: request.headers.get("content-type"), body: await request.text() };
+        return new HttpResponse(null, { status: 200 });
+      }),
+      http.post(`${API}/api/v1/admin/products/7/media/11/complete`, () =>
+        HttpResponse.json([{ ...video, status: "READY" }]),
+      ),
+    );
+    const file = new File(["clip"], "drape.mov", { type: "video/quicktime" });
+
+    const result = await uploadVideo(7, file, { alt: "Drape", colourName: "Ruby" });
+
+    expect(started).toEqual({ alt: "Drape", colourName: "Ruby", contentType: "video/quicktime" });
+    expect(put).toEqual({ type: "video/quicktime", body: "clip" });
+    expect(result[0]!.status).toBe("READY");
+  });
+
+  it("refuses other types and reports a rejected upload", async () => {
+    await expect(
+      uploadVideo(7, new File(["x"], "a.avi", { type: "video/x-msvideo" }), { alt: "a", colourName: null }),
+    ).rejects.toThrow("Use an MP4, MOV or WebM video");
+    server.use(
+      http.post(start, () =>
+        HttpResponse.json({ media: video, uploadUrl: "https://r2.test/k/video", expiresAt: "2026-10-31T11:00:00Z" }),
+      ),
+      http.put("https://r2.test/k/video", () => new HttpResponse(null, { status: 403 })),
+    );
+    await expect(
+      uploadVideo(7, new File(["x"], "a.mp4", { type: "video/mp4" }), { alt: "a", colourName: null }),
+    ).rejects.toThrow("Uploading the video failed");
   });
 });

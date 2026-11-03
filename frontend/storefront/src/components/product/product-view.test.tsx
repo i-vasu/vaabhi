@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { bagStore, wishlistStore } from "@/lib/bag";
 import { lehenga, saree } from "@/test/product-fixture";
+import { MediaBaseProvider } from "@/components/media-base";
 import { ProductView } from "./product-view";
 
 const radio = (name: string | RegExp) => screen.getByRole("radio", { name });
@@ -94,6 +95,38 @@ describe("ProductView", () => {
     fireEvent.click(screen.getAllByRole("button", { name: "Add to wishlist" })[0]!);
     expect(wishlistStore.read()).toEqual(["kanjeevaram-silk-saree"]);
     expect(screen.getAllByRole("button", { name: "Remove from wishlist" })).toHaveLength(2);
+  });
+
+  it("shows photos from the media domain the layout passes down (MEDIA_URL is server-only)", () => {
+    render(
+      <MediaBaseProvider base="https://pub-dev.r2.dev/">
+        <ProductView product={saree()} colour="Mustard" />
+      </MediaBaseProvider>,
+    );
+    expect(screen.getByAltText("Front")).toHaveAttribute("src", "https://pub-dev.r2.dev/products/1/front/800.webp");
+  });
+
+  it("plays the video after the first photo, with that photo as its poster", () => {
+    vi.stubEnv("NEXT_PUBLIC_MEDIA_URL", "https://media.test");
+    const video = {
+      kind: "VIDEO",
+      key: "products/1/clip",
+      alt: "Drape video",
+      colourName: null,
+      width: null,
+      height: null,
+    } as const;
+    render(<ProductView product={saree({ media: [...saree().media, video] })} colour="Mustard" />);
+
+    const player = screen.getByLabelText("Drape video");
+    expect(player.tagName).toBe("VIDEO");
+    expect(player).toHaveAttribute("src", "https://media.test/products/1/clip/video");
+    expect(player).toHaveAttribute("poster", "https://media.test/products/1/front/800.webp");
+    expect(screen.getByRole("button", { name: "Play video" })).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("button", { name: /^Show photo|^Play video/ }).map((b) => b.getAttribute("aria-label")),
+    ).toEqual(["Show photo 1", "Play video", "Show photo 2"]);
+    vi.unstubAllEnvs();
   });
 
   it("steps through photos and checks delivery", () => {

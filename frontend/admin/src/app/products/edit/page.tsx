@@ -19,7 +19,14 @@ function EditProduct() {
       </p>
     );
   }
-  return <ProductEditor key={id} id={id} notice={params.get("notice") ?? undefined} />;
+  return (
+    <ProductEditor
+      key={id}
+      id={id}
+      notice={params.get("notice") ?? undefined}
+      problem={params.get("problem") ?? undefined}
+    />
+  );
 }
 
 export default function EditProductPage() {

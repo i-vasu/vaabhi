@@ -44,7 +44,7 @@ export const filters: FilterGroup[] = [
 ];
 
 export const listing = (overrides: Partial<ProductListing> = {}): ProductListing => ({
-  category: { id: 1, slug: "sarees", name: "Sarees", description: "Handloom silks and cottons." },
+  category: { id: 1, slug: "sarees", name: "Sarees", description: "Handloom silks and cottons.", imageKey: null },
   items: [product()],
   total: 1,
   page: 1,

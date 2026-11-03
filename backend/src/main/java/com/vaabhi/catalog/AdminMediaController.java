@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Product photos for the admin app (ADMIN role). Uploads go straight from the browser to R2. */
+/** Product photos and videos for the admin app (ADMIN role). Uploads go straight from the browser to R2. */
 @RestController
 @RequestMapping("/api/v1/admin/products/{productId}/media")
 class AdminMediaController {
@@ -31,6 +31,12 @@ class AdminMediaController {
         return service.startUpload(productId, request);
     }
 
+    @PostMapping("/video-uploads")
+    @ResponseStatus(HttpStatus.CREATED)
+    VideoUpload startVideoUpload(@PathVariable long productId, @Valid @RequestBody VideoUploadRequest request) {
+        return service.startVideoUpload(productId, request);
+    }
+
     @PostMapping("/{mediaId}/complete")
     List<AdminMedia> completeMediaUpload(@PathVariable long productId, @PathVariable long mediaId) {
         return service.completeUpload(productId, mediaId);
@@ -39,7 +45,7 @@ class AdminMediaController {
     @PutMapping
     List<AdminMedia> updateMedia(
             @PathVariable long productId,
-            @RequestBody @NotNull @Size(max = ProductMediaService.MAX_PHOTOS)
+            @RequestBody @NotNull @Size(max = ProductMediaService.MAX_MEDIA)
                     List<@Valid @NotNull MediaUpdate> updates) {
         return service.update(productId, updates);
     }

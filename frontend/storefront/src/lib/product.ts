@@ -64,6 +64,12 @@ export function photosFor(product: ProductDetail, colour: string): Media[] {
   return matching.length ? matching : images;
 }
 
+/** The video for a colour: one tagged with it or untagged; otherwise the product's video, if any. */
+export function videoFor(product: ProductDetail, colour: string): Media | undefined {
+  const videos = product.media.filter((m) => m.kind === "VIDEO");
+  return videos.find((m) => m.colourName === null || m.colourName === colour) ?? videos[0];
+}
+
 export type AddonChoice = {
   code: string | null;
   name: string;
