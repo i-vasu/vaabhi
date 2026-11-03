@@ -48,6 +48,7 @@ public class OrderService {
     private final NumberingService numbering;
     private final ServiceProductService products;
     private final ApplicationEventPublisher events;
+    private final ObjectProvider<OrderPerks> perks;
     private final Clock clock;
 
     OrderService(
@@ -59,6 +60,7 @@ public class OrderService {
             NumberingService numbering,
             ServiceProductService products,
             ApplicationEventPublisher events,
+            ObjectProvider<OrderPerks> perks,
             Clock clock) {
         this.jdbc = jdbc;
         this.json = json;
@@ -68,6 +70,7 @@ public class OrderService {
         this.numbering = numbering;
         this.products = products;
         this.events = events;
+        this.perks = perks;
         this.clock = clock;
     }
 
@@ -96,6 +99,24 @@ public class OrderService {
             discount = Math.min(discountValue, discountBase);
         }
         return new Totals(itemsPaise, deliveryPaise, discount, itemsPaise + deliveryPaise - discount);
+    }
+
+    /** The coupon code as stored: trimmed and upper-cased, or null when none was given. */
+    private static @Nullable String couponCode(@Nullable String code) {
+        var trimmed = ClientService.blankToNull(code);
+        return trimmed == null ? null : trimmed.toUpperCase(Locale.ROOT);
+    }
+
+    /** Fails unless {@code code} (when given) can be used on an order of these totals before discount. */
+    private void requireCoupon(@Nullable String code, Totals totals) {
+        if (code == null) {
+            return;
+        }
+        var perk = perks.getIfAvailable();
+        if (perk == null) {
+            throw bad("Coupons are not available");
+        }
+        perk.requireCoupon(code, totals.itemsPaise() + totals.deliveryPaise());
     }
 
     // --- create -------------------------------------------------------------------------------------------------
@@ -200,8 +221,8 @@ public class OrderService {
         if (form.advancePaise() > 0) {
             insertPayment(orderId, form.advancePaise(), form.advanceMode(), OrderPayment.Kind.ADVANCE, null, actor);
         }
-        events.publishEvent(new OrderEvent(
-                OrderEvent.Type.PLACED, orderId, number, client.id(), client.name(), total, actor));
+        events.publishEvent(
+                new OrderEvent(OrderEvent.Type.PLACED, orderId, number, client.id(), client.name(), total, actor));
         return get(orderId);
     }
 
@@ -259,9 +280,10 @@ public class OrderService {
     public Order change(long orderId, OrderChange change, @Nullable String actor) {
         var before = get(orderId);
         if (!isOpen(before.status())) {
-            throw bad(before.status() == OrderStatus.CANCELLED
-                    ? "This order was cancelled"
-                    : "This order was delivered; book an alteration for any further work");
+            throw bad(
+                    before.status() == OrderStatus.CANCELLED
+                            ? "This order was cancelled"
+                            : "This order was delivered; book an alteration for any further work");
         }
         var existing = before.items().stream().collect(Collectors.toMap(OrderItem::id, Function.identity()));
         var kept = new HashSet<Long>();
@@ -283,7 +305,8 @@ public class OrderService {
                 throw bad(old.description() + " was already handed over; it cannot be changed");
             }
         }
-        var removed = existing.keySet().stream().filter(id -> !kept.contains(id)).toList();
+        var removed =
+                existing.keySet().stream().filter(id -> !kept.contains(id)).toList();
         if (!removed.isEmpty()) {
             var started = jdbc.sql("SELECT DISTINCT item_id FROM order_item_stage_log WHERE item_id = ANY(:items)")
                     .param("items", removed.toArray(Long[]::new))
