@@ -29,7 +29,7 @@ describe("CategoryPage", () => {
 
     render(await CategoryPage(props({ fabric: "silk", priceMax: "5000", sort: "new" })));
 
-    expect(requests[0]!.searchParams.toString()).toBe("fabric=silk&page=1&pageSize=24&priceMax=500000&sort=new");
+    expect(requests[0]!.searchParams.toString()).toBe("fabric=silk&page=1&pageSize=24&priceMax=5000&sort=new");
     expect(screen.getByRole("heading", { level: 1, name: "Sarees" })).toBeInTheDocument();
     expect(screen.getByText("Handloom silks and cottons — 3 styles")).toBeInTheDocument();
     expect(

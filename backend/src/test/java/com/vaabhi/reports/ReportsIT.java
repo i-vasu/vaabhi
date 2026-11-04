@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import com.vaabhi.TestcontainersConfiguration;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +56,7 @@ class ReportsIT {
     }
 
     /** Books and delivers an order (invoiced on delivery), paying part of it; returns [orderId, clientId]. */
-    private long[] deliveredOrder(String name, BigDecimal priceRupees, BigDecimal paidRupees) throws Exception {
+    private long[] deliveredOrder(String name, long priceRupees, long paidRupees) throws Exception {
         long client = ((Number) JsonPath.read(
                         body(send(post("/api/v1/admin/clients"), """
                                 {"phone":"98764%05d","firstName":"%s","gender":"FEMALE","clientType":"RETAIL"}
@@ -70,7 +69,7 @@ class ReportsIT {
                         body(send(post("/api/v1/admin/orders"), """
                                 {"clientId":%d,"orderDate":"%s","deliveryDate":"%s","items":[
                                   {"description":"Report blouse","quantity":1,"priceRupees":%d}],
-                                 "discountKind":"AMOUNT","discountValue":0,"advanceRupees":%d,"advanceMode":"UPI"}
+                                 "discountKind":"AMOUNT","redeemPoints":0,"discountValue":0,"advanceRupees":%d,"advanceMode":"UPI"}
                                 """.formatted(
                                                 client, today, today, priceRupees, paidRupees))
                                 .andExpect(status().isCreated())),
@@ -91,7 +90,7 @@ class ReportsIT {
 
     @Test
     void everyReportRuns() throws Exception {
-        deliveredOrder("Every", 50_000, 10_000);
+        deliveredOrder("Every", 500, 100);
         List<String> names = JsonPath.read(
                 body(mockMvc.perform(get("/api/v1/admin/reports").with(OWNER)).andExpect(status().isOk())),
                 "$[*].name");
@@ -112,15 +111,15 @@ class ReportsIT {
 
     @Test
     void salesOrdersDeliveriesAndGstShowTheOrder() throws Exception {
-        var ids = deliveredOrder("Rekha", 80_000, 30_000);
+        var ids = deliveredOrder("Rekha", 800, 300);
         String orderNumber = JsonPath.read(
                 body(mockMvc.perform(get("/api/v1/admin/orders/" + ids[0]).with(OWNER))), "$.number");
 
         List<Map<String, Object>> orders =
                 JsonPath.read(report("sales-orders"), "$.rows[?(@.number == '" + orderNumber + "')]");
         assertThat(orders).singleElement().satisfies(r -> {
-            assertThat(((Number) r.get("total")).longValue()).isEqualTo(80_000);
-            assertThat(((Number) r.get("balance")).longValue()).isEqualTo(50_000);
+            assertThat(((Number) r.get("total")).longValue()).isEqualTo(800);
+            assertThat(((Number) r.get("balance")).longValue()).isEqualTo(500);
             assertThat(r.get("items")).isEqualTo("Report blouse");
         });
         List<Map<String, Object>> delivered =
@@ -133,29 +132,29 @@ class ReportsIT {
         assertThat(gst)
                 .singleElement()
                 .satisfies(
-                        r -> assertThat(((Number) r.get("total")).longValue()).isEqualTo(80_000));
+                        r -> assertThat(((Number) r.get("total")).longValue()).isEqualTo(800));
 
         var sales = report("sales");
         long invoiced = ((Number) JsonPath.read(sales, "$.totals.total")).longValue();
-        assertThat(invoiced).isGreaterThanOrEqualTo(80_000);
+        assertThat(invoiced).isGreaterThanOrEqualTo(800);
     }
 
     @Test
     void overviewAddsUpTheMonth() throws Exception {
         var before = body(mockMvc.perform(get("/api/v1/admin/reports/overview").with(OWNER))
                 .andExpect(status().isOk()));
-        deliveredOrder("Overview", 60_000, 20_000);
+        deliveredOrder("Overview", 600, 200);
         var after = body(mockMvc.perform(get("/api/v1/admin/reports/overview").with(OWNER)));
 
-        assertThat(delta(before, after, "$.bookedRupees")).isEqualTo(60_000);
-        assertThat(delta(before, after, "$.collectedRupees")).isEqualTo(20_000);
+        assertThat(delta(before, after, "$.bookedRupees")).isEqualTo(600);
+        assertThat(delta(before, after, "$.collectedRupees")).isEqualTo(200);
         assertThat(delta(before, after, "$.ordersBooked")).isEqualTo(1);
         assertThat(delta(before, after, "$.ordersDelivered")).isEqualTo(1);
-        assertThat(delta(before, after, "$.outstandingRupees")).isEqualTo(40_000);
+        assertThat(delta(before, after, "$.outstandingRupees")).isEqualTo(400);
         assertThat(JsonPath.<List<Object>>read(after, "$.months")).hasSize(6);
-        assertThat(delta(before, after, "$.months[5].bookedRupees")).isEqualTo(60_000);
+        assertThat(delta(before, after, "$.months[5].bookedRupees")).isEqualTo(600);
         assertThat(JsonPath.<List<Object>>read(after, "$.ageing")).hasSize(5);
-        assertThat(delta(before, after, "$.ageing[0].rupees")).isEqualTo(40_000);
+        assertThat(delta(before, after, "$.ageing[0].rupees")).isEqualTo(400);
     }
 
     private static long delta(String before, String after, String path) {

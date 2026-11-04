@@ -95,8 +95,8 @@ describe("staff pages", () => {
       name: "Ravi Tailor",
       role: "STAFF",
       payType: "MONTHLY",
-      salaryRupees: 1500000,
-      hourlyRupees: 12000,
+      salaryRupees: 15000,
+      hourlyRupees: 120,
       email: "ravi@vaabhi.local",
       password: "a-long-password",
       weeklyOff: null,
@@ -182,7 +182,7 @@ describe("requests", () => {
     expect(requestFromDraft(base).form).toMatchObject({ toDate: "2026-11-10", hours: null, amountRupees: null });
     expect(requestFromDraft({ ...base, kind: "ADVANCE", amount: "2000" }).form).toMatchObject({
       toDate: null,
-      amountRupees: 200000,
+      amountRupees: 2000,
     });
   });
 
@@ -202,7 +202,7 @@ describe("requests", () => {
       expect(lastSent(sent, "POST", "/staff/requests")?.body).toMatchObject({
         staffId: 2,
         kind: "ADVANCE",
-        amountRupees: 150000,
+        amountRupees: 1500,
       }),
     );
   });

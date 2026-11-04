@@ -22,10 +22,10 @@ export const lining: StockItem = {
   category: "Lining",
   unit: "M",
   reorderLevel: 5,
-  costRupees: 12000,
+  costRupees: 120,
   onHand: 3.5,
   low: true,
-  valueRupees: 42000,
+  valueRupees: 420,
 };
 
 export const movement: StockMovement = {
@@ -47,8 +47,8 @@ export const coupon: Coupon = {
   code: "DIWALI10",
   description: "Festival",
   kind: "PERCENT",
-  value: 1000,
-  minOrderRupees: 50000,
+  value: 10,
+  minOrderRupees: 500,
   validFrom: null,
   validTo: "2026-11-15",
   maxUses: 100,
@@ -59,7 +59,7 @@ export const coupon: Coupon = {
 export const rewards: RewardAccount = {
   clientId: 7,
   balance: 24,
-  valueRupees: 2400,
+  valueRupees: 24,
   entries: [
     {
       id: 1,
@@ -138,23 +138,23 @@ export const reportList: ReportInfo[] = [
 ];
 
 export const reportsOverview: ReportsOverview = {
-  bookedRupees: 250000,
-  collectedRupees: 180000,
-  expensesRupees: 40000,
+  bookedRupees: 2500,
+  collectedRupees: 1800,
+  expensesRupees: 400,
   ordersBooked: 4,
   ordersDelivered: 2,
-  averageOrderRupees: 62500,
+  averageOrderRupees: 625,
   newCustomers: 3,
-  outstandingRupees: 70000,
+  outstandingRupees: 700,
   months: ["2026-06", "2026-07", "2026-08", "2026-09", "2026-10", "2026-11"].map((month, i) => ({
     month,
-    bookedRupees: 100000 * i,
-    collectedRupees: 80000 * i,
-    expensesRupees: 20000 * i,
+    bookedRupees: 1000 * i,
+    collectedRupees: 800 * i,
+    expensesRupees: 200 * i,
   })),
   ageing: [
-    { label: "Not due yet", count: 1, rupees: 50000 },
-    { label: "1–7 days late", count: 1, rupees: 20000 },
+    { label: "Not due yet", count: 1, rupees: 500 },
+    { label: "1–7 days late", count: 1, rupees: 200 },
     { label: "8–30 days late", count: 0, rupees: 0 },
     { label: "31–60 days late", count: 0, rupees: 0 },
     { label: "Over 60 days late", count: 0, rupees: 0 },
@@ -172,10 +172,10 @@ export const salesReport: Report = {
     { key: "total", label: "Total", type: "MONEY" },
   ],
   rows: [
-    { day: "2026-11-01", invoices: 2, total: 150000 },
-    { day: "2026-11-02", invoices: 1, total: 99000 },
+    { day: "2026-11-01", invoices: 2, total: 1500 },
+    { day: "2026-11-02", invoices: 1, total: 990 },
   ],
-  totals: { invoices: 3, total: 249000 },
+  totals: { invoices: 3, total: 2490 },
   note: "Cancelled invoices are left out.",
 };
 
@@ -217,9 +217,9 @@ export function serveExtras(sent: Sent[], account: RewardAccount = rewards): voi
     http.put(`${base}/engage/coupons/:id`, reply(coupon)),
     http.get(
       `${base}/engage/coupons/check`,
-      reply({ code: "DIWALI10", valid: true, reason: null, kind: "PERCENT", value: 1000, discountRupees: 11000 }),
+      reply({ code: "DIWALI10", valid: true, reason: null, kind: "PERCENT", value: 10, discountRupees: 110 }),
     ),
-    http.get(`${base}/engage/rewards/settings`, reply({ enabled: true, pointsPer100: 1, rupeesPerPoint: 100 })),
+    http.get(`${base}/engage/rewards/settings`, reply({ enabled: true, pointsPer100: 1, rupeesPerPoint: 1 })),
     http.put(`${base}/engage/rewards/settings`, async ({ request }) => {
       const body = await request.clone().json();
       await record(request);

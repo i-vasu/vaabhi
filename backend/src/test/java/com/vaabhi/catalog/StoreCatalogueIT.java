@@ -72,8 +72,8 @@ class StoreCatalogueIT {
                 .andExpect(jsonPath("$.items[*].slug", not(hasItem("tissue-silk-saree-draft"))))
                 .andExpect(jsonPath("$.items[0].slug").value("kanjeevaram-silk-saree-temple-border"))
                 .andExpect(jsonPath("$.items[0].colours.length()").value(2))
-                .andExpect(jsonPath("$.priceRange.minRupees").value(160000))
-                .andExpect(jsonPath("$.priceRange.maxRupees").value(2490000));
+                .andExpect(jsonPath("$.priceRange.minRupees").value(1600))
+                .andExpect(jsonPath("$.priceRange.maxRupees").value(24900));
     }
 
     @Test
@@ -116,11 +116,11 @@ class StoreCatalogueIT {
 
     @Test
     void priceFilterKeepsTheFullPriceRange() throws Exception {
-        mockMvc.perform(get(SAREES).param("priceMin", "500000").param("priceMax", "1000000"))
+        mockMvc.perform(get(SAREES).param("priceMin", "5000").param("priceMax", "10000"))
                 .andExpect(status().isOk())
                 .andExpect(
-                        jsonPath("$.items[*].priceRupees", everyItem(org.hamcrest.Matchers.lessThanOrEqualTo(1000000))))
-                .andExpect(jsonPath("$.priceRange.maxRupees").value(2490000));
+                        jsonPath("$.items[*].priceRupees", everyItem(org.hamcrest.Matchers.lessThanOrEqualTo(10000.0))))
+                .andExpect(jsonPath("$.priceRange.maxRupees").value(24900));
     }
 
     @Test
@@ -135,7 +135,7 @@ class StoreCatalogueIT {
                 .andExpect(jsonPath("$.addons[*].code")
                         .value(org.hamcrest.Matchers.contains("blouse-unstitched", "blouse-standard", "blouse-custom")))
                 .andExpect(jsonPath("$.addons[2].input").value("MEASUREMENTS"))
-                .andExpect(jsonPath("$.addons[2].priceRupees").value(180000));
+                .andExpect(jsonPath("$.addons[2].priceRupees").value(1800));
     }
 
     @Test

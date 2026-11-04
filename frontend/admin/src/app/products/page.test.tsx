@@ -13,7 +13,7 @@ const row = (id: number, overrides: Partial<AdminProductSummary> = {}): AdminPro
   status: "PUBLISHED",
   variantCount: 2,
   stockTotal: 5,
-  minPriceRupees: 1425000,
+  minPriceRupees: 14250,
   updatedAt: "2026-10-31T09:00:00Z",
   ...overrides,
 });

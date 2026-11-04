@@ -161,7 +161,7 @@ describe("orders & production", () => {
     click("Save");
 
     await waitFor(() =>
-      expect(saved["delivery-packages"]).toEqual([{ id: null, name: "Express", priceRupees: 20000, days: 3 }]),
+      expect(saved["delivery-packages"]).toEqual([{ id: null, name: "Express", priceRupees: 200, days: 3 }]),
     );
     click("Remove Express");
     expect(screen.getByText("No packages yet")).toBeInTheDocument();

@@ -15,8 +15,8 @@ export const quoteLine = (o: Partial<BagQuoteLine> = {}): BagQuoteLine => ({
   colourName: "Rani pink",
   colourHex: "#C2185B",
   size: null,
-  priceRupees: 100000,
-  mrpRupees: 120000,
+  priceRupees: 1000,
+  mrpRupees: 1200,
   addonName: null,
   addonPriceRupees: 0,
   addonInput: null,
@@ -24,7 +24,7 @@ export const quoteLine = (o: Partial<BagQuoteLine> = {}): BagQuoteLine => ({
   ...o,
 });
 
-const local = { unitPriceRupees: 100000, addonPriceRupees: 0 } as BagLine;
+const local = { unitPriceRupees: 1000, addonPriceRupees: 0 } as BagLine;
 
 describe("bag quote helpers", () => {
   it("posts the bag to the storefront route", async () => {
@@ -46,7 +46,7 @@ describe("bag quote helpers", () => {
     expect(isBuyable(quoteLine({ status: "OUT_OF_STOCK" }))).toBe(false);
     expect(isBuyable(undefined)).toBe(false);
     expect(priceChanged(local, quoteLine())).toBe(false);
-    expect(priceChanged(local, quoteLine({ priceRupees: 90000 }))).toBe(true);
+    expect(priceChanged(local, quoteLine({ priceRupees: 900 }))).toBe(true);
     expect(priceChanged(local, quoteLine({ status: "UNAVAILABLE", priceRupees: 0 }))).toBe(false);
   });
 

@@ -101,7 +101,7 @@ describe("state changes", () => {
 });
 
 describe("apiParams", () => {
-  it("converts rupees to paise and joins codes", () => {
+  it("passes the price range in rupees and joins codes", () => {
     const state = withInStock(withPrice(parseListingState({ fabric: "silk,cotton" }), 2000, 5000), true);
     expect(apiParams(state, 2)).toEqual({
       sort: "popular",
@@ -109,8 +109,8 @@ describe("apiParams", () => {
       pageSize: 24,
       inStock: true,
       fabric: "silk,cotton",
-      priceMin: 200000,
-      priceMax: 500000,
+      priceMin: 2000,
+      priceMax: 5000,
     });
   });
 });
@@ -161,7 +161,7 @@ describe("product cards", () => {
   });
 
   it("shows stock state and handles missing data", () => {
-    const low = productCardProps(product({ stockLeft: 2, badge: "NEW", mrpRupees: 1850000 }));
+    const low = productCardProps(product({ stockLeft: 2, badge: "NEW", mrpRupees: 18500 }));
     expect(low.detail).toBe("Temple border, pure zari · Only 2 left");
     expect(low.mrp).toBeUndefined();
     expect(low.badge?.tone).toBe("festive");

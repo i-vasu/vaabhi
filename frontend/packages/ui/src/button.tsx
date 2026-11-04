@@ -10,7 +10,7 @@ export function buttonClasses(variant: ButtonVariant = "primary", className?: st
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary disabled:opacity-50",
     variant === "primary"
       ? "bg-brand-primary text-text-on-brand hover:bg-brand-primary-hover"
-      : "border border-brand-primary text-brand-primary hover:bg-brand-primary-soft",
+      : "border border-brand-primary text-brand-primary-ink hover:bg-brand-primary-soft",
     className,
   );
 }

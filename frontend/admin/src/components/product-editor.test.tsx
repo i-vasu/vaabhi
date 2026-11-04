@@ -92,7 +92,7 @@ describe("ProductEditor", () => {
       categorySlug: "sarees",
       sareeLengthM: 5.5,
       attributes: { fabric: ["silk"] },
-      variants: [{ colourName: "Ruby", colourFamily: "red", size: null, priceRupees: 1425000, stockQty: 4 }],
+      variants: [{ colourName: "Ruby", colourFamily: "red", size: null, priceRupees: 14250, stockQty: 4 }],
     });
     expect(sent?.addons.map((a) => a.code)).toEqual(["blouse-unstitched", "blouse-standard", "blouse-custom"]);
   });
@@ -322,13 +322,13 @@ describe("ProductEditor", () => {
       blouseLengthM: null,
       shippingWeightGrams: null,
       attributes: {},
-      variants: [{ sku: "VB-RUBY-1", priceRupees: 1500000, active: false }],
+      variants: [{ sku: "VB-RUBY-1", priceRupees: 15000, active: false }],
       addons: [
         {
           code: "fall-pico",
           name: "Fall and pico",
           description: "Done for you",
-          priceRupees: 25000,
+          priceRupees: 250,
           input: "SIZE",
           active: false,
         },

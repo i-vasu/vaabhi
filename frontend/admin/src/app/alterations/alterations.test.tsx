@@ -72,7 +72,7 @@ describe("new alteration", () => {
       expect(lastSent(sent, "POST", "/alterations")?.body).toMatchObject({
         paid: true,
         orderId: null,
-        items: [{ costRupees: 25000 }, { costRupees: 15000 }],
+        items: [{ costRupees: 250 }, { costRupees: 150 }],
       }),
     );
   });
@@ -93,7 +93,7 @@ describe("alteration page", () => {
     await waitFor(() =>
       expect(lastSent(sent, "POST", "/alterations/9/progress")?.body).toEqual({
         status: "DELIVERED",
-        collectRupees: 40000,
+        collectRupees: 400,
         mode: "UPI",
       }),
     );

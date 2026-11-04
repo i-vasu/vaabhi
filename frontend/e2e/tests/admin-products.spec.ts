@@ -13,7 +13,8 @@ test.describe("Admin products", () => {
   // that point. AdminCatalogueIT covers publish → visible in the store.
   test("creates a draft with photos picked before saving; publishing waits for a video", async ({ page, request }) => {
     const name = `E2E Ruby Silk Saree ${Date.now()}`;
-    await page.getByRole("link", { name: "Products", exact: true }).click();
+    // Products lives under More in the sidebar.
+    await page.goto(`${urls.admin}/products/`);
     await page.getByRole("link", { name: "New product" }).click();
 
     await page.getByRole("textbox", { name: "Name", exact: true }).fill(name);
@@ -43,7 +44,9 @@ test.describe("Admin products", () => {
     // Saving creates the draft, then uploads the photo: the API answers 503 because CI has no R2 credentials.
     await page.getByRole("button", { name: "Save", exact: true }).click();
     await expect(page).toHaveURL(/\/products\/edit\/\?id=\d+/);
-    await expect(page.getByRole("alert")).toContainText(/front.png: Photo storage is not configured/);
+    await expect(page.getByRole("alert").filter({ hasText: "did not upload" })).toContainText(
+      /front.png: Photo storage is not configured/,
+    );
     await expect(page.getByText("Draft", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Save & publish" })).toBeDisabled();
 

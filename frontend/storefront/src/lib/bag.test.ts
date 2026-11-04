@@ -23,8 +23,8 @@ const line = {
   addonCode: "blouse-standard",
   addonName: "Stitched blouse",
   blouseSize: "36",
-  unitPriceRupees: 100,
-  addonPriceRupees: 20,
+  unitPriceRupees: 1,
+  addonPriceRupees: 0.2,
   imageKey: null,
 };
 
@@ -53,7 +53,7 @@ describe("bag", () => {
     const onChange = vi.fn();
     const unsubscribe = bagStore.subscribe(onChange);
     addToBag(line);
-    window.dispatchEvent(new StorageEvent("storage", { key: "bag.v1" }));
+    window.dispatchEvent(new StorageEvent("storage", { key: "bag.v2" }));
     window.dispatchEvent(new StorageEvent("storage", { key: "other" }));
     expect(onChange).toHaveBeenCalledTimes(2);
     unsubscribe();
@@ -62,7 +62,7 @@ describe("bag", () => {
   });
 
   it("survives unavailable or corrupt storage", () => {
-    localStorage.setItem("bag.v1", "{not json");
+    localStorage.setItem("bag.v2", "{not json");
     expect(bagStore.read()).toEqual([]);
     expect(bagStore.serverValue()).toEqual([]);
     vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {

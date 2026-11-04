@@ -8,10 +8,10 @@ const fakeResize = vi.fn(async () => [{ width: 400, pixelWidth: 400, pixelHeight
 
 describe("settings helpers", () => {
   it("formats and parses rupees", () => {
-    expect(rupees(125050)).toBe("₹ 1,250.5");
-    expect(rupees(20000)).toBe("₹ 200");
-    expect(parseRupees("₹ 1,250.50")).toBe(125050);
-    expect(parseRupees("200")).toBe(20000);
+    expect(rupees(1250.5)).toBe("₹ 1,250.5");
+    expect(rupees(200)).toBe("₹ 200");
+    expect(parseRupees("₹ 1,250.50")).toBe(1250.5);
+    expect(parseRupees("200")).toBe(200);
     expect(parseRupees("12.345")).toBeNull();
     expect(parseRupees("abc")).toBeNull();
   });

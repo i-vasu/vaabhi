@@ -73,7 +73,7 @@ class StaffIT {
     private static String form(String name, String role, String email, String password) {
         return """
                 {"name":"%s","phone":"9876512345","email":%s,"role":"%s","designation":"Tailor",
-                 "joinedOn":"2026-01-15","payType":"MONTHLY","salaryRupees":1500000,"hourlyRupees":12000,
+                 "joinedOn":"2026-01-15","payType":"MONTHLY","salaryRupees":15000,"hourlyRupees":120,
                  "shiftStart":"10:00","shiftEnd":"19:00","lateGraceMinutes":10,"weeklyOff":3,"password":%s}
                 """.formatted(
                         name,

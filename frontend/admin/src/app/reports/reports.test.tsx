@@ -17,7 +17,7 @@ beforeEach(() => {
 
 describe("report helpers", () => {
   it("formats cells and exports CSV with rupees and totals", () => {
-    expect(formatCell({ key: "t", label: "T", type: "MONEY" }, 99000)).toBe("₹ 990");
+    expect(formatCell({ key: "t", label: "T", type: "MONEY" }, 990)).toBe("₹ 990");
     expect(formatCell({ key: "s", label: "S", type: "TEXT" }, "IN_PROGRESS")).toBe("IN PROGRESS");
     expect(formatCell({ key: "s", label: "S", type: "TEXT" }, null)).toBe("—");
     expect(toCsv(salesReport)).toBe(

@@ -65,9 +65,9 @@ class StoreBagIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.lines[0].status").value("AVAILABLE"))
                 .andExpect(jsonPath("$.lines[0].name").value("Kanjeevaram silk saree"))
-                .andExpect(jsonPath("$.lines[0].priceRupees").value(1850000))
+                .andExpect(jsonPath("$.lines[0].priceRupees").value(18500))
                 .andExpect(jsonPath("$.lines[0].addonName").value("Stitched blouse, standard size"))
-                .andExpect(jsonPath("$.lines[0].addonPriceRupees").value(120000))
+                .andExpect(jsonPath("$.lines[0].addonPriceRupees").value(1200))
                 .andExpect(jsonPath("$.lines[0].addonInput").value("SIZE"))
                 .andExpect(jsonPath("$.lines[1].status").value("LIMITED"))
                 .andExpect(jsonPath("$.lines[1].maxQuantity").value(2))
@@ -78,10 +78,10 @@ class StoreBagIT {
                 .andExpect(jsonPath("$.lines[4].status").value("UNAVAILABLE"))
                 .andExpect(jsonPath("$.lines[5].status").value("UNAVAILABLE"))
                 // 18,500 + 2 × 21,500 = 61,500 for items; one stitched blouse 1,200.
-                .andExpect(jsonPath("$.itemsRupees").value(6150000))
-                .andExpect(jsonPath("$.addonsRupees").value(120000))
-                .andExpect(jsonPath("$.totalRupees").value(6270000))
-                .andExpect(jsonPath("$.mrpRupees").value(2200000 + 120000 + 2 * 2150000));
+                .andExpect(jsonPath("$.itemsRupees").value(61500))
+                .andExpect(jsonPath("$.addonsRupees").value(1200))
+                .andExpect(jsonPath("$.totalRupees").value(62700))
+                .andExpect(jsonPath("$.mrpRupees").value(22000 + 1200 + 2 * 21500));
     }
 
     @Test

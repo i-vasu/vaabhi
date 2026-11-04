@@ -38,8 +38,8 @@ describe("ProductView", () => {
         sku: "VB-RANI",
         addonCode: "blouse-standard",
         blouseSize: "36",
-        unitPriceRupees: 1850000,
-        addonPriceRupees: 120000,
+        unitPriceRupees: 18500,
+        addonPriceRupees: 1200,
         imageKey: "products/1/front",
         quantity: 1,
       }),
@@ -106,7 +106,7 @@ describe("ProductView", () => {
     expect(screen.getByAltText("Front")).toHaveAttribute("src", "https://pub-dev.r2.dev/products/1/front/800.webp");
   });
 
-  it("plays the video after the first photo, with that photo as its poster", () => {
+  it("plays the video after the first photo of the colour, with that photo as its poster", () => {
     vi.stubEnv("NEXT_PUBLIC_MEDIA_URL", "https://media.test");
     const video = {
       kind: "VIDEO",
@@ -121,11 +121,11 @@ describe("ProductView", () => {
     const player = screen.getByLabelText("Drape video");
     expect(player.tagName).toBe("VIDEO");
     expect(player).toHaveAttribute("src", "https://media.test/products/1/clip/video");
-    expect(player).toHaveAttribute("poster", "https://media.test/products/1/front/800.webp");
+    expect(player).toHaveAttribute("poster", "https://media.test/products/1/mustard/800.webp");
     expect(screen.getByRole("button", { name: "Play video 1" })).toBeInTheDocument();
     expect(
       screen.getAllByRole("button", { name: /^Show photo|^Play video/ }).map((b) => b.getAttribute("aria-label")),
-    ).toEqual(["Show photo 1", "Play video", "Show photo 2"]);
+    ).toEqual(["Show photo 1", "Play video 1", "Show photo 2"]);
     vi.unstubAllEnvs();
   });
 

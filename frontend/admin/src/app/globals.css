@@ -35,6 +35,8 @@
   --color-brand-primary: var(--color-accent);
   --color-brand-primary-hover: var(--color-accent-strong);
   --color-brand-primary-soft: var(--color-accent-soft);
+  /* the blue reads too dark as text on navy (contrast 3.6:1); the lighter accent ink passes 4.5:1 */
+  --color-brand-primary-ink: var(--color-accent-ink);
   --color-text-on-brand: #ffffff;
 }
 

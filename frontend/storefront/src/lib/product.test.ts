@@ -65,7 +65,7 @@ describe("product rules", () => {
     const choices = addonChoices(lehenga());
     expect(choices.map((c) => [c.code, c.priceRupees])).toEqual([
       [null, 0],
-      ["blouse-custom", 150000],
+      ["blouse-custom", 1500],
     ]);
     expect(defaultChoice(choices)?.code).toBeNull();
     expect(addonChoices(saree({ addons: [] }))).toEqual([]);

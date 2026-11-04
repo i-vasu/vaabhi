@@ -92,8 +92,9 @@ describe("ProductPhotos", () => {
 
     const queuedVideo = onQueue.mock.lastCall![0][1];
     rerender(<ProductPhotos {...props} queued={[queuedPhoto, queuedVideo]} />);
-    expect(screen.queryByLabelText("Add video")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Remove video" }));
+    // Up to 3 videos: a second one can still be added.
+    expect(screen.getByLabelText("Add video")).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: "Remove clip.mp4" }));
     expect(onQueue).toHaveBeenLastCalledWith([queuedPhoto]);
     fireEvent.click(screen.getByRole("button", { name: "Remove front.jpg" }));
     expect(onQueue).toHaveBeenLastCalledWith([queuedVideo]);
@@ -122,12 +123,12 @@ describe("ProductPhotos", () => {
         onChange={onChange}
       />,
     );
-    expect(screen.getByText(/1 of 12 photos · 1 video/)).toBeInTheDocument();
+    expect(screen.getByText(/1 of 12 photos · 1 of 3 videos/)).toBeInTheDocument();
     expect(screen.getByLabelText("Silk saree, drape")).toHaveAttribute(
       "src",
       "https://media.vaabhi.com/products/7/v9/video",
     );
-    fireEvent.click(screen.getByRole("button", { name: "Delete video" }));
+    fireEvent.click(screen.getByRole("button", { name: "Delete video 1" }));
     await waitFor(() => expect(onChange).toHaveBeenLastCalledWith([photo(1)]));
   });
 
@@ -260,12 +261,12 @@ describe("ProductPhotos", () => {
     fireEvent.click(screen.getByRole("button", { name: "Move photo 1 later" }));
     await waitFor(() => expect(saved).toHaveLength(1));
     expect(saved[0]).toEqual([
-      { id: 2, alt: "Photo 2", colourName: null },
+      { id: 2, alt: "Photo 2", colourName: "Old" }, // its colour tag is kept
       { id: 1, alt: "Photo 1", colourName: null },
     ]);
     expect(onChange).toHaveBeenLastCalledWith([photo(2), photo(1)]);
 
-    expect(screen.queryByRole("combobox", { name: "Colour" })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("combobox", { name: "Colour" })).toHaveLength(2); // one per photo
     fireEvent.click(screen.getByRole("button", { name: "Set photo 2 as main" }));
     await waitFor(() => expect(saved).toHaveLength(2));
     fireEvent.change(screen.getAllByRole("textbox", { name: "Description (alt text)" })[0]!, {

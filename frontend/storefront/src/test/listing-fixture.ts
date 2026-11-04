@@ -5,8 +5,8 @@ export const product = (overrides: Partial<ProductSummary> = {}): ProductSummary
   name: "Kanjeevaram silk saree",
   subtitle: "Temple border, pure zari",
   badge: "HANDLOOM",
-  priceRupees: 1850000,
-  mrpRupees: 2200000,
+  priceRupees: 18500,
+  mrpRupees: 22000,
   discountPercent: 16,
   colours: [{ name: "Rani pink", hex: "#C2185B" }],
   inStock: true,
@@ -51,6 +51,6 @@ export const listing = (overrides: Partial<ProductListing> = {}): ProductListing
   pageSize: 24,
   sort: "popular",
   filters,
-  priceRange: { minRupees: 160000, maxRupees: 2490000 },
+  priceRange: { minRupees: 1600, maxRupees: 24900 },
   ...overrides,
 });

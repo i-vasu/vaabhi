@@ -36,9 +36,9 @@ describe("price list", () => {
         templateId: 1,
         code: null,
         name: "Padded blouse",
-        priceRupees: 90000,
+        priceRupees: 900,
         photoKey: null,
-        stageCosts: [{ stageId: 2, paise: 20000 }],
+        stageCosts: [{ stageId: 2, rupees: 200 }],
       }),
     );
   });

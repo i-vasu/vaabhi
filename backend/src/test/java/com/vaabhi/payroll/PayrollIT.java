@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import com.vaabhi.TestcontainersConfiguration;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
@@ -69,7 +68,7 @@ class PayrollIT {
         return ((Number) JsonPath.read(body(result), "$.id")).longValue();
     }
 
-    private long staff(String name, String payType, BigDecimal salaryRupees, BigDecimal hourlyRupees) throws Exception {
+    private long staff(String name, String payType, long salaryRupees, long hourlyRupees) throws Exception {
         return id(send(post("/api/v1/admin/staff"), """
                         {"name":"%s","phone":null,"email":null,"role":"STAFF","designation":"Tailor","joinedOn":null,
                          "payType":"%s","salaryRupees":%d,"hourlyRupees":%d,"shiftStart":"10:00","shiftEnd":"19:00",
@@ -102,8 +101,8 @@ class PayrollIT {
      */
     private void finishFirstStage(long tailorId, LocalDate day) throws Exception {
         var product = id(send(post("/api/v1/admin/service-products"), """
-                        {"templateId":%d,"name":"Payroll blouse %d","priceRupees":60000,
-                         "stageCosts":[{"stageId":%d,"rupees":15000}]}
+                        {"templateId":%d,"name":"Payroll blouse %d","priceRupees":600,
+                         "stageCosts":[{"stageId":%d,"rupees":150}]}
                         """.formatted(
                                 jdbc.sql("SELECT id FROM garment_template WHERE name = 'Blouse'")
                                         .query(Long.class)
@@ -118,8 +117,8 @@ class PayrollIT {
         var today = LocalDate.now();
         var order = send(post("/api/v1/admin/orders"), """
                         {"clientId":%d,"orderDate":"%s","deliveryDate":"%s","items":[
-                          {"serviceProductId":%d,"description":"Blouse","quantity":3,"priceRupees":60000}],
-                         "discountKind":"AMOUNT","discountValue":0,"advanceRupees":0,"advanceMode":"CASH"}
+                          {"serviceProductId":%d,"description":"Blouse","quantity":3,"priceRupees":600}],
+                         "discountKind":"AMOUNT","redeemPoints":0,"discountValue":0,"advanceRupees":0,"advanceMode":"CASH"}
                         """.formatted(client, today, today.plusDays(5), product))
                 .andExpect(status().isCreated());
         long orderId = id(order);
@@ -147,14 +146,14 @@ class PayrollIT {
         return slips.getFirst();
     }
 
-    private static BigDecimal rupees(Map<String, Object> slip, String field) {
+    private static long rupees(Map<String, Object> slip, String field) {
         return ((Number) slip.get(field)).longValue();
     }
 
     @Test
     void monthlyAndPieceWorkersFromPreviewToPaidAndTheStatementBalances() throws Exception {
         var month = "2001-09"; // 30 days
-        long monthly = staff("Mohan Monthly", "MONTHLY", 1_500_000, 12_000);
+        long monthly = staff("Mohan Monthly", "MONTHLY", 15_000, 120);
         long piece = staff("Pooja Piece", "PIECE", 0, 0);
 
         mark(monthly, "2001-09-03", "ABSENT", null, null);
@@ -164,7 +163,7 @@ class PayrollIT {
 
         // An advance for the monthly worker, approved before the month is closed.
         long advance = id(send(post("/api/v1/admin/staff/requests"), """
-                        {"staffId":%d,"kind":"ADVANCE","fromDate":"2001-09-10","amountRupees":200000,"reason":"Rent"}
+                        {"staffId":%d,"kind":"ADVANCE","fromDate":"2001-09-10","amountRupees":2000,"reason":"Rent"}
                         """.formatted(monthly))
                 .andExpect(status().isCreated()));
         send(post("/api/v1/admin/staff/requests/" + advance + "/decision"), "{\"approve\":true,\"note\":null}")
@@ -172,16 +171,16 @@ class PayrollIT {
 
         var preview = slip(month, monthly);
         assertThat(preview.get("id")).isNull();
-        // 1.5 unpaid days of 30: 1,500,000 × 28.5 / 30 = 1,425,000; overtime 120 min × ₹120/h = 24,000;
-        // late 40 min = 8,000; advance 200,000.
-        assertThat(rupees(preview, "baseRupees")).isEqualTo(1_425_000);
-        assertThat(rupees(preview, "overtimeRupees")).isEqualTo(24_000);
-        assertThat(rupees(preview, "lateRupees")).isEqualTo(8_000);
-        assertThat(rupees(preview, "advanceRupees")).isEqualTo(200_000);
-        assertThat(rupees(preview, "netRupees")).isEqualTo(1_425_000 + 24_000 - 8_000 - 200_000);
+        // 1.5 unpaid days of 30: ₹15,000 × 28.5 / 30 = ₹14,250; overtime 120 min × ₹120/h = ₹240;
+        // late 40 min = ₹80; advance ₹2,000.
+        assertThat(rupees(preview, "baseRupees")).isEqualTo(14_250);
+        assertThat(rupees(preview, "overtimeRupees")).isEqualTo(240);
+        assertThat(rupees(preview, "lateRupees")).isEqualTo(80);
+        assertThat(rupees(preview, "advanceRupees")).isEqualTo(2_000);
+        assertThat(rupees(preview, "netRupees")).isEqualTo(14_250 + 240 - 80 - 2_000);
         var pieceSlip = slip(month, piece);
         assertThat(rupees(pieceSlip, "pieces")).isEqualTo(3);
-        assertThat(rupees(pieceSlip, "pieceRupees")).isEqualTo(45_000);
+        assertThat(rupees(pieceSlip, "pieceRupees")).isEqualTo(450);
 
         mockMvc.perform(get("/api/v1/admin/payroll/production")
                         .param("from", "2001-09-01")
@@ -189,15 +188,15 @@ class PayrollIT {
                         .param("staffId", Long.toString(piece))
                         .with(OWNER))
                 .andExpect(jsonPath("$.entries.length()").value(1))
-                .andExpect(jsonPath("$.entries[0].rateRupees").value(15000))
-                .andExpect(jsonPath("$.byStaff[0].amountRupees").value(45000));
+                .andExpect(jsonPath("$.entries[0].rateRupees").value(150))
+                .andExpect(jsonPath("$.byStaff[0].amountRupees").value(450));
 
         send(post("/api/v1/admin/payroll/months/" + month + "/finalize"), "")
                 .andExpect(jsonPath("$.finalized").value(true));
         send(post("/api/v1/admin/payroll/months/" + month + "/finalize"), "").andExpect(status().isConflict());
         var frozen = slip(month, monthly);
         long slipId = ((Number) frozen.get("id")).longValue();
-        assertThat(rupees(frozen, "netRupees")).isEqualTo(1_241_000);
+        assertThat(rupees(frozen, "netRupees")).isEqualTo(12_410);
 
         // The advance is now taken back: next month starts clean.
         assertThat(rupees(slip("2001-10", monthly), "advanceRupees")).isZero();
@@ -212,38 +211,38 @@ class PayrollIT {
                 .param("id", slipId)
                 .query((rs, n) -> List.of(rs.getString(1), rs.getLong(2), rs.getString(3)))
                 .single();
-        assertThat(expense).containsExactly("SALARY", 1_241_000L, "Mohan Monthly");
+        assertThat(expense).containsExactly("SALARY", 12_410L, "Mohan Monthly");
         send(post("/api/v1/admin/payroll/months/" + month + "/reopen"), "").andExpect(status().isConflict());
 
-        // Earned 1,441,000 − advance 200,000 − paid 1,241,000 = nothing owed either way.
+        // Earned ₹14,410 − advance ₹2,000 − paid ₹12,410 = nothing owed either way.
         mockMvc.perform(get("/api/v1/admin/payroll/staff/" + monthly + "/statement")
                         .with(OWNER))
                 .andExpect(jsonPath("$.entries.length()").value(3))
                 .andExpect(jsonPath("$.entries[0].kind").value("ADVANCE"))
                 .andExpect(jsonPath("$.entries[1].kind").value("EARNED"))
-                .andExpect(jsonPath("$.entries[1].amountRupees").value(1441000))
+                .andExpect(jsonPath("$.entries[1].amountRupees").value(14410))
                 .andExpect(jsonPath("$.balanceRupees").value(0));
     }
 
     @Test
     void anUnpaidMonthCanBeReopenedAndItsAdvancesComeBack() throws Exception {
         var month = "2001-11";
-        long daily = staff("Divya Daily", "DAILY", 60_000, 0);
+        long daily = staff("Divya Daily", "DAILY", 600, 0);
         mark(daily, "2001-11-05", "PRESENT", null, null);
         mark(daily, "2001-11-06", "PRESENT", null, null);
         long advance = id(
                 send(post("/api/v1/admin/staff/requests"), """
-                        {"staffId":%d,"kind":"ADVANCE","fromDate":"2001-11-02","amountRupees":50000,"reason":null}
+                        {"staffId":%d,"kind":"ADVANCE","fromDate":"2001-11-02","amountRupees":500,"reason":null}
                         """.formatted(daily)).andExpect(status().isCreated()));
         send(post("/api/v1/admin/staff/requests/" + advance + "/decision"), "{\"approve\":true,\"note\":null}")
                 .andExpect(status().isOk());
 
         send(post("/api/v1/admin/payroll/months/" + month + "/finalize"), "").andExpect(status().isOk());
-        assertThat(rupees(slip(month, daily), "netRupees")).isEqualTo(120_000 - 50_000);
+        assertThat(rupees(slip(month, daily), "netRupees")).isEqualTo(1_200 - 500);
         send(post("/api/v1/admin/payroll/months/" + month + "/reopen"), "")
                 .andExpect(jsonPath("$.finalized").value(false));
         assertThat(slip(month, daily).get("id")).isNull();
-        assertThat(rupees(slip(month, daily), "advanceRupees")).isEqualTo(50_000);
+        assertThat(rupees(slip(month, daily), "advanceRupees")).isEqualTo(500);
     }
 
     @Test

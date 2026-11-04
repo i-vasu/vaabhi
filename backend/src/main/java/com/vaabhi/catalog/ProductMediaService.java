@@ -73,8 +73,7 @@ public class ProductMediaService {
     public VideoUpload startVideoUpload(long productId, VideoUploadRequest request) {
         requireStorage();
         requireProduct(productId);
-        requireRoom(
-                productId, MediaKind.VIDEO, MAX_VIDEOS, "A product can have at most " + MAX_VIDEOS + " videos");
+        requireRoom(productId, MediaKind.VIDEO, MAX_VIDEOS, "A product can have at most " + MAX_VIDEOS + " videos");
         var key = newKey(productId);
         var mediaId =
                 store.insertPending(productId, MediaKind.VIDEO, key, request.alt(), request.colourName(), null, null);
