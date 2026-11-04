@@ -101,6 +101,8 @@ class ProductListingQueries {
     /**
      * Published products with a badge, from every category, most popular first (the home page's Bestsellers).
      */
+    // Only constant SQL fragments (and fixed table names / enum-chosen ORDER BY) are joined; values are bound.
+    @SuppressWarnings("java:S2077")
     List<ProductSummary> featured(Badge badge, int limit) {
         var rows = jdbc.sql(LISTED.replace("p.category_id = :categoryId", "p.badge = :badge") + """
                         SELECT l.id, l.slug, l.name, l.subtitle, l.badge, l.price_rupees, l.mrp_rupees, l.stock_total,
@@ -118,6 +120,8 @@ class ProductListingQueries {
      * Published products from every category, most recently published first (the storefront's New arrivals).
      * A product keeps its first publish time when it is unpublished and published again.
      */
+    // Only constant SQL fragments (and fixed table names / enum-chosen ORDER BY) are joined; values are bound.
+    @SuppressWarnings("java:S2077")
     NewArrivalsPage newArrivals(int page, int pageSize) {
         var everyCategory = LISTED.replace("p.category_id = :categoryId", "TRUE");
         var total = jdbc.sql(everyCategory + "SELECT COUNT(*) FROM listed")

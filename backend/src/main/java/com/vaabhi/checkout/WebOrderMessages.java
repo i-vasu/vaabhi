@@ -41,7 +41,7 @@ class WebOrderMessages {
         try {
             sms.send(event.phone(), template, variables);
         } catch (RuntimeException e) {
-            log.warn("Order SMS {} for {} was not sent: {}", template, event.number(), e.getMessage());
+            log.warn("Order SMS {} for {} was not sent: {}", template, LogSafe.clean(event.number()), e.getMessage());
         }
     }
 }

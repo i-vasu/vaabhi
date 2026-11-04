@@ -90,6 +90,8 @@ public class ClientService {
         return last == null || last.isBlank() ? first : first + " " + last;
     }
 
+    // Only constant SQL fragments (and fixed table names / enum-chosen ORDER BY) are joined; values are bound.
+    @SuppressWarnings("java:S2077")
     @Transactional(readOnly = true)
     public ClientPage list(@Nullable String query, Sort sort, int page, int pageSize) {
         Map<String, Object> params = new LinkedHashMap<>();

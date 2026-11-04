@@ -35,7 +35,7 @@ class PaymentReconciler {
             try {
                 orders.reconcilePayment(number, GIVE_UP_MINUTES);
             } catch (ResponseStatusException e) {
-                log.warn("Could not check the payment for {}: {}", number, e.getReason());
+                log.warn("Could not check the payment for {}: {}", LogSafe.clean(number), e.getReason());
             }
         }
     }

@@ -291,6 +291,8 @@ public class InvoiceService {
     private record RegisterTotals(long count, BigDecimal total, BigDecimal tax) {}
 
     /** The invoice register, newest first, with totals of the live invoices that match. */
+    // Only constant SQL fragments (and fixed table names / enum-chosen ORDER BY) are joined; values are bound.
+    @SuppressWarnings("java:S2077")
     @Transactional(readOnly = true)
     public InvoicePage list(
             @Nullable String query, @Nullable LocalDate from, @Nullable LocalDate to, int page, int pageSize) {

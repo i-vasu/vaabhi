@@ -216,6 +216,8 @@ public class ShopListService {
     // --- helpers ------------------------------------------------------------------------------------------------
 
     /** Table names are constants from this class, never user input. */
+    // Only constant SQL fragments (and fixed table names / enum-chosen ORDER BY) are joined; values are bound.
+    @SuppressWarnings("java:S2077")
     private boolean exists(String table, long id) {
         return jdbc.sql("SELECT COUNT(*) FROM " + table + " WHERE id = :id")
                         .param(ID, id)
@@ -224,6 +226,8 @@ public class ShopListService {
                 > 0;
     }
 
+    // Only constant SQL fragments (and fixed table names / enum-chosen ORDER BY) are joined; values are bound.
+    @SuppressWarnings("java:S2077")
     private void deactivateOthers(String table, java.util.Set<Long> keep) {
         jdbc.sql("UPDATE " + table + " SET active = FALSE WHERE active AND NOT (id = ANY(:keep))")
                 .param("keep", keep.toArray(Long[]::new))

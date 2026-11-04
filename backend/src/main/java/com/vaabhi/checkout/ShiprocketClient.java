@@ -111,7 +111,10 @@ class ShiprocketClient {
         var orderId = response.path("order_id").asLong(0);
         var shipmentId = response.path("shipment_id").asLong(0);
         if (orderId == 0 || shipmentId == 0) {
-            log.warn("Shiprocket order for {} was not created: {}", order.number(), response);
+            log.warn(
+                    "Shiprocket order for {} was not created: {}",
+                    LogSafe.clean(order.number()),
+                    LogSafe.clean(response));
             throw unavailable("Shiprocket did not create the order: " + message(response));
         }
         return new CreatedOrder(orderId, shipmentId);
@@ -177,7 +180,10 @@ class ShiprocketClient {
         var orderId = response.path("order_id").asLong(0);
         var shipmentId = response.path("shipment_id").asLong(0);
         if (orderId == 0 || shipmentId == 0) {
-            log.warn("Shiprocket return for {} was not created: {}", returnNumber, response);
+            log.warn(
+                    "Shiprocket return for {} was not created: {}",
+                    LogSafe.clean(returnNumber),
+                    LogSafe.clean(response));
             throw unavailable("Shiprocket did not create the return: " + message(response));
         }
         return new CreatedOrder(orderId, shipmentId);
@@ -213,7 +219,7 @@ class ShiprocketClient {
         var data = response.path("response").path("data");
         var awb = text(data.path("awb_code"));
         if (awb == null) {
-            log.warn("Shiprocket gave no AWB for {}: {}", number, response);
+            log.warn("Shiprocket gave no AWB for {}: {}", LogSafe.clean(number), LogSafe.clean(response));
             throw unavailable("Shiprocket could not assign a courier: " + message(response));
         }
         return new Awb(awb, text(data.path("courier_name")));
@@ -228,7 +234,7 @@ class ShiprocketClient {
                     JSON.writeValueAsString(Map.of("shipment_id", List.of(shipmentId))),
                     number);
         } catch (ResponseStatusException e) {
-            log.warn("Shiprocket pickup for {} was not scheduled: {}", number, e.getReason());
+            log.warn("Shiprocket pickup for {} was not scheduled: {}", LogSafe.clean(number), e.getReason());
         }
     }
 
@@ -243,7 +249,7 @@ class ShiprocketClient {
                     number);
             return text(response.path("label_url"));
         } catch (ResponseStatusException e) {
-            log.warn("Shiprocket label for {} was not made: {}", number, e.getReason());
+            log.warn("Shiprocket label for {} was not made: {}", LogSafe.clean(number), e.getReason());
             return null;
         }
     }
@@ -299,13 +305,13 @@ class ShiprocketClient {
                 return Serviceable.NO;
             }
             if (response.statusCode() / 100 != 2) {
-                log.warn("Shiprocket serviceability for {} answered {}", pincode, response.statusCode());
+                log.warn("Shiprocket serviceability for {} answered {}", LogSafe.clean(pincode), response.statusCode());
                 return Serviceable.UNKNOWN;
             }
             var couriers = JSON.readTree(response.body()).path("data").path("available_courier_companies");
             return couriers.isArray() && !couriers.isEmpty() ? Serviceable.YES : Serviceable.NO;
         } catch (RuntimeException e) {
-            log.warn("Shiprocket serviceability for {} failed", pincode, e);
+            log.warn("Shiprocket serviceability for {} failed", LogSafe.clean(pincode), e);
             return Serviceable.UNKNOWN;
         }
     }
@@ -334,7 +340,12 @@ class ShiprocketClient {
                 ? JSON.createObjectNode()
                 : JSON.readTree(response.body());
         if (response.statusCode() / 100 != 2) {
-            log.warn("Shiprocket {} for {} failed: {} {}", path, number, response.statusCode(), response.body());
+            log.warn(
+                    "Shiprocket {} for {} failed: {} {}",
+                    LogSafe.clean(path),
+                    LogSafe.clean(number),
+                    response.statusCode(),
+                    LogSafe.clean(response.body()));
             throw unavailable("Shiprocket refused the request: " + message(json));
         }
         return json;
@@ -367,7 +378,7 @@ class ShiprocketClient {
                 ? text(JSON.readTree(response.body()).path("token"))
                 : null;
         if (signedIn == null) {
-            log.warn("Shiprocket sign-in failed: {} {}", response.statusCode(), response.body());
+            log.warn("Shiprocket sign-in failed: {} {}", response.statusCode(), LogSafe.clean(response.body()));
             throw unavailable("Shiprocket sign-in failed. Check SHIPROCKET_EMAIL and SHIPROCKET_PASSWORD.");
         }
         token = signedIn;
@@ -386,7 +397,7 @@ class ShiprocketClient {
             Thread.currentThread().interrupt();
             throw unavailable("Shiprocket could not be reached. Please try again.");
         } catch (java.io.IOException e) {
-            log.warn("Shiprocket {} failed", request.uri().getPath(), e);
+            log.warn("Shiprocket {} failed", LogSafe.clean(request.uri().getPath()), e);
             throw unavailable("Shiprocket could not be reached. Please try again.");
         }
     }

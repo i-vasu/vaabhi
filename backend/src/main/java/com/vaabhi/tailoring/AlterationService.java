@@ -173,6 +173,8 @@ public class AlterationService {
             BigDecimal collectedRupees) {}
 
     /** Same filters as the orders list. */
+    // Only constant SQL fragments (and fixed table names / enum-chosen ORDER BY) are joined; values are bound.
+    @SuppressWarnings("java:S2077")
     @Transactional(readOnly = true)
     public AlterationPage list(
             @Nullable String query, OrderService.Filter filter, @Nullable Long clientId, int page, int pageSize) {

@@ -593,6 +593,8 @@ public class OrderService {
             BigDecimal totalRupees,
             BigDecimal paidRupees) {}
 
+    // Only constant SQL fragments (and fixed table names / enum-chosen ORDER BY) are joined; values are bound.
+    @SuppressWarnings("java:S2077")
     @Transactional(readOnly = true)
     public OrderPage list(
             @Nullable String query,

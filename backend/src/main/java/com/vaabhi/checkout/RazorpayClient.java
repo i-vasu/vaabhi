@@ -71,7 +71,11 @@ class RazorpayClient {
         try {
             var response = http.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() / 100 != 2) {
-                log.warn("Razorpay order for {} failed: {} {}", receipt, response.statusCode(), response.body());
+                log.warn(
+                        "Razorpay order for {} failed: {} {}",
+                        LogSafe.clean(receipt),
+                        response.statusCode(),
+                        LogSafe.clean(response.body()));
                 throw unavailable("Online payment is not available right now. Please try again.");
             }
             return JSON.readTree(response.body()).get("id").asString();
@@ -79,7 +83,7 @@ class RazorpayClient {
             Thread.currentThread().interrupt();
             throw unavailable("Online payment is not available right now. Please try again.");
         } catch (java.io.IOException e) {
-            log.warn("Razorpay order for {} failed", receipt, e);
+            log.warn("Razorpay order for {} failed", LogSafe.clean(receipt), e);
             throw unavailable("Online payment is not available right now. Please try again.");
         }
     }
@@ -138,7 +142,12 @@ class RazorpayClient {
         try {
             var response = http.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() / 100 != 2) {
-                log.warn("Razorpay {} for {} failed: {} {}", path, receipt, response.statusCode(), response.body());
+                log.warn(
+                        "Razorpay {} for {} failed: {} {}",
+                        LogSafe.clean(path),
+                        LogSafe.clean(receipt),
+                        response.statusCode(),
+                        LogSafe.clean(response.body()));
                 throw unavailable("Razorpay refused the request. Please try again or check the Razorpay dashboard.");
             }
             return response.body();
@@ -146,7 +155,7 @@ class RazorpayClient {
             Thread.currentThread().interrupt();
             throw unavailable("Razorpay could not be reached. Please try again.");
         } catch (java.io.IOException e) {
-            log.warn("Razorpay {} for {} failed", path, receipt, e);
+            log.warn("Razorpay {} for {} failed", LogSafe.clean(path), LogSafe.clean(receipt), e);
             throw unavailable("Razorpay could not be reached. Please try again.");
         }
     }

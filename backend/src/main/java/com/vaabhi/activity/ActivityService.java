@@ -109,6 +109,8 @@ public class ActivityService {
     private static final String SELECT = "SELECT id, at, kind, title, actor, ref_type, ref_id FROM activity_log";
 
     /** The activity log, newest first, optionally of one kind or about one thing. */
+    // Only constant SQL fragments (and fixed table names / enum-chosen ORDER BY) are joined; values are bound.
+    @SuppressWarnings("java:S2077")
     @Transactional(readOnly = true)
     public Activity.ActivityPage log(
             @Nullable String kind, @Nullable String refType, @Nullable Long refId, int page, int pageSize) {

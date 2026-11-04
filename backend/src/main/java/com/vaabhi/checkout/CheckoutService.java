@@ -319,7 +319,7 @@ public class CheckoutService {
                             .update();
                 }
             }
-            default -> log.debug("Ignoring Razorpay event {}", name);
+            default -> log.debug("Ignoring Razorpay event {}", LogSafe.clean(name));
         }
     }
 
@@ -541,7 +541,7 @@ public class CheckoutService {
                     .param("awb", awb)
                     .update();
             if (returns == 0) {
-                log.debug("Tracking update for unknown AWB {}", awb);
+                log.debug("Tracking update for unknown AWB {}", LogSafe.clean(awb));
             }
             return;
         }
@@ -644,6 +644,8 @@ public class CheckoutService {
             @Nullable String shippingLabelUrl,
             OffsetDateTime createdAt) {}
 
+    // Only constant SQL fragments (and fixed table names / enum-chosen ORDER BY) are joined; values are bound.
+    @SuppressWarnings("java:S2077")
     private Optional<WebOrder> find(String where, Map<String, Object> params) {
         return jdbc.sql(SELECT + where)
                 .params(params)
