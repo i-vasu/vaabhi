@@ -31,10 +31,15 @@ public record CheckoutRequest(
 
     public record Address(
             @NotBlank @Size(max = 80) String name,
-            @NotBlank @Pattern(regexp = "^[6-9][0-9]{9}$", message = "Enter a 10-digit mobile number") String phone,
+
+            @NotBlank @Pattern(regexp = "^[6-9][0-9]{9}$", message = "Enter a 10-digit mobile number")
+            String phone,
+
             @NotBlank @Size(max = 160) String line1,
             @Nullable @Size(max = 160) String line2,
             @NotBlank @Size(max = 80) String city,
             @NotBlank @Size(max = 80) String state,
-            @NotBlank @Pattern(regexp = "^[1-9][0-9]{5}$", message = "Enter a 6-digit pincode") String pincode) {}
+
+            @NotBlank @Pattern(regexp = "^[1-9][0-9]{5}$", message = "Enter a 6-digit pincode")
+            String pincode) {}
 }

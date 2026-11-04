@@ -10,11 +10,14 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.Map;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -23,8 +26,8 @@ import org.springframework.web.server.ResponseStatusException;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * The Razorpay calls checkout needs: create an order, refund a payment (amounts in paise, as Razorpay requires)
- * and check the HMAC-SHA256 signatures on payments and webhooks.
+ * The Razorpay calls checkout needs: create an order, fetch and capture its payments, refund a payment (amounts in
+ * paise, as Razorpay requires) and check the HMAC-SHA256 signatures on payments and webhooks.
  */
 @Component
 class RazorpayClient {
@@ -81,24 +84,56 @@ class RazorpayClient {
         }
     }
 
-    /** Refunds {@code amountRupees} of a captured payment (instant refund to the source) and returns the refund id. */
-    String refund(String paymentId, BigDecimal amountRupees, String receipt) {
+    record Refund(String id, String status) {}
+
+    /** Refunds {@code amountRupees} of a captured payment and returns the refund (status pending or processed). */
+    Refund refund(String paymentId, BigDecimal amountRupees, String receipt) {
         requireConfigured();
         var body = JSON.writeValueAsString(
                 Map.of("amount", paise(amountRupees), "receipt", receipt, "notes", Map.of("order", receipt)));
-        var response = post("/v1/payments/" + paymentId + "/refund", body, receipt);
-        return JSON.readTree(response).get("id").asString();
+        var refund = JSON.readTree(call("POST", "/v1/payments/" + paymentId + "/refund", body, receipt));
+        return new Refund(refund.get("id").asString(), refund.path("status").asString("pending"));
     }
 
-    /** POSTs JSON with the API keys; any failure becomes a 503 the shop can retry. */
-    private String post(String path, String body, String receipt) {
+    record Payment(String id, String status, long amountPaise) {}
+
+    /** The payment attempts on a Razorpay order (status created, authorized, captured, refunded or failed). */
+    List<Payment> orderPayments(String razorpayOrderId, String receipt) {
+        requireConfigured();
+        var items = JSON.readTree(call("GET", "/v1/orders/" + razorpayOrderId + "/payments", null, receipt))
+                .path("items");
+        List<Payment> payments = new ArrayList<>();
+        for (var item : items) {
+            payments.add(new Payment(
+                    item.path("id").asString(""),
+                    item.path("status").asString(""),
+                    item.path("amount").asLong(0)));
+        }
+        return payments;
+    }
+
+    /** Captures an authorized payment (needed only when auto-capture is off in the Razorpay dashboard). */
+    void capture(String paymentId, long amountPaise, String receipt) {
+        requireConfigured();
+        var body = JSON.writeValueAsString(Map.of("amount", amountPaise, "currency", "INR"));
+        call("POST", "/v1/payments/" + paymentId + "/capture", body, receipt);
+    }
+
+    boolean configured() {
+        return properties.configured();
+    }
+
+    /** Calls the API with the keys; any failure becomes a 503 the shop can retry. */
+    private String call(String method, String path, @Nullable String body, String receipt) {
         var credentials = Base64.getEncoder()
                 .encodeToString((properties.keyId() + ":" + properties.keySecret()).getBytes(StandardCharsets.UTF_8));
         var request = HttpRequest.newBuilder(URI.create(properties.baseUrl() + path))
                 .timeout(Duration.ofSeconds(20))
                 .header("Authorization", "Basic " + credentials)
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .method(
+                        method,
+                        body == null ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(body))
                 .build();
         try {
             var response = http.send(request, HttpResponse.BodyHandlers.ofString());

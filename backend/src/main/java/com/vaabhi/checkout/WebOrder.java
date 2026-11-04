@@ -10,6 +10,10 @@ import org.jspecify.annotations.Nullable;
  *
  * @param paidAt when the money came in: at payment for ONLINE, on delivery for COD
  * @param refundedRupees what was refunded through Razorpay when a paid order was cancelled
+ * @param refundStatus where that refund is (Razorpay's refund webhooks move it on)
+ * @param trackingStatus the courier's latest status, when shipped through Shiprocket
+ * @param trackingUrl the public tracking page, when shipped through Shiprocket
+ * @param shippingLabelUrl the label to print (PDF), when shipped through Shiprocket
  */
 public record WebOrder(
         String number,
@@ -36,8 +40,19 @@ public record WebOrder(
         @Nullable String cancelReason,
         @Nullable BigDecimal refundedRupees,
         @Nullable String refundId,
+        @Nullable RefundStatus refundStatus,
+        @Nullable String trackingStatus,
+        @Nullable String trackingUrl,
+        @Nullable String shippingLabelUrl,
         OffsetDateTime createdAt,
         List<Line> lines) {
+
+    /** PENDING: Razorpay accepted the refund; PROCESSED: the money reached the customer; FAILED: it did not. */
+    public enum RefundStatus {
+        PENDING,
+        PROCESSED,
+        FAILED
+    }
 
     /** PENDING_PAYMENT → PLACED → SHIPPED → DELIVERED; CANCELLED from PLACED or SHIPPED; FAILED payments. */
     public enum Status {

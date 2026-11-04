@@ -27,7 +27,9 @@ import tools.jackson.databind.json.JsonMapper;
 /**
  * Online orders: placed from the bag (paid with Razorpay, or cash on delivery), then shipped, delivered or
  * cancelled by the shop. Stock is taken when an order is PLACED and put back when it is cancelled; a cancelled
- * order that was paid online is refunded through Razorpay. The customer gets an SMS at each step.
+ * order that was paid online is refunded through Razorpay (the refund webhooks report when the money arrives).
+ * Shipping is by hand or through Shiprocket ({@link ShiprocketShipping}), whose tracking updates mark the order
+ * delivered. The customer gets an SMS at each step.
  */
 @Service
 public class CheckoutService {
@@ -43,6 +45,7 @@ public class CheckoutService {
     private final CatalogStock stock;
     private final CustomerService customers;
     private final RazorpayClient razorpay;
+    private final ShiprocketClient shiprocket;
     private final CheckoutProperties properties;
     private final ApplicationEventPublisher events;
 
@@ -52,6 +55,7 @@ public class CheckoutService {
             CatalogStock stock,
             CustomerService customers,
             RazorpayClient razorpay,
+            ShiprocketClient shiprocket,
             CheckoutProperties properties,
             ApplicationEventPublisher events) {
         this.jdbc = jdbc;
@@ -59,6 +63,7 @@ public class CheckoutService {
         this.stock = stock;
         this.customers = customers;
         this.razorpay = razorpay;
+        this.shiprocket = shiprocket;
         this.properties = properties;
         this.events = events;
     }
@@ -85,6 +90,13 @@ public class CheckoutService {
                         "Some items in your bag have changed (" + (line.name() == null ? line.sku() : line.name())
                                 + "). Please review your bag.");
             }
+        }
+        var pincode = request.address().pincode();
+        if (shiprocket.serviceable(pincode, method == WebOrder.PaymentMethod.COD) == ShiprocketClient.Serviceable.NO) {
+            throw conflict(
+                    method == WebOrder.PaymentMethod.COD
+                            ? "Cash on delivery is not available for pincode " + pincode + ". Please pay online."
+                            : "We cannot deliver to pincode " + pincode + " yet.");
         }
         var items = quote.totalRupees();
         var shipping = items.compareTo(properties.freeShippingFromRupees()) >= 0
@@ -195,7 +207,8 @@ public class CheckoutService {
 
     /**
      * Razorpay's webhook: payment.captured / order.paid place the order (in case the browser never came back),
-     * payment.failed marks a waiting order failed. Unknown events and orders are ignored.
+     * payment.failed marks a waiting order failed, refund.processed / refund.failed record where a refund is.
+     * Unknown events and orders are ignored.
      */
     @Transactional
     public void webhook(String body, String signature) {
@@ -203,20 +216,80 @@ public class CheckoutService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid signature");
         }
         var event = JSON.readTree(body);
+        var name = event.path("event").asString("");
         var payment = event.path("payload").path("payment").path("entity");
         var orderId = text(payment, "order_id");
         var paymentId = text(payment, ID);
-        if (orderId == null || paymentId == null) {
+        var refundId = text(event.path("payload").path("refund").path("entity"), ID);
+        switch (name) {
+            case "payment.captured", "order.paid" -> {
+                if (orderId != null && paymentId != null) {
+                    markPaid(orderId, paymentId);
+                }
+            }
+            case "payment.failed" -> {
+                if (orderId != null) {
+                    jdbc.sql("UPDATE web_order SET status = 'FAILED' WHERE razorpay_order_id = :rzp"
+                                    + " AND status = 'PENDING_PAYMENT'")
+                            .param("rzp", orderId)
+                            .update();
+                }
+            }
+            case "refund.processed", "refund.failed" -> {
+                if (refundId != null) {
+                    jdbc.sql("UPDATE web_order SET refund_status = :status WHERE refund_id = :refund")
+                            .param("status", name.equals("refund.processed") ? "PROCESSED" : "FAILED")
+                            .param("refund", refundId)
+                            .update();
+                }
+            }
+            default -> log.debug("Ignoring Razorpay event {}", name);
+        }
+    }
+
+    /** Online orders still waiting for payment after {@code olderThanMinutes}, oldest first (for reconciling). */
+    @Transactional(readOnly = true)
+    public List<String> waitingForPayment(int olderThanMinutes, int limit) {
+        return jdbc.sql("""
+                        SELECT number FROM web_order
+                        WHERE status = 'PENDING_PAYMENT' AND razorpay_order_id IS NOT NULL
+                          AND created_at < now() - make_interval(mins => :minutes)
+                        ORDER BY created_at LIMIT :limit
+                        """)
+                .param("minutes", olderThanMinutes)
+                .param("limit", limit)
+                .query(String.class)
+                .list();
+    }
+
+    /**
+     * Asks Razorpay what happened to a waiting order: a captured payment places it, an authorized one (auto-capture
+     * off) is captured first; with neither after {@code giveUpAfterMinutes} the order is marked FAILED (a payment
+     * that still arrives later places it all the same).
+     */
+    @Transactional
+    public void reconcilePayment(String number, int giveUpAfterMinutes) {
+        var order = byNumber(number);
+        var razorpayOrderId = razorpayOrderId(number);
+        if (order.status() != WebOrder.Status.PENDING_PAYMENT || razorpayOrderId == null) {
             return;
         }
-        switch (event.path("event").asString("")) {
-            case "payment.captured", "order.paid" -> markPaid(orderId, paymentId);
-            case "payment.failed" ->
-                jdbc.sql("UPDATE web_order SET status = 'FAILED' WHERE razorpay_order_id = :rzp"
-                                + " AND status = 'PENDING_PAYMENT'")
-                        .param("rzp", orderId)
-                        .update();
-            default -> log.debug("Ignoring Razorpay event {}", event.path("event").asString(""));
+        var paise = RazorpayClient.paise(order.totalRupees());
+        for (var payment : razorpay.orderPayments(razorpayOrderId, number)) {
+            if (payment.status().equals("authorized") && payment.amountPaise() == paise) {
+                razorpay.capture(payment.id(), paise, number);
+                markPaid(razorpayOrderId, payment.id());
+                return;
+            }
+            if (payment.status().equals("captured")) {
+                markPaid(razorpayOrderId, payment.id());
+                return;
+            }
+        }
+        if (order.createdAt().isBefore(OffsetDateTime.now().minusMinutes(giveUpAfterMinutes))) {
+            jdbc.sql("UPDATE web_order SET status = 'FAILED' WHERE number = :number AND status = 'PENDING_PAYMENT'")
+                    .param(NUMBER, number)
+                    .update();
         }
     }
 
@@ -264,15 +337,14 @@ public class CheckoutService {
     public WebOrder deliver(String number) {
         var order = byNumber(number);
         if (order.status() != WebOrder.Status.PLACED && order.status() != WebOrder.Status.SHIPPED) {
-            throw conflict("Only a placed or shipped order can be delivered (this one is " + label(order.status()) + ")");
+            throw conflict(
+                    "Only a placed or shipped order can be delivered (this one is " + label(order.status()) + ")");
         }
         jdbc.sql("""
                         UPDATE web_order SET status = 'DELIVERED', delivered_at = now(),
                             paid_at = CASE WHEN payment_method = 'COD' THEN now() ELSE paid_at END
                         WHERE number = :number
-                        """)
-                .param(NUMBER, number)
-                .update();
+                        """).param(NUMBER, number).update();
         publish(WebOrderEvent.Type.DELIVERED, number);
         return byNumber(number);
     }
@@ -285,24 +357,42 @@ public class CheckoutService {
     public WebOrder cancel(String number, CancelWebOrderForm form) {
         var order = byNumber(number);
         if (order.status() != WebOrder.Status.PLACED && order.status() != WebOrder.Status.SHIPPED) {
-            throw conflict("Only a placed or shipped order can be cancelled (this one is " + label(order.status()) + ")");
+            throw conflict(
+                    "Only a placed or shipped order can be cancelled (this one is " + label(order.status()) + ")");
+        }
+        var trackingStatus = order.trackingStatus();
+        var shiprocketOrderId = shipment(number).orderId();
+        if (shiprocketOrderId != null) {
+            // The courier must not pick it up; if Shiprocket refuses (e.g. already picked up) the shop sees why.
+            try {
+                shiprocket.cancel(shiprocketOrderId, number);
+                trackingStatus = "Cancelled in Shiprocket";
+            } catch (ResponseStatusException e) {
+                trackingStatus = "Not cancelled in Shiprocket, cancel it there (" + e.getReason() + ")";
+            }
         }
         String refundId = null;
+        String refundStatus = null;
         BigDecimal refunded = null;
         if (order.paymentMethod() == WebOrder.PaymentMethod.ONLINE && order.razorpayPaymentId() != null) {
-            refundId = razorpay.refund(order.razorpayPaymentId(), order.totalRupees(), number);
+            var refund = razorpay.refund(order.razorpayPaymentId(), order.totalRupees(), number);
+            refundId = refund.id();
+            refundStatus = refund.status().equals("processed") ? "PROCESSED" : "PENDING";
             refunded = order.totalRupees();
         }
         long id = jdbc.sql("""
                         UPDATE web_order SET status = 'CANCELLED', cancelled_at = now(), cancel_reason = :reason,
-                            refund_id = :refund, refunded_rupees = :refunded,
-                            refunded_at = CASE WHEN CAST(:refund AS varchar) IS NULL THEN NULL ELSE now() END
+                            refund_id = :refund, refunded_rupees = :refunded, refund_status = :refundStatus,
+                            refunded_at = CASE WHEN CAST(:refund AS varchar) IS NULL THEN NULL ELSE now() END,
+                            tracking_status = :tracking
                         WHERE number = :number
                         RETURNING id
                         """)
                 .param("reason", blankToNull(form.reason()))
                 .param("refund", refundId)
                 .param("refunded", refunded)
+                .param("refundStatus", refundStatus)
+                .param("tracking", trackingStatus == null ? null : truncate(trackingStatus, 120))
                 .param(NUMBER, number)
                 .query(Long.class)
                 .single();
@@ -311,11 +401,80 @@ public class CheckoutService {
         return byNumber(number);
     }
 
+    // --- Shiprocket ----------------------------------------------------------------------------------------------
+
+    /** Where the order is in Shiprocket: nothing yet, created there, or with an AWB too. */
+    record Shipment(
+            @Nullable Long orderId,
+            @Nullable Long shipmentId,
+            @Nullable String awb) {}
+
+    @Transactional(readOnly = true)
+    public Shipment shipment(String number) {
+        return jdbc.sql("""
+                        SELECT shiprocket_order_id AS order_id, shiprocket_shipment_id AS shipment_id,
+                               CASE WHEN shiprocket_shipment_id IS NULL THEN NULL ELSE tracking_number END AS awb
+                        FROM web_order WHERE number = :number
+                        """)
+                .param(NUMBER, number)
+                .query(Shipment.class)
+                .optional()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+    }
+
+    /** Saves the Shiprocket ids straight away, so a retry after a later step fails does not create it twice. */
+    @Transactional
+    public void recordShiprocketOrder(String number, long shiprocketOrderId, long shipmentId) {
+        jdbc.sql("""
+                        UPDATE web_order SET shiprocket_order_id = :order, shiprocket_shipment_id = :shipment
+                        WHERE number = :number
+                        """)
+                .param("order", shiprocketOrderId)
+                .param("shipment", shipmentId)
+                .param(NUMBER, number)
+                .update();
+    }
+
+    @Transactional
+    public void recordShippingLabel(String number, String labelUrl) {
+        jdbc.sql("UPDATE web_order SET shipping_label_url = :url WHERE number = :number")
+                .param("url", truncate(labelUrl, 500))
+                .param(NUMBER, number)
+                .update();
+    }
+
+    /**
+     * The courier's latest status for an AWB (Shiprocket's webhook or a refresh). DELIVERED marks the order
+     * delivered (and a cash-on-delivery order paid); other statuses are only shown.
+     */
+    @Transactional
+    public void trackingUpdate(String awb, String status) {
+        var number = jdbc.sql("""
+                        UPDATE web_order SET tracking_status = :status, tracking_updated_at = now()
+                        WHERE tracking_number = :awb AND status <> 'CANCELLED'
+                        RETURNING number
+                        """)
+                .param("status", truncate(status, 120))
+                .param("awb", awb)
+                .query(String.class)
+                .optional();
+        if (number.isEmpty()) {
+            log.debug("Tracking update for unknown AWB {}", awb);
+            return;
+        }
+        var order = byNumber(number.get());
+        if (status.trim().equalsIgnoreCase("DELIVERED")
+                && (order.status() == WebOrder.Status.PLACED || order.status() == WebOrder.Status.SHIPPED)) {
+            deliver(order.number());
+        }
+    }
+
     // --- reading ------------------------------------------------------------------------------------------------
 
     @Transactional(readOnly = true)
     public List<WebOrder> orders(long customerId) {
-        return jdbc.sql(SELECT + " WHERE o.customer_id = :customer ORDER BY o.created_at DESC LIMIT 50")
+        return jdbc
+                .sql(SELECT + " WHERE o.customer_id = :customer ORDER BY o.created_at DESC LIMIT 50")
                 .param(CUSTOMER, customerId)
                 .query(OrderRow.class)
                 .list()
@@ -335,7 +494,8 @@ public class CheckoutService {
     /** The shop's view, newest first; optionally only orders in one status. */
     @Transactional(readOnly = true)
     public List<WebOrder> recent(WebOrder.@Nullable Status status, int limit) {
-        return jdbc.sql(SELECT + " WHERE (CAST(:status AS varchar) IS NULL OR o.status = :status)"
+        return jdbc
+                .sql(SELECT + " WHERE (CAST(:status AS varchar) IS NULL OR o.status = :status)"
                         + " ORDER BY o.created_at DESC LIMIT :limit")
                 .param("status", status == null ? null : status.name())
                 .param("limit", limit)
@@ -344,6 +504,12 @@ public class CheckoutService {
                 .stream()
                 .map(this::withLines)
                 .toList();
+    }
+
+    /** Any online order, for the shop. */
+    @Transactional(readOnly = true)
+    public WebOrder shopOrder(String number) {
+        return byNumber(number);
     }
 
     private WebOrder byNumber(String number) {
@@ -355,7 +521,8 @@ public class CheckoutService {
             SELECT o.id, o.number, o.status, o.payment_method, o.contact_name, o.contact_phone, o.contact_email,
                    o.address_line1, o.address_line2, o.city, o.state, o.pincode, o.items_rupees, o.shipping_rupees,
                    o.total_rupees, o.razorpay_payment_id, o.paid_at, o.courier, o.tracking_number, o.shipped_at,
-                   o.delivered_at, o.cancelled_at, o.cancel_reason, o.refunded_rupees, o.refund_id, o.created_at
+                   o.delivered_at, o.cancelled_at, o.cancel_reason, o.refunded_rupees, o.refund_id, o.refund_status,
+                   o.tracking_status, o.shiprocket_shipment_id, o.shipping_label_url, o.created_at
             FROM web_order o
             """;
 
@@ -385,10 +552,18 @@ public class CheckoutService {
             @Nullable String cancelReason,
             @Nullable BigDecimal refundedRupees,
             @Nullable String refundId,
+            WebOrder.@Nullable RefundStatus refundStatus,
+            @Nullable String trackingStatus,
+            @Nullable Long shiprocketShipmentId,
+            @Nullable String shippingLabelUrl,
             OffsetDateTime createdAt) {}
 
     private Optional<WebOrder> find(String where, Map<String, Object> params) {
-        return jdbc.sql(SELECT + where).params(params).query(OrderRow.class).optional().map(this::withLines);
+        return jdbc.sql(SELECT + where)
+                .params(params)
+                .query(OrderRow.class)
+                .optional()
+                .map(this::withLines);
     }
 
     private WebOrder withLines(OrderRow o) {
@@ -396,10 +571,7 @@ public class CheckoutService {
                         SELECT sku, product_slug, name, colour_name, size, addon_name, blouse_size, quantity, unit_rupees,
                                addon_rupees, amount_rupees, image_key
                         FROM web_order_line WHERE order_id = :id ORDER BY position
-                        """)
-                .param(ID, o.id())
-                .query(WebOrder.Line.class)
-                .list();
+                        """).param(ID, o.id()).query(WebOrder.Line.class).list();
         return new WebOrder(
                 o.number(),
                 o.status(),
@@ -425,6 +597,12 @@ public class CheckoutService {
                 o.cancelReason(),
                 o.refundedRupees(),
                 o.refundId(),
+                o.refundStatus(),
+                o.trackingStatus(),
+                o.shiprocketShipmentId() != null && o.trackingNumber() != null
+                        ? "https://shiprocket.co/tracking/" + o.trackingNumber()
+                        : null,
+                o.shippingLabelUrl(),
                 o.createdAt(),
                 lines);
     }
@@ -472,6 +650,10 @@ public class CheckoutService {
     private static @Nullable String text(JsonNode node, String field) {
         var value = node.path(field);
         return value.isString() && !value.asString().isBlank() ? value.asString() : null;
+    }
+
+    private static String truncate(String value, int max) {
+        return value.length() <= max ? value : value.substring(0, max);
     }
 
     private static @Nullable String blankToNull(@Nullable String value) {

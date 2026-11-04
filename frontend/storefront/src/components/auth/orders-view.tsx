@@ -72,11 +72,24 @@ export function OrdersView() {
             <p className="mt-1 text-sm text-text-secondary">
               Sent with {order.courier ?? "our delivery partner"}
               {order.trackingNumber && `, tracking ${order.trackingNumber}`}
+              {order.trackingStatus && ` · ${order.trackingStatus.toLowerCase()}`}
+              {order.trackingUrl && (
+                <>
+                  {" · "}
+                  <a href={order.trackingUrl} target="_blank" rel="noreferrer" className="underline">
+                    Track your parcel
+                  </a>
+                </>
+              )}
             </p>
           )}
           {order.status === "CANCELLED" && order.refundedRupees !== null && order.refundedRupees !== undefined && (
             <p className="mt-1 text-sm text-text-secondary">
-              {formatPrice(order.refundedRupees)} refunded to your original payment method
+              {order.refundStatus === "PROCESSED"
+                ? `${formatPrice(order.refundedRupees)} refunded to your original payment method`
+                : order.refundStatus === "FAILED"
+                  ? `Your refund of ${formatPrice(order.refundedRupees)} did not go through. We will contact you.`
+                  : `Refund of ${formatPrice(order.refundedRupees)} on its way to your original payment method (5–7 working days)`}
             </p>
           )}
           <ul className="mt-2 text-sm text-text-secondary">

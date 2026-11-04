@@ -30,10 +30,13 @@ class WebOrderMessages {
         var variables = new LinkedHashMap<String, String>();
         variables.put("order", event.number());
         variables.put("amount", event.totalRupees().toPlainString());
-        variables.put("payment", event.paymentMethod() == WebOrder.PaymentMethod.COD ? "Cash on delivery" : "Paid online");
+        variables.put(
+                "payment", event.paymentMethod() == WebOrder.PaymentMethod.COD ? "Cash on delivery" : "Paid online");
         variables.put("courier", event.courier() == null ? "our delivery partner" : event.courier());
         variables.put("tracking", event.trackingNumber() == null ? "-" : event.trackingNumber());
-        variables.put("refund", event.refundedRupees() == null ? "0" : event.refundedRupees().toPlainString());
+        variables.put(
+                "refund",
+                event.refundedRupees() == null ? "0" : event.refundedRupees().toPlainString());
         var template = "web_order_" + event.type().name().toLowerCase(java.util.Locale.ROOT);
         try {
             sms.send(event.phone(), template, variables);

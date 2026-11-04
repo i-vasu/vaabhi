@@ -56,6 +56,20 @@ vaabhi:
     key-secret: ${RAZORPAY_KEY_SECRET:}
     webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:}
 
+  # Shipping online orders (Shiprocket → Settings → API: create an API user; Pickup Addresses for the location name).
+  # Without the API user, "Ship with Shiprocket" answers 503 and checkout skips the pincode check.
+  shiprocket:
+    email: ${SHIPROCKET_EMAIL:}
+    password: ${SHIPROCKET_PASSWORD:}
+    pickup-location: ${SHIPROCKET_PICKUP_LOCATION:Primary}
+    pickup-pincode: ${SHIPROCKET_PICKUP_PINCODE:}
+    webhook-token: ${SHIPROCKET_WEBHOOK_TOKEN:}
+    # The parcel every order is booked as (products have no weight yet).
+    weight-kg: ${SHIPROCKET_WEIGHT_KG:0.5}
+    length-cm: ${SHIPROCKET_LENGTH_CM:30}
+    breadth-cm: ${SHIPROCKET_BREADTH_CM:25}
+    height-cm: ${SHIPROCKET_HEIGHT_CM:5}
+
   # Storefront shipping: free from this order value (items, in rupees), otherwise the flat fee.
   checkout:
     free-shipping-from-rupees: ${FREE_SHIPPING_FROM_RUPEES:1999}

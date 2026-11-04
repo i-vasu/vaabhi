@@ -1838,6 +1838,40 @@
                 }
             }
         },
+        "/api/v1/webhooks/delivery-updates": {
+            "post": {
+                "tags": [
+                    "shiprocket-webhook-controller"
+                ],
+                "operationId": "deliveryUpdate",
+                "parameters": [
+                    {
+                        "name": "x-api-key",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/api/v1/webhooks/razorpay": {
             "post": {
                 "tags": [
@@ -3632,6 +3666,66 @@
                     },
                     "required": true
                 },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/online-orders/{number}/shiprocket": {
+            "post": {
+                "tags": [
+                    "admin-web-order-controller"
+                ],
+                "operationId": "shipOnlineOrderWithShiprocket",
+                "parameters": [
+                    {
+                        "name": "number",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/online-orders/{number}/tracking": {
+            "post": {
+                "tags": [
+                    "admin-web-order-controller"
+                ],
+                "operationId": "refreshOnlineOrderTracking",
+                "parameters": [
+                    {
+                        "name": "number",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -10155,6 +10249,35 @@
                             "null"
                         ]
                     },
+                    "refundStatus": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "PENDING",
+                            "PROCESSED",
+                            "FAILED"
+                        ]
+                    },
+                    "trackingStatus": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "trackingUrl": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "shippingLabelUrl": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
                     "createdAt": {
                         "type": "string",
                         "format": "date-time"
@@ -10186,13 +10309,17 @@
                     "pincode",
                     "razorpayPaymentId",
                     "refundId",
+                    "refundStatus",
                     "refundedRupees",
                     "shippedAt",
+                    "shippingLabelUrl",
                     "shippingRupees",
                     "state",
                     "status",
                     "totalRupees",
-                    "trackingNumber"
+                    "trackingNumber",
+                    "trackingStatus",
+                    "trackingUrl"
                 ]
             },
             "Address": {

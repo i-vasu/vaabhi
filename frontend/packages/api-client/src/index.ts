@@ -183,6 +183,7 @@ export type CheckoutRequest = Schemas["CheckoutRequest"];
 export type CheckoutStart = Schemas["CheckoutStart"];
 export type PaymentConfirmation = Schemas["PaymentConfirmation"];
 export type WebOrder = Schemas["WebOrder"];
+export type RefundStatus = NonNullable<WebOrder["refundStatus"]>;
 export type ShipmentForm = Schemas["ShipmentForm"];
 export type CancelWebOrderForm = Schemas["CancelWebOrderForm"];
 
@@ -356,6 +357,12 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         request<WebOrder[]>(`/api/v1/admin/online-orders${queryString({ status })}`),
       shipOnlineOrder: (number: string, shipment: ShipmentForm) =>
         send<WebOrder>("POST", `/api/v1/admin/online-orders/${encodeURIComponent(number)}/ship`, shipment),
+      /** Books the courier through Shiprocket (AWB, pickup, label) and marks the order shipped. */
+      shipOnlineOrderWithShiprocket: (number: string) =>
+        send<WebOrder>("POST", `/api/v1/admin/online-orders/${encodeURIComponent(number)}/shiprocket`),
+      /** Fetches the courier's latest status from Shiprocket. */
+      refreshOnlineOrderTracking: (number: string) =>
+        send<WebOrder>("POST", `/api/v1/admin/online-orders/${encodeURIComponent(number)}/tracking`),
       deliverOnlineOrder: (number: string) =>
         send<WebOrder>("POST", `/api/v1/admin/online-orders/${encodeURIComponent(number)}/deliver`),
       /** Cancels; an order paid online is refunded in full through Razorpay. */

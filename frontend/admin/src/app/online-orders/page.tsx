@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { WebOrder } from "@vaabhi/api-client";
+import type { RefundStatus, WebOrder } from "@vaabhi/api-client";
 import { Button, cn } from "@vaabhi/ui";
 import { api } from "@/lib/api";
 import { describeError, rupees } from "@/lib/settings";
@@ -16,6 +16,12 @@ const STATUS: Record<Status, { label: string; tone: string }> = {
   SHIPPED: { label: "Shipped", tone: "bg-panel-2 text-ink" },
   DELIVERED: { label: "Delivered", tone: "bg-ok-soft text-ok" },
   CANCELLED: { label: "Cancelled", tone: "bg-panel-2 text-ink-soft" },
+};
+
+const REFUND: Record<RefundStatus, string> = {
+  PENDING: "on its way",
+  PROCESSED: "credited",
+  FAILED: "failed, check Razorpay",
 };
 
 const FILTERS: { label: string; status?: Status }[] = [
@@ -139,16 +145,42 @@ function OrderCard({ order, onChange }: Readonly<{ order: WebOrder; onChange: (o
         Ship to {order.contactName}, {order.contactPhone} — {order.addressLine1}
         {order.addressLine2 ? `, ${order.addressLine2}` : ""}, {order.city}, {order.state} {order.pincode}
       </p>
-      {order.status === "SHIPPED" && (order.courier || order.trackingNumber) && (
+      {(order.status === "SHIPPED" || order.status === "DELIVERED") && (order.courier || order.trackingNumber) && (
         <p className="mt-1 text-sm text-ink-soft">
           Sent with {order.courier ?? "—"}
           {order.trackingNumber && `, tracking ${order.trackingNumber}`}
+          {order.trackingStatus && (
+            <>
+              {" "}
+              · <strong className="font-medium text-ink">{order.trackingStatus}</strong>
+            </>
+          )}
+          {order.trackingUrl && (
+            <>
+              {" "}
+              ·{" "}
+              <a className="underline" href={order.trackingUrl} target="_blank" rel="noreferrer">
+                Track
+              </a>
+            </>
+          )}
+          {order.shippingLabelUrl && (
+            <>
+              {" "}
+              ·{" "}
+              <a className="underline" href={order.shippingLabelUrl} target="_blank" rel="noreferrer">
+                Print label
+              </a>
+            </>
+          )}
         </p>
       )}
       {order.status === "CANCELLED" && (
         <p className="mt-1 text-sm text-ink-soft">
           Cancelled{order.cancelReason ? `: ${order.cancelReason}` : ""}
-          {order.refundedRupees != null && ` · refunded ${rupees(order.refundedRupees)} (${order.refundId})`}
+          {order.refundedRupees != null &&
+            ` · refund ${rupees(order.refundedRupees)} ${REFUND[order.refundStatus ?? "PENDING"]} (${order.refundId})`}
+          {order.trackingStatus && ` · ${order.trackingStatus}`}
         </p>
       )}
 
@@ -187,8 +219,25 @@ function OrderCard({ order, onChange }: Readonly<{ order: WebOrder; onChange: (o
       {open && !shipping && (
         <div className="mt-3 flex flex-wrap gap-2">
           {order.status === "PLACED" && (
-            <Button disabled={busy} onClick={() => setShipping(true)}>
-              Ship
+            <>
+              <Button
+                disabled={busy}
+                onClick={() => void act(() => api.admin.shipOnlineOrderWithShiprocket(order.number))}
+              >
+                {busy ? "Booking courier…" : "Ship with Shiprocket"}
+              </Button>
+              <Button variant="secondary" disabled={busy} onClick={() => setShipping(true)}>
+                Ship by hand
+              </Button>
+            </>
+          )}
+          {order.status === "SHIPPED" && order.trackingUrl && (
+            <Button
+              variant="secondary"
+              disabled={busy}
+              onClick={() => void act(() => api.admin.refreshOnlineOrderTracking(order.number))}
+            >
+              Refresh tracking
             </Button>
           )}
           <Button
