@@ -1,9 +1,21 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { OrderReturn, WebOrder } from "@vaabhi/api-client";
+import type { OrderPage, OrderReturn, OrderSummary, WebOrder } from "@vaabhi/api-client";
 import { API, server } from "@/test/server";
+import OrdersPage from "../orders/page";
 import OnlineOrdersPage from "./page";
+import OnlineOrderPage from "./view/page";
+
+let search = new URLSearchParams("number=WEB-1001");
+const replaceRoute = vi.fn();
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: replaceRoute }),
+  useSearchParams: () => search,
+}));
+
+let role: "OWNER" | "STAFF" = "OWNER";
+vi.mock("@/components/app-shell", () => ({ useStaff: () => ({ role }) }));
 
 const BASE = `${API}/api/v1/admin/online-orders`;
 
@@ -84,8 +96,9 @@ function returned(patch: Partial<OrderReturn> = {}): OrderReturn {
 
 type Sent = { method: string; path: string; query: string; body: unknown };
 let sent: Sent[];
-let listed: WebOrder[];
+let current: WebOrder;
 
+/** Serves the order being looked at; each action answers with the given order (or a 503 like Shiprocket's). */
 function serve(answers: Record<string, WebOrder>) {
   sent = [];
   const record = async (request: Request) => {
@@ -94,9 +107,9 @@ function serve(answers: Record<string, WebOrder>) {
     sent.push({ method: request.method, path: url.pathname, query: url.search, body: text ? JSON.parse(text) : null });
   };
   server.use(
-    http.get(BASE, async ({ request }) => {
+    http.get(`${BASE}/:number`, async ({ request }) => {
       await record(request);
-      return HttpResponse.json(listed);
+      return HttpResponse.json(current);
     }),
     http.post(`${BASE}/*`, async ({ request }) => {
       await record(request);
@@ -112,12 +125,15 @@ function serve(answers: Record<string, WebOrder>) {
 const lastPost = (action: string) => sent.filter((s) => s.method === "POST" && s.path.endsWith(`/${action}`)).at(-1);
 
 beforeEach(() => {
-  listed = [order()];
+  current = order();
+  role = "OWNER";
+  search = new URLSearchParams("number=WEB-1001");
+  replaceRoute.mockReset();
   vi.restoreAllMocks();
 });
 
-describe("online orders", () => {
-  it("lists orders to ship and ships one with Shiprocket", async () => {
+describe("online order page", () => {
+  it("ships an order with Shiprocket and refreshes its tracking", async () => {
     const shipped = order({
       status: "SHIPPED",
       courier: "Delhivery Surface",
@@ -127,12 +143,12 @@ describe("online orders", () => {
       trackingStatus: "PICKUP SCHEDULED",
     });
     serve({ shiprocket: shipped, tracking: { ...shipped, trackingStatus: "IN TRANSIT" } });
-    render(<OnlineOrdersPage />);
+    render(<OnlineOrderPage />);
 
-    expect(await screen.findByText("WEB-1001")).toBeInTheDocument();
-    expect(sent[0]!.query).toBe("?status=PLACED");
-    expect(screen.getByText("To ship", { selector: "span" })).toBeInTheDocument();
+    expect(await screen.findByText("To ship")).toBeInTheDocument();
+    expect(sent[0]!.path).toBe("/api/v1/admin/online-orders/WEB-1001");
     expect(screen.getByText(/Ship to Meera Iyer/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Back/ })).toHaveAttribute("href", "/orders/?source=ONLINE");
 
     fireEvent.click(screen.getByRole("button", { name: "Ship with Shiprocket" }));
     expect(await screen.findByText(/Sent with Delhivery Surface, tracking AWB505/)).toBeInTheDocument();
@@ -149,8 +165,8 @@ describe("online orders", () => {
 
   it("ships by hand with a courier and tracking number, and shows API errors", async () => {
     serve({ ship: order({ status: "SHIPPED", courier: "Local", trackingNumber: "T-9" }) });
-    render(<OnlineOrdersPage />);
-    await screen.findByText("WEB-1001");
+    render(<OnlineOrderPage />);
+    await screen.findByText("To ship");
 
     fireEvent.click(screen.getByRole("button", { name: "Ship with Shiprocket" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Shiprocket is not set up yet");
@@ -163,7 +179,7 @@ describe("online orders", () => {
     expect(lastPost("ship")?.body).toEqual({ courier: "Local", trackingNumber: "T-9" });
   });
 
-  it("cancels with a full refund after confirming, and filters by status", async () => {
+  it("lets the owner cancel with a full refund after confirming", async () => {
     serve({
       cancel: order({
         status: "CANCELLED",
@@ -174,8 +190,8 @@ describe("online orders", () => {
       }),
     });
     const prompt = vi.spyOn(window, "prompt").mockReturnValueOnce(null).mockReturnValueOnce("Customer called");
-    render(<OnlineOrdersPage />);
-    await screen.findByText("WEB-1001");
+    render(<OnlineOrderPage />);
+    await screen.findByText("To ship");
 
     fireEvent.click(screen.getByRole("button", { name: "Cancel & refund" }));
     expect(prompt.mock.calls[0]![0]).toContain("₹ 18,500 will be refunded through Razorpay");
@@ -183,19 +199,23 @@ describe("online orders", () => {
     fireEvent.click(screen.getByRole("button", { name: "Cancel & refund" }));
     expect(await screen.findByText(/refund ₹ 18,500 on its way \(rfnd_1\)/)).toBeInTheDocument();
     expect(lastPost("cancel")?.body).toEqual({ reason: "Customer called" });
+  });
 
-    listed = [];
-    fireEvent.click(screen.getByRole("button", { name: "Cancelled" }));
-    expect(await screen.findByText("No orders here.")).toBeInTheDocument();
-    expect(sent.at(-1)!.query).toBe("?status=CANCELLED");
-    fireEvent.click(screen.getByRole("button", { name: "Returns" }));
-    await waitFor(() => expect(sent.at(-1)!.query).toBe("?openReturns=true"));
+  it("does not offer cancelling or refunds to counter staff", async () => {
+    role = "STAFF";
+    current = order({ status: "DELIVERED", returns: [returned({ status: "APPROVED" })] });
+    serve({});
+    render(<OnlineOrderPage />);
+    expect(await screen.findByText("WEB-1001-R1")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Cancel/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Items received, refund" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Book pickup with Shiprocket" })).toBeInTheDocument();
   });
 
   it("delivers a cash-on-delivery order as cash collected", async () => {
-    listed = [order({ paymentMethod: "COD", razorpayPaymentId: null, paidAt: null })];
+    current = order({ paymentMethod: "COD", razorpayPaymentId: null, paidAt: null });
     serve({ deliver: order({ paymentMethod: "COD", status: "DELIVERED" }) });
-    render(<OnlineOrdersPage />);
+    render(<OnlineOrderPage />);
     expect(await screen.findByText(/collect on delivery/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Delivered, cash collected" }));
     expect(await screen.findByText("Delivered", { selector: "span" })).toBeInTheDocument();
@@ -203,7 +223,7 @@ describe("online orders", () => {
 
   it("approves a return, books the pickup and records a refund for cash on delivery", async () => {
     const delivered = { status: "DELIVERED" as const, paymentMethod: "COD" as const, razorpayPaymentId: null };
-    listed = [order({ ...delivered, returns: [returned()] })];
+    current = order({ ...delivered, returns: [returned()] });
     serve({
       approve: order({ ...delivered, returns: [returned({ status: "APPROVED", shopNote: "Pickup tomorrow" })] }),
       pickup: order({
@@ -231,7 +251,7 @@ describe("online orders", () => {
       }),
     });
     vi.spyOn(window, "prompt").mockReturnValue("Pickup tomorrow");
-    render(<OnlineOrdersPage />);
+    render(<OnlineOrderPage />);
     const card = await screen.findByText("WEB-1001-R1").then((el) => el.closest("div.mt-3") as HTMLElement);
     expect(within(card).getByText("Return requested")).toBeInTheDocument();
     expect(within(card).getByText("Reason: Colour differs")).toBeInTheDocument();
@@ -253,13 +273,100 @@ describe("online orders", () => {
   });
 
   it("rejects a return with a reason", async () => {
-    listed = [order({ status: "DELIVERED", returns: [returned()] })];
+    current = order({ status: "DELIVERED", returns: [returned()] });
     serve({ reject: order({ status: "DELIVERED", returns: [returned({ status: "REJECTED", shopNote: "Worn" })] }) });
     vi.spyOn(window, "prompt").mockReturnValue("Worn");
-    render(<OnlineOrdersPage />);
+    render(<OnlineOrderPage />);
     await screen.findByText("WEB-1001-R1");
     fireEvent.click(screen.getByRole("button", { name: "Reject" }));
     expect(await screen.findByText("Return rejected")).toBeInTheDocument();
     expect(lastPost("reject")?.body).toEqual({ note: "Worn" });
+  });
+
+  it("sends the old Online orders address to Orders, filtered to online", () => {
+    render(<OnlineOrdersPage />);
+    expect(replaceRoute).toHaveBeenCalledWith("/orders/?source=ONLINE");
+  });
+});
+
+describe("orders list with shop and online orders", () => {
+  const row = (patch: Partial<OrderSummary>): OrderSummary => ({
+    id: 1,
+    number: "ORD-1001",
+    clientId: 7,
+    clientName: "Asha Rao",
+    clientPhone: "+919876543210",
+    status: "BOOKED",
+    orderDate: "2026-11-04",
+    deliveryDate: "2026-11-10",
+    trialDate: null,
+    itemCount: 1,
+    itemsLabel: "3 dart blouse",
+    totalRupees: 1200,
+    balanceRupees: 0,
+    overdue: false,
+    source: "SHOP",
+    onlineStatus: null,
+    openReturn: false,
+    ...patch,
+  });
+  let queries: string[];
+
+  function serveList(items: OrderSummary[]) {
+    queries = [];
+    server.use(
+      http.get(`${API}/api/v1/admin/orders`, ({ request }) => {
+        queries.push(new URL(request.url).search);
+        return HttpResponse.json({ items, total: items.length, page: 1, pageSize: 20 } satisfies OrderPage);
+      }),
+    );
+  }
+
+  it("tags each order Shop or Online and links online orders to their page", async () => {
+    search = new URLSearchParams();
+    serveList([
+      row({}),
+      row({
+        id: 9,
+        number: "WEB-1002",
+        clientId: null,
+        clientName: "Meera Iyer",
+        clientPhone: "+919876501234",
+        deliveryDate: null,
+        itemsLabel: "Kanjeevaram silk saree",
+        totalRupees: 24900,
+        source: "ONLINE",
+        onlineStatus: "PLACED",
+        openReturn: true,
+      }),
+    ]);
+    render(<OrdersPage />);
+
+    const online = (await screen.findByText(/WEB-1002/)).closest("a")!;
+    expect(online).toHaveAttribute("href", "/online-orders/view/?number=WEB-1002");
+    expect(within(online).getByText("Online")).toBeInTheDocument();
+    expect(within(online).getByText("To ship")).toBeInTheDocument();
+    expect(within(online).getByText("Return")).toBeInTheDocument();
+    expect(within(online).getByText(/ordered 4 Nov/)).toBeInTheDocument();
+
+    const shop = screen.getByText(/ORD-1001/).closest("a")!;
+    expect(shop).toHaveAttribute("href", "/orders/view/?id=1");
+    expect(within(shop).getByText("Shop")).toBeInTheDocument();
+    expect(within(shop).getByText(/due 10 Nov/)).toBeInTheDocument();
+    expect(queries[0]).toBe("?filter=OPEN&page=1&pageSize=20");
+  });
+
+  it("filters by where orders came from and shows returns to handle", async () => {
+    search = new URLSearchParams("source=ONLINE&filter=OPEN");
+    serveList([]);
+    render(<OrdersPage />);
+    expect(await screen.findByText("No orders here")).toBeInTheDocument();
+    expect(queries[0]).toBe("?filter=OPEN&page=1&pageSize=20&source=ONLINE");
+
+    fireEvent.click(screen.getByRole("radio", { name: "Shop" }));
+    await waitFor(() => expect(queries.at(-1)).toBe("?filter=OPEN&page=1&pageSize=20&source=SHOP"));
+    fireEvent.click(screen.getByRole("radio", { name: "Returns" }));
+    await waitFor(() => expect(queries.at(-1)).toBe("?filter=ALL&openReturns=true&page=1&pageSize=20&source=ONLINE"));
+    expect(await screen.findByText("No returns to handle.")).toBeInTheDocument();
   });
 });

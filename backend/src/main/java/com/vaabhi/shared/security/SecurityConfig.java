@@ -63,8 +63,15 @@ public class SecurityConfig {
                         .hasRole("ADMIN")
                         .requestMatchers("/api/v1/admin/settings/**")
                         .access(area("SETTINGS"))
+                        // Online orders: cancelling (refunds the payment) and refunding a return are for the owner.
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/v1/admin/online-orders/*/cancel",
+                                "/api/v1/admin/online-orders/returns/*/refund")
+                        .hasRole("OWNER")
                         .requestMatchers(
                                 "/api/v1/admin/orders/**",
+                                "/api/v1/admin/online-orders/**",
                                 "/api/v1/admin/clients/**",
                                 "/api/v1/admin/alterations/**",
                                 "/api/v1/admin/service-products/**",

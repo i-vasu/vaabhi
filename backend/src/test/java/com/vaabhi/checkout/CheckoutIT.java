@@ -176,6 +176,13 @@ class CheckoutIT {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.returns[0].status").value("REQUESTED"));
         String returnNumber = read(requested, "$.returns[0].number");
+        // The shop's Orders list can show just the orders with a return to handle.
+        mockMvc.perform(get("/api/v1/admin/orders")
+                        .param("openReturns", "true")
+                        .param("q", number)
+                        .with(OWNER))
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].openReturn").value(true));
         BigDecimal unit = decimal(read(requested, "$.lines[0].unitRupees"));
         assertThat(decimal(read(requested, "$.returns[0].itemsRupees"))).isEqualByComparingTo(unit);
 
@@ -357,6 +364,77 @@ class CheckoutIT {
                 .andExpect(status().isBadRequest());
         myOrder(number).andExpect(jsonPath("$.status").value("PENDING_PAYMENT"));
         assertThat(stock()).isEqualTo(10);
+    }
+
+    @Test
+    void websiteOrdersShowInTheShopsOrdersListAndCounterStaffShipButCannotRefund() throws Exception {
+        String number = read(checkout("COD", 1, "110001").andExpect(status().isCreated()), "$.orderNumber");
+        // Never-paid online orders stay out of the list.
+        String unpaid = read(checkout("ONLINE", 1, "110001").andExpect(status().isCreated()), "$.orderNumber");
+
+        var both = mockMvc.perform(
+                        get("/api/v1/admin/orders").param("pageSize", "100").with(OWNER))
+                .andExpect(status().isOk());
+        assertThat((java.util.List<String>) read(both, "$.items[*].source"))
+                .isNotEmpty()
+                .allMatch(source -> source.equals("SHOP") || source.equals("ONLINE"));
+        java.util.List<Object> mine = read(both, "$.items[?(@.number == '" + number + "')]");
+        assertThat(mine).hasSize(1);
+        assertThat((java.util.List<String>) read(both, "$.items[?(@.number == '" + unpaid + "')].number"))
+                .isEmpty();
+        mockMvc.perform(get("/api/v1/admin/orders")
+                        .param("source", "ONLINE")
+                        .param("filter", "OPEN")
+                        .param("q", number.toLowerCase(java.util.Locale.ROOT))
+                        .with(OWNER))
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].source").value("ONLINE"))
+                .andExpect(jsonPath("$.items[0].onlineStatus").value("PLACED"))
+                .andExpect(jsonPath("$.items[0].status").value("BOOKED"))
+                .andExpect(jsonPath("$.items[0].clientName").value("Meera Iyer"))
+                .andExpect(jsonPath("$.items[0].clientId").isEmpty())
+                .andExpect(jsonPath("$.items[0].deliveryDate").isEmpty())
+                .andExpect(jsonPath("$.items[0].balanceRupees").isNotEmpty());
+        mockMvc.perform(get("/api/v1/admin/orders")
+                        .param("source", "SHOP")
+                        .param("q", number)
+                        .with(OWNER))
+                .andExpect(jsonPath("$.total").value(0));
+        mockMvc.perform(get("/api/v1/admin/me/notifications").with(OWNER))
+                .andExpect(
+                        jsonPath("$.alerts[?(@.kind == 'TO_SHIP')].href").value("/orders/?source=ONLINE&filter=OPEN"));
+
+        // Counter staff (Orders permission) open and ship it, but cancelling and refunds are the owner's.
+        var counter = jwt().jwt(j -> j.subject("staff:1").claim("name", "Counter"))
+                .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("PERM_ORDERS"));
+        mockMvc.perform(get("/api/v1/admin/online-orders/" + number).with(counter))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.number").value(number));
+        mockMvc.perform(post("/api/v1/admin/online-orders/" + number + "/cancel")
+                        .with(counter)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"reason\":null}"))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/admin/online-orders/returns/" + number + "-R1/refund")
+                        .with(counter)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"amountRupees\":1,\"reference\":\"x\"}"))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/admin/online-orders/" + number + "/ship")
+                        .with(counter)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"courier\":\"Local\",\"trackingNumber\":null}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("SHIPPED"));
+        mockMvc.perform(get("/api/v1/admin/orders")
+                        .param("source", "ONLINE")
+                        .param("q", number)
+                        .with(counter))
+                .andExpect(jsonPath("$.items[0].status").value("READY"))
+                .andExpect(jsonPath("$.items[0].onlineStatus").value("SHIPPED"));
+        admin("/" + number + "/cancel", "{\"reason\":\"Owner cancels\"}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELLED"));
     }
 
     // --- helpers ------------------------------------------------------------------------------------------------

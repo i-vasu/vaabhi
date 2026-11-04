@@ -48,17 +48,28 @@ class OrderController {
 
     // --- orders -------------------------------------------------------------------------------------------------
 
+    /** Counter and website orders together; {@code source} narrows to one of them. */
     @GetMapping("/orders")
     OrderPage listOrders(
             @RequestParam(required = false) @Nullable String q,
             @RequestParam(defaultValue = "ALL") OrderService.Filter filter,
+            @RequestParam(required = false) OrderService.@Nullable Source source,
+            @RequestParam(defaultValue = "false") boolean openReturns,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @Nullable LocalDate from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @Nullable LocalDate to,
             @RequestParam(required = false) @Nullable Long clientId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
         return orders.list(
-                q, filter, from, to, clientId, ClientController.page(page), ClientController.pageSize(pageSize));
+                q,
+                filter,
+                source,
+                openReturns,
+                from,
+                to,
+                clientId,
+                ClientController.page(page),
+                ClientController.pageSize(pageSize));
     }
 
     @PostMapping("/orders")

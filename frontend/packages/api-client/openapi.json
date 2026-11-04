@@ -3499,6 +3499,30 @@
                         }
                     },
                     {
+                        "name": "source",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "SHOP",
+                                "ONLINE"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "openReturns",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    {
                         "name": "from",
                         "in": "query",
                         "required": false,
@@ -5765,6 +5789,36 @@
                                     "items": {
                                         "$ref": "#/components/schemas/WebOrder"
                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/online-orders/{number}": {
+            "get": {
+                "tags": [
+                    "admin-web-order-controller"
+                ],
+                "operationId": "getOnlineOrder",
+                "parameters": [
+                    {
+                        "name": "number",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebOrder"
                                 }
                             }
                         }
@@ -14335,7 +14389,10 @@
                         "type": "string"
                     },
                     "clientId": {
-                        "type": "integer",
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
                         "format": "int64"
                     },
                     "clientName": {
@@ -14359,7 +14416,10 @@
                         "format": "date"
                     },
                     "deliveryDate": {
-                        "type": "string",
+                        "type": [
+                            "string",
+                            "null"
+                        ],
                         "format": "date"
                     },
                     "trialDate": {
@@ -14384,6 +14444,22 @@
                     },
                     "overdue": {
                         "type": "boolean"
+                    },
+                    "source": {
+                        "type": "string",
+                        "enum": [
+                            "SHOP",
+                            "ONLINE"
+                        ]
+                    },
+                    "onlineStatus": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "openReturn": {
+                        "type": "boolean"
                     }
                 },
                 "required": [
@@ -14396,8 +14472,11 @@
                     "itemCount",
                     "itemsLabel",
                     "number",
+                    "onlineStatus",
+                    "openReturn",
                     "orderDate",
                     "overdue",
+                    "source",
                     "status",
                     "totalRupees",
                     "trialDate"

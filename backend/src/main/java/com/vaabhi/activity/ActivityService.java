@@ -153,6 +153,22 @@ public class ActivityService {
                 count(OrderService.Filter.DUE_TODAY),
                 "/orders/?filter=DUE_TODAY");
         alert(alerts, "READY", "orders ready for pickup", count(OrderService.Filter.READY), "/orders/?filter=READY");
+        alert(
+                alerts,
+                "TO_SHIP",
+                "online orders to ship",
+                (int) orders.list(
+                                null,
+                                OrderService.Filter.BOOKED,
+                                OrderService.Source.ONLINE,
+                                false,
+                                null,
+                                null,
+                                null,
+                                1,
+                                1)
+                        .total(),
+                "/orders/?source=ONLINE&filter=OPEN");
         alert(alerts, "LOW_STOCK", "stock items running low", inventory.lowStockCount(), "/stock/?low=1");
         alert(
                 alerts,

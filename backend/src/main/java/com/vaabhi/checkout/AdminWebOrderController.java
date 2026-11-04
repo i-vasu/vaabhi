@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Online orders for the shop (ADMIN role): list, ship (by hand or through Shiprocket),
- * track, deliver, cancel (with a Razorpay refund when paid online). */
+/**
+ * Online orders for the shop (Orders permission): read, ship (by hand or through Shiprocket), track, deliver and
+ * handle returns. Cancelling and refunding are for the owner alone (see SecurityConfig).
+ */
 @RestController
 @RequestMapping("/api/v1/admin/online-orders")
 class AdminWebOrderController {
@@ -33,6 +35,12 @@ class AdminWebOrderController {
             @RequestParam(name = "status", required = false) WebOrder.@Nullable Status status,
             @RequestParam(name = "openReturns", defaultValue = "false") boolean openReturns) {
         return service.recent(status, openReturns, 100);
+    }
+
+    /** One online order, for its page in the dashboard. */
+    @GetMapping("/{number}")
+    WebOrder getOnlineOrder(@PathVariable("number") String number) {
+        return service.shopOrder(number);
     }
 
     @PostMapping("/{number}/ship")

@@ -1972,6 +1972,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/online-orders/{number}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getOnlineOrder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/money/outstanding": {
         parameters: {
             query?: never;
@@ -3969,7 +3985,7 @@ export interface components {
             id: number;
             number: string;
             /** Format: int64 */
-            clientId: number;
+            clientId: number | null;
             clientName: string;
             clientPhone: string;
             /** @enum {string} */
@@ -3977,7 +3993,7 @@ export interface components {
             /** Format: date */
             orderDate: string;
             /** Format: date */
-            deliveryDate: string;
+            deliveryDate: string | null;
             /** Format: date */
             trialDate: string | null;
             /** Format: int32 */
@@ -3986,6 +4002,10 @@ export interface components {
             totalRupees: number;
             balanceRupees: number;
             overdue: boolean;
+            /** @enum {string} */
+            source: "SHOP" | "ONLINE";
+            onlineStatus: string | null;
+            openReturn: boolean;
         };
         Due: {
             /** @enum {string} */
@@ -6692,6 +6712,8 @@ export interface operations {
             query?: {
                 q?: string | null;
                 filter?: "ALL" | "OPEN" | "BOOKED" | "IN_PROGRESS" | "READY" | "DELIVERED" | "CANCELLED" | "OVERDUE" | "DUE_TODAY";
+                source?: "SHOP" | "ONLINE" | null;
+                openReturns?: boolean;
                 from?: string | null;
                 to?: string | null;
                 clientId?: number | null;
@@ -8108,6 +8130,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["WebOrder"][];
+                };
+            };
+        };
+    };
+    getOnlineOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebOrder"];
                 };
             };
         };

@@ -110,7 +110,9 @@ function CustomerView({ id }: { id: number }) {
                   {order.number} <StatusPill status={order.status} overdue={order.overdue} />
                 </>
               }
-              subtitle={`${order.itemsLabel} · due ${formatDate(order.deliveryDate)}`}
+              subtitle={
+                order.deliveryDate ? `${order.itemsLabel} · due ${formatDate(order.deliveryDate)}` : order.itemsLabel
+              }
               trailing={order.balanceRupees > 0 ? `${rupees(order.balanceRupees)} due` : rupees(order.totalRupees)}
             />
           ))}

@@ -24,7 +24,7 @@ describe("orders list", () => {
   it("starts on open orders and filters by status", async () => {
     render(<OrdersPage />);
 
-    expect(await screen.findByRole("link", { name: /ORD-2042 · Meera Iyer/ })).toHaveAttribute(
+    expect(await screen.findByRole("link", { name: /ORD-2042 Shop · Meera Iyer/ })).toHaveAttribute(
       "href",
       "/orders/view/?id=42",
     );

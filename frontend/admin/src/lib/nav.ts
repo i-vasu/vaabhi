@@ -47,7 +47,7 @@ export const primaryNav: NavItem[] = [
     href: "/orders/",
     label: "Orders",
     icon: BagIcon,
-    description: "Book, track, deliver and take payments",
+    description: "Shop and website orders: book, ship, deliver and take payments",
     permission: "ORDERS",
   },
   {
@@ -317,15 +317,7 @@ export const moreSections: { title: string; items: NavItem[] }[] = [
   },
   {
     title: "Catalogue",
-    items: [
-      products,
-      {
-        href: "/online-orders/",
-        label: "Online orders",
-        icon: BagIcon,
-        description: "Orders placed and paid on the website",
-      },
-    ],
+    items: [products],
   },
   {
     title: "Updates",

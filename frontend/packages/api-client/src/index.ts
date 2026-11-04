@@ -104,6 +104,8 @@ export type OrderStatus = Order["status"];
 export type OrderSchedule = Schemas["OrderSchedule"];
 export type OrderListParams = NonNullable<operations["listOrders"]["parameters"]["query"]>;
 export type OrderFilter = NonNullable<OrderListParams["filter"]>;
+/** Where an order came from: SHOP (booked at the counter) or ONLINE (placed on the website). */
+export type OrderSource = NonNullable<OrderListParams["source"]>;
 export type DiscountKind = OrderForm["discountKind"];
 export type PaymentForm = Schemas["PaymentForm"];
 export type PaymentMode = PaymentForm["mode"];
@@ -383,6 +385,8 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
       /** Online (storefront) orders, newest first; optionally one status. */
       onlineOrders: (status?: WebOrder["status"], openReturns = false) =>
         request<WebOrder[]>(`/api/v1/admin/online-orders${queryString({ status, openReturns })}`),
+      /** One online order, for its page. */
+      onlineOrder: (number: string) => request<WebOrder>(`/api/v1/admin/online-orders/${encodeURIComponent(number)}`),
       approveReturn: (returnNumber: string, form: ReturnDecisionForm) =>
         send<WebOrder>("POST", `/api/v1/admin/online-orders/returns/${encodeURIComponent(returnNumber)}/approve`, form),
       rejectReturn: (returnNumber: string, form: ReturnDecisionForm) =>

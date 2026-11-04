@@ -577,24 +577,32 @@ public class OrderService {
         DUE_TODAY
     }
 
+    /** Where an order came from: booked at the counter, or placed on the website. */
+    public enum Source {
+        SHOP,
+        ONLINE
+    }
+
     private record SummaryRow(
+            Source source,
             long id,
             String number,
-            long clientId,
+            @Nullable Long clientId,
             String firstName,
             @Nullable String lastName,
             String phone,
             OrderStatus status,
+            @Nullable String onlineStatus,
             LocalDate orderDate,
-            LocalDate deliveryDate,
+            @Nullable LocalDate deliveryDate,
             @Nullable LocalDate trialDate,
             int itemCount,
             @Nullable String itemsLabel,
             BigDecimal totalRupees,
-            BigDecimal paidRupees) {}
+            BigDecimal paidRupees,
+            boolean openReturn) {}
 
-    // Only constant SQL fragments (and fixed table names / enum-chosen ORDER BY) are joined; values are bound.
-    @SuppressWarnings("java:S2077")
+    /** Counter orders only, as before (e.g. for the dashboard's alerts). */
     @Transactional(readOnly = true)
     public OrderPage list(
             @Nullable String query,
@@ -604,8 +612,31 @@ public class OrderService {
             @Nullable Long clientId,
             int page,
             int pageSize) {
+        return list(query, filter, Source.SHOP, false, from, to, clientId, page, pageSize);
+    }
+
+    /**
+     * Counter and website orders together (the {@code order_list} view), newest first. {@code source} null means
+     * both. A website order waiting to ship counts as BOOKED and a shipped one as READY for the filters;
+     * {@code openReturns} keeps only website orders with a return being handled.
+     */
+    // Only constant SQL fragments (and fixed table names / enum-chosen ORDER BY) are joined; values are bound.
+    @SuppressWarnings("java:S2077")
+    @Transactional(readOnly = true)
+    public OrderPage list(
+            @Nullable String query,
+            Filter filter,
+            @Nullable Source source,
+            boolean openReturns,
+            @Nullable LocalDate from,
+            @Nullable LocalDate to,
+            @Nullable Long clientId,
+            int page,
+            int pageSize) {
         var today = LocalDate.now(clock);
         Map<String, Object> params = new LinkedHashMap<>();
+        params.put("source", source == null ? null : source.name());
+        params.put("openReturns", openReturns);
         params.put("q", ClientService.like(query));
         params.put("digits", ClientService.digits(query));
         params.put(
@@ -622,8 +653,10 @@ public class OrderService {
         params.put("to", to);
         params.put("client", clientId);
         var where = """
-                FROM shop_order o JOIN client c ON c.id = o.client_id
-                WHERE (CAST(:status AS varchar) IS NULL OR o.status = :status)
+                FROM order_list o
+                WHERE (CAST(:source AS varchar) IS NULL OR o.source = :source)
+                  AND (NOT :openReturns OR o.open_return)
+                  AND (CAST(:status AS varchar) IS NULL OR o.status = :status)
                   AND (NOT :open OR o.status NOT IN ('DELIVERED', 'CANCELLED'))
                   AND (NOT :overdue OR o.delivery_date < :today)
                   AND (NOT :dueToday OR o.delivery_date = :today)
@@ -631,8 +664,8 @@ public class OrderService {
                   AND (CAST(:to AS date) IS NULL OR o.order_date <= :to)
                   AND (CAST(:client AS bigint) IS NULL OR o.client_id = :client)
                   AND (CAST(:q AS varchar) IS NULL OR lower(o.number) LIKE :q
-                       OR lower(c.first_name || ' ' || coalesce(c.last_name, '')) LIKE :q
-                       OR (CAST(:digits AS varchar) IS NOT NULL AND c.phone LIKE :digits))
+                       OR lower(o.first_name || ' ' || coalesce(o.last_name, '')) LIKE :q
+                       OR (CAST(:digits AS varchar) IS NOT NULL AND o.phone LIKE :digits))
                 """;
         long total = jdbc.sql("SELECT COUNT(*) " + where)
                 .params(params)
@@ -642,13 +675,11 @@ public class OrderService {
         params.put("offset", (page - 1) * pageSize);
         var items = jdbc
                 .sql("""
-                        SELECT o.id, o.number, o.client_id, c.first_name, c.last_name, c.phone, o.status, o.order_date,
-                               o.delivery_date, o.trial_date, o.total_rupees, o.paid_rupees,
-                               (SELECT COALESCE(SUM(i.quantity), 0) FROM order_item i WHERE i.order_id = o.id)
-                                   AS item_count,
-                               (SELECT string_agg(i.description, ', ' ORDER BY i.position) FROM order_item i
-                                WHERE i.order_id = o.id) AS items_label
-                        """ + where + " ORDER BY o.order_date DESC, o.id DESC LIMIT :limit OFFSET :offset")
+                        SELECT o.source, o.id, o.number, o.client_id, o.first_name, o.last_name, o.phone, o.status,
+                               o.online_status, o.order_date, o.delivery_date, o.trial_date, o.total_rupees,
+                               o.paid_rupees, o.item_count, o.items_label, o.open_return
+                        """ + where
+                        + " ORDER BY o.order_date DESC, o.created_at DESC, o.id DESC LIMIT :limit OFFSET :offset")
                 .params(params)
                 .query(SummaryRow.class)
                 .list()
@@ -667,7 +698,12 @@ public class OrderService {
                         row.itemsLabel() == null ? "" : row.itemsLabel(),
                         row.totalRupees(),
                         row.totalRupees().subtract(row.paidRupees()),
-                        isOpen(row.status()) && row.deliveryDate().isBefore(today)))
+                        isOpen(row.status())
+                                && row.deliveryDate() != null
+                                && row.deliveryDate().isBefore(today),
+                        row.source(),
+                        row.onlineStatus(),
+                        row.openReturn()))
                 .toList();
         return new OrderPage(items, total, page, pageSize);
     }
