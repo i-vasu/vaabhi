@@ -41,7 +41,7 @@ class Msg91SmsSender implements SmsSender {
     @Override
     public void send(String phone, String template, Map<String, String> variables) {
         var templateId = properties.templates().get(template);
-        if (templateId == null || properties.authKey() == null) {
+        if (templateId == null || templateId.isBlank() || properties.authKey() == null) {
             throw new SmsException("MSG91 has no template id for '" + template + "'");
         }
         Map<String, String> recipient = new LinkedHashMap<>();

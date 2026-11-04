@@ -15,6 +15,7 @@ import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,11 @@ import org.springframework.web.server.ResponseStatusException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-/** Places online orders from the bag and records their Razorpay payments. */
+/**
+ * Online orders: placed from the bag (paid with Razorpay, or cash on delivery), then shipped, delivered or
+ * cancelled by the shop. Stock is taken when an order is PLACED and put back when it is cancelled; a cancelled
+ * order that was paid online is refunded through Razorpay. The customer gets an SMS at each step.
+ */
 @Service
 public class CheckoutService {
 
@@ -31,6 +36,7 @@ public class CheckoutService {
     private static final JsonMapper JSON = JsonMapper.builder().build();
     private static final String NUMBER = "number";
     private static final String CUSTOMER = "customer";
+    private static final String ID = "id";
 
     private final JdbcClient jdbc;
     private final BagQuoteService quotes;
@@ -38,6 +44,7 @@ public class CheckoutService {
     private final CustomerService customers;
     private final RazorpayClient razorpay;
     private final CheckoutProperties properties;
+    private final ApplicationEventPublisher events;
 
     CheckoutService(
             JdbcClient jdbc,
@@ -45,22 +52,28 @@ public class CheckoutService {
             CatalogStock stock,
             CustomerService customers,
             RazorpayClient razorpay,
-            CheckoutProperties properties) {
+            CheckoutProperties properties,
+            ApplicationEventPublisher events) {
         this.jdbc = jdbc;
         this.quotes = quotes;
         this.stock = stock;
         this.customers = customers;
         this.razorpay = razorpay;
         this.properties = properties;
+        this.events = events;
     }
 
+    // --- placing ------------------------------------------------------------------------------------------------
+
     /**
-     * Prices the bag again on the server, saves the order (waiting for payment) and creates its Razorpay order.
-     * Fails with 409 when an item is no longer available in the quantity asked for.
+     * Prices the bag again on the server and saves the order. ONLINE: waits for payment and gets a Razorpay order.
+     * COD: placed straight away (stock taken, SMS sent). Fails with 409 when an item is no longer available in the
+     * quantity asked for.
      */
     @Transactional
     public CheckoutStart start(long customerId, CheckoutRequest request) {
-        var keyId = razorpay.keyId();
+        var method = request.method();
+        var keyId = method == WebOrder.PaymentMethod.ONLINE ? razorpay.keyId() : null;
         var profile = customers.profile(customerId);
         var quote = quotes.quote(new BagQuoteRequest(request.lines().stream()
                 .map(l -> new BagQuoteRequest.Line(l.sku(), l.addonCode(), l.quantity()))
@@ -84,16 +97,19 @@ public class CheckoutService {
                         .single();
         var address = request.address();
         var phone = "+91" + address.phone();
+        var status = method == WebOrder.PaymentMethod.COD ? WebOrder.Status.PLACED : WebOrder.Status.PENDING_PAYMENT;
         long orderId = jdbc.sql("""
-                        INSERT INTO web_order (number, customer_id, contact_name, contact_phone, contact_email,
-                            address_line1, address_line2, city, state, pincode, items_rupees, shipping_rupees,
-                            total_rupees)
-                        VALUES (:number, :customer, :name, :phone, :email, :line1, :line2, :city, :state, :pincode,
-                            :items, :shipping, :total)
+                        INSERT INTO web_order (number, customer_id, status, payment_method, contact_name, contact_phone,
+                            contact_email, address_line1, address_line2, city, state, pincode, items_rupees,
+                            shipping_rupees, total_rupees)
+                        VALUES (:number, :customer, :status, :method, :name, :phone, :email, :line1, :line2, :city,
+                            :state, :pincode, :items, :shipping, :total)
                         RETURNING id
                         """)
                 .param(NUMBER, number)
                 .param(CUSTOMER, customerId)
+                .param("status", status.name())
+                .param("method", method.name())
                 .param("name", address.name().trim())
                 .param("phone", phone)
                 .param("email", profile.email())
@@ -135,13 +151,21 @@ public class CheckoutService {
                     .param("image", line.imageKey())
                     .update();
         }
-        var razorpayOrderId = razorpay.createOrder(total, number);
-        jdbc.sql("UPDATE web_order SET razorpay_order_id = :rzp WHERE id = :id")
-                .param("rzp", razorpayOrderId)
-                .param("id", orderId)
-                .update();
+        String razorpayOrderId = null;
+        if (method == WebOrder.PaymentMethod.ONLINE) {
+            razorpayOrderId = razorpay.createOrder(total, number);
+            jdbc.sql("UPDATE web_order SET razorpay_order_id = :rzp WHERE id = :id")
+                    .param("rzp", razorpayOrderId)
+                    .param(ID, orderId)
+                    .update();
+        } else {
+            stock.take(soldBySku(orderId));
+            publish(WebOrderEvent.Type.PLACED, number);
+        }
         return new CheckoutStart(
                 number,
+                status,
+                method,
                 total,
                 razorpayOrderId,
                 keyId,
@@ -156,7 +180,7 @@ public class CheckoutService {
     @Transactional
     public WebOrder confirm(long customerId, String number, PaymentConfirmation payment) {
         var order = order(customerId, number);
-        if (order.status() == WebOrder.Status.PAID) {
+        if (order.status() != WebOrder.Status.PENDING_PAYMENT && order.status() != WebOrder.Status.FAILED) {
             return order;
         }
         var expected = razorpayOrderId(number);
@@ -170,7 +194,7 @@ public class CheckoutService {
     }
 
     /**
-     * Razorpay's webhook: payment.captured / order.paid mark the order paid (in case the browser never came back),
+     * Razorpay's webhook: payment.captured / order.paid place the order (in case the browser never came back),
      * payment.failed marks a waiting order failed. Unknown events and orders are ignored.
      */
     @Transactional
@@ -181,7 +205,7 @@ public class CheckoutService {
         var event = JSON.readTree(body);
         var payment = event.path("payload").path("payment").path("entity");
         var orderId = text(payment, "order_id");
-        var paymentId = text(payment, "id");
+        var paymentId = text(payment, ID);
         if (orderId == null || paymentId == null) {
             return;
         }
@@ -192,37 +216,106 @@ public class CheckoutService {
                                 + " AND status = 'PENDING_PAYMENT'")
                         .param("rzp", orderId)
                         .update();
-            default ->
-                log.debug("Ignoring Razorpay event {}", event.path("event").asString(""));
+            default -> log.debug("Ignoring Razorpay event {}", event.path("event").asString(""));
         }
     }
 
-    /** Marks the order paid once (a repeat from the webhook or the browser does nothing) and takes its stock. */
+    /** Places a paid online order once (a repeat from the webhook or the browser does nothing) and takes stock. */
     private void markPaid(String razorpayOrderId, String razorpayPaymentId) {
-        var updated = jdbc.sql("""
-                        UPDATE web_order SET status = 'PAID', razorpay_payment_id = :payment, paid_at = now()
-                        WHERE razorpay_order_id = :rzp AND status <> 'PAID'
-                        RETURNING id
+        jdbc.sql("""
+                        UPDATE web_order SET status = 'PLACED', razorpay_payment_id = :payment, paid_at = now()
+                        WHERE razorpay_order_id = :rzp AND status IN ('PENDING_PAYMENT', 'FAILED')
+                        RETURNING id, number
                         """)
                 .param("payment", razorpayPaymentId)
                 .param("rzp", razorpayOrderId)
-                .query(Long.class)
-                .optional();
-        updated.ifPresent(id -> {
-            Map<String, Integer> sold = new LinkedHashMap<>();
-            jdbc.sql("SELECT sku, quantity FROM web_order_line WHERE order_id = :id")
-                    .param("id", id)
-                    .query((rs, n) -> Map.entry(rs.getString("sku"), rs.getInt("quantity")))
-                    .list()
-                    .forEach(e -> sold.merge(e.getKey(), e.getValue(), Integer::sum));
-            stock.take(sold);
-        });
+                .query((rs, n) -> Map.entry(rs.getLong(ID), rs.getString(NUMBER)))
+                .optional()
+                .ifPresent(placed -> {
+                    stock.take(soldBySku(placed.getKey()));
+                    publish(WebOrderEvent.Type.PLACED, placed.getValue());
+                });
     }
+
+    // --- the shop's actions -------------------------------------------------------------------------------------
+
+    /** Marks a placed order sent, with the courier and tracking number when there are any. */
+    @Transactional
+    public WebOrder ship(String number, ShipmentForm form) {
+        var order = byNumber(number);
+        if (order.status() != WebOrder.Status.PLACED) {
+            throw conflict("Only a placed order can be shipped (this one is " + label(order.status()) + ")");
+        }
+        jdbc.sql("""
+                        UPDATE web_order SET status = 'SHIPPED', shipped_at = now(), courier = :courier,
+                            tracking_number = :tracking
+                        WHERE number = :number
+                        """)
+                .param("courier", blankToNull(form.courier()))
+                .param("tracking", blankToNull(form.trackingNumber()))
+                .param(NUMBER, number)
+                .update();
+        publish(WebOrderEvent.Type.SHIPPED, number);
+        return byNumber(number);
+    }
+
+    /** Marks the order delivered; for cash on delivery this is when the money came in. */
+    @Transactional
+    public WebOrder deliver(String number) {
+        var order = byNumber(number);
+        if (order.status() != WebOrder.Status.PLACED && order.status() != WebOrder.Status.SHIPPED) {
+            throw conflict("Only a placed or shipped order can be delivered (this one is " + label(order.status()) + ")");
+        }
+        jdbc.sql("""
+                        UPDATE web_order SET status = 'DELIVERED', delivered_at = now(),
+                            paid_at = CASE WHEN payment_method = 'COD' THEN now() ELSE paid_at END
+                        WHERE number = :number
+                        """)
+                .param(NUMBER, number)
+                .update();
+        publish(WebOrderEvent.Type.DELIVERED, number);
+        return byNumber(number);
+    }
+
+    /**
+     * Cancels a placed or shipped order: the items go back into stock and, when it was paid online, the whole
+     * amount is refunded through Razorpay (if Razorpay refuses, nothing changes and the shop can try again).
+     */
+    @Transactional
+    public WebOrder cancel(String number, CancelWebOrderForm form) {
+        var order = byNumber(number);
+        if (order.status() != WebOrder.Status.PLACED && order.status() != WebOrder.Status.SHIPPED) {
+            throw conflict("Only a placed or shipped order can be cancelled (this one is " + label(order.status()) + ")");
+        }
+        String refundId = null;
+        BigDecimal refunded = null;
+        if (order.paymentMethod() == WebOrder.PaymentMethod.ONLINE && order.razorpayPaymentId() != null) {
+            refundId = razorpay.refund(order.razorpayPaymentId(), order.totalRupees(), number);
+            refunded = order.totalRupees();
+        }
+        long id = jdbc.sql("""
+                        UPDATE web_order SET status = 'CANCELLED', cancelled_at = now(), cancel_reason = :reason,
+                            refund_id = :refund, refunded_rupees = :refunded,
+                            refunded_at = CASE WHEN CAST(:refund AS varchar) IS NULL THEN NULL ELSE now() END
+                        WHERE number = :number
+                        RETURNING id
+                        """)
+                .param("reason", blankToNull(form.reason()))
+                .param("refund", refundId)
+                .param("refunded", refunded)
+                .param(NUMBER, number)
+                .query(Long.class)
+                .single();
+        stock.restore(soldBySku(id));
+        publish(WebOrderEvent.Type.CANCELLED, number);
+        return byNumber(number);
+    }
+
+    // --- reading ------------------------------------------------------------------------------------------------
 
     @Transactional(readOnly = true)
     public List<WebOrder> orders(long customerId) {
-        return jdbc
-                .sql(SELECT + " WHERE o.customer_id = :customer ORDER BY o.created_at DESC LIMIT 50")
+        return jdbc.sql(SELECT + " WHERE o.customer_id = :customer ORDER BY o.created_at DESC LIMIT 50")
                 .param(CUSTOMER, customerId)
                 .query(OrderRow.class)
                 .list()
@@ -239,11 +332,12 @@ public class CheckoutService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
     }
 
-    /** The shop's view: paid orders and those still waiting, newest first. */
+    /** The shop's view, newest first; optionally only orders in one status. */
     @Transactional(readOnly = true)
-    public List<WebOrder> recent(int limit) {
-        return jdbc
-                .sql(SELECT + " ORDER BY o.created_at DESC LIMIT :limit")
+    public List<WebOrder> recent(WebOrder.@Nullable Status status, int limit) {
+        return jdbc.sql(SELECT + " WHERE (CAST(:status AS varchar) IS NULL OR o.status = :status)"
+                        + " ORDER BY o.created_at DESC LIMIT :limit")
+                .param("status", status == null ? null : status.name())
                 .param("limit", limit)
                 .query(OrderRow.class)
                 .list()
@@ -252,10 +346,16 @@ public class CheckoutService {
                 .toList();
     }
 
+    private WebOrder byNumber(String number) {
+        return find(" WHERE o.number = :number", Map.of(NUMBER, number))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+    }
+
     private static final String SELECT = """
-            SELECT o.id, o.number, o.status, o.contact_name, o.contact_phone, o.contact_email, o.address_line1,
-                   o.address_line2, o.city, o.state, o.pincode, o.items_rupees, o.shipping_rupees, o.total_rupees,
-                   o.razorpay_payment_id, o.paid_at, o.created_at
+            SELECT o.id, o.number, o.status, o.payment_method, o.contact_name, o.contact_phone, o.contact_email,
+                   o.address_line1, o.address_line2, o.city, o.state, o.pincode, o.items_rupees, o.shipping_rupees,
+                   o.total_rupees, o.razorpay_payment_id, o.paid_at, o.courier, o.tracking_number, o.shipped_at,
+                   o.delivered_at, o.cancelled_at, o.cancel_reason, o.refunded_rupees, o.refund_id, o.created_at
             FROM web_order o
             """;
 
@@ -263,6 +363,7 @@ public class CheckoutService {
             long id,
             String number,
             WebOrder.Status status,
+            WebOrder.PaymentMethod paymentMethod,
             String contactName,
             String contactPhone,
             @Nullable String contactEmail,
@@ -276,14 +377,18 @@ public class CheckoutService {
             BigDecimal totalRupees,
             @Nullable String razorpayPaymentId,
             @Nullable OffsetDateTime paidAt,
+            @Nullable String courier,
+            @Nullable String trackingNumber,
+            @Nullable OffsetDateTime shippedAt,
+            @Nullable OffsetDateTime deliveredAt,
+            @Nullable OffsetDateTime cancelledAt,
+            @Nullable String cancelReason,
+            @Nullable BigDecimal refundedRupees,
+            @Nullable String refundId,
             OffsetDateTime createdAt) {}
 
     private Optional<WebOrder> find(String where, Map<String, Object> params) {
-        return jdbc.sql(SELECT + where)
-                .params(params)
-                .query(OrderRow.class)
-                .optional()
-                .map(this::withLines);
+        return jdbc.sql(SELECT + where).params(params).query(OrderRow.class).optional().map(this::withLines);
     }
 
     private WebOrder withLines(OrderRow o) {
@@ -291,10 +396,14 @@ public class CheckoutService {
                         SELECT sku, product_slug, name, colour_name, size, addon_name, blouse_size, quantity, unit_rupees,
                                addon_rupees, amount_rupees, image_key
                         FROM web_order_line WHERE order_id = :id ORDER BY position
-                        """).param("id", o.id()).query(WebOrder.Line.class).list();
+                        """)
+                .param(ID, o.id())
+                .query(WebOrder.Line.class)
+                .list();
         return new WebOrder(
                 o.number(),
                 o.status(),
+                o.paymentMethod(),
                 o.contactName(),
                 o.contactPhone(),
                 o.contactEmail(),
@@ -308,8 +417,40 @@ public class CheckoutService {
                 o.totalRupees(),
                 o.razorpayPaymentId(),
                 o.paidAt(),
+                o.courier(),
+                o.trackingNumber(),
+                o.shippedAt(),
+                o.deliveredAt(),
+                o.cancelledAt(),
+                o.cancelReason(),
+                o.refundedRupees(),
+                o.refundId(),
                 o.createdAt(),
                 lines);
+    }
+
+    /** Quantities of the order's lines by SKU (one SKU can appear with different add-ons). */
+    private Map<String, Integer> soldBySku(long orderId) {
+        Map<String, Integer> sold = new LinkedHashMap<>();
+        jdbc.sql("SELECT sku, quantity FROM web_order_line WHERE order_id = :id")
+                .param(ID, orderId)
+                .query((rs, n) -> Map.entry(rs.getString("sku"), rs.getInt("quantity")))
+                .list()
+                .forEach(e -> sold.merge(e.getKey(), e.getValue(), Integer::sum));
+        return sold;
+    }
+
+    private void publish(WebOrderEvent.Type type, String number) {
+        var order = byNumber(number);
+        events.publishEvent(new WebOrderEvent(
+                type,
+                number,
+                order.contactPhone(),
+                order.totalRupees(),
+                order.paymentMethod(),
+                order.courier(),
+                order.trackingNumber(),
+                order.refundedRupees()));
     }
 
     private @Nullable String razorpayOrderId(String number) {
@@ -318,6 +459,14 @@ public class CheckoutService {
                 .query(String.class)
                 .optional()
                 .orElse(null);
+    }
+
+    private static String label(WebOrder.Status status) {
+        return status.name().toLowerCase(java.util.Locale.ROOT).replace('_', ' ');
+    }
+
+    private static ResponseStatusException conflict(String message) {
+        return new ResponseStatusException(HttpStatus.CONFLICT, message);
     }
 
     private static @Nullable String text(JsonNode node, String field) {

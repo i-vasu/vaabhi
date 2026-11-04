@@ -9,9 +9,12 @@ import { formatPrice } from "@/lib/format";
 type Load = { state: "loading" } | { state: "signedOut" } | { state: "error" } | { state: "ready"; orders: WebOrder[] };
 
 const STATUS: Record<WebOrder["status"], string> = {
-  PAID: "Paid",
   PENDING_PAYMENT: "Payment pending",
   FAILED: "Payment failed",
+  PLACED: "Order placed",
+  SHIPPED: "Shipped",
+  DELIVERED: "Delivered",
+  CANCELLED: "Cancelled",
 };
 
 const day = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" });
@@ -61,7 +64,21 @@ export function OrdersView() {
           </div>
           <p className="mt-1 text-sm">
             {STATUS[order.status]} · <span className="tabular-nums">{formatPrice(order.totalRupees)}</span>
+            {order.paymentMethod === "COD" && order.status !== "DELIVERED" && order.status !== "CANCELLED"
+              ? " · pay on delivery"
+              : ""}
           </p>
+          {order.status === "SHIPPED" && (order.courier || order.trackingNumber) && (
+            <p className="mt-1 text-sm text-text-secondary">
+              Sent with {order.courier ?? "our delivery partner"}
+              {order.trackingNumber && `, tracking ${order.trackingNumber}`}
+            </p>
+          )}
+          {order.status === "CANCELLED" && order.refundedRupees !== null && order.refundedRupees !== undefined && (
+            <p className="mt-1 text-sm text-text-secondary">
+              {formatPrice(order.refundedRupees)} refunded to your original payment method
+            </p>
+          )}
           <ul className="mt-2 text-sm text-text-secondary">
             {order.lines.map((line) => (
               <li key={`${line.sku}|${line.addonName ?? ""}`}>

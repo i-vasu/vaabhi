@@ -59,7 +59,19 @@ type Stage =
   | { kind: "signedOut" }
   | { kind: "ready" }
   | { kind: "paying" }
-  | { kind: "paid"; order: WebOrder };
+  | { kind: "placed"; placed: Placed };
+
+type Method = WebOrder["paymentMethod"];
+
+/** What the thank-you screen shows. */
+type Placed = {
+  number: string;
+  totalRupees: number;
+  paymentMethod: Method;
+  addressLine1: string;
+  city: string;
+  pincode: string;
+};
 
 const input =
   "w-full rounded-sm border border-border-strong bg-bg-surface px-3 py-3 text-base outline-none focus:border-brand-primary";
@@ -91,6 +103,7 @@ export function CheckoutView() {
   const [address, setAddress] = useState<Address>(EMPTY_ADDRESS);
   const [error, setError] = useState<{ text: string; errors: FieldError[] } | null>(null);
   const [started, setStarted] = useState<CheckoutStart | null>(null);
+  const [method, setMethod] = useState<Method>("ONLINE");
 
   useEffect(() => {
     void syncSession().then((session: Session) => {
@@ -114,7 +127,7 @@ export function CheckoutView() {
       .catch(() => setError({ text: "We could not price your bag. Check your connection and try again.", errors: [] }));
   }, [lines]);
 
-  if (stage.kind === "paid") return <Paid order={stage.order} />;
+  if (stage.kind === "placed") return <Thanks placed={stage.placed} />;
   if (lines.length === 0) {
     return (
       <Shell>
@@ -149,26 +162,49 @@ export function CheckoutView() {
   const fieldError = (field: string) => error?.errors.find((e) => e.field === `address.${field}`)?.message;
   const set = (patch: Partial<Address>) => setAddress((a) => ({ ...a, ...patch }));
 
+  const placeOrder = (paymentMethod: Method) =>
+    post<CheckoutStart>("/api/auth/checkout", {
+      lines: lines.map((l) => ({
+        sku: l.sku,
+        addonCode: l.addonCode,
+        blouseSize: l.blouseSize,
+        quantity: l.quantity,
+      })),
+      address: { ...address, phone: address.phone.replaceAll(/\D/g, ""), line2: address.line2 || null },
+      paymentMethod,
+    });
+
+  const thanks = (number: string, totalRupees: number, paymentMethod: Method) => {
+    bagStore.write([]);
+    setStage({
+      kind: "placed",
+      placed: {
+        number,
+        totalRupees,
+        paymentMethod,
+        addressLine1: address.line1,
+        city: address.city,
+        pincode: address.pincode,
+      },
+    });
+  };
+
   async function pay() {
     setError(null);
     setStage({ kind: "paying" });
     try {
+      if (method === "COD") {
+        const placed = await placeOrder("COD");
+        thanks(placed.orderNumber, placed.totalRupees, "COD");
+        return;
+      }
       if (!(await loadRazorpay()) || !window.Razorpay) {
         throw new Error("Razorpay could not be loaded. Check your connection and try again.");
       }
       // Pressing Pay again after closing the payment window reuses the order already placed.
-      const order =
-        started ??
-        (await post<CheckoutStart>("/api/auth/checkout", {
-          lines: lines.map((l) => ({
-            sku: l.sku,
-            addonCode: l.addonCode,
-            blouseSize: l.blouseSize,
-            quantity: l.quantity,
-          })),
-          address: { ...address, phone: address.phone.replaceAll(/\D/g, ""), line2: address.line2 || null },
-        }));
+      const order = started ?? (await placeOrder("ONLINE"));
       setStarted(order);
+      if (!order.razorpayKeyId || !order.razorpayOrderId) throw new Error("Online payment is not available right now");
       const checkout = new window.Razorpay({
         key: order.razorpayKeyId,
         amount: order.amountPaise,
@@ -185,8 +221,7 @@ export function CheckoutView() {
             razorpaySignature: response.razorpay_signature,
           })
             .then((paid) => {
-              bagStore.write([]);
-              setStage({ kind: "paid", order: paid });
+              thanks(paid.number, paid.totalRupees, "ONLINE");
             })
             .catch((e: Error) => {
               setError({
@@ -216,6 +251,8 @@ export function CheckoutView() {
   }
 
   const paying = stage.kind === "paying";
+  let buttonLabel = method === "COD" ? `Place order · ${formatPrice(total)} on delivery` : `Pay ${formatPrice(total)}`;
+  if (paying) buttonLabel = method === "COD" ? "Placing order…" : "Opening payment…";
   return (
     <section className="mx-auto max-w-6xl px-4 pb-28 pt-6 md:pb-16">
       <h1 className="font-serif text-[32px] font-semibold">Checkout</h1>
@@ -288,13 +325,31 @@ export function CheckoutView() {
             required
           />
 
+          <fieldset className="mt-2 flex flex-col gap-2">
+            <legend className="mb-1 text-lg font-semibold">Payment</legend>
+            <PaymentChoice
+              value="ONLINE"
+              chosen={method}
+              onChoose={setMethod}
+              title="Pay now"
+              detail="UPI, cards or netbanking, securely with Razorpay"
+            />
+            <PaymentChoice
+              value="COD"
+              chosen={method}
+              onChoose={setMethod}
+              title="Cash on delivery"
+              detail="Pay in cash or UPI when the order arrives"
+            />
+          </fieldset>
+
           {error && (
             <p role="alert" className="text-sm text-feedback-error">
               {error.text}
             </p>
           )}
           <Button type="submit" disabled={paying || !quote} className="w-full md:hidden">
-            {paying ? "Opening payment…" : `Pay ${formatPrice(total)}`}
+            {buttonLabel}
           </Button>
         </form>
 
@@ -325,9 +380,11 @@ export function CheckoutView() {
             onClick={() => void pay()}
             className={cn("mt-4 hidden w-full md:inline-flex")}
           >
-            {paying ? "Opening payment…" : `Pay ${formatPrice(total)}`}
+            {buttonLabel}
           </Button>
-          <p className="mt-3 text-center text-xs text-text-muted">UPI · Cards · Netbanking — payments by Razorpay</p>
+          <p className="mt-3 text-center text-xs text-text-muted">
+            UPI · Cards · Netbanking by Razorpay · Cash on delivery
+          </p>
         </aside>
       </div>
     </section>
@@ -369,15 +426,46 @@ function TextField({
   );
 }
 
-function Paid({ order }: Readonly<{ order: WebOrder }>) {
+function PaymentChoice({
+  value,
+  chosen,
+  onChoose,
+  title,
+  detail,
+}: Readonly<{ value: Method; chosen: Method; onChoose: (method: Method) => void; title: string; detail: string }>) {
+  return (
+    <label
+      className={cn(
+        "flex cursor-pointer items-start gap-3 rounded-sm border p-3 has-[:focus-visible]:outline-2",
+        chosen === value ? "border-brand-primary" : "border-border-default",
+      )}
+    >
+      <input
+        type="radio"
+        name="payment"
+        value={value}
+        checked={chosen === value}
+        onChange={() => onChoose(value)}
+        className="mt-1"
+      />
+      <span>
+        <span className="block font-medium">{title}</span>
+        <span className="block text-sm text-text-muted">{detail}</span>
+      </span>
+    </label>
+  );
+}
+
+function Thanks({ placed }: Readonly<{ placed: Placed }>) {
   return (
     <Shell>
-      <p className="text-lg font-semibold">Thank you! Your order is confirmed.</p>
+      <p className="text-lg font-semibold">Thank you! Your order is placed.</p>
       <p className="mt-1 text-text-muted">
-        Order <strong className="text-text-primary">{order.number}</strong> · {formatPrice(order.totalRupees)} paid
+        Order <strong className="text-text-primary">{placed.number}</strong> · {formatPrice(placed.totalRupees)}{" "}
+        {placed.paymentMethod === "COD" ? "to pay on delivery" : "paid"}
       </p>
       <p className="mt-3 text-sm text-text-muted">
-        We will deliver to {order.addressLine1}, {order.city} {order.pincode}.
+        We will deliver to {placed.addressLine1}, {placed.city} {placed.pincode}. We will text you when it ships.
       </p>
       <div className="mt-6 flex justify-center gap-3">
         <Link href="/account/orders" className={buttonClasses("secondary")}>

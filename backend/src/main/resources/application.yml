@@ -73,6 +73,11 @@ vaabhi:
       auth-key: ${MSG91_AUTH_KEY:}
       templates:
         otp: ${MSG91_OTP_TEMPLATE_ID:}
+        # Online order updates (variables: order, amount, payment, courier, tracking, refund). Unset: not sent.
+        web_order_placed: ${MSG91_ORDER_PLACED_TEMPLATE_ID:}
+        web_order_shipped: ${MSG91_ORDER_SHIPPED_TEMPLATE_ID:}
+        web_order_delivered: ${MSG91_ORDER_DELIVERED_TEMPLATE_ID:}
+        web_order_cancelled: ${MSG91_ORDER_CANCELLED_TEMPLATE_ID:}
 
 management:
   endpoints:

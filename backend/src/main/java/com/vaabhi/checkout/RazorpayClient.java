@@ -23,8 +23,8 @@ import org.springframework.web.server.ResponseStatusException;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * The two Razorpay calls checkout needs: create an order (amount in paise, as Razorpay requires) and check the
- * HMAC-SHA256 signatures on payments and webhooks.
+ * The Razorpay calls checkout needs: create an order, refund a payment (amounts in paise, as Razorpay requires)
+ * and check the HMAC-SHA256 signatures on payments and webhooks.
  */
 @Component
 class RazorpayClient {
@@ -78,6 +78,41 @@ class RazorpayClient {
         } catch (java.io.IOException e) {
             log.warn("Razorpay order for {} failed", receipt, e);
             throw unavailable("Online payment is not available right now. Please try again.");
+        }
+    }
+
+    /** Refunds {@code amountRupees} of a captured payment (instant refund to the source) and returns the refund id. */
+    String refund(String paymentId, BigDecimal amountRupees, String receipt) {
+        requireConfigured();
+        var body = JSON.writeValueAsString(
+                Map.of("amount", paise(amountRupees), "receipt", receipt, "notes", Map.of("order", receipt)));
+        var response = post("/v1/payments/" + paymentId + "/refund", body, receipt);
+        return JSON.readTree(response).get("id").asString();
+    }
+
+    /** POSTs JSON with the API keys; any failure becomes a 503 the shop can retry. */
+    private String post(String path, String body, String receipt) {
+        var credentials = Base64.getEncoder()
+                .encodeToString((properties.keyId() + ":" + properties.keySecret()).getBytes(StandardCharsets.UTF_8));
+        var request = HttpRequest.newBuilder(URI.create(properties.baseUrl() + path))
+                .timeout(Duration.ofSeconds(20))
+                .header("Authorization", "Basic " + credentials)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+        try {
+            var response = http.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() / 100 != 2) {
+                log.warn("Razorpay {} for {} failed: {} {}", path, receipt, response.statusCode(), response.body());
+                throw unavailable("Razorpay refused the request. Please try again or check the Razorpay dashboard.");
+            }
+            return response.body();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw unavailable("Razorpay could not be reached. Please try again.");
+        } catch (java.io.IOException e) {
+            log.warn("Razorpay {} for {} failed", path, receipt, e);
+            throw unavailable("Razorpay could not be reached. Please try again.");
         }
     }
 

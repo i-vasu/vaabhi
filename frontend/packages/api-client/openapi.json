@@ -3606,6 +3606,116 @@
                 }
             }
         },
+        "/api/v1/admin/online-orders/{number}/ship": {
+            "post": {
+                "tags": [
+                    "admin-web-order-controller"
+                ],
+                "operationId": "shipOnlineOrder",
+                "parameters": [
+                    {
+                        "name": "number",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ShipmentForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/online-orders/{number}/deliver": {
+            "post": {
+                "tags": [
+                    "admin-web-order-controller"
+                ],
+                "operationId": "deliverOnlineOrder",
+                "parameters": [
+                    {
+                        "name": "number",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/online-orders/{number}/cancel": {
+            "post": {
+                "tags": [
+                    "admin-web-order-controller"
+                ],
+                "operationId": "cancelOnlineOrder",
+                "parameters": [
+                    {
+                        "name": "number",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CancelWebOrderForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/money/orders/{orderId}/invoice": {
             "get": {
                 "tags": [
@@ -5261,6 +5371,27 @@
                     "admin-web-order-controller"
                 ],
                 "operationId": "listOnlineOrders",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "PENDING_PAYMENT",
+                                "FAILED",
+                                "PLACED",
+                                "SHIPPED",
+                                "DELIVERED",
+                                "CANCELLED"
+                            ]
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -9907,8 +10038,18 @@
                         "type": "string",
                         "enum": [
                             "PENDING_PAYMENT",
-                            "PAID",
-                            "FAILED"
+                            "FAILED",
+                            "PLACED",
+                            "SHIPPED",
+                            "DELIVERED",
+                            "CANCELLED"
+                        ]
+                    },
+                    "paymentMethod": {
+                        "type": "string",
+                        "enum": [
+                            "ONLINE",
+                            "COD"
                         ]
                     },
                     "contactName": {
@@ -9963,6 +10104,57 @@
                         ],
                         "format": "date-time"
                     },
+                    "courier": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "trackingNumber": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "shippedAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "deliveredAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "cancelledAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "cancelReason": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "refundedRupees": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "refundId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
                     "createdAt": {
                         "type": "string",
                         "format": "date-time"
@@ -9977,21 +10169,30 @@
                 "required": [
                     "addressLine1",
                     "addressLine2",
+                    "cancelReason",
+                    "cancelledAt",
                     "city",
                     "contactEmail",
                     "contactName",
                     "contactPhone",
+                    "courier",
                     "createdAt",
+                    "deliveredAt",
                     "itemsRupees",
                     "lines",
                     "number",
                     "paidAt",
+                    "paymentMethod",
                     "pincode",
                     "razorpayPaymentId",
+                    "refundId",
+                    "refundedRupees",
+                    "shippedAt",
                     "shippingRupees",
                     "state",
                     "status",
-                    "totalRupees"
+                    "totalRupees",
+                    "trackingNumber"
                 ]
             },
             "Address": {
@@ -10059,11 +10260,22 @@
                     },
                     "address": {
                         "$ref": "#/components/schemas/Address"
+                    },
+                    "paymentMethod": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "ONLINE",
+                            "COD"
+                        ]
                     }
                 },
                 "required": [
                     "address",
-                    "lines"
+                    "lines",
+                    "paymentMethod"
                 ]
             },
             "CheckoutStart": {
@@ -10072,14 +10284,38 @@
                     "orderNumber": {
                         "type": "string"
                     },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "PENDING_PAYMENT",
+                            "FAILED",
+                            "PLACED",
+                            "SHIPPED",
+                            "DELIVERED",
+                            "CANCELLED"
+                        ]
+                    },
+                    "paymentMethod": {
+                        "type": "string",
+                        "enum": [
+                            "ONLINE",
+                            "COD"
+                        ]
+                    },
                     "totalRupees": {
                         "type": "number"
                     },
                     "razorpayOrderId": {
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "razorpayKeyId": {
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "amountPaise": {
                         "type": "integer",
@@ -10107,9 +10343,11 @@
                     "email",
                     "name",
                     "orderNumber",
+                    "paymentMethod",
                     "phone",
                     "razorpayKeyId",
                     "razorpayOrderId",
+                    "status",
                     "totalRupees"
                 ]
             },
@@ -11378,6 +11616,47 @@
                     "reason",
                     "refundMode",
                     "settlement"
+                ]
+            },
+            "ShipmentForm": {
+                "type": "object",
+                "properties": {
+                    "courier": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 60,
+                        "minLength": 0
+                    },
+                    "trackingNumber": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 60,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "courier",
+                    "trackingNumber"
+                ]
+            },
+            "CancelWebOrderForm": {
+                "type": "object",
+                "properties": {
+                    "reason": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 200,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "reason"
                 ]
             },
             "Invoice": {

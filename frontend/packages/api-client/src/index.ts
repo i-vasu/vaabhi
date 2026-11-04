@@ -183,6 +183,8 @@ export type CheckoutRequest = Schemas["CheckoutRequest"];
 export type CheckoutStart = Schemas["CheckoutStart"];
 export type PaymentConfirmation = Schemas["PaymentConfirmation"];
 export type WebOrder = Schemas["WebOrder"];
+export type ShipmentForm = Schemas["ShipmentForm"];
+export type CancelWebOrderForm = Schemas["CancelWebOrderForm"];
 
 /** Field-level message from the API, e.g. `{ field: "variants[0].priceRupees", message: "must be greater than 0" }`. */
 export type FieldError = { field: string; message: string };
@@ -349,8 +351,16 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         }),
     },
     admin: {
-      /** Online (storefront) orders, newest first. */
-      onlineOrders: () => request<WebOrder[]>("/api/v1/admin/online-orders"),
+      /** Online (storefront) orders, newest first; optionally one status. */
+      onlineOrders: (status?: WebOrder["status"]) =>
+        request<WebOrder[]>(`/api/v1/admin/online-orders${queryString({ status })}`),
+      shipOnlineOrder: (number: string, shipment: ShipmentForm) =>
+        send<WebOrder>("POST", `/api/v1/admin/online-orders/${encodeURIComponent(number)}/ship`, shipment),
+      deliverOnlineOrder: (number: string) =>
+        send<WebOrder>("POST", `/api/v1/admin/online-orders/${encodeURIComponent(number)}/deliver`),
+      /** Cancels; an order paid online is refunded in full through Razorpay. */
+      cancelOnlineOrder: (number: string, form: CancelWebOrderForm) =>
+        send<WebOrder>("POST", `/api/v1/admin/online-orders/${encodeURIComponent(number)}/cancel`, form),
       /** The signed-in staff member. */
       me: () => request<StaffProfile>("/api/v1/admin/me"),
       changePassword: (change: PasswordChange) => send<void>("PUT", "/api/v1/admin/me/password", change),

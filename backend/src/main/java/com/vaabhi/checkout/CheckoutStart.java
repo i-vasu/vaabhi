@@ -4,15 +4,18 @@ import java.math.BigDecimal;
 import org.jspecify.annotations.Nullable;
 
 /**
- * What the browser needs to open Razorpay Checkout for an order just placed.
+ * The order just placed. For ONLINE orders it carries what the browser needs to open Razorpay Checkout; COD orders
+ * are already PLACED and need nothing more.
  *
  * @param amountPaise the total in paise, as Razorpay Checkout expects it (the order itself is in rupees)
  */
 public record CheckoutStart(
         String orderNumber,
+        WebOrder.Status status,
+        WebOrder.PaymentMethod paymentMethod,
         BigDecimal totalRupees,
-        String razorpayOrderId,
-        String razorpayKeyId,
+        @Nullable String razorpayOrderId,
+        @Nullable String razorpayKeyId,
         long amountPaise,
         String currency,
         String name,

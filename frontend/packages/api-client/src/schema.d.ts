@@ -1188,6 +1188,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/online-orders/{number}/ship": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["shipOnlineOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/online-orders/{number}/deliver": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["deliverOnlineOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/online-orders/{number}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["cancelOnlineOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/money/orders/{orderId}/invoice": {
         parameters: {
             query?: never;
@@ -2826,7 +2874,9 @@ export interface components {
         WebOrder: {
             number: string;
             /** @enum {string} */
-            status: "PENDING_PAYMENT" | "PAID" | "FAILED";
+            status: "PENDING_PAYMENT" | "FAILED" | "PLACED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+            /** @enum {string} */
+            paymentMethod: "ONLINE" | "COD";
             contactName: string;
             contactPhone: string;
             contactEmail: string | null;
@@ -2841,6 +2891,17 @@ export interface components {
             razorpayPaymentId: string | null;
             /** Format: date-time */
             paidAt: string | null;
+            courier: string | null;
+            trackingNumber: string | null;
+            /** Format: date-time */
+            shippedAt: string | null;
+            /** Format: date-time */
+            deliveredAt: string | null;
+            /** Format: date-time */
+            cancelledAt: string | null;
+            cancelReason: string | null;
+            refundedRupees: number | null;
+            refundId: string | null;
             /** Format: date-time */
             createdAt: string;
             lines: components["schemas"]["Line"][];
@@ -2857,12 +2918,18 @@ export interface components {
         CheckoutRequest: {
             lines: components["schemas"]["Line"][];
             address: components["schemas"]["Address"];
+            /** @enum {string|null} */
+            paymentMethod: "ONLINE" | "COD" | null;
         };
         CheckoutStart: {
             orderNumber: string;
+            /** @enum {string} */
+            status: "PENDING_PAYMENT" | "FAILED" | "PLACED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+            /** @enum {string} */
+            paymentMethod: "ONLINE" | "COD";
             totalRupees: number;
-            razorpayOrderId: string;
-            razorpayKeyId: string;
+            razorpayOrderId: string | null;
+            razorpayKeyId: string | null;
             /** Format: int64 */
             amountPaise: number;
             currency: string;
@@ -3164,6 +3231,13 @@ export interface components {
             settlement: "REFUND" | "KEEP" | null;
             /** @enum {string|null} */
             refundMode: "CASH" | "UPI" | "CARD" | "BANK" | null;
+            reason: string | null;
+        };
+        ShipmentForm: {
+            courier: string | null;
+            trackingNumber: string | null;
+        };
+        CancelWebOrderForm: {
             reason: string | null;
         };
         Invoice: {
@@ -6447,6 +6521,80 @@ export interface operations {
             };
         };
     };
+    shipOnlineOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShipmentForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebOrder"];
+                };
+            };
+        };
+    };
+    deliverOnlineOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebOrder"];
+                };
+            };
+        };
+    };
+    cancelOnlineOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelWebOrderForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebOrder"];
+                };
+            };
+        };
+    };
     getOrderInvoice: {
         parameters: {
             query?: never;
@@ -7481,7 +7629,9 @@ export interface operations {
     };
     listOnlineOrders: {
         parameters: {
-            query?: never;
+            query?: {
+                status?: "PENDING_PAYMENT" | "FAILED" | "PLACED" | "SHIPPED" | "DELIVERED" | "CANCELLED" | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
