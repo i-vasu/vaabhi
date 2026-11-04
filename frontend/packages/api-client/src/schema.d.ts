@@ -612,6 +612,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/customer/orders/{number}/pay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["payOrderAgain"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customer/orders/{number}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["cancelMyOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customer/orders/{number}/returns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["requestReturn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/customer/checkout": {
         parameters: {
             query?: never;
@@ -1214,6 +1262,70 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["shipOnlineOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/online-orders/returns/{returnNumber}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["approveReturn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/online-orders/returns/{returnNumber}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["rejectReturn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/online-orders/returns/{returnNumber}/pickup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["bookReturnPickup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/online-orders/returns/{returnNumber}/refund": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["refundReturn"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2508,6 +2620,8 @@ export interface components {
             sareeLengthM: number | null;
             blouseIncluded: boolean;
             blouseLengthM: number | null;
+            /** Format: int32 */
+            shippingWeightGrams: number | null;
             attributes: {
                 [key: string]: string[];
             };
@@ -2542,6 +2656,8 @@ export interface components {
             sareeLengthM: number | null;
             blouseIncluded: boolean;
             blouseLengthM: number | null;
+            /** Format: int32 */
+            shippingWeightGrams: number | null;
             attributes: {
                 [key: string]: string[];
             };
@@ -2905,6 +3021,8 @@ export interface components {
             razorpaySignature: string;
         };
         Line: {
+            /** Format: int32 */
+            position: number;
             sku: string;
             productSlug: string;
             name: string;
@@ -2956,8 +3074,11 @@ export interface components {
             trackingUrl: string | null;
             shippingLabelUrl: string | null;
             /** Format: date-time */
+            returnableUntil: string | null;
+            /** Format: date-time */
             createdAt: string;
             lines: components["schemas"]["Line"][];
+            returns: components["schemas"]["OrderReturn"][];
         };
         Address: {
             name: string;
@@ -3292,6 +3413,52 @@ export interface components {
         };
         CancelWebOrderForm: {
             reason: string | null;
+        };
+        OrderReturn: {
+            number: string;
+            /** @enum {string} */
+            status: "REQUESTED" | "APPROVED" | "REJECTED" | "REFUNDED";
+            reason: string;
+            shopNote: string | null;
+            itemsRupees: number;
+            refundRupees: number | null;
+            /** @enum {string|null} */
+            refundMethod: "RAZORPAY" | "MANUAL" | null;
+            refundReference: string | null;
+            /** @enum {string|null} */
+            refundStatus: "PENDING" | "PROCESSED" | "FAILED" | null;
+            pickupCourier: string | null;
+            pickupAwb: string | null;
+            pickupStatus: string | null;
+            /** Format: date-time */
+            requestedAt: string;
+            /** Format: date-time */
+            refundedAt: string | null;
+            lines: components["schemas"]["ReturnLine"][];
+        };
+        ReturnLine: {
+            /** Format: int32 */
+            position: number;
+            name: string;
+            /** Format: int32 */
+            quantity: number;
+        };
+        ReturnRequestForm: {
+            reason: string;
+            items: components["schemas"]["ReturnItem"][];
+        };
+        ReturnItem: {
+            /** Format: int32 */
+            position: number;
+            /** Format: int32 */
+            quantity: number;
+        };
+        ReturnDecisionForm: {
+            note: string | null;
+        };
+        ReturnRefundForm: {
+            amountRupees: number;
+            reference: string | null;
         };
         Invoice: {
             /** Format: int64 */
@@ -5504,6 +5671,80 @@ export interface operations {
             };
         };
     };
+    payOrderAgain: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CheckoutStart"];
+                };
+            };
+        };
+    };
+    cancelMyOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelWebOrderForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebOrder"];
+                };
+            };
+        };
+    };
+    requestReturn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReturnRequestForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebOrder"];
+                };
+            };
+        };
+    };
     startCheckout: {
         parameters: {
             query?: never;
@@ -6610,6 +6851,106 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ShipmentForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebOrder"];
+                };
+            };
+        };
+    };
+    approveReturn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                returnNumber: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReturnDecisionForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebOrder"];
+                };
+            };
+        };
+    };
+    rejectReturn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                returnNumber: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReturnDecisionForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebOrder"];
+                };
+            };
+        };
+    };
+    bookReturnPickup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                returnNumber: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebOrder"];
+                };
+            };
+        };
+    };
+    refundReturn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                returnNumber: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReturnRefundForm"];
             };
         };
         responses: {
@@ -7752,6 +8093,7 @@ export interface operations {
         parameters: {
             query?: {
                 status?: "PENDING_PAYMENT" | "FAILED" | "PLACED" | "SHIPPED" | "DELIVERED" | "CANCELLED" | null;
+                openReturns?: boolean;
             };
             header?: never;
             path?: never;

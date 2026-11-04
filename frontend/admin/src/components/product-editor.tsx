@@ -294,6 +294,15 @@ export function ProductEditor({ id, notice, problem }: Readonly<{ id?: number; n
               onChange={(e) => update({ careInstructions: e.target.value })}
             />
           </Field>
+          <Field label="Parcel weight per piece (grams)" error={fieldError("shippingWeightGrams")}>
+            <input
+              className={input}
+              inputMode="numeric"
+              placeholder="Shop default"
+              value={state.shippingWeightGrams}
+              onChange={(e) => update({ shippingWeightGrams: e.target.value })}
+            />
+          </Field>
           <Field label="Description" error={fieldError("description")} className="md:col-span-2">
             <textarea
               className={cn(input, "h-28")}

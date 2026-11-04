@@ -55,6 +55,7 @@ class AdminProductControllerTest {
             null,
             false,
             null,
+            null,
             Map.of(),
             List.of(),
             List.of(),

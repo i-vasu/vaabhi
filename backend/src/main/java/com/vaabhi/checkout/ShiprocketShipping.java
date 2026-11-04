@@ -1,5 +1,11 @@
 package com.vaabhi.checkout;
 
+import com.vaabhi.catalog.CatalogStock;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -19,11 +25,16 @@ class ShiprocketShipping {
     private static final JsonMapper JSON = JsonMapper.builder().build();
 
     private final CheckoutService orders;
+    private final WebOrderReturns returns;
     private final ShiprocketClient shiprocket;
+    private final CatalogStock catalog;
 
-    ShiprocketShipping(CheckoutService orders, ShiprocketClient shiprocket) {
+    ShiprocketShipping(
+            CheckoutService orders, WebOrderReturns returns, ShiprocketClient shiprocket, CatalogStock catalog) {
         this.orders = orders;
+        this.returns = returns;
         this.shiprocket = shiprocket;
+        this.catalog = catalog;
     }
 
     WebOrder ship(String number) {
@@ -35,7 +46,7 @@ class ShiprocketShipping {
         var shipment = orders.shipment(number);
         long shipmentId;
         if (shipment.shipmentId() == null) {
-            var created = shiprocket.createOrder(order);
+            var created = shiprocket.createOrder(order, weightKg(order, null));
             orders.recordShiprocketOrder(number, created.orderId(), created.shipmentId());
             shipmentId = created.shipmentId();
         } else {
@@ -90,5 +101,53 @@ class ShiprocketShipping {
         if (awb != null && status != null) {
             orders.trackingUpdate(awb, status);
         }
+    }
+
+    /**
+     * Books the courier to collect an approved return from the customer and bring it back to the pickup address.
+     * Like shipping, a retry after a failed step carries on where it stopped.
+     */
+    WebOrder bookReturnPickup(String returnNumber) {
+        var ref = returns.find(returnNumber);
+        if (ref.status() != WebOrder.ReturnStatus.APPROVED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Approve the return before booking its pickup");
+        }
+        if (ref.pickupAwb() != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "The pickup is already booked");
+        }
+        var order = orders.shopOrder(ref.orderNumber());
+        var request = order.returns().stream()
+                .filter(r -> r.number().equals(returnNumber))
+                .findFirst()
+                .orElseThrow();
+        Map<Integer, Integer> quantities = new LinkedHashMap<>();
+        request.lines().forEach(l -> quantities.merge(l.position(), l.quantity(), Integer::sum));
+        long shipmentId;
+        if (ref.shipmentId() == null) {
+            var created = shiprocket.createReturn(order, returnNumber, quantities, weightKg(order, quantities));
+            returns.recordPickupOrder(returnNumber, created.orderId(), created.shipmentId());
+            shipmentId = created.shipmentId();
+        } else {
+            shipmentId = ref.shipmentId();
+        }
+        var awb = shiprocket.assignAwb(shipmentId, returnNumber, true);
+        returns.recordPickupAwb(returnNumber, awb.courierName(), awb.awbCode());
+        return orders.shopOrder(ref.orderNumber());
+    }
+
+    /**
+     * The parcel weight: each product's packed weight (or the default) times the quantity.
+     *
+     * @param quantities pieces by line position; null for the whole order
+     */
+    private BigDecimal weightKg(WebOrder order, @Nullable Map<Integer, Integer> quantities) {
+        var weights = catalog.shippingWeightGrams(
+                order.lines().stream().map(WebOrder.Line::sku).toList());
+        long grams = 0;
+        for (var line : order.lines()) {
+            int units = quantities == null ? line.quantity() : quantities.getOrDefault(line.position(), 0);
+            grams += (long) units * weights.getOrDefault(line.sku(), shiprocket.defaultWeightGrams());
+        }
+        return BigDecimal.valueOf(Math.max(grams, 100)).divide(BigDecimal.valueOf(1000), 2, RoundingMode.UP);
     }
 }

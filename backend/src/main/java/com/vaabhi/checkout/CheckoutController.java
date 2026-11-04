@@ -20,9 +20,11 @@ import org.springframework.web.server.ResponseStatusException;
 class CheckoutController {
 
     private final CheckoutService service;
+    private final WebOrderReturns returns;
 
-    CheckoutController(CheckoutService service) {
+    CheckoutController(CheckoutService service, WebOrderReturns returns) {
         this.service = service;
+        this.returns = returns;
     }
 
     /** Places the order and returns what Razorpay Checkout needs to take the payment. */
@@ -39,6 +41,31 @@ class CheckoutController {
             @PathVariable("number") String number,
             @Valid @RequestBody PaymentConfirmation payment) {
         return service.confirm(customerId(jwt), number, payment);
+    }
+
+    /** "Pay now" on an unpaid online order: what Razorpay Checkout needs to take the payment again. */
+    @PostMapping("/orders/{number}/pay")
+    CheckoutStart payOrderAgain(@AuthenticationPrincipal Jwt jwt, @PathVariable("number") String number) {
+        return service.payAgain(customerId(jwt), number);
+    }
+
+    /** Cancels an order that has not been shipped yet; an online payment is refunded in full. */
+    @PostMapping("/orders/{number}/cancel")
+    WebOrder cancelMyOrder(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("number") String number,
+            @Valid @RequestBody CancelWebOrderForm form) {
+        return service.cancelByCustomer(customerId(jwt), number, form);
+    }
+
+    /** Asks to return items of a delivered order (within the return window). */
+    @PostMapping("/orders/{number}/returns")
+    @ResponseStatus(HttpStatus.CREATED)
+    WebOrder requestReturn(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("number") String number,
+            @Valid @RequestBody ReturnRequestForm form) {
+        return returns.request(customerId(jwt), number, form);
     }
 
     @GetMapping("/orders")

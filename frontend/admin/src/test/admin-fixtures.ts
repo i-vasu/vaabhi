@@ -35,6 +35,7 @@ export const product = (overrides: Partial<AdminProduct> = {}): AdminProduct => 
   sareeLengthM: 5.5,
   blouseIncluded: true,
   blouseLengthM: 0.8,
+  shippingWeightGrams: null,
   attributes: { fabric: ["silk"] },
   variants: [
     {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { RefundStatus, WebOrder } from "@vaabhi/api-client";
+import type { OrderReturn, RefundStatus, WebOrder } from "@vaabhi/api-client";
 import { Button, cn } from "@vaabhi/ui";
 import { api } from "@/lib/api";
 import { describeError, rupees } from "@/lib/settings";
@@ -24,21 +24,33 @@ const REFUND: Record<RefundStatus, string> = {
   FAILED: "failed, check Razorpay",
 };
 
-const FILTERS: { label: string; status?: Status }[] = [
+const FILTERS: { label: string; status?: Status; openReturns?: boolean }[] = [
   { label: "All" },
   { label: "To ship", status: "PLACED" },
   { label: "Shipped", status: "SHIPPED" },
   { label: "Delivered", status: "DELIVERED" },
+  { label: "Returns", openReturns: true },
   { label: "Cancelled", status: "CANCELLED" },
 ];
+
+const RETURN: Record<OrderReturn["status"], { label: string; tone: string }> = {
+  REQUESTED: { label: "Return requested", tone: "bg-warn-soft text-warn" },
+  APPROVED: { label: "Return approved, waiting for the items", tone: "bg-accent-soft text-accent-ink" },
+  REJECTED: { label: "Return rejected", tone: "bg-panel-2 text-ink-soft" },
+  REFUNDED: { label: "Returned and refunded", tone: "bg-ok-soft text-ok" },
+};
 
 const when = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
 const input = "rounded-md border border-line-strong bg-field px-2.5 py-1.5 text-sm";
 
 /** Orders placed on the website, newest first: what to send and where, then ship, deliver or cancel them. */
 export default function OnlineOrdersPage() {
-  const [filter, setFilter] = useState<Status | undefined>("PLACED");
-  const orders = useLoad(() => api.admin.onlineOrders(filter), [filter]);
+  const [filterLabel, setFilterLabel] = useState("To ship");
+  const filter = FILTERS.find((f) => f.label === filterLabel) ?? { label: "All" };
+  const orders = useLoad(
+    () => api.admin.onlineOrders(filter.status, filter.openReturns ?? false),
+    [filter.status, filter.openReturns],
+  );
 
   const replace = (changed: WebOrder) =>
     orders.setValue((orders.value ?? []).map((o) => (o.number === changed.number ? changed : o)));
@@ -51,11 +63,11 @@ export default function OnlineOrdersPage() {
           <button
             key={f.label}
             type="button"
-            aria-pressed={filter === f.status}
-            onClick={() => setFilter(f.status)}
+            aria-pressed={filterLabel === f.label}
+            onClick={() => setFilterLabel(f.label)}
             className={cn(
               "rounded-full border px-3 py-1 text-sm",
-              filter === f.status ? "border-accent bg-accent text-white" : "border-line-strong",
+              filterLabel === f.label ? "border-accent bg-accent text-white" : "border-line-strong",
             )}
           >
             {f.label}
@@ -184,6 +196,10 @@ function OrderCard({ order, onChange }: Readonly<{ order: WebOrder; onChange: (o
         </p>
       )}
 
+      {order.returns.map((r) => (
+        <ReturnCard key={r.number} order={order} request={r} onChange={onChange} />
+      ))}
+
       {shipping && (
         <form
           className="mt-3 flex flex-wrap items-end gap-2"
@@ -258,5 +274,149 @@ function OrderCard({ order, onChange }: Readonly<{ order: WebOrder; onChange: (o
         </p>
       )}
     </li>
+  );
+}
+
+function ReturnCard({
+  order,
+  request,
+  onChange,
+}: Readonly<{ order: WebOrder; request: OrderReturn; onChange: (order: WebOrder) => void }>) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [refunding, setRefunding] = useState(false);
+  const [amount, setAmount] = useState(String(request.itemsRupees));
+  const [reference, setReference] = useState("");
+  const open = request.status === "REQUESTED" || request.status === "APPROVED";
+  const cod = order.paymentMethod === "COD";
+
+  async function act(action: () => Promise<WebOrder>) {
+    setBusy(true);
+    setError(null);
+    try {
+      onChange(await action());
+      setRefunding(false);
+    } catch (e) {
+      setError(describeError(e).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function decide(approve: boolean) {
+    const note = window.prompt(
+      approve ? "Note for the customer (optional), e.g. how to send it back:" : "Why is the return not accepted?",
+      "",
+    );
+    if (note === null) return;
+    void act(() =>
+      approve
+        ? api.admin.approveReturn(request.number, { note: note || null })
+        : api.admin.rejectReturn(request.number, { note: note || null }),
+    );
+  }
+
+  return (
+    <div className="mt-3 rounded-md border border-line p-3 text-sm">
+      <div className="flex flex-wrap items-center gap-2">
+        <strong>{request.number}</strong>
+        <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", RETURN[request.status].tone)}>
+          {RETURN[request.status].label}
+        </span>
+        <span className="text-ink-soft">{when.format(new Date(request.requestedAt))}</span>
+      </div>
+      <p className="mt-1">
+        {request.lines.map((l) => `${l.quantity} × ${l.name}`).join(", ")} · worth {rupees(request.itemsRupees)}
+      </p>
+      <p className="text-ink-soft">Reason: {request.reason}</p>
+      {request.shopNote && <p className="text-ink-soft">Your note: {request.shopNote}</p>}
+      {request.pickupAwb && (
+        <p className="text-ink-soft">
+          Pickup with {request.pickupCourier ?? "courier"}, AWB {request.pickupAwb}
+          {request.pickupStatus && ` · ${request.pickupStatus}`}
+        </p>
+      )}
+      {request.status === "REFUNDED" && request.refundRupees != null && (
+        <p className="text-ink-soft">
+          Refunded {rupees(request.refundRupees)}
+          {request.refundMethod === "MANUAL" ? " by hand" : " through Razorpay"}
+          {request.refundReference && ` (${request.refundReference})`}
+          {request.refundMethod === "RAZORPAY" && request.refundStatus && ` · ${REFUND[request.refundStatus]}`}
+        </p>
+      )}
+
+      {refunding && (
+        <form
+          className="mt-2 flex flex-wrap items-end gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void act(() =>
+              api.admin.refundReturn(request.number, {
+                amountRupees: Number(amount),
+                reference: reference.trim() || null,
+              }),
+            );
+          }}
+        >
+          <label className="flex flex-col gap-1 text-xs font-medium">
+            Refund (₹)
+            <input className={input} inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          </label>
+          {cod && (
+            <label className="flex flex-col gap-1 text-xs font-medium">
+              UPI / bank reference
+              <input className={input} value={reference} onChange={(e) => setReference(e.target.value)} />
+            </label>
+          )}
+          <Button type="submit" disabled={busy}>
+            {busy ? "Refunding…" : cod ? "Record refund" : "Refund through Razorpay"}
+          </Button>
+          <Button variant="secondary" onClick={() => setRefunding(false)}>
+            Back
+          </Button>
+          <p className="basis-full text-xs text-ink-soft">
+            The returned items go back into stock.
+            {cod && " Send the money by UPI or bank first, then record its reference here."}
+          </p>
+        </form>
+      )}
+
+      {open && !refunding && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {request.status === "REQUESTED" && (
+            <>
+              <Button disabled={busy} onClick={() => decide(true)}>
+                Approve
+              </Button>
+              <Button variant="secondary" disabled={busy} onClick={() => decide(false)}>
+                Reject
+              </Button>
+            </>
+          )}
+          {request.status === "APPROVED" && !request.pickupAwb && (
+            <Button
+              variant="secondary"
+              disabled={busy}
+              onClick={() => void act(() => api.admin.bookReturnPickup(request.number))}
+            >
+              {busy ? "Booking pickup…" : "Book pickup with Shiprocket"}
+            </Button>
+          )}
+          <Button variant="secondary" disabled={busy} onClick={() => setRefunding(true)}>
+            Items received, refund
+          </Button>
+          {request.status === "APPROVED" && (
+            <Button variant="secondary" disabled={busy} onClick={() => decide(false)}>
+              Reject
+            </Button>
+          )}
+        </div>
+      )}
+      {error && (
+        <p role="alert" className="mt-2 text-bad">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }

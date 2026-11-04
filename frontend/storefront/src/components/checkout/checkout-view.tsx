@@ -8,40 +8,8 @@ import { bagStore } from "@/lib/bag";
 import { fetchQuote } from "@/lib/bag-quote";
 import { formatPrice } from "@/lib/format";
 import { shippingFor } from "@/lib/policies";
+import { openRazorpay } from "@/lib/razorpay";
 import { syncSession, type Session } from "@/lib/session";
-
-const RAZORPAY_SCRIPT = "https://checkout.razorpay.com/v1/checkout.js";
-
-type RazorpayResponse = { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string };
-type RazorpayOptions = {
-  key: string;
-  amount: number;
-  currency: string;
-  order_id: string;
-  name: string;
-  description: string;
-  prefill: { name: string; contact: string; email?: string };
-  theme: { color: string };
-  handler: (response: RazorpayResponse) => void;
-  modal: { ondismiss: () => void };
-};
-declare global {
-  interface Window {
-    Razorpay?: new (options: RazorpayOptions) => { open: () => void };
-  }
-}
-
-/** Loads Razorpay Checkout once; resolves false when it cannot be loaded (offline, blocked). */
-function loadRazorpay(): Promise<boolean> {
-  if (window.Razorpay) return Promise.resolve(true);
-  return new Promise((resolve) => {
-    const script = document.createElement("script");
-    script.src = RAZORPAY_SCRIPT;
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
-}
 
 type Address = {
   name: string;
@@ -198,23 +166,11 @@ export function CheckoutView() {
         thanks(placed.orderNumber, placed.totalRupees, "COD");
         return;
       }
-      if (!(await loadRazorpay()) || !window.Razorpay) {
-        throw new Error("Razorpay could not be loaded. Check your connection and try again.");
-      }
-      // Pressing Pay again after closing the payment window reuses the order already placed.
       const order = started ?? (await placeOrder("ONLINE"));
       setStarted(order);
-      if (!order.razorpayKeyId || !order.razorpayOrderId) throw new Error("Online payment is not available right now");
-      const checkout = new window.Razorpay({
-        key: order.razorpayKeyId,
-        amount: order.amountPaise,
-        currency: order.currency,
-        order_id: order.razorpayOrderId,
-        name: "Vaabhi",
-        description: `Order ${order.orderNumber}`,
-        prefill: { name: order.name, contact: order.phone, email: order.email ?? undefined },
-        theme: { color: "#6E2A35" },
-        handler: (response) => {
+      await openRazorpay(
+        order,
+        (response) => {
           void post<WebOrder>(`/api/auth/checkout/${encodeURIComponent(order.orderNumber)}/payment`, {
             razorpayOrderId: response.razorpay_order_id,
             razorpayPaymentId: response.razorpay_payment_id,
@@ -231,14 +187,11 @@ export function CheckoutView() {
               setStage({ kind: "ready" });
             });
         },
-        modal: {
-          ondismiss: () => {
-            setError({ text: "Payment was not completed. You can try again.", errors: [] });
-            setStage({ kind: "ready" });
-          },
+        () => {
+          setError({ text: "Payment was not completed. You can try again.", errors: [] });
+          setStage({ kind: "ready" });
         },
-      });
-      checkout.open();
+      );
     } catch (e) {
       const failure = e as Error & { errors?: FieldError[]; status?: number };
       if (failure.status === 401) {

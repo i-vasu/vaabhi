@@ -19,16 +19,20 @@ class AdminWebOrderController {
 
     private final CheckoutService service;
     private final ShiprocketShipping shiprocket;
+    private final WebOrderReturns returns;
 
-    AdminWebOrderController(CheckoutService service, ShiprocketShipping shiprocket) {
+    AdminWebOrderController(CheckoutService service, ShiprocketShipping shiprocket, WebOrderReturns returns) {
         this.service = service;
         this.shiprocket = shiprocket;
+        this.returns = returns;
     }
 
-    /** The latest 100 online orders, newest first; optionally only one status. */
+    /** The latest 100 online orders, newest first; optionally only one status, or only those with an open return. */
     @GetMapping
-    List<WebOrder> listOnlineOrders(@RequestParam(name = "status", required = false) WebOrder.@Nullable Status status) {
-        return service.recent(status, 100);
+    List<WebOrder> listOnlineOrders(
+            @RequestParam(name = "status", required = false) WebOrder.@Nullable Status status,
+            @RequestParam(name = "openReturns", defaultValue = "false") boolean openReturns) {
+        return service.recent(status, openReturns, 100);
     }
 
     @PostMapping("/{number}/ship")
@@ -56,5 +60,30 @@ class AdminWebOrderController {
     @PostMapping("/{number}/cancel")
     WebOrder cancelOnlineOrder(@PathVariable("number") String number, @Valid @RequestBody CancelWebOrderForm form) {
         return service.cancel(number, form);
+    }
+
+    @PostMapping("/returns/{returnNumber}/approve")
+    WebOrder approveReturn(
+            @PathVariable("returnNumber") String returnNumber, @Valid @RequestBody ReturnDecisionForm form) {
+        return returns.approve(returnNumber, form);
+    }
+
+    @PostMapping("/returns/{returnNumber}/reject")
+    WebOrder rejectReturn(
+            @PathVariable("returnNumber") String returnNumber, @Valid @RequestBody ReturnDecisionForm form) {
+        return returns.reject(returnNumber, form);
+    }
+
+    /** Books the courier to collect the return from the customer (through Shiprocket). */
+    @PostMapping("/returns/{returnNumber}/pickup")
+    WebOrder bookReturnPickup(@PathVariable("returnNumber") String returnNumber) {
+        return shiprocket.bookReturnPickup(returnNumber);
+    }
+
+    /** The items are back: stock is put back and the amount refunded (Razorpay, or recorded for COD). */
+    @PostMapping("/returns/{returnNumber}/refund")
+    WebOrder refundReturn(
+            @PathVariable("returnNumber") String returnNumber, @Valid @RequestBody ReturnRefundForm form) {
+        return returns.refund(returnNumber, form);
     }
 }

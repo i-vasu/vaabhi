@@ -39,6 +39,8 @@ export type EditorState = {
   sareeLengthM: string;
   blouseIncluded: boolean;
   blouseLengthM: string;
+  /** Packed weight of one piece in grams, for the courier; empty uses the shop default. */
+  shippingWeightGrams: string;
   attributes: Record<string, string[]>;
   variants: VariantRow[];
   addons: AddonRow[];
@@ -67,6 +69,7 @@ export function emptyState(categorySlug = ""): EditorState {
     sareeLengthM: categorySlug === "sarees" ? "5.5" : "",
     blouseIncluded: categorySlug === "sarees",
     blouseLengthM: categorySlug === "sarees" ? "0.8" : "",
+    shippingWeightGrams: "",
     attributes: {},
     variants: [],
     addons: [],
@@ -88,6 +91,7 @@ export function stateFromProduct(product: AdminProduct): EditorState {
     sareeLengthM: product.sareeLengthM == null ? "" : String(product.sareeLengthM),
     blouseIncluded: product.blouseIncluded,
     blouseLengthM: product.blouseLengthM == null ? "" : String(product.blouseLengthM),
+    shippingWeightGrams: product.shippingWeightGrams == null ? "" : String(product.shippingWeightGrams),
     attributes: product.attributes,
     variants: product.variants.map((v) => ({
       key: newKey(),
@@ -145,6 +149,7 @@ export function formFromState(state: EditorState): ProductForm {
     sareeLengthM: isSaree ? toDecimal(state.sareeLengthM) : null,
     blouseIncluded: isSaree && state.blouseIncluded,
     blouseLengthM: isSaree && state.blouseIncluded ? toDecimal(state.blouseLengthM) : null,
+    shippingWeightGrams: state.shippingWeightGrams.trim() === "" ? null : toInt(state.shippingWeightGrams),
     attributes,
     variants: state.variants.map((v): VariantForm => ({
       sku: orNull(v.sku.toUpperCase()),

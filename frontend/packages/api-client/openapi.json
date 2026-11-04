@@ -1976,6 +1976,116 @@
                 }
             }
         },
+        "/api/v1/customer/orders/{number}/pay": {
+            "post": {
+                "tags": [
+                    "checkout-controller"
+                ],
+                "operationId": "payOrderAgain",
+                "parameters": [
+                    {
+                        "name": "number",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CheckoutStart"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/customer/orders/{number}/cancel": {
+            "post": {
+                "tags": [
+                    "checkout-controller"
+                ],
+                "operationId": "cancelMyOrder",
+                "parameters": [
+                    {
+                        "name": "number",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CancelWebOrderForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/customer/orders/{number}/returns": {
+            "post": {
+                "tags": [
+                    "checkout-controller"
+                ],
+                "operationId": "requestReturn",
+                "parameters": [
+                    {
+                        "name": "number",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReturnRequestForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/customer/checkout": {
             "post": {
                 "tags": [
@@ -3661,6 +3771,156 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/ShipmentForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/online-orders/returns/{returnNumber}/approve": {
+            "post": {
+                "tags": [
+                    "admin-web-order-controller"
+                ],
+                "operationId": "approveReturn",
+                "parameters": [
+                    {
+                        "name": "returnNumber",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReturnDecisionForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/online-orders/returns/{returnNumber}/reject": {
+            "post": {
+                "tags": [
+                    "admin-web-order-controller"
+                ],
+                "operationId": "rejectReturn",
+                "parameters": [
+                    {
+                        "name": "returnNumber",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReturnDecisionForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/online-orders/returns/{returnNumber}/pickup": {
+            "post": {
+                "tags": [
+                    "admin-web-order-controller"
+                ],
+                "operationId": "bookReturnPickup",
+                "parameters": [
+                    {
+                        "name": "returnNumber",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/online-orders/returns/{returnNumber}/refund": {
+            "post": {
+                "tags": [
+                    "admin-web-order-controller"
+                ],
+                "operationId": "refundReturn",
+                "parameters": [
+                    {
+                        "name": "returnNumber",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReturnRefundForm"
                             }
                         }
                     },
@@ -5483,6 +5743,15 @@
                                 "DELIVERED",
                                 "CANCELLED"
                             ]
+                        }
+                    },
+                    {
+                        "name": "openReturns",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
                         }
                     }
                 ],
@@ -8206,6 +8475,15 @@
                         "maximum": 2.0,
                         "minimum": 0.1
                     },
+                    "shippingWeightGrams": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32",
+                        "maximum": 30000,
+                        "minimum": 10
+                    },
                     "attributes": {
                         "type": "object",
                         "additionalProperties": {
@@ -8243,6 +8521,7 @@
                     "description",
                     "name",
                     "sareeLengthM",
+                    "shippingWeightGrams",
                     "slug",
                     "subtitle",
                     "variants"
@@ -8379,6 +8658,13 @@
                             "null"
                         ]
                     },
+                    "shippingWeightGrams": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
                     "attributes": {
                         "type": "object",
                         "additionalProperties": {
@@ -8432,6 +8718,7 @@
                     "name",
                     "publishedAt",
                     "sareeLengthM",
+                    "shippingWeightGrams",
                     "slug",
                     "status",
                     "subtitle",
@@ -10054,6 +10341,10 @@
             "Line": {
                 "type": "object",
                 "properties": {
+                    "position": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
                     "sku": {
                         "type": "string"
                     },
@@ -10115,6 +10406,7 @@
                     "colourName",
                     "imageKey",
                     "name",
+                    "position",
                     "productSlug",
                     "quantity",
                     "size",
@@ -10278,6 +10570,13 @@
                             "null"
                         ]
                     },
+                    "returnableUntil": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
                     "createdAt": {
                         "type": "string",
                         "format": "date-time"
@@ -10286,6 +10585,12 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Line"
+                        }
+                    },
+                    "returns": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OrderReturn"
                         }
                     }
                 },
@@ -10311,6 +10616,8 @@
                     "refundId",
                     "refundStatus",
                     "refundedRupees",
+                    "returnableUntil",
+                    "returns",
                     "shippedAt",
                     "shippingLabelUrl",
                     "shippingRupees",
@@ -11784,6 +12091,220 @@
                 },
                 "required": [
                     "reason"
+                ]
+            },
+            "OrderReturn": {
+                "type": "object",
+                "properties": {
+                    "number": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "REQUESTED",
+                            "APPROVED",
+                            "REJECTED",
+                            "REFUNDED"
+                        ]
+                    },
+                    "reason": {
+                        "type": "string"
+                    },
+                    "shopNote": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "itemsRupees": {
+                        "type": "number"
+                    },
+                    "refundRupees": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "refundMethod": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "RAZORPAY",
+                            "MANUAL"
+                        ]
+                    },
+                    "refundReference": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "refundStatus": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "PENDING",
+                            "PROCESSED",
+                            "FAILED"
+                        ]
+                    },
+                    "pickupCourier": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "pickupAwb": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "pickupStatus": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "requestedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "refundedAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ReturnLine"
+                        }
+                    }
+                },
+                "required": [
+                    "itemsRupees",
+                    "lines",
+                    "number",
+                    "pickupAwb",
+                    "pickupCourier",
+                    "pickupStatus",
+                    "reason",
+                    "refundMethod",
+                    "refundReference",
+                    "refundRupees",
+                    "refundStatus",
+                    "refundedAt",
+                    "requestedAt",
+                    "shopNote",
+                    "status"
+                ]
+            },
+            "ReturnLine": {
+                "type": "object",
+                "properties": {
+                    "position": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                },
+                "required": [
+                    "name",
+                    "position",
+                    "quantity"
+                ]
+            },
+            "ReturnRequestForm": {
+                "type": "object",
+                "properties": {
+                    "reason": {
+                        "type": "string",
+                        "maxLength": 500,
+                        "minLength": 0
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ReturnItem"
+                        },
+                        "maxItems": 50,
+                        "minItems": 1
+                    }
+                },
+                "required": [
+                    "items",
+                    "reason"
+                ]
+            },
+            "ReturnItem": {
+                "type": "object",
+                "properties": {
+                    "position": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "format": "int32",
+                        "maximum": 100,
+                        "minimum": 1
+                    }
+                },
+                "required": [
+                    "position",
+                    "quantity"
+                ]
+            },
+            "ReturnDecisionForm": {
+                "type": "object",
+                "properties": {
+                    "note": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 200,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "note"
+                ]
+            },
+            "ReturnRefundForm": {
+                "type": "object",
+                "properties": {
+                    "amountRupees": {
+                        "type": "number",
+                        "minimum": 0
+                    },
+                    "reference": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 80,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "amountRupees",
+                    "reference"
                 ]
             },
             "Invoice": {

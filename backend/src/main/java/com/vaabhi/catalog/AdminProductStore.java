@@ -106,6 +106,7 @@ class AdminProductStore {
             @Nullable BigDecimal sareeLengthM,
             boolean blouseIncluded,
             @Nullable BigDecimal blouseLengthM,
+            @Nullable Integer shippingWeightGrams,
             @Nullable OffsetDateTime publishedAt,
             OffsetDateTime updatedAt) {}
 
@@ -113,7 +114,7 @@ class AdminProductStore {
         return jdbc.sql("""
                         SELECT p.id, p.slug, p.name, p.subtitle, p.description, c.slug AS category_slug, p.status,
                                p.badge, p.care_instructions, p.saree_length_m, p.blouse_included, p.blouse_length_m,
-                               p.published_at, p.updated_at
+                               p.shipping_weight_grams, p.published_at, p.updated_at
                         FROM product p JOIN category c ON c.id = p.category_id
                         WHERE p.id = :id
                         """)
@@ -133,6 +134,7 @@ class AdminProductStore {
                         r.sareeLengthM(),
                         r.blouseIncluded(),
                         r.blouseLengthM(),
+                        r.shippingWeightGrams(),
                         attributes(id),
                         variants(id),
                         addons(id),
@@ -217,9 +219,10 @@ class AdminProductStore {
     long insert(ProductForm form, String slug, long categoryId) {
         return jdbc.sql("""
                         INSERT INTO product (slug, name, subtitle, description, category_id, status, badge,
-                                             care_instructions, saree_length_m, blouse_included, blouse_length_m)
+                                             care_instructions, saree_length_m, blouse_included, blouse_length_m,
+                                             shipping_weight_grams)
                         VALUES (:slug, :name, :subtitle, :description, :categoryId, 'DRAFT', :badge,
-                                :care, :sareeLength, :blouseIncluded, :blouseLength)
+                                :care, :sareeLength, :blouseIncluded, :blouseLength, :weight)
                         RETURNING id
                         """)
                 .params(productParams(form, slug, categoryId))
@@ -234,7 +237,7 @@ class AdminProductStore {
                         UPDATE product SET slug = :slug, name = :name, subtitle = :subtitle, description = :description,
                                category_id = :categoryId, badge = :badge, care_instructions = :care,
                                saree_length_m = :sareeLength, blouse_included = :blouseIncluded,
-                               blouse_length_m = :blouseLength, updated_at = now()
+                               blouse_length_m = :blouseLength, shipping_weight_grams = :weight, updated_at = now()
                         WHERE id = :id
                         """).params(params).update() > 0;
     }
@@ -251,6 +254,7 @@ class AdminProductStore {
         params.put("sareeLength", form.sareeLengthM());
         params.put("blouseIncluded", form.blouseIncluded());
         params.put("blouseLength", form.blouseLengthM());
+        params.put("weight", form.shippingWeightGrams());
         return params;
     }
 

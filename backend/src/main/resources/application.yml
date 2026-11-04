@@ -74,6 +74,8 @@ vaabhi:
   checkout:
     free-shipping-from-rupees: ${FREE_SHIPPING_FROM_RUPEES:1999}
     shipping-rupees: ${SHIPPING_RUPEES:99}
+    # Days after delivery the customer can ask to return items.
+    return-days: ${RETURN_DAYS:7}
 
   # Customer sign-in. Without GOOGLE_CLIENT_ID, Google sign-in answers 503 (phone sign-in still works).
   auth:

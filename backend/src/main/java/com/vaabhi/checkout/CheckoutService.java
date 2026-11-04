@@ -166,7 +166,7 @@ public class CheckoutService {
         String razorpayOrderId = null;
         if (method == WebOrder.PaymentMethod.ONLINE) {
             razorpayOrderId = razorpay.createOrder(total, number);
-            jdbc.sql("UPDATE web_order SET razorpay_order_id = :rzp WHERE id = :id")
+            jdbc.sql("UPDATE web_order SET razorpay_order_id = :rzp, payment_started_at = now() WHERE id = :id")
                     .param("rzp", razorpayOrderId)
                     .param(ID, orderId)
                     .update();
@@ -186,6 +186,74 @@ public class CheckoutService {
                 address.name().trim(),
                 phone,
                 profile.email());
+    }
+
+    /**
+     * "Pay now" on an online order that was never paid (window closed, payment failed): opens the same Razorpay
+     * order again at the price it was placed at, as long as every item is still available.
+     */
+    @Transactional
+    public CheckoutStart payAgain(long customerId, String number) {
+        var order = order(customerId, number);
+        if (order.paymentMethod() != WebOrder.PaymentMethod.ONLINE
+                || (order.status() != WebOrder.Status.PENDING_PAYMENT && order.status() != WebOrder.Status.FAILED)) {
+            throw conflict("This order does not need paying (it is " + label(order.status()) + ")");
+        }
+        var razorpayOrderId = razorpayOrderId(number);
+        if (razorpayOrderId == null) {
+            throw conflict("This order cannot be paid online. Please place it again from your bag.");
+        }
+        var keyId = razorpay.keyId();
+        var addons = jdbc.sql("SELECT addon_code FROM web_order_line WHERE order_id ="
+                        + " (SELECT id FROM web_order WHERE number = :number) ORDER BY position")
+                .param(NUMBER, number)
+                .query((rs, n) -> Optional.ofNullable(rs.getString("addon_code")))
+                .list();
+        var lines = order.lines();
+        List<BagQuoteRequest.Line> asked = new java.util.ArrayList<>();
+        for (var i = 0; i < lines.size(); i++) {
+            asked.add(new BagQuoteRequest.Line(
+                    lines.get(i).sku(), addons.get(i).orElse(null), lines.get(i).quantity()));
+        }
+        for (var line : quotes.quote(new BagQuoteRequest(asked)).lines()) {
+            if (line.status() != BagQuote.Status.AVAILABLE) {
+                throw conflict((line.name() == null ? line.sku() : line.name())
+                        + " is no longer available in this quantity. Please place a new order from your bag.");
+            }
+        }
+        jdbc.sql("UPDATE web_order SET status = 'PENDING_PAYMENT', payment_started_at = now() WHERE number = :number")
+                .param(NUMBER, number)
+                .update();
+        return new CheckoutStart(
+                number,
+                WebOrder.Status.PENDING_PAYMENT,
+                WebOrder.PaymentMethod.ONLINE,
+                order.totalRupees(),
+                razorpayOrderId,
+                keyId,
+                RazorpayClient.paise(order.totalRupees()),
+                "INR",
+                order.contactName(),
+                order.contactPhone(),
+                order.contactEmail());
+    }
+
+    /** The customer cancels an order that has not been shipped yet (refunded in full when paid online). */
+    @Transactional
+    public WebOrder cancelByCustomer(long customerId, String number, CancelWebOrderForm form) {
+        var order = order(customerId, number);
+        if (order.status() != WebOrder.Status.PLACED) {
+            throw conflict(
+                    order.status() == WebOrder.Status.SHIPPED
+                            ? "This order has already been shipped. You can return it once it is delivered."
+                            : "This order cannot be cancelled (it is " + label(order.status()) + ")");
+        }
+        var reason = blankToNull(form.reason());
+        cancel(
+                number,
+                new CancelWebOrderForm(
+                        truncate("Cancelled by the customer" + (reason == null ? "" : ": " + reason), 200)));
+        return order(customerId, number);
     }
 
     /** Records the payment Razorpay Checkout returned to the browser, once its signature checks out. */
@@ -237,8 +305,16 @@ public class CheckoutService {
             }
             case "refund.processed", "refund.failed" -> {
                 if (refundId != null) {
+                    var status = name.equals("refund.processed") ? "PROCESSED" : "FAILED";
                     jdbc.sql("UPDATE web_order SET refund_status = :status WHERE refund_id = :refund")
-                            .param("status", name.equals("refund.processed") ? "PROCESSED" : "FAILED")
+                            .param("status", status)
+                            .param("refund", refundId)
+                            .update();
+                    jdbc.sql("""
+                                    UPDATE web_order_return SET refund_status = :status
+                                    WHERE refund_id = :refund AND refund_method = 'RAZORPAY'
+                                    """)
+                            .param("status", status)
                             .param("refund", refundId)
                             .update();
                 }
@@ -253,8 +329,8 @@ public class CheckoutService {
         return jdbc.sql("""
                         SELECT number FROM web_order
                         WHERE status = 'PENDING_PAYMENT' AND razorpay_order_id IS NOT NULL
-                          AND created_at < now() - make_interval(mins => :minutes)
-                        ORDER BY created_at LIMIT :limit
+                          AND COALESCE(payment_started_at, created_at) < now() - make_interval(mins => :minutes)
+                        ORDER BY COALESCE(payment_started_at, created_at) LIMIT :limit
                         """)
                 .param("minutes", olderThanMinutes)
                 .param("limit", limit)
@@ -286,11 +362,11 @@ public class CheckoutService {
                 return;
             }
         }
-        if (order.createdAt().isBefore(OffsetDateTime.now().minusMinutes(giveUpAfterMinutes))) {
-            jdbc.sql("UPDATE web_order SET status = 'FAILED' WHERE number = :number AND status = 'PENDING_PAYMENT'")
-                    .param(NUMBER, number)
-                    .update();
-        }
+        jdbc.sql("""
+                        UPDATE web_order SET status = 'FAILED'
+                        WHERE number = :number AND status = 'PENDING_PAYMENT'
+                          AND COALESCE(payment_started_at, created_at) < now() - make_interval(mins => :minutes)
+                        """).param(NUMBER, number).param("minutes", giveUpAfterMinutes).update();
     }
 
     /** Places a paid online order once (a repeat from the webhook or the browser does nothing) and takes stock. */
@@ -459,7 +535,14 @@ public class CheckoutService {
                 .query(String.class)
                 .optional();
         if (number.isEmpty()) {
-            log.debug("Tracking update for unknown AWB {}", awb);
+            // Perhaps a return pickup: the status is only shown, the shop marks the items received.
+            var returns = jdbc.sql("UPDATE web_order_return SET pickup_status = :status WHERE pickup_awb = :awb")
+                    .param("status", truncate(status, 120))
+                    .param("awb", awb)
+                    .update();
+            if (returns == 0) {
+                log.debug("Tracking update for unknown AWB {}", awb);
+            }
             return;
         }
         var order = byNumber(number.get());
@@ -491,13 +574,16 @@ public class CheckoutService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
     }
 
-    /** The shop's view, newest first; optionally only orders in one status. */
+    /** The shop's view, newest first; optionally only orders in one status, or with a return still open. */
     @Transactional(readOnly = true)
-    public List<WebOrder> recent(WebOrder.@Nullable Status status, int limit) {
+    public List<WebOrder> recent(WebOrder.@Nullable Status status, boolean openReturns, int limit) {
         return jdbc
                 .sql(SELECT + " WHERE (CAST(:status AS varchar) IS NULL OR o.status = :status)"
+                        + " AND (NOT :openReturns OR EXISTS (SELECT 1 FROM web_order_return r WHERE r.order_id = o.id"
+                        + " AND r.status IN ('REQUESTED', 'APPROVED')))"
                         + " ORDER BY o.created_at DESC LIMIT :limit")
                 .param("status", status == null ? null : status.name())
+                .param("openReturns", openReturns)
                 .param("limit", limit)
                 .query(OrderRow.class)
                 .list()
@@ -568,10 +654,13 @@ public class CheckoutService {
 
     private WebOrder withLines(OrderRow o) {
         var lines = jdbc.sql("""
-                        SELECT sku, product_slug, name, colour_name, size, addon_name, blouse_size, quantity, unit_rupees,
-                               addon_rupees, amount_rupees, image_key
+                        SELECT position, sku, product_slug, name, colour_name, size, addon_name, blouse_size, quantity,
+                               unit_rupees, addon_rupees, amount_rupees, image_key
                         FROM web_order_line WHERE order_id = :id ORDER BY position
                         """).param(ID, o.id()).query(WebOrder.Line.class).list();
+        var returnableUntil = o.status() == WebOrder.Status.DELIVERED && o.deliveredAt() != null
+                ? o.deliveredAt().plusDays(properties.returnDays())
+                : null;
         return new WebOrder(
                 o.number(),
                 o.status(),
@@ -603,8 +692,60 @@ public class CheckoutService {
                         ? "https://shiprocket.co/tracking/" + o.trackingNumber()
                         : null,
                 o.shippingLabelUrl(),
+                returnableUntil,
                 o.createdAt(),
-                lines);
+                lines,
+                returns(o.id()));
+    }
+
+    private record ReturnRow(
+            long id,
+            String number,
+            WebOrder.ReturnStatus status,
+            String reason,
+            @Nullable String shopNote,
+            BigDecimal itemsRupees,
+            @Nullable BigDecimal refundRupees,
+            WebOrder.@Nullable RefundMethod refundMethod,
+            @Nullable String refundId,
+            WebOrder.@Nullable RefundStatus refundStatus,
+            @Nullable String pickupCourier,
+            @Nullable String pickupAwb,
+            @Nullable String pickupStatus,
+            OffsetDateTime requestedAt,
+            @Nullable OffsetDateTime refundedAt) {}
+
+    private List<WebOrder.OrderReturn> returns(long orderId) {
+        return jdbc.sql("""
+                        SELECT id, number, status, reason, shop_note, items_rupees, refund_rupees, refund_method,
+                               refund_id, refund_status, pickup_courier, pickup_awb, pickup_status, requested_at,
+                               refunded_at
+                        FROM web_order_return WHERE order_id = :id ORDER BY requested_at
+                        """).param(ID, orderId).query(ReturnRow.class).list().stream()
+                .map(r -> new WebOrder.OrderReturn(
+                        r.number(),
+                        r.status(),
+                        r.reason(),
+                        r.shopNote(),
+                        r.itemsRupees(),
+                        r.refundRupees(),
+                        r.refundMethod(),
+                        r.refundId(),
+                        r.refundStatus(),
+                        r.pickupCourier(),
+                        r.pickupAwb(),
+                        r.pickupStatus(),
+                        r.requestedAt(),
+                        r.refundedAt(),
+                        jdbc.sql("""
+                                        SELECT l.position, l.name, rl.quantity
+                                        FROM web_order_return_line rl JOIN web_order_line l ON l.id = rl.order_line_id
+                                        WHERE rl.return_id = :id ORDER BY l.position
+                                        """)
+                                .param(ID, r.id())
+                                .query(WebOrder.ReturnLine.class)
+                                .list()))
+                .toList();
     }
 
     /** Quantities of the order's lines by SKU (one SKU can appear with different add-ons). */

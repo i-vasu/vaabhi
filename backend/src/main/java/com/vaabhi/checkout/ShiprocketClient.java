@@ -1,5 +1,6 @@
 package com.vaabhi.checkout;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -57,8 +58,17 @@ class ShiprocketClient {
 
     record Awb(String awbCode, @Nullable String courierName) {}
 
-    /** Creates the order in Shiprocket (our order number is its order id) for the pickup address in settings. */
-    CreatedOrder createOrder(WebOrder order) {
+    /** The parcel weight for one piece when its product has none set. */
+    int defaultWeightGrams() {
+        return properties.weightKg().movePointRight(3).intValue();
+    }
+
+    /**
+     * Creates the order in Shiprocket (our order number is its order id) for the pickup address in settings.
+     *
+     * @param weightKg the whole parcel
+     */
+    CreatedOrder createOrder(WebOrder order, BigDecimal weightKg) {
         var phone = order.contactPhone().replaceFirst("^\\+91", "");
         var name = order.contactName().trim();
         var space = name.indexOf(' ');
@@ -96,7 +106,7 @@ class ShiprocketClient {
         body.put("length", properties.lengthCm());
         body.put("breadth", properties.breadthCm());
         body.put("height", properties.heightCm());
-        body.put("weight", properties.weightKg());
+        body.put("weight", weightKg);
         var response = call("POST", "/v1/external/orders/create/adhoc", JSON.writeValueAsString(body), order.number());
         var orderId = response.path("order_id").asLong(0);
         var shipmentId = response.path("shipment_id").asLong(0);
@@ -107,13 +117,99 @@ class ShiprocketClient {
         return new CreatedOrder(orderId, shipmentId);
     }
 
+    /**
+     * A return pickup from the customer back to the shop's pickup address (its details are read from Shiprocket).
+     *
+     * @param returnNumber Shiprocket's order id for the return, e.g. WEB-1001-R1
+     * @param quantities how many of each order line (by position) come back
+     */
+    CreatedOrder createReturn(
+            WebOrder order, String returnNumber, Map<Integer, Integer> quantities, BigDecimal weightKg) {
+        var shop = warehouse(returnNumber);
+        var phone = order.contactPhone().replaceFirst("^\\+91", "");
+        List<Map<String, Object>> items = new ArrayList<>();
+        var subTotal = BigDecimal.ZERO;
+        for (var line : order.lines()) {
+            var units = quantities.getOrDefault(line.position(), 0);
+            if (units == 0) {
+                continue;
+            }
+            var price = line.unitRupees().add(line.addonRupees());
+            subTotal = subTotal.add(price.multiply(BigDecimal.valueOf(units)));
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("name", line.addonName() == null ? line.name() : line.name() + " + " + line.addonName());
+            item.put("sku", line.addonName() == null ? line.sku() : line.sku() + "+" + line.addonName());
+            item.put("units", units);
+            item.put("selling_price", price);
+            item.put("discount", 0);
+            items.add(item);
+        }
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("order_id", returnNumber);
+        body.put("order_date", ORDER_DATE.format(Instant.now()));
+        body.put("pickup_customer_name", order.contactName().trim());
+        body.put(
+                "pickup_address",
+                order.addressLine1() + (order.addressLine2() == null ? "" : ", " + order.addressLine2()));
+        body.put("pickup_city", order.city());
+        body.put("pickup_state", order.state());
+        body.put("pickup_country", "India");
+        body.put("pickup_pincode", order.pincode());
+        body.put("pickup_email", order.contactEmail() == null ? "" : order.contactEmail());
+        body.put("pickup_phone", phone);
+        body.put("shipping_customer_name", text(shop.path("name")) == null ? "Vaabhi" : text(shop.path("name")));
+        body.put("shipping_address", textOrEmpty(shop.path("address")));
+        body.put("shipping_address_2", textOrEmpty(shop.path("address_2")));
+        body.put("shipping_city", textOrEmpty(shop.path("city")));
+        body.put("shipping_state", textOrEmpty(shop.path("state")));
+        body.put("shipping_country", "India");
+        body.put("shipping_pincode", textOrEmpty(shop.path("pin_code")));
+        body.put("shipping_email", textOrEmpty(shop.path("email")));
+        body.put("shipping_phone", textOrEmpty(shop.path("phone")));
+        body.put("order_items", items);
+        body.put("payment_method", "Prepaid");
+        body.put("sub_total", subTotal);
+        body.put("length", properties.lengthCm());
+        body.put("breadth", properties.breadthCm());
+        body.put("height", properties.heightCm());
+        body.put("weight", weightKg);
+        var response = call("POST", "/v1/external/orders/create/return", JSON.writeValueAsString(body), returnNumber);
+        var orderId = response.path("order_id").asLong(0);
+        var shipmentId = response.path("shipment_id").asLong(0);
+        if (orderId == 0 || shipmentId == 0) {
+            log.warn("Shiprocket return for {} was not created: {}", returnNumber, response);
+            throw unavailable("Shiprocket did not create the return: " + message(response));
+        }
+        return new CreatedOrder(orderId, shipmentId);
+    }
+
+    /** The pickup address named in settings, as set up in Shiprocket (where returns are sent back to). */
+    private JsonNode warehouse(String number) {
+        var addresses = call("GET", "/v1/external/settings/company/pickup", null, number)
+                .path("data")
+                .path("shipping_address");
+        for (var address : addresses) {
+            if (properties.pickupLocation().equalsIgnoreCase(textOrEmpty(address.path("pickup_location")))) {
+                return address;
+            }
+        }
+        throw unavailable("Shiprocket has no pickup address named \"" + properties.pickupLocation()
+                + "\". Check SHIPROCKET_PICKUP_LOCATION.");
+    }
+
     /** Assigns the courier Shiprocket recommends (per the account's courier priority) and returns the AWB. */
     Awb assignAwb(long shipmentId, String number) {
-        var response = call(
-                "POST",
-                "/v1/external/courier/assign/awb",
-                JSON.writeValueAsString(Map.of("shipment_id", shipmentId)),
-                number);
+        return assignAwb(shipmentId, number, false);
+    }
+
+    /** As {@link #assignAwb(long, String)}; {@code isReturn} for a return pickup's shipment. */
+    Awb assignAwb(long shipmentId, String number, boolean isReturn) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("shipment_id", shipmentId);
+        if (isReturn) {
+            body.put("is_return", 1);
+        }
+        var response = call("POST", "/v1/external/courier/assign/awb", JSON.writeValueAsString(body), number);
         var data = response.path("response").path("data");
         var awb = text(data.path("awb_code"));
         if (awb == null) {
@@ -315,6 +411,11 @@ class ShiprocketClient {
         }
         var value = node.asString();
         return value.isBlank() ? null : value;
+    }
+
+    private static String textOrEmpty(JsonNode node) {
+        var value = text(node);
+        return value == null ? "" : value;
     }
 
     private static String encode(String value) {

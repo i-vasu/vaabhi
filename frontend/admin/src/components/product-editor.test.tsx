@@ -320,6 +320,7 @@ describe("ProductEditor", () => {
       sareeLengthM: 6.3,
       blouseIncluded: false,
       blouseLengthM: null,
+      shippingWeightGrams: null,
       attributes: {},
       variants: [{ sku: "VB-RUBY-1", priceRupees: 1500000, active: false }],
       addons: [

@@ -14,6 +14,8 @@ import org.jspecify.annotations.Nullable;
  * @param trackingStatus the courier's latest status, when shipped through Shiprocket
  * @param trackingUrl the public tracking page, when shipped through Shiprocket
  * @param shippingLabelUrl the label to print (PDF), when shipped through Shiprocket
+ * @param returnableUntil until when the customer can ask to return items (delivered orders only)
+ * @param returns the return requests on this order, oldest first
  */
 public record WebOrder(
         String number,
@@ -44,8 +46,10 @@ public record WebOrder(
         @Nullable String trackingStatus,
         @Nullable String trackingUrl,
         @Nullable String shippingLabelUrl,
+        @Nullable OffsetDateTime returnableUntil,
         OffsetDateTime createdAt,
-        List<Line> lines) {
+        List<Line> lines,
+        List<OrderReturn> returns) {
 
     /** PENDING: Razorpay accepted the refund; PROCESSED: the money reached the customer; FAILED: it did not. */
     public enum RefundStatus {
@@ -70,7 +74,9 @@ public record WebOrder(
         COD
     }
 
+    /** @param position the line's place in the order, used to pick lines for a return */
     public record Line(
+            int position,
             String sku,
             String productSlug,
             String name,
@@ -83,4 +89,45 @@ public record WebOrder(
             BigDecimal addonRupees,
             BigDecimal amountRupees,
             @Nullable String imageKey) {}
+
+    /** REQUESTED → APPROVED → REFUNDED, or REJECTED. */
+    public enum ReturnStatus {
+        REQUESTED,
+        APPROVED,
+        REJECTED,
+        REFUNDED
+    }
+
+    /** RAZORPAY: part of the online payment refunded. MANUAL: paid back by the shop (UPI or bank), reference kept. */
+    public enum RefundMethod {
+        RAZORPAY,
+        MANUAL
+    }
+
+    /**
+     * Some of the order's items coming back.
+     *
+     * @param itemsRupees what the returned items cost at the prices paid
+     * @param refundRupees what was refunded (may be less than {@code itemsRupees}, e.g. a damaged item)
+     * @param refundReference the Razorpay refund id, or the shop's UPI or bank reference
+     * @param pickupAwb the courier's tracking number for the return pickup, when booked through Shiprocket
+     */
+    public record OrderReturn(
+            String number,
+            ReturnStatus status,
+            String reason,
+            @Nullable String shopNote,
+            BigDecimal itemsRupees,
+            @Nullable BigDecimal refundRupees,
+            @Nullable RefundMethod refundMethod,
+            @Nullable String refundReference,
+            @Nullable RefundStatus refundStatus,
+            @Nullable String pickupCourier,
+            @Nullable String pickupAwb,
+            @Nullable String pickupStatus,
+            OffsetDateTime requestedAt,
+            @Nullable OffsetDateTime refundedAt,
+            List<ReturnLine> lines) {}
+
+    public record ReturnLine(int position, String name, int quantity) {}
 }

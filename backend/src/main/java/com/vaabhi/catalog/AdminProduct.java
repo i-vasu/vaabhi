@@ -20,6 +20,7 @@ public record AdminProduct(
         @Nullable BigDecimal sareeLengthM,
         boolean blouseIncluded,
         @Nullable BigDecimal blouseLengthM,
+        @Nullable Integer shippingWeightGrams,
         Map<String, List<String>> attributes,
         List<VariantForm> variants,
         List<AddonForm> addons,

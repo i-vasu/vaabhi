@@ -186,6 +186,11 @@ export type WebOrder = Schemas["WebOrder"];
 export type RefundStatus = NonNullable<WebOrder["refundStatus"]>;
 export type ShipmentForm = Schemas["ShipmentForm"];
 export type CancelWebOrderForm = Schemas["CancelWebOrderForm"];
+export type OrderReturn = Schemas["OrderReturn"];
+export type ReturnStatus = OrderReturn["status"];
+export type ReturnRequestForm = Schemas["ReturnRequestForm"];
+export type ReturnDecisionForm = Schemas["ReturnDecisionForm"];
+export type ReturnRefundForm = Schemas["ReturnRefundForm"];
 
 /** Field-level message from the API, e.g. `{ field: "variants[0].priceRupees", message: "must be greater than 0" }`. */
 export type FieldError = { field: string; message: string };
@@ -350,11 +355,44 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
           headers: bearer(accessToken),
           cache: "no-store",
         }),
+      /** "Pay now" on an unpaid online order: what Razorpay Checkout needs to open again. */
+      payOrderAgain: (accessToken: string, number: string) =>
+        request<CheckoutStart>(`/api/v1/customer/orders/${encodeURIComponent(number)}/pay`, {
+          method: "POST",
+          headers: bearer(accessToken),
+          cache: "no-store",
+        }),
+      /** Cancels an order that has not been shipped yet. */
+      cancelOrder: (accessToken: string, number: string, form: CancelWebOrderForm) =>
+        request<WebOrder>(`/api/v1/customer/orders/${encodeURIComponent(number)}/cancel`, {
+          method: "POST",
+          headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+          cache: "no-store",
+        }),
+      /** Asks to return items of a delivered order. */
+      requestReturn: (accessToken: string, number: string, form: ReturnRequestForm) =>
+        request<WebOrder>(`/api/v1/customer/orders/${encodeURIComponent(number)}/returns`, {
+          method: "POST",
+          headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+          cache: "no-store",
+        }),
     },
     admin: {
       /** Online (storefront) orders, newest first; optionally one status. */
-      onlineOrders: (status?: WebOrder["status"]) =>
-        request<WebOrder[]>(`/api/v1/admin/online-orders${queryString({ status })}`),
+      onlineOrders: (status?: WebOrder["status"], openReturns = false) =>
+        request<WebOrder[]>(`/api/v1/admin/online-orders${queryString({ status, openReturns })}`),
+      approveReturn: (returnNumber: string, form: ReturnDecisionForm) =>
+        send<WebOrder>("POST", `/api/v1/admin/online-orders/returns/${encodeURIComponent(returnNumber)}/approve`, form),
+      rejectReturn: (returnNumber: string, form: ReturnDecisionForm) =>
+        send<WebOrder>("POST", `/api/v1/admin/online-orders/returns/${encodeURIComponent(returnNumber)}/reject`, form),
+      /** Books the courier to collect the return (Shiprocket). */
+      bookReturnPickup: (returnNumber: string) =>
+        send<WebOrder>("POST", `/api/v1/admin/online-orders/returns/${encodeURIComponent(returnNumber)}/pickup`),
+      /** Items received: puts them back in stock and refunds (Razorpay, or records the COD reference). */
+      refundReturn: (returnNumber: string, form: ReturnRefundForm) =>
+        send<WebOrder>("POST", `/api/v1/admin/online-orders/returns/${encodeURIComponent(returnNumber)}/refund`, form),
       shipOnlineOrder: (number: string, shipment: ShipmentForm) =>
         send<WebOrder>("POST", `/api/v1/admin/online-orders/${encodeURIComponent(number)}/ship`, shipment),
       /** Books the courier through Shiprocket (AWB, pickup, label) and marks the order shipped. */
