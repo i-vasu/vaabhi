@@ -97,9 +97,7 @@ function CouponSheet({
 }) {
   const [code, setCode] = useState(coupon?.code ?? "");
   const [kind, setKind] = useState<CouponForm["kind"]>(coupon?.kind ?? "PERCENT");
-  const [value, setValue] = useState(
-    coupon ? String(coupon.value) : "",
-  );
+  const [value, setValue] = useState(coupon ? String(coupon.value) : "");
   const [min, setMin] = useState(coupon?.minOrderRupees ? String(coupon.minOrderRupees) : "");
   const [from, setFrom] = useState(coupon?.validFrom ?? "");
   const [to, setTo] = useState(coupon?.validTo ?? "");

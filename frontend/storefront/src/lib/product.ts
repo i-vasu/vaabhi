@@ -63,10 +63,7 @@ export function selectedVariant(
  */
 export function photosFor(product: ProductDetail, colour: string): Media[] {
   const images = product.media.filter((m) => m.kind === "IMAGE");
-  const matching = [
-    ...images.filter((m) => m.colourName === colour),
-    ...images.filter((m) => m.colourName === null),
-  ];
+  const matching = [...images.filter((m) => m.colourName === colour), ...images.filter((m) => m.colourName === null)];
   return matching.length ? matching : images;
 }
 
