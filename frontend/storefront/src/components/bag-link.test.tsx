@@ -20,8 +20,8 @@ describe("BagLink", () => {
       addonCode: null,
       addonName: null,
       blouseSize: null,
-      unitPricePaise: 100,
-      addonPricePaise: 0,
+      unitPriceRupees: 1,
+      addonPriceRupees: 0,
       imageKey: null,
     };
     act(() => {

@@ -1,7 +1,7 @@
 import type { AddonForm, AdminProduct, FieldError, ProductForm, ProductStatus, VariantForm } from "@vaabhi/api-client";
 
 /**
- * The product editor works in rupees and strings (what people type); the API takes paise and numbers.
+ * The product editor works in rupees and strings (what people type); the API takes rupees as numbers.
  * Every row has a `key` so React keeps inputs stable while rows are added and removed.
  */
 export type VariantRow = {
@@ -39,6 +39,8 @@ export type EditorState = {
   sareeLengthM: string;
   blouseIncluded: boolean;
   blouseLengthM: string;
+  /** Packed weight of one piece in grams, for the courier; empty uses the shop default. */
+  shippingWeightGrams: string;
   attributes: Record<string, string[]>;
   variants: VariantRow[];
   addons: AddonRow[];
@@ -67,13 +69,14 @@ export function emptyState(categorySlug = ""): EditorState {
     sareeLengthM: categorySlug === "sarees" ? "5.5" : "",
     blouseIncluded: categorySlug === "sarees",
     blouseLengthM: categorySlug === "sarees" ? "0.8" : "",
+    shippingWeightGrams: "",
     attributes: {},
     variants: [],
     addons: [],
   };
 }
 
-const rupees = (paise: number) => String(paise / 100);
+const rupees = (amount: number) => String(amount);
 const text = (value: string | null | undefined) => value ?? "";
 
 export function stateFromProduct(product: AdminProduct): EditorState {
@@ -88,6 +91,7 @@ export function stateFromProduct(product: AdminProduct): EditorState {
     sareeLengthM: product.sareeLengthM == null ? "" : String(product.sareeLengthM),
     blouseIncluded: product.blouseIncluded,
     blouseLengthM: product.blouseLengthM == null ? "" : String(product.blouseLengthM),
+    shippingWeightGrams: product.shippingWeightGrams == null ? "" : String(product.shippingWeightGrams),
     attributes: product.attributes,
     variants: product.variants.map((v) => ({
       key: newKey(),
@@ -96,8 +100,8 @@ export function stateFromProduct(product: AdminProduct): EditorState {
       colourHex: v.colourHex,
       colourFamily: v.colourFamily,
       size: text(v.size),
-      price: rupees(v.pricePaise),
-      mrp: rupees(v.mrpPaise),
+      price: rupees(v.priceRupees),
+      mrp: rupees(v.mrpRupees),
       stock: String(v.stockQty),
       active: v.active,
     })),
@@ -106,17 +110,17 @@ export function stateFromProduct(product: AdminProduct): EditorState {
       code: a.code,
       name: a.name,
       description: text(a.description),
-      price: rupees(a.pricePaise),
+      price: rupees(a.priceRupees),
       input: a.input,
       active: a.active,
     })),
   };
 }
 
-/** "1,250.50" → 125050 paise; anything unparseable becomes 0 so the API reports it next to the field. */
-export function toPaise(value: string): number {
+/** "1,250.50" → 1250.5 rupees; anything unparseable becomes 0 so the API reports it next to the field. */
+export function toRupees(value: string): number {
   const amount = Number.parseFloat(value.replaceAll(",", "").trim());
-  return Number.isFinite(amount) ? Math.round(amount * 100) : 0;
+  return Number.isFinite(amount) ? Math.round(amount * 100) / 100 : 0;
 }
 
 function toInt(value: string): number {
@@ -145,6 +149,7 @@ export function formFromState(state: EditorState): ProductForm {
     sareeLengthM: isSaree ? toDecimal(state.sareeLengthM) : null,
     blouseIncluded: isSaree && state.blouseIncluded,
     blouseLengthM: isSaree && state.blouseIncluded ? toDecimal(state.blouseLengthM) : null,
+    shippingWeightGrams: state.shippingWeightGrams.trim() === "" ? null : toInt(state.shippingWeightGrams),
     attributes,
     variants: state.variants.map((v): VariantForm => ({
       sku: orNull(v.sku.toUpperCase()),
@@ -152,8 +157,8 @@ export function formFromState(state: EditorState): ProductForm {
       colourHex: v.colourHex,
       colourFamily: v.colourFamily,
       size: orNull(v.size),
-      pricePaise: toPaise(v.price),
-      mrpPaise: toPaise(v.mrp === "" ? v.price : v.mrp),
+      priceRupees: toRupees(v.price),
+      mrpRupees: toRupees(v.mrp === "" ? v.price : v.mrp),
       stockQty: toInt(v.stock),
       active: v.active,
     })),
@@ -162,7 +167,7 @@ export function formFromState(state: EditorState): ProductForm {
       kind: "BLOUSE",
       name: a.name.trim(),
       description: orNull(a.description),
-      pricePaise: toPaise(a.price),
+      priceRupees: toRupees(a.price),
       input: a.input,
       active: a.active,
     })),
@@ -217,7 +222,7 @@ export function variantsForColour(colour: NewColour, sizes: string[]): VariantRo
   }));
 }
 
-/** Server field errors, e.g. "variants[2].mrpPaise", grouped for display. */
+/** Server field errors, e.g. "variants[2].mrpRupees", grouped for display. */
 export function errorsFor(errors: FieldError[], prefix: string): string[] {
   return errors
     .filter((e) => e.field === prefix || e.field.startsWith(`${prefix}.`) || e.field.startsWith(`${prefix}[`))

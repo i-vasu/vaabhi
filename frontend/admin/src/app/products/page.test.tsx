@@ -13,7 +13,7 @@ const row = (id: number, overrides: Partial<AdminProductSummary> = {}): AdminPro
   status: "PUBLISHED",
   variantCount: 2,
   stockTotal: 5,
-  minPricePaise: 1425000,
+  minPriceRupees: 14250,
   updatedAt: "2026-10-31T09:00:00Z",
   ...overrides,
 });
@@ -26,7 +26,7 @@ describe("ProductsPage", () => {
         const query = new URL(request.url).searchParams;
         queries.push(query.toString());
         return HttpResponse.json({
-          items: [row(1), row(2, { status: "DRAFT", stockTotal: 0, minPricePaise: null })],
+          items: [row(1), row(2, { status: "DRAFT", stockTotal: 0, minPriceRupees: null })],
           total: 120,
           page: Number(query.get("page")),
           pageSize: 50,

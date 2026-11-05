@@ -2,12 +2,58 @@
 @import "@vaabhi/ui/theme.css";
 @source "../../../packages/ui/src";
 
+/*
+ * Admin dashboard theme: dark navy surfaces with a blue accent, built for long days at the shop counter.
+ * Utilities: bg-app, bg-panel, bg-panel-2, bg-field, border-line, border-line-strong, text-ink, text-ink-soft,
+ * text-ink-faint, bg-accent / text-accent / bg-accent-soft, and ok / warn / bad (+ -soft) for status.
+ */
+@theme {
+  --color-app: #0b1220;
+  --color-panel: #111a2e;
+  --color-panel-2: #172238;
+  --color-field: #0d1526;
+  --color-line: #1e2a44;
+  --color-line-strong: #2c3b5c;
+  --color-ink: #e7edf7;
+  --color-ink-soft: #a3b0c7;
+  --color-ink-faint: #8a97b0;
+  --color-accent: #2563eb;
+  --color-accent-strong: #1d4ed8;
+  --color-accent-ink: #7fb0ff;
+  --color-accent-soft: #15254a;
+  --color-ok: #5ad691;
+  --color-ok-soft: #0f2a21;
+  --color-warn: #f2c94c;
+  --color-warn-soft: #2c2412;
+  --color-bad: #f68a8a;
+  --color-bad-soft: #2c1519;
+}
+
+/* The shared @vaabhi/ui components (Button, Chip…) follow the admin accent instead of the store's maroon. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
+  --color-brand-primary: var(--color-accent);
+  --color-brand-primary-hover: var(--color-accent-strong);
+  --color-brand-primary-soft: var(--color-accent-soft);
+  /* the blue reads too dark as text on navy (contrast 3.6:1); the lighter accent ink passes 4.5:1 */
+  --color-brand-primary-ink: var(--color-accent-ink);
+  --color-text-on-brand: #ffffff;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-app);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+input,
+select,
+textarea {
+  background-color: var(--color-field);
+  color: var(--color-ink);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-ink-faint);
 }

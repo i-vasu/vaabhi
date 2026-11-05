@@ -1,5 +1,6 @@
 package com.vaabhi.catalog;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import org.jspecify.annotations.Nullable;
 
@@ -12,5 +13,5 @@ public record AdminProductSummary(
         ProductStatus status,
         int variantCount,
         long stockTotal,
-        @Nullable Integer minPricePaise,
+        @Nullable BigDecimal minPriceRupees,
         OffsetDateTime updatedAt) {}

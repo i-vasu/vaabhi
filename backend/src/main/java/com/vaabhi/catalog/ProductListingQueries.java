@@ -1,6 +1,7 @@
 package com.vaabhi.catalog;
 
 import com.vaabhi.catalog.ListingFilters.Dimension;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -20,12 +21,12 @@ class ProductListingQueries {
     private static final String LISTED = """
             WITH listed AS (
                 SELECT p.id, p.slug, p.name, p.subtitle, p.badge, p.popularity, p.published_at,
-                       cheapest.price_paise, cheapest.mrp_paise, stock.stock_total, stock.in_stock
+                       cheapest.price_rupees, cheapest.mrp_rupees, stock.stock_total, stock.in_stock
                 FROM product p
                 JOIN LATERAL (
-                    SELECT v.price_paise, v.mrp_paise FROM product_variant v
+                    SELECT v.price_rupees, v.mrp_rupees FROM product_variant v
                     WHERE v.product_id = p.id AND v.active
-                    ORDER BY v.price_paise, v.position
+                    ORDER BY v.price_rupees, v.position
                     LIMIT 1
                 ) cheapest ON TRUE
                 JOIN LATERAL (
@@ -72,8 +73,8 @@ class ProductListingQueries {
             String name,
             @Nullable String subtitle,
             @Nullable String badge,
-            int pricePaise,
-            int mrpPaise,
+            BigDecimal priceRupees,
+            BigDecimal mrpRupees,
             long stockTotal,
             boolean inStock) {}
 
@@ -84,7 +85,7 @@ class ProductListingQueries {
         // Reviewed for SQL injection (java:S2077): the SQL text is built only from constants, the ProductSort enum
         // and generated parameter names (ListingFilters); every user-supplied value is a bind parameter.
         var sql = LISTED
-                + "SELECT l.id, l.slug, l.name, l.subtitle, l.badge, l.price_paise, l.mrp_paise,"
+                + "SELECT l.id, l.slug, l.name, l.subtitle, l.badge, l.price_rupees, l.mrp_rupees,"
                 + " l.stock_total, l.in_stock FROM listed l WHERE "
                 + filters.where(null)
                 + " ORDER BY "
@@ -94,6 +95,51 @@ class ProductListingQueries {
                 .params(params)
                 .query(ItemRow.class)
                 .list();
+        return summaries(rows);
+    }
+
+    /**
+     * Published products with a badge, from every category, most popular first (the home page's Bestsellers).
+     */
+    // Only constant SQL fragments (and fixed table names / enum-chosen ORDER BY) are joined; values are bound.
+    @SuppressWarnings("java:S2077")
+    List<ProductSummary> featured(Badge badge, int limit) {
+        var rows = jdbc.sql(LISTED.replace("p.category_id = :categoryId", "p.badge = :badge") + """
+                        SELECT l.id, l.slug, l.name, l.subtitle, l.badge, l.price_rupees, l.mrp_rupees, l.stock_total,
+                               l.in_stock
+                        FROM listed l ORDER BY l.popularity DESC, l.published_at DESC, l.id DESC LIMIT :limit
+                        """)
+                .param("badge", badge.name())
+                .param("limit", limit)
+                .query(ItemRow.class)
+                .list();
+        return summaries(rows);
+    }
+
+    /**
+     * Published products from every category, most recently published first (the storefront's New arrivals).
+     * A product keeps its first publish time when it is unpublished and published again.
+     */
+    // Only constant SQL fragments (and fixed table names / enum-chosen ORDER BY) are joined; values are bound.
+    @SuppressWarnings("java:S2077")
+    NewArrivalsPage newArrivals(int page, int pageSize) {
+        var everyCategory = LISTED.replace("p.category_id = :categoryId", "TRUE");
+        var total = jdbc.sql(everyCategory + "SELECT COUNT(*) FROM listed")
+                .query(Long.class)
+                .single();
+        var rows = jdbc.sql(everyCategory + """
+                        SELECT l.id, l.slug, l.name, l.subtitle, l.badge, l.price_rupees, l.mrp_rupees, l.stock_total,
+                               l.in_stock
+                        FROM listed l ORDER BY l.published_at DESC, l.id DESC LIMIT :limit OFFSET :offset
+                        """)
+                .param("limit", pageSize)
+                .param("offset", (page - 1) * pageSize)
+                .query(ItemRow.class)
+                .list();
+        return new NewArrivalsPage(summaries(rows), total, page, pageSize);
+    }
+
+    private List<ProductSummary> summaries(List<ItemRow> rows) {
         if (rows.isEmpty()) {
             return List.of();
         }
@@ -107,9 +153,9 @@ class ProductListingQueries {
                         row.name(),
                         row.subtitle(),
                         row.badge() == null ? null : Badge.valueOf(row.badge()),
-                        row.pricePaise(),
-                        row.mrpPaise(),
-                        Stock.discountPercent(row.pricePaise(), row.mrpPaise()),
+                        row.priceRupees(),
+                        row.mrpRupees(),
+                        Stock.discountPercent(row.priceRupees(), row.mrpRupees()),
                         swatches.getOrDefault(row.id(), List.of()),
                         row.inStock(),
                         Stock.stockLeft(row.stockTotal()),
@@ -170,7 +216,7 @@ class ProductListingQueries {
     // --- filter counts -----------------------------------------------------------------------------------
 
     private record CountRow(
-            String dimension, String code, @Nullable Long n) {}
+            String dimension, String code, @Nullable BigDecimal n) {}
 
     private record Counts(long total, @Nullable PriceRange priceRange, Map<String, Map<String, Long>> byDimension) {
 
@@ -185,8 +231,8 @@ class ProductListingQueries {
         branches.add(
                 "SELECT 'total' AS dimension, '' AS code, COUNT(*) AS n FROM listed l WHERE " + filters.where(null));
         var priceWhere = filters.where(Dimension.PRICE);
-        branches.add("SELECT 'price', 'min', MIN(l.price_paise)::bigint FROM listed l WHERE " + priceWhere);
-        branches.add("SELECT 'price', 'max', MAX(l.price_paise)::bigint FROM listed l WHERE " + priceWhere);
+        branches.add("SELECT 'price', 'min', MIN(l.price_rupees) FROM listed l WHERE " + priceWhere);
+        branches.add("SELECT 'price', 'max', MAX(l.price_rupees) FROM listed l WHERE " + priceWhere);
         branches.add(variantCountBranch(COLOUR, "v.colour_family", filters, Dimension.COLOUR));
         branches.add(variantCountBranch(SIZE, "v.size", filters, Dimension.SIZE));
 
@@ -227,11 +273,11 @@ class ProductListingQueries {
 
     private static Counts toCounts(List<CountRow> rows) {
         long total = 0;
-        Long min = null;
-        Long max = null;
+        BigDecimal min = null;
+        BigDecimal max = null;
         Map<String, Map<String, Long>> byDimension = new HashMap<>();
         for (var row : rows) {
-            var n = row.n() == null ? 0L : row.n();
+            var n = row.n() == null ? 0L : row.n().longValue();
             switch (row.dimension()) {
                 case "total" -> total = n;
                 case "price" -> {
@@ -247,7 +293,7 @@ class ProductListingQueries {
                             .put(row.code(), n);
             }
         }
-        var priceRange = min == null || max == null ? null : new PriceRange(min.intValue(), max.intValue());
+        var priceRange = min == null || max == null ? null : new PriceRange(min, max);
         return new Counts(total, priceRange, byDimension);
     }
 

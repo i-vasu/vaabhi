@@ -181,8 +181,8 @@ public class AdminProductService {
         for (var i = 0; i < variants.size(); i++) {
             var v = variants.get(i);
             var field = "variants[" + i + "]";
-            if (v.mrpPaise() < v.pricePaise()) {
-                errors.add(new FieldError(field + ".mrpPaise", "MRP must be at least the selling price"));
+            if (v.mrpRupees().compareTo(v.priceRupees()) < 0) {
+                errors.add(new FieldError(field + ".mrpRupees", "MRP must be at least the selling price"));
             }
             if (!colourFamilies.contains(v.colourFamily())) {
                 errors.add(new FieldError(field + ".colourFamily", "Unknown colour family"));
@@ -201,8 +201,8 @@ public class AdminProductService {
                     v.colourHex(),
                     v.colourFamily(),
                     size,
-                    v.pricePaise(),
-                    v.mrpPaise(),
+                    v.priceRupees(),
+                    v.mrpRupees(),
                     v.stockQty(),
                     v.active()));
         }

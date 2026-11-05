@@ -7,9 +7,9 @@ import java.util.Locale;
 public enum ProductSort {
     POPULAR("popular", "l.popularity DESC"),
     NEW("new", "l.published_at DESC"),
-    PRICE_ASC("price_asc", "l.price_paise ASC"),
-    PRICE_DESC("price_desc", "l.price_paise DESC"),
-    DISCOUNT("discount", "(l.mrp_paise - l.price_paise)::numeric / l.mrp_paise DESC");
+    PRICE_ASC("price_asc", "l.price_rupees ASC"),
+    PRICE_DESC("price_desc", "l.price_rupees DESC"),
+    DISCOUNT("discount", "(l.mrp_rupees - l.price_rupees)::numeric / l.mrp_rupees DESC");
 
     private final String param;
     private final String orderBy;

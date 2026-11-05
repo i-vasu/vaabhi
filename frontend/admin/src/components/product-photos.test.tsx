@@ -16,7 +16,23 @@ vi.mock("@/lib/photo-upload", async (importOriginal) => ({
     uploadCalls.push(args);
     return uploadImpl(...args);
   },
+  uploadVideo: (...args: unknown[]) => {
+    uploadCalls.push(["video", ...args]);
+    return uploadImpl(...args);
+  },
 }));
+
+const video = (id: number, overrides: Partial<AdminMedia> = {}): AdminMedia => ({
+  id,
+  kind: "VIDEO",
+  key: `products/7/v${id}`,
+  alt: "Silk saree, drape",
+  colourName: null,
+  width: null,
+  height: null,
+  status: "READY",
+  ...overrides,
+});
 
 const photo = (id: number, overrides: Partial<AdminMedia> = {}): AdminMedia => ({
   id,
@@ -46,9 +62,89 @@ describe("ProductPhotos", () => {
     uploadImpl = async () => [];
   });
 
-  it("asks to save a new product first", () => {
-    render(<ProductPhotos productName="" colours={[]} media={[]} onChange={vi.fn()} />);
-    expect(screen.getByText("Save the product first, then add photos.")).toBeInTheDocument();
+  it("keeps photos and a video picked before the first save, to upload with it", () => {
+    const onQueue = vi.fn();
+    const props = { productName: "", colours: [], media: [], onChange: vi.fn(), onQueue };
+    const { rerender } = render(<ProductPhotos {...props} />);
+    expect(screen.getByLabelText("Add video")).toBeDisabled();
+    expect(screen.getByText("Add a photo first.")).toBeInTheDocument();
+
+    const front = new File(["x"], "front.jpg", { type: "image/jpeg" });
+    const huge = new File(["x"], "huge.jpg", { type: "image/jpeg" });
+    Object.defineProperty(huge, "size", { value: 31 * 1024 * 1024 });
+    fireEvent.change(screen.getByLabelText("Add photos"), { target: { files: [front, huge] } });
+    expect(onQueue).toHaveBeenLastCalledWith([expect.objectContaining({ kind: "IMAGE", file: front })]);
+    expect(screen.getByText(/huge.jpg: failed. Larger than 30 MB/)).toBeInTheDocument();
+    expect(uploadCalls).toHaveLength(0);
+
+    const queuedPhoto = onQueue.mock.lastCall![0][0];
+    rerender(<ProductPhotos {...props} queued={[queuedPhoto]} />);
+    expect(screen.getByText("Uploads when you save")).toBeInTheDocument();
+    expect(screen.getByText(/1 of 12 photos · no video yet · uploads when you save/)).toBeInTheDocument();
+    const add = screen.getByLabelText("Add video");
+    expect(add).toBeEnabled();
+
+    fireEvent.change(add, { target: { files: [new File(["x"], "clip.avi", { type: "video/x-msvideo" })] } });
+    expect(screen.getByText(/clip.avi: failed. Use an MP4, MOV or WebM video/)).toBeInTheDocument();
+    const clip = new File(["x"], "clip.mp4", { type: "video/mp4" });
+    fireEvent.change(add, { target: { files: [clip] } });
+    expect(onQueue).toHaveBeenLastCalledWith([queuedPhoto, expect.objectContaining({ kind: "VIDEO", file: clip })]);
+
+    const queuedVideo = onQueue.mock.lastCall![0][1];
+    rerender(<ProductPhotos {...props} queued={[queuedPhoto, queuedVideo]} />);
+    // Up to 3 videos: a second one can still be added.
+    expect(screen.getByLabelText("Add video")).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: "Remove clip.mp4" }));
+    expect(onQueue).toHaveBeenLastCalledWith([queuedPhoto]);
+    fireEvent.click(screen.getByRole("button", { name: "Remove front.jpg" }));
+    expect(onQueue).toHaveBeenLastCalledWith([queuedVideo]);
+  });
+
+  it("uploads a video straight away for a saved product, then shows and deletes it", async () => {
+    uploadImpl = async () => [photo(1), video(9)];
+    server.use(http.delete(`${MEDIA}/9`, () => HttpResponse.json([photo(1)])));
+    const { onChange, view } = setup([photo(1)]);
+    const clip = new File(["x"], "clip.mov", { type: "video/quicktime" });
+    const big = new File(["x"], "big.mp4", { type: "video/mp4" });
+    Object.defineProperty(big, "size", { value: 201 * 1024 * 1024 });
+
+    fireEvent.change(screen.getByLabelText("Add video"), { target: { files: [big] } });
+    expect(screen.getByText(/big.mp4: failed. Larger than 200 MB/)).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Add video"), { target: { files: [clip] } });
+    await waitFor(() => expect(onChange).toHaveBeenCalledWith([photo(1), video(9)]));
+    expect(uploadCalls).toEqual([["video", 7, clip, { alt: "Silk saree, Ruby", colourName: null }]]);
+
+    view.rerender(
+      <ProductPhotos
+        productId={7}
+        productName="Silk saree"
+        colours={["Ruby"]}
+        media={[photo(1), video(9)]}
+        onChange={onChange}
+      />,
+    );
+    expect(screen.getByText(/1 of 12 photos · 1 of 3 videos/)).toBeInTheDocument();
+    expect(screen.getByLabelText("Silk saree, drape")).toHaveAttribute(
+      "src",
+      "https://media.vaabhi.com/products/7/v9/video",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Delete video 1" }));
+    await waitFor(() => expect(onChange).toHaveBeenLastCalledWith([photo(1)]));
+  });
+
+  it("keeps the video last when photos are reordered", async () => {
+    const saved: unknown[] = [];
+    server.use(
+      http.put(MEDIA, async ({ request }) => {
+        saved.push(await request.json());
+        return HttpResponse.json([]);
+      }),
+    );
+    setup([photo(1), video(9, { status: "PENDING" }), photo(2)]);
+    expect(screen.getAllByText(/Upload did not finish/)).toHaveLength(1);
+    fireEvent.click(screen.getByRole("button", { name: "Move photo 1 later" }));
+    await waitFor(() => expect(saved).toHaveLength(1));
+    expect((saved[0] as Array<{ id: number }>).map((u) => u.id)).toEqual([2, 1, 9]);
   });
 
   it("uploads chosen and dropped images with a default description and colour", async () => {
@@ -58,9 +154,9 @@ describe("ProductPhotos", () => {
 
     fireEvent.change(screen.getByLabelText("Add photos"), { target: { files: [file] } });
     await waitFor(() => expect(onChange).toHaveBeenCalledWith([photo(1)]));
-    expect(uploadCalls).toEqual([[7, file, { alt: "Silk saree, Ruby", colourName: "Ruby" }]]);
+    expect(uploadCalls).toEqual([[7, file, { alt: "Silk saree, Ruby", colourName: null }]]);
 
-    const dropZone = screen.getByText("Drop photos here or choose files").closest("label")!;
+    const dropZone = screen.getByText("Tap to choose from your gallery, or drop files here").closest("label")!;
     fireEvent.dragOver(dropZone);
     fireEvent.dragLeave(dropZone);
     fireEvent.drop(dropZone, {
@@ -94,7 +190,7 @@ describe("ProductPhotos", () => {
       throw new Error("The source image could not be decoded.");
     };
     setup([]);
-    const dropZone = screen.getByText("Drop photos here or choose files").closest("label")!;
+    const dropZone = screen.getByText("Tap to choose from your gallery, or drop files here").closest("label")!;
     fireEvent.drop(dropZone, {
       dataTransfer: {
         files: [new File(["x"], "IMG_0001.HEIC", { type: "" }), new File(["x"], "b.heic", { type: "image/heic" })],
@@ -118,7 +214,7 @@ describe("ProductPhotos", () => {
 
   it("shows the upload guidelines and the photo count", () => {
     setup([photo(1), photo(2)]);
-    expect(screen.getByText("2 of 12 photos")).toBeInTheDocument();
+    expect(screen.getByText(/2 of 12 photos · no video yet/)).toBeInTheDocument();
     const guidelines = within(screen.getByRole("list", { name: "Photo guidelines" })).getAllByRole("listitem");
     expect(guidelines.map((li) => li.textContent?.split(":")[0])).toEqual(expect.arrayContaining(["Formats", "Size"]));
     expect(guidelines.some((li) => li.textContent?.includes("Up to 12 photos per product"))).toBe(true);
@@ -165,12 +261,13 @@ describe("ProductPhotos", () => {
     fireEvent.click(screen.getByRole("button", { name: "Move photo 1 later" }));
     await waitFor(() => expect(saved).toHaveLength(1));
     expect(saved[0]).toEqual([
-      { id: 2, alt: "Photo 2", colourName: "Old" },
+      { id: 2, alt: "Photo 2", colourName: "Old" }, // its colour tag is kept
       { id: 1, alt: "Photo 1", colourName: null },
     ]);
     expect(onChange).toHaveBeenLastCalledWith([photo(2), photo(1)]);
 
-    fireEvent.change(screen.getAllByRole("combobox", { name: "Colour" })[0]!, { target: { value: "Ruby" } });
+    expect(screen.getAllByRole("combobox", { name: "Colour" })).toHaveLength(2); // one per photo
+    fireEvent.click(screen.getByRole("button", { name: "Set photo 2 as main" }));
     await waitFor(() => expect(saved).toHaveLength(2));
     fireEvent.change(screen.getAllByRole("textbox", { name: "Description (alt text)" })[0]!, {
       target: { value: "Front" },

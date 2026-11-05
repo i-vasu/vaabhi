@@ -5,7 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /** The signed-in customer's own profile. */
 @Service
-class CustomerService {
+public class CustomerService {
 
     private final CustomerStore customers;
 

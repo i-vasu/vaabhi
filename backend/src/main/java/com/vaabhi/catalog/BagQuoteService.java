@@ -1,5 +1,7 @@
 package com.vaabhi.catalog;
 
+import com.vaabhi.shared.rupees.Rupees;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,11 +36,11 @@ public class BagQuoteService {
             String colourName,
             String colourHex,
             @Nullable String size,
-            int pricePaise,
-            int mrpPaise,
+            BigDecimal priceRupees,
+            BigDecimal mrpRupees,
             int stockQty) {}
 
-    private record AddonRow(long productId, String code, String name, int pricePaise, String input) {}
+    private record AddonRow(long productId, String code, String name, BigDecimal priceRupees, String input) {}
 
     private record ImageRow(long productId, @Nullable String colourName, String storageKey) {}
 
@@ -49,12 +51,12 @@ public class BagQuoteService {
                 .distinct()
                 .toList();
         if (skus.isEmpty()) {
-            return new BagQuote(List.of(), 0, 0, 0, 0);
+            return new BagQuote(List.of(), Rupees.ZERO, Rupees.ZERO, Rupees.ZERO, Rupees.ZERO);
         }
         Map<String, VariantRow> variants = new HashMap<>();
         jdbc.sql("""
                         SELECT p.id AS product_id, v.sku, p.slug, p.name, v.colour_name, v.colour_hex, v.size,
-                               v.price_paise, v.mrp_paise, v.stock_qty
+                               v.price_rupees, v.mrp_rupees, v.stock_qty
                         FROM product_variant v JOIN product p ON p.id = v.product_id
                         WHERE v.sku IN (:skus) AND v.active AND p.status = 'PUBLISHED'
                         """).param("skus", skus).query(VariantRow.class).list().forEach(v -> variants.put(v.sku(), v));
@@ -65,7 +67,7 @@ public class BagQuoteService {
         List<ImageRow> images = List.of();
         if (!productIds.isEmpty()) {
             jdbc.sql("""
-                            SELECT product_id, code, name, price_paise, input FROM product_addon
+                            SELECT product_id, code, name, price_rupees, input FROM product_addon
                             WHERE product_id IN (:ids) AND active
                             """)
                     .param("ids", productIds)
@@ -81,20 +83,20 @@ public class BagQuoteService {
         }
 
         var lines = new ArrayList<BagQuote.Line>();
-        int items = 0;
-        int addonTotal = 0;
-        int mrp = 0;
+        var items = Rupees.ZERO;
+        var addonTotal = Rupees.ZERO;
+        var mrp = Rupees.ZERO;
         for (var requested : request.lines()) {
             var line = priceLine(requested, variants.get(requested.sku()), addons, images);
             lines.add(line);
             if (line.status() == BagQuote.Status.AVAILABLE || line.status() == BagQuote.Status.LIMITED) {
                 var quantity = Math.min(line.quantity(), line.maxQuantity());
-                items += line.pricePaise() * quantity;
-                addonTotal += line.addonPricePaise() * quantity;
-                mrp += (line.mrpPaise() + line.addonPricePaise()) * quantity;
+                items = items.add(Rupees.times(line.priceRupees(), quantity));
+                addonTotal = addonTotal.add(Rupees.times(line.addonPriceRupees(), quantity));
+                mrp = mrp.add(Rupees.times(line.mrpRupees().add(line.addonPriceRupees()), quantity));
             }
         }
-        return new BagQuote(lines, items, addonTotal, mrp, items + addonTotal);
+        return new BagQuote(lines, items, addonTotal, mrp, items.add(addonTotal));
     }
 
     private static BagQuote.Line priceLine(
@@ -121,10 +123,16 @@ public class BagQuoteService {
         } else {
             status = BagQuote.Status.AVAILABLE;
         }
-        var image = images.stream()
+        // The colour's own first photo, else the first "All colours" one (same order as the product page).
+        var productImages = images.stream()
                 .filter(i -> i.productId() == variant.productId())
-                .filter(i -> i.colourName() == null || i.colourName().equals(variant.colourName()))
+                .toList();
+        var image = productImages.stream()
+                .filter(i -> variant.colourName().equals(i.colourName()))
                 .findFirst()
+                .or(() -> productImages.stream()
+                        .filter(i -> i.colourName() == null)
+                        .findFirst())
                 .map(ImageRow::storageKey)
                 .orElse(null);
         return new BagQuote.Line(
@@ -139,10 +147,10 @@ public class BagQuoteService {
                 variant.colourName(),
                 variant.colourHex(),
                 variant.size(),
-                variant.pricePaise(),
-                variant.mrpPaise(),
+                variant.priceRupees(),
+                variant.mrpRupees(),
                 addon == null ? null : addon.name(),
-                addon == null ? 0 : addon.pricePaise(),
+                addon == null ? Rupees.ZERO : addon.priceRupees(),
                 addon == null ? null : AddonInput.valueOf(Objects.requireNonNull(addon.input())),
                 image);
     }
@@ -160,10 +168,10 @@ public class BagQuoteService {
                 null,
                 null,
                 null,
-                0,
-                0,
+                Rupees.ZERO,
+                Rupees.ZERO,
                 null,
-                0,
+                Rupees.ZERO,
                 null,
                 null);
     }

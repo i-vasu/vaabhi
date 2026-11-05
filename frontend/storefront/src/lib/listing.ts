@@ -4,7 +4,7 @@ import { discountLabel, formatPrice } from "./format";
 
 /**
  * The listing's state lives in the URL, so filtered pages are shareable, survive reloads and work without
- * JavaScript. Prices in the URL are rupees (`priceMax=5000`); the API takes paise.
+ * JavaScript. Prices in the URL and the API are rupees (`priceMax=5000`).
  */
 export type ListingState = {
   /** Selected codes by filter group: facets (fabric, occasion…), colour and size. */
@@ -131,8 +131,8 @@ export function activeFilterCount(state: ListingState): number {
 export function apiParams(state: ListingState, page: number): ListingParams {
   const params: ListingParams = { sort: state.sort, page, pageSize: PAGE_SIZE, inStock: state.inStock || undefined };
   for (const [group, codes] of Object.entries(state.selected)) params[group] = codes.join(",");
-  if (state.priceMin !== undefined) params.priceMin = state.priceMin * 100;
-  if (state.priceMax !== undefined) params.priceMax = state.priceMax * 100;
+  if (state.priceMin !== undefined) params.priceMin = state.priceMin;
+  if (state.priceMax !== undefined) params.priceMax = state.priceMax;
   return params;
 }
 
@@ -189,11 +189,20 @@ const RENDITIONS = [400, 800, 1600] as const;
 const CARD_SIZES = "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw";
 
 /**
- * Photo URL on the R2 media domain. MEDIA_URL is read on the server at runtime (set in docker-compose);
- * without it (local development without photos) cards fall back to colour placeholders.
+ * The R2 media domain. MEDIA_URL is read on the server at runtime (set in docker-compose); client components
+ * cannot read it, so they get it from the layout through useMediaBase() and pass it in. Without it (local
+ * development without photos) photos fall back to colour placeholders.
  */
-export function mediaUrl(key: string, width: (typeof RENDITIONS)[number] = 800): string | undefined {
-  const base = process.env.MEDIA_URL || process.env.NEXT_PUBLIC_MEDIA_URL;
+export function serverMediaBase(): string | undefined {
+  return process.env.MEDIA_URL || process.env.NEXT_PUBLIC_MEDIA_URL || undefined;
+}
+
+/** Photo URL on the R2 media domain; undefined when there is no media domain. */
+export function mediaUrl(
+  key: string,
+  width: (typeof RENDITIONS)[number] = 800,
+  base: string | undefined = serverMediaBase(),
+): string | undefined {
   return base ? `${base.replace(/\/$/, "")}/${key}/${width}.webp` : undefined;
 }
 
@@ -207,8 +216,8 @@ function stockNote(product: ProductSummary): string | undefined {
 }
 
 export function productCardProps(product: ProductSummary): ProductCardProps {
-  const price = product.pricePaise / 100;
-  const mrp = product.mrpPaise / 100;
+  const price = product.priceRupees;
+  const mrp = product.mrpRupees;
   const detail = [product.subtitle, stockNote(product)].filter(Boolean).join(" · ");
   const src = product.image ? mediaUrl(product.image.key) : undefined;
   const colour = product.colours[0]?.hex;
@@ -225,4 +234,9 @@ export function productCardProps(product: ProductSummary): ProductCardProps {
         ? { src, alt: product.image.alt, srcSet: srcSet(product.image.key), sizes: CARD_SIZES }
         : { placeholder: colour ? [colour, shade(colour)] : PLACEHOLDER },
   };
+}
+
+/** A product video on the R2 media domain: one file under its key, served with the type it was uploaded with. */
+export function videoUrl(key: string, base: string | undefined = serverMediaBase()): string | undefined {
+  return base ? `${base.replace(/\/$/, "")}/${key}/video` : undefined;
 }

@@ -3,6 +3,7 @@ package com.vaabhi.catalog;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -51,10 +52,10 @@ class StoreProductController {
             @Parameter(description = "Only products with stock in the selected colour/size")
                     @RequestParam(defaultValue = "false")
                     boolean inStock,
-            @Parameter(description = "Minimum price in paise") @RequestParam(required = false) @Nullable
-                    Integer priceMin,
-            @Parameter(description = "Maximum price in paise") @RequestParam(required = false) @Nullable
-                    Integer priceMax,
+            @Parameter(description = "Minimum price in rupees") @RequestParam(required = false) @Nullable
+                    BigDecimal priceMin,
+            @Parameter(description = "Maximum price in rupees") @RequestParam(required = false) @Nullable
+                    BigDecimal priceMax,
             @Parameter(
                             schema =
                                     @Schema(
@@ -92,6 +93,26 @@ class StoreProductController {
         return productService.getProduct(slug);
     }
 
+    /** Products with a badge across the catalogue, for the home page (Bestsellers by default). */
+    @GetMapping("/featured")
+    List<ProductSummary> listFeaturedProducts(
+            @RequestParam(defaultValue = "BESTSELLER") Badge badge,
+            @Parameter(description = "How many, at most 24") @RequestParam(defaultValue = "8") int limit) {
+        if (limit < 1 || limit > 24) {
+            throw badRequest("limit must be between 1 and 24");
+        }
+        return productService.featured(badge, limit);
+    }
+
+    /** Every published product, most recently published first. */
+    @GetMapping("/new-arrivals")
+    NewArrivalsPage listNewArrivals(
+            @Parameter(description = "1-based page number") @RequestParam(defaultValue = "1") int page,
+            @Parameter(description = "Products per page, at most 48") @RequestParam(defaultValue = "24") int pageSize) {
+        validatePaging(page, pageSize);
+        return productService.newArrivals(page, pageSize);
+    }
+
     private static void validatePaging(int page, int pageSize) {
         if (page < 1) {
             throw badRequest("page must be 1 or more");
@@ -101,9 +122,9 @@ class StoreProductController {
         }
     }
 
-    private static void validatePrice(@Nullable Integer priceMin, @Nullable Integer priceMax) {
-        var negative = (priceMin != null && priceMin < 0) || (priceMax != null && priceMax < 0);
-        var inverted = priceMin != null && priceMax != null && priceMin > priceMax;
+    private static void validatePrice(@Nullable BigDecimal priceMin, @Nullable BigDecimal priceMax) {
+        var negative = (priceMin != null && priceMin.signum() < 0) || (priceMax != null && priceMax.signum() < 0);
+        var inverted = priceMin != null && priceMax != null && priceMin.compareTo(priceMax) > 0;
         if (negative || inverted) {
             throw badRequest("priceMin and priceMax must be positive and priceMin ≤ priceMax");
         }

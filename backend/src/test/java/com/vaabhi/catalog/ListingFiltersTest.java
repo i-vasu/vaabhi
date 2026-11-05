@@ -3,6 +3,7 @@ package com.vaabhi.catalog;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.vaabhi.catalog.ListingFilters.Dimension;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,16 +22,29 @@ class ListingFiltersTest {
 
     private static ListingQuery query(
             Map<String, Set<String>> facets, Set<String> colours, Set<String> sizes, boolean inStock) {
-        return new ListingQuery("sarees", facets, colours, sizes, inStock, 1000, 5000, ProductSort.POPULAR, 2, 24);
+        return new ListingQuery(
+                "sarees",
+                facets,
+                colours,
+                sizes,
+                inStock,
+                BigDecimal.valueOf(1000),
+                BigDecimal.valueOf(5000),
+                ProductSort.POPULAR,
+                2,
+                24);
     }
 
     @Test
     void noFiltersIsAlwaysTrueWithPrice() {
         var filters = new ListingFilters(5, query(Map.of(), Set.of(), Set.of(), false), DEFINITIONS);
 
-        assertThat(filters.where(null)).isEqualTo("TRUE AND l.price_paise >= :priceMin AND l.price_paise <= :priceMax");
+        assertThat(filters.where(null))
+                .isEqualTo("TRUE AND l.price_rupees >= :priceMin AND l.price_rupees <= :priceMax");
         assertThat(filters.where(Dimension.PRICE)).isEqualTo("TRUE");
-        assertThat(filters.params()).containsEntry("categoryId", 5L).containsEntry("priceMin", 1000);
+        assertThat(filters.params())
+                .containsEntry("categoryId", 5L)
+                .containsEntry("priceMin", BigDecimal.valueOf(1000));
     }
 
     @Test

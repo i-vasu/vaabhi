@@ -26,7 +26,8 @@ class StoreCategoryControllerTest {
 
     @Test
     void listsCategoriesWithoutAuthentication() throws Exception {
-        given(categoryService.listCategories()).willReturn(List.of(new CategoryResponse(1L, "sarees", "Sarees", null)));
+        given(categoryService.listCategories())
+                .willReturn(List.of(new CategoryResponse(1L, "sarees", "Sarees", null, null)));
 
         mockMvc.perform(get("/api/v1/store/categories"))
                 .andExpect(status().isOk())

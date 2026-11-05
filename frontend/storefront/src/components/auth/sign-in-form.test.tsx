@@ -156,4 +156,17 @@ describe("SignInForm", () => {
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/account"));
     expect(sessionStore.read()).toEqual({ name: "Meera", phone: null, email: "meera@example.com" });
   });
+
+  it("offers only Google while the shop cannot send codes", () => {
+    window.google = { accounts: { id: { initialize: vi.fn(), renderButton: vi.fn() } } } as never;
+    render(<SignInForm googleClientId="client-1" phoneSignIn={false} next="/account" />);
+    expect(screen.queryByLabelText("Mobile number")).not.toBeInTheDocument();
+    expect(screen.queryByText("or")).not.toBeInTheDocument();
+  });
+
+  it("says so when no way to sign in works", () => {
+    render(<SignInForm googleClientId={null} phoneSignIn={false} next="/account" />);
+    expect(screen.getByRole("status")).toHaveTextContent("Sign-in is not available right now. Please try again later.");
+    expect(screen.queryByLabelText("Mobile number")).not.toBeInTheDocument();
+  });
 });

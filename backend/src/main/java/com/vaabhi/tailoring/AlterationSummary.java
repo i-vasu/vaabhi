@@ -1,0 +1,24 @@
+package com.vaabhi.tailoring;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+/**
+ * One row of the alterations list.
+ *
+ * @param overdue not yet delivered and the ready-by date has passed
+ */
+public record AlterationSummary(
+        long id,
+        String number,
+        long clientId,
+        String clientName,
+        String clientPhone,
+        OrderStatus status,
+        LocalDate readyBy,
+        int itemCount,
+        String itemsLabel,
+        boolean paid,
+        BigDecimal totalRupees,
+        BigDecimal balanceRupees,
+        boolean overdue) {}

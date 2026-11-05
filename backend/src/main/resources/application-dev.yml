@@ -10,7 +10,15 @@ spring:
     locations: classpath:db/migration,classpath:db/demo
 
 vaabhi:
+  checkout:
+    storefront-url: ${STOREFRONT_URL:http://localhost:3000}
   security:
     # Dev-only secret; the e2e tests sign admin tokens with it unless JWT_SECRET is set.
     jwt-secret: ${JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
     cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3001}
+  # Demo owner for the admin dashboard (sign in with these on localhost and in CI e2e).
+  staff:
+    owner:
+      name: ${STAFF_OWNER_NAME:Demo Owner}
+      email: ${STAFF_OWNER_EMAIL:owner@vaabhi.local}
+      password: ${STAFF_OWNER_PASSWORD:vaabhi-demo-owner}

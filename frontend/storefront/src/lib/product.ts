@@ -57,18 +57,30 @@ export function selectedVariant(
   return variants.find((v) => v.size === size);
 }
 
-/** Photos for a colour: those tagged with it plus untagged ones; all photos when none match. */
+/**
+ * Photos for a colour: those tagged with it first, then the "All colours" ones, each in the admin's order; all
+ * photos when none match.
+ */
 export function photosFor(product: ProductDetail, colour: string): Media[] {
   const images = product.media.filter((m) => m.kind === "IMAGE");
-  const matching = images.filter((m) => m.colourName === null || m.colourName === colour);
+  const matching = [...images.filter((m) => m.colourName === colour), ...images.filter((m) => m.colourName === null)];
   return matching.length ? matching : images;
+}
+
+/**
+ * Videos for a colour: those tagged with it first, then the "All colours" ones. Videos tagged with another
+ * colour are left out (unlike photos, a gallery does not need a video).
+ */
+export function videosFor(product: ProductDetail, colour: string): Media[] {
+  const videos = product.media.filter((m) => m.kind === "VIDEO");
+  return [...videos.filter((m) => m.colourName === colour), ...videos.filter((m) => m.colourName === null)];
 }
 
 export type AddonChoice = {
   code: string | null;
   name: string;
   description: string | null;
-  pricePaise: number;
+  priceRupees: number;
   input: ProductAddon["input"];
 };
 
@@ -81,15 +93,15 @@ export function addonChoices(product: ProductDetail): AddonChoice[] {
     code: a.code,
     name: a.name,
     description: a.description,
-    pricePaise: a.pricePaise,
+    priceRupees: a.priceRupees,
     input: a.input,
   }));
-  if (choices.length && !choices.some((c) => c.pricePaise === 0)) {
+  if (choices.length && !choices.some((c) => c.priceRupees === 0)) {
     choices.unshift({
       code: null,
       name: "Without blouse stitching",
       description: "Blouse fabric as supplied",
-      pricePaise: 0,
+      priceRupees: 0,
       input: "NONE",
     });
   }
@@ -97,7 +109,7 @@ export function addonChoices(product: ProductDetail): AddonChoice[] {
 }
 
 export function defaultChoice(choices: AddonChoice[]): AddonChoice | undefined {
-  return choices.find((c) => c.pricePaise === 0) ?? choices[0];
+  return choices.find((c) => c.priceRupees === 0) ?? choices[0];
 }
 
 /** "One size · 5.5 m saree with a 0.8 m blouse piece" for sarees; "One size" otherwise. */

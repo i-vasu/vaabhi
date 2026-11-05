@@ -74,7 +74,7 @@ export default function ProductsPage() {
       </header>
 
       <div className="flex flex-wrap items-center gap-3">
-        <fieldset className="flex rounded-md border border-neutral-300 p-0.5 text-sm">
+        <fieldset className="flex rounded-md border border-line-strong p-0.5 text-sm">
           <legend className="sr-only">Status</legend>
           {TABS.map((tab) => (
             <button
@@ -84,7 +84,7 @@ export default function ProductsPage() {
               onClick={() => setFilters({ ...filters, status: tab.value, page: 1 })}
               className={cn(
                 "rounded px-3 py-1",
-                filters.status === tab.value ? "bg-neutral-900 text-white" : "hover:bg-neutral-100",
+                filters.status === tab.value ? "bg-accent text-white" : "hover:bg-panel-2",
               )}
             >
               {tab.label}
@@ -93,7 +93,7 @@ export default function ProductsPage() {
         </fieldset>
         <select
           aria-label="Category"
-          className="rounded-md border border-neutral-300 px-2 py-1.5 text-sm"
+          className="rounded-md border border-line-strong px-2 py-1.5 text-sm"
           value={filters.category}
           onChange={(e) => setFilters({ ...filters, category: e.target.value, page: 1 })}
         >
@@ -115,7 +115,7 @@ export default function ProductsPage() {
             type="search"
             aria-label="Search products"
             placeholder="Name, URL or SKU"
-            className="w-64 rounded-md border border-neutral-300 px-2.5 py-1.5 text-sm"
+            className="w-64 rounded-md border border-line-strong px-2.5 py-1.5 text-sm"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -123,7 +123,7 @@ export default function ProductsPage() {
       </div>
 
       {error && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-bad">
           {error}{" "}
           <Link href="/login/" className="underline">
             Sign in
@@ -134,10 +134,10 @@ export default function ProductsPage() {
       {result && !error && (
         <>
           {result.items.length === 0 ? (
-            <p className="text-sm text-neutral-500">No products match.</p>
+            <p className="text-sm text-ink-soft">No products match.</p>
           ) : (
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-neutral-200 text-xs uppercase text-neutral-500">
+              <thead className="border-b border-line text-xs uppercase text-ink-soft">
                 <tr>
                   <th className="py-2 pr-3 font-medium">Name</th>
                   <th className="py-2 pr-3 font-medium">Category</th>
@@ -150,28 +150,28 @@ export default function ProductsPage() {
               </thead>
               <tbody>
                 {result.items.map((p) => (
-                  <tr key={p.id} className="border-b border-neutral-100">
+                  <tr key={p.id} className="border-b border-line">
                     <td className="py-2 pr-3">
                       <Link href={`/products/edit/?id=${p.id}`} className="font-medium hover:underline">
                         {p.name}
                       </Link>
-                      <span className="block text-xs text-neutral-500">{p.slug}</span>
+                      <span className="block text-xs text-ink-soft">{p.slug}</span>
                     </td>
                     <td className="py-2 pr-3">{p.category.name}</td>
                     <td className="py-2 pr-3">{STATUS_LABELS[p.status]}</td>
                     <td className="py-2 pr-3 text-right">{p.variantCount}</td>
-                    <td className={cn("py-2 pr-3 text-right", p.stockTotal === 0 && "text-red-700")}>{p.stockTotal}</td>
+                    <td className={cn("py-2 pr-3 text-right", p.stockTotal === 0 && "text-bad")}>{p.stockTotal}</td>
                     <td className="py-2 pr-3 text-right">
-                      {p.minPricePaise === null ? "—" : inr.format(p.minPricePaise / 100)}
+                      {p.minPriceRupees === null ? "—" : inr.format(p.minPriceRupees)}
                     </td>
-                    <td className="py-2 text-neutral-500">{date.format(new Date(p.updatedAt))}</td>
+                    <td className="py-2 text-ink-soft">{date.format(new Date(p.updatedAt))}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           )}
           <footer className="flex items-center gap-3 text-sm">
-            <span className="text-neutral-500">
+            <span className="text-ink-soft">
               {result.total} {result.total === 1 ? "product" : "products"}
             </span>
             {lastPage > 1 && (

@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.vaabhi.shared.security.SecurityConfig;
+import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,13 +30,15 @@ class StoreBagControllerTest {
 
     @Test
     void isPublic() throws Exception {
-        given(service.quote(any())).willReturn(new BagQuote(List.of(), 0, 0, 0, 0));
+        given(service.quote(any()))
+                .willReturn(
+                        new BagQuote(List.of(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO));
 
         mockMvc.perform(post("/api/v1/store/bag/quote")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"lines\":[{\"sku\":\"A\",\"addonCode\":null,\"quantity\":1}]}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalPaise").value(0));
+                .andExpect(jsonPath("$.totalRupees").value(0));
     }
 
     @Test

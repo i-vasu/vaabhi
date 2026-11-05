@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { SignInForm } from "@/components/auth/sign-in-form";
+import { api } from "@/lib/api";
 import { safeNext } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Sign in or sign up | Vaabhi", robots: { index: false } };
@@ -9,7 +10,11 @@ export const metadata: Metadata = { title: "Sign in or sign up | Vaabhi", robots
 export default async function SignupPage({ searchParams }: Readonly<{ searchParams: Promise<{ next?: string }> }>) {
   // Read at request time, so the same image works in every environment (no rebuild to set the client id).
   await connection();
-  const googleClientId = process.env.GOOGLE_CLIENT_ID || null;
+  // Offer only what works: no phone form while the shop cannot send codes. If the API cannot be asked, show
+  // everything as before (sign-in itself will explain a problem).
+  const options = await api.auth.signInOptions().catch(() => null);
+  const googleClientId = (options?.googleSignIn ?? true) ? process.env.GOOGLE_CLIENT_ID || null : null;
+  const phoneSignIn = options?.phoneSignIn ?? true;
   const { next } = await searchParams;
 
   return (
@@ -18,7 +23,7 @@ export default async function SignupPage({ searchParams }: Readonly<{ searchPara
       <p className="mb-8 mt-2 text-center text-text-muted">
         Track orders, keep your wishlist and check out faster. New here? Your account is created as you sign in.
       </p>
-      <SignInForm googleClientId={googleClientId} next={safeNext(next)} />
+      <SignInForm googleClientId={googleClientId} phoneSignIn={phoneSignIn} next={safeNext(next)} />
       <p className="mt-8 text-center text-xs text-text-muted">
         By continuing you agree to our terms and privacy policy. We never post or share anything without asking.
       </p>

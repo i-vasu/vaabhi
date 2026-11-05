@@ -1,6 +1,7 @@
 package com.vaabhi.catalog;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.math.BigDecimal;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 
@@ -8,7 +9,12 @@ import org.jspecify.annotations.Nullable;
  * Current prices and availability for a bag. Totals count only lines that can be bought, at the quantity that can
  * be bought ({@code min(requested, maxQuantity)}). Shipping is added at checkout.
  */
-public record BagQuote(List<Line> lines, int itemsPaise, int addonsPaise, int mrpPaise, int totalPaise) {
+public record BagQuote(
+        List<Line> lines,
+        BigDecimal itemsRupees,
+        BigDecimal addonsRupees,
+        BigDecimal mrpRupees,
+        BigDecimal totalRupees) {
 
     @Schema(name = "BagLineStatus")
     public enum Status {
@@ -35,10 +41,10 @@ public record BagQuote(List<Line> lines, int itemsPaise, int addonsPaise, int mr
             @Nullable String colourName,
             @Nullable String colourHex,
             @Nullable String size,
-            int pricePaise,
-            int mrpPaise,
+            BigDecimal priceRupees,
+            BigDecimal mrpRupees,
             @Nullable String addonName,
-            int addonPricePaise,
+            BigDecimal addonPriceRupees,
             @Nullable AddonInput addonInput,
             @Nullable String imageKey) {}
 }

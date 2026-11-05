@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 
-/** The product page. Prices are in paise; {@code pricePaise}/{@code mrpPaise} are the cheapest active variant's. */
+/** The product page. Prices are in rupees; {@code priceRupees}/{@code mrpRupees} are the cheapest active variant's. */
 public record ProductDetailResponse(
         String slug,
         String name,
@@ -12,8 +12,8 @@ public record ProductDetailResponse(
         @Nullable String description,
         @Nullable Badge badge,
         CategoryRef category,
-        int pricePaise,
-        int mrpPaise,
+        BigDecimal priceRupees,
+        BigDecimal mrpRupees,
         int discountPercent,
         @Nullable String careInstructions,
         @Nullable BigDecimal sareeLengthM,

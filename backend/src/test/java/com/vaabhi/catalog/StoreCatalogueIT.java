@@ -8,11 +8,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.vaabhi.TestcontainersConfiguration;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -30,6 +32,37 @@ class StoreCatalogueIT {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private JdbcClient jdbc;
+
+    @Test
+    void newArrivalsListEveryCategoryNewestPublishedFirst() throws Exception {
+        // Other tests publish products too, so the expected order comes from the database.
+        List<String> newest = jdbc.sql("""
+                        SELECT slug FROM product p WHERE status = 'PUBLISHED'
+                          AND EXISTS (SELECT 1 FROM product_variant v WHERE v.product_id = p.id AND v.active)
+                        ORDER BY published_at DESC, id DESC LIMIT 3
+                        """).query(String.class).list();
+        long published = jdbc.sql("""
+                        SELECT COUNT(*) FROM product p WHERE status = 'PUBLISHED'
+                          AND EXISTS (SELECT 1 FROM product_variant v WHERE v.product_id = p.id AND v.active)
+                        """).query(Long.class).single();
+
+        mockMvc.perform(get("/api/v1/store/new-arrivals").param("pageSize", "3"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(published))
+                .andExpect(jsonPath("$.page").value(1))
+                .andExpect(jsonPath("$.items.length()").value(3))
+                .andExpect(jsonPath("$.items[0].slug").value(newest.get(0)))
+                .andExpect(jsonPath("$.items[1].slug").value(newest.get(1)))
+                .andExpect(jsonPath("$.items[2].slug").value(newest.get(2)));
+        mockMvc.perform(get("/api/v1/store/new-arrivals").param("pageSize", "48"))
+                .andExpect(jsonPath("$.items[*].slug", not(hasItem("tissue-silk-saree-draft"))))
+                .andExpect(jsonPath("$.items[*].slug", hasItem("velvet-bridal-lehenga-zardozi")));
+        mockMvc.perform(get("/api/v1/store/new-arrivals").param("pageSize", "49"))
+                .andExpect(status().isBadRequest());
+    }
+
     @Test
     void listsOnlyPublishedProducts() throws Exception {
         mockMvc.perform(get(SAREES).param("pageSize", "48"))
@@ -39,8 +72,8 @@ class StoreCatalogueIT {
                 .andExpect(jsonPath("$.items[*].slug", not(hasItem("tissue-silk-saree-draft"))))
                 .andExpect(jsonPath("$.items[0].slug").value("kanjeevaram-silk-saree-temple-border"))
                 .andExpect(jsonPath("$.items[0].colours.length()").value(2))
-                .andExpect(jsonPath("$.priceRange.minPaise").value(160000))
-                .andExpect(jsonPath("$.priceRange.maxPaise").value(2490000));
+                .andExpect(jsonPath("$.priceRange.minRupees").value(1600))
+                .andExpect(jsonPath("$.priceRange.maxRupees").value(24900));
     }
 
     @Test
@@ -83,11 +116,11 @@ class StoreCatalogueIT {
 
     @Test
     void priceFilterKeepsTheFullPriceRange() throws Exception {
-        mockMvc.perform(get(SAREES).param("priceMin", "500000").param("priceMax", "1000000"))
+        mockMvc.perform(get(SAREES).param("priceMin", "5000").param("priceMax", "10000"))
                 .andExpect(status().isOk())
                 .andExpect(
-                        jsonPath("$.items[*].pricePaise", everyItem(org.hamcrest.Matchers.lessThanOrEqualTo(1000000))))
-                .andExpect(jsonPath("$.priceRange.maxPaise").value(2490000));
+                        jsonPath("$.items[*].priceRupees", everyItem(org.hamcrest.Matchers.lessThanOrEqualTo(10000.0))))
+                .andExpect(jsonPath("$.priceRange.maxRupees").value(24900));
     }
 
     @Test
@@ -102,7 +135,7 @@ class StoreCatalogueIT {
                 .andExpect(jsonPath("$.addons[*].code")
                         .value(org.hamcrest.Matchers.contains("blouse-unstitched", "blouse-standard", "blouse-custom")))
                 .andExpect(jsonPath("$.addons[2].input").value("MEASUREMENTS"))
-                .andExpect(jsonPath("$.addons[2].pricePaise").value(180000));
+                .andExpect(jsonPath("$.addons[2].priceRupees").value(1800));
     }
 
     @Test

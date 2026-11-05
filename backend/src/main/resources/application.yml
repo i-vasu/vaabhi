@@ -33,6 +33,15 @@ server:
 
 vaabhi:
   # security.jwt-secret and security.cors-allowed-origins are set per profile.
+
+  # Admin dashboard sign-in. The owner account is created on first start only (while no staff exist).
+  staff:
+    token-ttl: ${STAFF_TOKEN_TTL:12h}
+    owner:
+      name: ${STAFF_OWNER_NAME:Owner}
+      email: ${STAFF_OWNER_EMAIL:}
+      password: ${STAFF_OWNER_PASSWORD:}
+
   # Cloudflare R2 for product photos (credentials only on the VPS, in .env).
   media:
     account-id: ${R2_ACCOUNT_ID:}
@@ -40,9 +49,49 @@ vaabhi:
     secret-access-key: ${R2_SECRET_ACCESS_KEY:}
     bucket: ${R2_BUCKET:vaabhi-media}
 
+  # Online payments for storefront checkout (Razorpay dashboard → Settings → API Keys and → Webhooks).
+  # Without the keys, checkout answers 503 "Online payment is not set up".
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID:}
+    key-secret: ${RAZORPAY_KEY_SECRET:}
+    webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:}
+
+  # Shipping online orders (Shiprocket → Settings → API: create an API user; Pickup Addresses for the location name).
+  # Without the API user, "Ship with Shiprocket" answers 503 and checkout skips the pincode check.
+  shiprocket:
+    email: ${SHIPROCKET_EMAIL:}
+    password: ${SHIPROCKET_PASSWORD:}
+    pickup-location: ${SHIPROCKET_PICKUP_LOCATION:Primary}
+    pickup-pincode: ${SHIPROCKET_PICKUP_PINCODE:}
+    webhook-token: ${SHIPROCKET_WEBHOOK_TOKEN:}
+    # The parcel every order is booked as (products have no weight yet).
+    weight-kg: ${SHIPROCKET_WEIGHT_KG:0.5}
+    length-cm: ${SHIPROCKET_LENGTH_CM:30}
+    breadth-cm: ${SHIPROCKET_BREADTH_CM:25}
+    height-cm: ${SHIPROCKET_HEIGHT_CM:5}
+
+  # Storefront shipping: free from this order value (items, in rupees), otherwise the flat fee.
+  checkout:
+    free-shipping-from-rupees: ${FREE_SHIPPING_FROM_RUPEES:1999}
+    shipping-rupees: ${SHIPPING_RUPEES:99}
+    # Days after delivery the customer can ask to return items.
+    return-days: ${RETURN_DAYS:7}
+    # The shop's website, linked from order emails.
+    storefront-url: ${STOREFRONT_URL:https://vaabhi.com}
+
   # Customer sign-in. Without GOOGLE_CLIENT_ID, Google sign-in answers 503 (phone sign-in still works).
   auth:
     google-client-id: ${GOOGLE_CLIENT_ID:}
+
+  # Order emails to customers over SMTP (MSG91 Email, Google Workspace, ZeptoMail, SES…). Without MAIL_HOST,
+  # emails go to the backend log in development and are skipped in production.
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    from: ${MAIL_FROM:}
+    reply-to: ${MAIL_REPLY_TO:}
 
   # SMS for sign-in codes: "log" prints them to the backend log (dev), "msg91" sends them (prod default).
   # MSG91 needs a DLT-approved template whose code variable is ##otp##; see docs/AUTH.md.
@@ -52,6 +101,34 @@ vaabhi:
       auth-key: ${MSG91_AUTH_KEY:}
       templates:
         otp: ${MSG91_OTP_TEMPLATE_ID:}
+        # Online order updates (variables: order, amount, payment, courier, tracking, refund). Unset: not sent.
+        web_order_placed: ${MSG91_ORDER_PLACED_TEMPLATE_ID:}
+        web_order_shipped: ${MSG91_ORDER_SHIPPED_TEMPLATE_ID:}
+        web_order_delivered: ${MSG91_ORDER_DELIVERED_TEMPLATE_ID:}
+        web_order_cancelled: ${MSG91_ORDER_CANCELLED_TEMPLATE_ID:}
+
+  # WhatsApp through MSG91 (no DLT): "log" prints messages (dev), "msg91" sends them (prod default). Each message
+  # needs a template approved by Meta in MSG91; a message whose template name is empty is not sent on WhatsApp.
+  # A sign-in template (WHATSAPP_LOGIN_TEMPLATE, Authentication category) also turns on phone sign-in by WhatsApp.
+  # params: which values fill {{1}}, {{2}}, … of each template, in order (comma-separated).
+  whatsapp:
+    provider: ${WHATSAPP_PROVIDER:log}
+    auth-key: ${MSG91_AUTH_KEY:}
+    integrated-number: ${WHATSAPP_NUMBER:917569189366}
+    language-code: ${WHATSAPP_LANGUAGE:en}
+    namespace: ${WHATSAPP_NAMESPACE:}
+    templates:
+      otp: ${WHATSAPP_LOGIN_TEMPLATE:}
+      web_order_placed: ${WHATSAPP_ORDER_PLACED_TEMPLATE:vaabhi_order_placed}
+      web_order_shipped: ${WHATSAPP_ORDER_SHIPPED_TEMPLATE:}
+      web_order_delivered: ${WHATSAPP_ORDER_DELIVERED_TEMPLATE:vaabhi_order_delivered}
+      web_order_cancelled: ${WHATSAPP_ORDER_CANCELLED_TEMPLATE:}
+    params:
+      otp: ${WHATSAPP_LOGIN_PARAMS:otp}
+      web_order_placed: ${WHATSAPP_ORDER_PLACED_PARAMS:order,amount,payment}
+      web_order_shipped: ${WHATSAPP_ORDER_SHIPPED_PARAMS:order,courier,tracking}
+      web_order_delivered: ${WHATSAPP_ORDER_DELIVERED_PARAMS:order}
+      web_order_cancelled: ${WHATSAPP_ORDER_CANCELLED_PARAMS:order,refund}
 
 management:
   endpoints:

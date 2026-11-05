@@ -18,10 +18,11 @@ import {
 } from "@/lib/bag";
 import { bagStitchingDays, fetchQuote, isBuyable, priceChanged } from "@/lib/bag-quote";
 import { formatPrice } from "@/lib/format";
+import { useMediaBase } from "@/components/media-base";
 import { mediaUrl, shade } from "@/lib/listing";
 import { SHIPPING_AND_RETURNS } from "@/lib/policies";
 
-const rupees = (paise: number) => formatPrice(paise / 100);
+const rupees = (amount: number) => formatPrice(amount);
 const CATEGORIES = [
   ["sarees", "Sarees"],
   ["lehengas", "Lehengas"],
@@ -36,6 +37,7 @@ type Undo = { text: string; restore: ReturnType<typeof removeLine> };
 /** The bag: lines kept in this browser, priced and checked against the shop on every visit. */
 export function BagView() {
   const lines = useSyncExternalStore(bagStore.subscribe, bagStore.read, bagStore.serverValue);
+  const mediaBase = useMediaBase();
   const [load, setLoad] = useState<Load>({ state: "loading" });
   const [undo, setUndo] = useState<Undo | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -106,11 +108,12 @@ export function BagView() {
             {lines.map((line, i) => {
               const q = quote?.lines[i];
               const buyable = !quote || isBuyable(q);
-              const unit = q && buyable ? q.pricePaise + q.addonPricePaise : line.unitPricePaise + line.addonPricePaise;
-              const mrp = q && buyable ? q.mrpPaise + q.addonPricePaise : unit;
+              const unit =
+                q && buyable ? q.priceRupees + q.addonPriceRupees : line.unitPriceRupees + line.addonPriceRupees;
+              const mrp = q && buyable ? q.mrpRupees + q.addonPriceRupees : unit;
               const max = q ? Math.min(MAX_QUANTITY, q.maxQuantity) : MAX_QUANTITY;
-              const addonPaise = q && buyable ? q.addonPricePaise : line.addonPricePaise;
-              const image = (q?.imageKey ?? line.imageKey) && mediaUrl((q?.imageKey ?? line.imageKey)!, 400);
+              const addonRupees = q && buyable ? q.addonPriceRupees : line.addonPriceRupees;
+              const image = (q?.imageKey ?? line.imageKey) && mediaUrl((q?.imageKey ?? line.imageKey)!, 400, mediaBase);
               return (
                 <li
                   key={lineKey(line)}
@@ -151,7 +154,7 @@ export function BagView() {
                             {line.addonName}
                             {line.blouseSize ? `, size ${line.blouseSize}` : ""}{" "}
                             <span className="text-text-muted">
-                              {addonPaise ? `(+${rupees(addonPaise)})` : "(included)"}
+                              {addonRupees ? `(+${rupees(addonRupees)})` : "(included)"}
                             </span>
                           </li>
                         )}
@@ -227,24 +230,24 @@ export function BagView() {
             {quote ? (
               <dl className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-2 text-sm tabular-nums">
                 <dt className="text-text-secondary">Items</dt>
-                <dd className="text-right">{rupees(quote.itemsPaise)}</dd>
-                {quote.addonsPaise > 0 && (
+                <dd className="text-right">{rupees(quote.itemsRupees)}</dd>
+                {quote.addonsRupees > 0 && (
                   <>
                     <dt className="text-text-secondary">Blouse stitching</dt>
-                    <dd className="text-right">{rupees(quote.addonsPaise)}</dd>
+                    <dd className="text-right">{rupees(quote.addonsRupees)}</dd>
                   </>
                 )}
                 <dt className="text-text-secondary">Shipping</dt>
                 <dd className="text-right text-text-secondary">Calculated at checkout</dd>
-                {quote.mrpPaise > quote.totalPaise && (
+                {quote.mrpRupees > quote.totalRupees && (
                   <>
                     <dt className="text-feedback-success">You save on MRP</dt>
-                    <dd className="text-right text-feedback-success">−{rupees(quote.mrpPaise - quote.totalPaise)}</dd>
+                    <dd className="text-right text-feedback-success">−{rupees(quote.mrpRupees - quote.totalRupees)}</dd>
                   </>
                 )}
                 <dt className="mt-1 border-t border-border-default pt-2.5 text-[17px] font-semibold">Total</dt>
                 <dd className="mt-1 border-t border-border-default pt-2.5 text-right text-[17px] font-semibold">
-                  {rupees(quote.totalPaise)}
+                  {rupees(quote.totalRupees)}
                 </dd>
               </dl>
             ) : (
@@ -256,10 +259,7 @@ export function BagView() {
             {quote && blocked && (
               <p className="mb-2.5 text-[13px] text-feedback-error">Fix the items marked above to continue.</p>
             )}
-            <CheckoutButton
-              disabled={blocked}
-              onClick={() => setNotice("Checkout opens with the next update. Your bag is saved on this device.")}
-            />
+            <CheckoutButton disabled={blocked} />
             {notice && <output className="mt-2 block text-[13px] text-text-secondary">{notice}</output>}
             <p className="mt-3 text-center text-xs text-text-muted">
               UPI · Cards · Netbanking · Cash on delivery
@@ -280,16 +280,12 @@ export function BagView() {
 
       <div className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-3 border-t border-border-default bg-bg-surface px-4 py-3 md:hidden">
         <span className="flex flex-col tabular-nums">
-          <strong className="text-[17px]">{quote ? rupees(quote.totalPaise) : "—"}</strong>
+          <strong className="text-[17px]">{quote ? rupees(quote.totalRupees) : "—"}</strong>
           <span className="text-xs text-text-muted">
             {blocked && quote ? "Fix marked items" : "Shipping at checkout"}
           </span>
         </span>
-        <CheckoutButton
-          compact
-          disabled={blocked}
-          onClick={() => setNotice("Checkout opens with the next update. Your bag is saved on this device.")}
-        />
+        <CheckoutButton compact disabled={blocked} />
       </div>
 
       {undo && (
@@ -327,7 +323,7 @@ function LineNote({ line, quote }: Readonly<{ line: BagLine; quote: BagQuote["li
     ]);
   else if (quote.stockLeft) notes.push([`Only ${quote.stockLeft} left`, "text-brand-festive font-semibold"]);
   if (priceChanged(line, quote))
-    notes.push([`Price updated from ${rupees(line.unitPricePaise + line.addonPricePaise)}`, "text-text-secondary"]);
+    notes.push([`Price updated from ${rupees(line.unitPriceRupees + line.addonPriceRupees)}`, "text-text-secondary"]);
   if (quote.addonInput === "SIZE" || quote.addonInput === "MEASUREMENTS")
     notes.push([
       `Stitching adds ${quote.addonInput === "SIZE" ? "5–7" : "7–10"} days · stitched blouses cannot be returned`,
@@ -344,20 +340,20 @@ function LineNote({ line, quote }: Readonly<{ line: BagLine; quote: BagQuote["li
   );
 }
 
-function CheckoutButton({
-  disabled,
-  compact,
-  onClick,
-}: Readonly<{ disabled: boolean; compact?: boolean; onClick: () => void }>) {
+function CheckoutButton({ disabled, compact }: Readonly<{ disabled: boolean; compact?: boolean }>) {
+  const label = compact ? "Checkout" : "Checkout securely";
+  const classes = buttonClasses("primary", compact ? "flex-1" : "w-full");
+  if (disabled) {
+    return (
+      <button type="button" disabled className={classes}>
+        {label}
+      </button>
+    );
+  }
   return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      className={buttonClasses("primary", compact ? "flex-1" : "w-full")}
-    >
-      {compact ? "Checkout" : "Checkout securely"}
-    </button>
+    <Link href="/checkout" className={classes}>
+      {label}
+    </Link>
   );
 }
 

@@ -2,8 +2,8 @@ import type { AdminProduct, CatalogOptions } from "@vaabhi/api-client";
 
 export const options: CatalogOptions = {
   categories: [
-    { id: 1, slug: "sarees", name: "Sarees", description: null },
-    { id: 2, slug: "lehengas", name: "Lehengas", description: null },
+    { id: 1, slug: "sarees", name: "Sarees", description: null, imageKey: null },
+    { id: 2, slug: "lehengas", name: "Lehengas", description: null, imageKey: null },
   ],
   facets: [
     {
@@ -35,6 +35,7 @@ export const product = (overrides: Partial<AdminProduct> = {}): AdminProduct => 
   sareeLengthM: 5.5,
   blouseIncluded: true,
   blouseLengthM: 0.8,
+  shippingWeightGrams: null,
   attributes: { fabric: ["silk"] },
   variants: [
     {
@@ -43,8 +44,8 @@ export const product = (overrides: Partial<AdminProduct> = {}): AdminProduct => 
       colourHex: "#B3261E",
       colourFamily: "red",
       size: null,
-      pricePaise: 1425000,
-      mrpPaise: 1780000,
+      priceRupees: 14250,
+      mrpRupees: 17800,
       stockQty: 4,
       active: true,
     },
@@ -55,7 +56,7 @@ export const product = (overrides: Partial<AdminProduct> = {}): AdminProduct => 
       kind: "BLOUSE",
       name: "Made to measure",
       description: null,
-      pricePaise: 180000,
+      priceRupees: 1800,
       input: "MEASUREMENTS",
       active: true,
     },

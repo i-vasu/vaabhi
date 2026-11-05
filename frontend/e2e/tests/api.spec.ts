@@ -22,7 +22,7 @@ test.describe("API", () => {
     expect(listing.ok()).toBeTruthy();
     const body = await listing.json();
     expect(body.total).toBeGreaterThan(0);
-    const prices = body.items.map((item: { pricePaise: number }) => item.pricePaise);
+    const prices = body.items.map((item: { priceRupees: number }) => item.priceRupees);
     expect(prices).toEqual([...prices].sort((a, b) => a - b));
     expect(body.filters.find((group: { code: string }) => group.code === "fabric")).toBeTruthy();
 

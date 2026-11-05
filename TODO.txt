@@ -1,0 +1,35 @@
+1. Explain the end to end flow of uploading media (images, videos, deatils of a product),
+how that media is stored in the database and how it is displayed in the frontend.
+2. Explain end to end flow of tracking the order recieved from storefront and how that order is stored in the database.
+is it delivered?
+3. Explain the end to end flow of payment gateway integration.
+4. Explain the end to end flow of how best seller is determined. new arrivals are determined.
+5. Explain the end to end flow of how the user can add products to their cart.
+6. Explain the end to end flow of how the user can checkout.
+7. Explain the end to end flow of how the user can track their order.
+8. Explain the end to end flow of how the user can cancel their order.
+9. Explain the end to end flow of how the user can return their order.
+10. Explain the end to end flow of how the user can contact support of the store.
+11. Explain the end to end flow of how the user can view their profile.
+12. Explain the end to end flow of how the user can update their profile.
+13. Explain end to end flow of how admin can add/update/delete products to the store.
+14. Explain end to end flow of how admin can add new categories to the store.
+
+
+User Testing:
+1. Join on whatsapp should redirect to whatsapp business account.
+2. after scrolling home banner, need more such banners, before showing shop by category.
+3. Best sellers based on time taken to sold from published, number of orders.
+4. search bar should work with semanticsearch.
+5. PreOrder should redirect to its page.
+6. Blogs should redirect to blogs published so far.
+7. Blog should written and publish from admin panel.
+8. Collections page should direct to all products listed. allowed to be filtered.
+9. Support page should have contact form.
+10. Add more templates for whatsapp, mail.
+11. add newsletter.
+12. add sustainability page
+13.add rewards,pass page
+
+
+

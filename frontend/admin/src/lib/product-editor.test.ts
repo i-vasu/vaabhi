@@ -6,7 +6,7 @@ import {
   formFromState,
   standardBlouseAddons,
   stateFromProduct,
-  toPaise,
+  toRupees,
   variantsForColour,
 } from "./product-editor";
 
@@ -29,6 +29,7 @@ describe("product editor state", () => {
       sareeLengthM: 5.5,
       blouseIncluded: true,
       blouseLengthM: 0.8,
+      shippingWeightGrams: null,
       attributes: { fabric: ["silk"] },
       variants: [
         {
@@ -37,8 +38,8 @@ describe("product editor state", () => {
           colourHex: "#B3261E",
           colourFamily: "red",
           size: null,
-          pricePaise: 1425000,
-          mrpPaise: 1780000,
+          priceRupees: 14250,
+          mrpRupees: 17800,
           stockQty: 4,
           active: true,
         },
@@ -49,7 +50,7 @@ describe("product editor state", () => {
           kind: "BLOUSE",
           name: "Made to measure",
           description: null,
-          pricePaise: 180000,
+          priceRupees: 1800,
           input: "MEASUREMENTS",
           active: true,
         },
@@ -67,14 +68,14 @@ describe("product editor state", () => {
     const form = formFromState(state);
     expect(form).toMatchObject({ sareeLengthM: null, blouseIncluded: false, blouseLengthM: null, badge: null });
     expect(form.attributes).toEqual({ occasion: ["festive"] });
-    expect(form.variants[0]).toMatchObject({ sku: null, pricePaise: 125050, mrpPaise: 125050, stockQty: 0 });
+    expect(form.variants[0]).toMatchObject({ sku: null, priceRupees: 1250.5, mrpRupees: 1250.5, stockQty: 0 });
     expect(stateFromProduct(product({ sareeLengthM: null })).sareeLengthM).toBe("");
   });
 
   it("parses rupees", () => {
-    expect(toPaise("12,499")).toBe(1249900);
-    expect(toPaise(" 0.5 ")).toBe(50);
-    expect(toPaise("abc")).toBe(0);
+    expect(toRupees("12,499")).toBe(12499);
+    expect(toRupees(" 0.5 ")).toBe(0.5);
+    expect(toRupees("abc")).toBe(0);
   });
 
   it("builds variant rows per size and standard blouse options", () => {
@@ -90,7 +91,7 @@ describe("product editor state", () => {
 
   it("finds errors for a field and its children", () => {
     const errors = [
-      { field: "variants[1].mrpPaise", message: "MRP too low" },
+      { field: "variants[1].mrpRupees", message: "MRP too low" },
       { field: "variants[10]", message: "duplicate" },
       { field: "name", message: "required" },
     ];
