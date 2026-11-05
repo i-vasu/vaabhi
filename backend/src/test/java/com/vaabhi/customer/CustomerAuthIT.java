@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import com.vaabhi.TestcontainersConfiguration;
 import com.vaabhi.shared.sms.SmsSender;
+import com.vaabhi.shared.sms.WhatsAppSender;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -73,6 +74,22 @@ class CustomerAuthIT {
             }
         }
 
+        /** Sign-in codes by WhatsApp, switched on per test (as if its sign-in template were approved). */
+        static class CapturingWhatsApp implements WhatsAppSender {
+            final Map<String, String> codes = new ConcurrentHashMap<>();
+            volatile boolean codeTemplate;
+
+            @Override
+            public boolean configured(String template) {
+                return codeTemplate && template.equals(SmsSender.OTP_TEMPLATE);
+            }
+
+            @Override
+            public void send(String phone, String template, Map<String, String> variables) {
+                codes.put(phone, variables.get("otp"));
+            }
+        }
+
         /** A clock the test moves forward; starts now so tokens are valid for the real JWT decoder. */
         static class MovableClock extends Clock {
             private final AtomicLong offsetMillis = new AtomicLong();
@@ -105,6 +122,12 @@ class CustomerAuthIT {
 
         @Bean
         @Primary
+        CapturingWhatsApp capturingWhatsApp() {
+            return new CapturingWhatsApp();
+        }
+
+        @Bean
+        @Primary
         MovableClock movableClock() {
             return new MovableClock();
         }
@@ -130,6 +153,9 @@ class CustomerAuthIT {
             });
         }
     }
+
+    @Autowired
+    private Fakes.CapturingWhatsApp whatsApp;
 
     private ResultActions postJson(String path, String body) throws Exception {
         return mockMvc.perform(
@@ -297,6 +323,20 @@ class CustomerAuthIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.phoneSignIn").value(true))
                 .andExpect(jsonPath("$.googleSignIn").value(true));
+    }
+
+    @Test
+    void sendsCodesByWhatsAppOnceItsSignInTemplateIsApproved() throws Exception {
+        whatsApp.codeTemplate = true;
+        try {
+            var phone = "+919800011122";
+            postJson("/api/v1/auth/otp/request", "{\"phone\":\"9800011122\"}").andExpect(status().isAccepted());
+            assertThat(whatsApp.codes.get(phone)).matches("\\d{6}");
+            assertThat(sms.codes).doesNotContainKey(phone);
+            verify(phone, whatsApp.codes.get(phone));
+        } finally {
+            whatsApp.codeTemplate = false;
+        }
     }
 
     @Test

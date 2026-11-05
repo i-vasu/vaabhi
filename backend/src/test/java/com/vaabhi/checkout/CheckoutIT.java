@@ -11,6 +11,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.vaabhi.TestcontainersConfiguration;
 import com.vaabhi.shared.email.EmailMessage;
 import com.vaabhi.shared.email.EmailSender;
+import com.vaabhi.shared.sms.WhatsAppSender;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
@@ -57,6 +58,35 @@ class CheckoutIT {
         @Primary
         CapturingEmail capturingEmail() {
             return new CapturingEmail();
+        }
+
+        @Bean
+        @Primary
+        CapturingWhatsApp capturingWhatsApp() {
+            return new CapturingWhatsApp();
+        }
+    }
+
+    /** Keeps WhatsApp messages; set up like the defaults: only "placed" and "delivered" have approved templates. */
+    static class CapturingWhatsApp implements WhatsAppSender {
+        record Sent(String phone, String template, java.util.Map<String, String> variables) {}
+
+        final List<Sent> sent = new CopyOnWriteArrayList<>();
+
+        @Override
+        public boolean configured(String template) {
+            return template.equals("web_order_placed") || template.equals("web_order_delivered");
+        }
+
+        @Override
+        public void send(String phone, String template, java.util.Map<String, String> variables) {
+            sent.add(new Sent(phone, template, variables));
+        }
+
+        List<Sent> about(String order) {
+            return sent.stream()
+                    .filter(s -> order.equals(s.variables().get("order")))
+                    .toList();
         }
     }
 
@@ -129,6 +159,9 @@ class CheckoutIT {
 
     @Autowired
     private CapturingEmail emails;
+
+    @Autowired
+    private CapturingWhatsApp whatsApp;
 
     /** A published, active variant with 10 in stock, and a signed-in customer of our own. */
     @BeforeEach
@@ -482,6 +515,15 @@ class CheckoutIT {
         admin("/" + number + "/ship", "{\"courier\":\"Local\",\"trackingNumber\":\"T-9\"}")
                 .andExpect(status().isOk());
         admin("/" + number + "/cancel", "{\"reason\":null}").andExpect(status().isOk());
+
+        // WhatsApp: only the messages with an approved template ("placed"), to the delivery phone.
+        assertThat(whatsApp.about(number)).singleElement().satisfies(sent -> {
+            assertThat(sent.template()).isEqualTo("web_order_placed");
+            assertThat(sent.phone()).isEqualTo("+919876501234");
+            assertThat(sent.variables())
+                    .containsEntry("payment", "Cash on delivery")
+                    .hasEntrySatisfying("amount", amount -> assertThat(amount).matches("[\\d,]+"));
+        });
 
         var mine = emails.to(customerEmail);
         assertThat(mine)

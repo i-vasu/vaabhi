@@ -3,6 +3,7 @@ package com.vaabhi.customer;
 import com.vaabhi.shared.security.SecurityProperties;
 import com.vaabhi.shared.sms.SmsException;
 import com.vaabhi.shared.sms.SmsSender;
+import com.vaabhi.shared.sms.WhatsAppSender;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -31,6 +32,7 @@ class AuthService {
     private final SessionTokens sessions;
     private final GoogleIdTokens google;
     private final SmsSender sms;
+    private final WhatsAppSender whatsApp;
     private final Clock clock;
 
     AuthService(
@@ -42,6 +44,7 @@ class AuthService {
             SessionTokens sessions,
             GoogleIdTokens google,
             SmsSender sms,
+            WhatsAppSender whatsApp,
             Clock clock) {
         this.properties = properties;
         this.security = security;
@@ -51,19 +54,25 @@ class AuthService {
         this.sessions = sessions;
         this.google = google;
         this.sms = sms;
+        this.whatsApp = whatsApp;
         this.clock = clock;
+    }
+
+    /** A sign-in code can go out: by WhatsApp when its sign-in template is set up, otherwise by SMS. */
+    private boolean codesCanBeSent() {
+        return whatsApp.configured(SmsSender.OTP_TEMPLATE) || sms.configured();
     }
 
     /** Which sign-in methods the storefront should offer. */
     public AuthOptions options() {
-        return new AuthOptions(sms.configured(), google.configured());
+        return new AuthOptions(codesCanBeSent(), google.configured());
     }
 
     /** Sends a 6-digit code. Rolls back (so it does not count) if the SMS cannot be sent. */
     @Transactional
     public OtpSent requestOtp(String rawPhone) {
         var phone = phone(rawPhone);
-        if (!sms.configured()) {
+        if (!codesCanBeSent()) {
             throw AuthException.unavailable("Sign-in with mobile number is not available right now. Use Google.");
         }
         var otp = properties.otp();
@@ -83,7 +92,11 @@ class AuthService {
         var code = Secrets.otpCode();
         otps.replace(phone, hash(phone, code), now, now.plus(otp.ttl()));
         try {
-            sms.send(phone, SmsSender.OTP_TEMPLATE, Map.of("otp", code));
+            if (whatsApp.configured(SmsSender.OTP_TEMPLATE)) {
+                whatsApp.send(phone, SmsSender.OTP_TEMPLATE, Map.of("otp", code));
+            } else {
+                sms.send(phone, SmsSender.OTP_TEMPLATE, Map.of("otp", code));
+            }
         } catch (SmsException e) {
             log.warn("Could not send OTP to {}: {}", PhoneNumbers.masked(phone), e.getMessage());
             throw AuthException.badGateway("We could not send the code. Please try again.");
