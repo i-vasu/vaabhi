@@ -14,3 +14,22 @@ is it delivered?
 12. Explain the end to end flow of how the user can update their profile.
 13. Explain end to end flow of how admin can add/update/delete products to the store.
 14. Explain end to end flow of how admin can add new categories to the store.
+
+
+User Testing:
+1. Join on whatsapp should redirect to whatsapp business account.
+2. after scrolling home banner, need more such banners, before showing shop by category.
+3. Best sellers based on time taken to sold from published, number of orders.
+4. search bar should work with semanticsearch.
+5. PreOrder should redirect to its page.
+6. Blogs should redirect to blogs published so far.
+7. Blog should written and publish from admin panel.
+8. Collections page should direct to all products listed. allowed to be filtered.
+9. Support page should have contact form.
+10. Add more templates for whatsapp, mail.
+11. add newsletter.
+12. add sustainability page
+13.add rewards,pass page
+
+
+

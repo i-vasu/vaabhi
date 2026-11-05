@@ -1,2 +1,8 @@
 .neon
 .env.local
+
+# Local tools and IDE output (never committed)
+.idea/
+out/
+.ai/
+.awb/
