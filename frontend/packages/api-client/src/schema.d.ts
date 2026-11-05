@@ -1748,6 +1748,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["signInOptions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/workshop/staff": {
         parameters: {
             query?: never;
@@ -3787,6 +3803,10 @@ export interface components {
             sort: string;
             filters: components["schemas"]["FilterGroup"][];
             priceRange: components["schemas"]["PriceRange"] | null;
+        };
+        AuthOptions: {
+            phoneSignIn: boolean;
+            googleSignIn: boolean;
         };
         StageLoad: {
             stage: components["schemas"]["ProductionStage"];
@@ -7827,6 +7847,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["WebOrder"];
+                };
+            };
+        };
+    };
+    signInOptions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AuthOptions"];
                 };
             };
         };

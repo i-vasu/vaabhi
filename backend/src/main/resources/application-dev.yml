@@ -10,6 +10,8 @@ spring:
     locations: classpath:db/migration,classpath:db/demo
 
 vaabhi:
+  checkout:
+    storefront-url: ${STOREFRONT_URL:http://localhost:3000}
   security:
     # Dev-only secret; the e2e tests sign admin tokens with it unless JWT_SECRET is set.
     jwt-secret: ${JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}

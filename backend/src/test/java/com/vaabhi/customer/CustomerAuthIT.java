@@ -291,6 +291,15 @@ class CustomerAuthIT {
     }
 
     @Test
+    void tellsTheSignInPageWhichMethodsWork() throws Exception {
+        // Public, so the sign-in page can ask before anyone is signed in.
+        mockMvc.perform(get("/api/v1/auth/options"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.phoneSignIn").value(true))
+                .andExpect(jsonPath("$.googleSignIn").value(true));
+    }
+
+    @Test
     void profileNeedsACustomerToken() throws Exception {
         mockMvc.perform(get("/api/v1/customer/me")).andExpect(status().isUnauthorized());
         mockMvc.perform(get("/api/v1/customer/me").with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))

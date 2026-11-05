@@ -6,6 +6,7 @@ import com.vaabhi.customer.AuthRequests.OtpVerification;
 import com.vaabhi.customer.AuthRequests.RefreshRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +25,12 @@ class AuthController {
 
     AuthController(AuthService service) {
         this.service = service;
+    }
+
+    /** Which sign-in methods work right now (the storefront hides the others). */
+    @GetMapping("/options")
+    AuthOptions signInOptions() {
+        return service.options();
     }
 
     @PostMapping("/otp/request")

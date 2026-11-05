@@ -52,6 +52,9 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/api/v1/webhooks/**")
                         .permitAll()
+                        // Which sign-in methods work, read by the sign-in page.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/auth/options")
+                        .permitAll()
                         // Sign-in, refresh and logout: the caller has no access token yet (or it expired).
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/**")
                         .permitAll()

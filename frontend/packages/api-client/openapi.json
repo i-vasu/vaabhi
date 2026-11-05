@@ -5329,6 +5329,26 @@
                 }
             }
         },
+        "/api/v1/auth/options": {
+            "get": {
+                "tags": [
+                    "auth-controller"
+                ],
+                "operationId": "signInOptions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthOptions"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/workshop/staff": {
             "get": {
                 "tags": [
@@ -13722,6 +13742,21 @@
                     "priceRange",
                     "sort",
                     "total"
+                ]
+            },
+            "AuthOptions": {
+                "type": "object",
+                "properties": {
+                    "phoneSignIn": {
+                        "type": "boolean"
+                    },
+                    "googleSignIn": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "googleSignIn",
+                    "phoneSignIn"
                 ]
             },
             "StageLoad": {

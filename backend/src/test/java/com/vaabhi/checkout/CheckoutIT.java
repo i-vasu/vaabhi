@@ -9,17 +9,24 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import com.vaabhi.TestcontainersConfiguration;
+import com.vaabhi.shared.email.EmailMessage;
+import com.vaabhi.shared.email.EmailSender;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -40,8 +47,36 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("dev")
-@Import(TestcontainersConfiguration.class)
+@Import({TestcontainersConfiguration.class, CheckoutIT.Mail.class})
 class CheckoutIT {
+
+    /** Keeps the emails instead of sending them. */
+    @TestConfiguration(proxyBeanMethods = false)
+    static class Mail {
+        @Bean
+        @Primary
+        CapturingEmail capturingEmail() {
+            return new CapturingEmail();
+        }
+    }
+
+    static class CapturingEmail implements EmailSender {
+        final List<EmailMessage> sent = new CopyOnWriteArrayList<>();
+
+        @Override
+        public boolean configured() {
+            return true;
+        }
+
+        @Override
+        public void send(EmailMessage message) {
+            sent.add(message);
+        }
+
+        List<EmailMessage> to(String address) {
+            return sent.stream().filter(m -> m.to().equals(address)).toList();
+        }
+    }
 
     private static final String KEY_SECRET = "rzp-test-secret";
     private static final String WEBHOOK_SECRET = "rzp-webhook-secret";
@@ -90,6 +125,10 @@ class CheckoutIT {
 
     private String sku;
     private RequestPostProcessor customer;
+    private String customerEmail;
+
+    @Autowired
+    private CapturingEmail emails;
 
     /** A published, active variant with 10 in stock, and a signed-in customer of our own. */
     @BeforeEach
@@ -104,7 +143,7 @@ class CheckoutIT {
         long customerId = jdbc.sql("""
                         INSERT INTO customer (name, email, phone) VALUES ('Meera', :email, :phone) RETURNING id
                         """)
-                .param("email", "meera" + PHONES.incrementAndGet() + "@vaabhi.test")
+                .param("email", customerEmail = "meera" + PHONES.incrementAndGet() + "@vaabhi.test")
                 .param("phone", "+9197" + PHONES.get() + "123")
                 .query(Long.class)
                 .single();
@@ -435,6 +474,63 @@ class CheckoutIT {
         admin("/" + number + "/cancel", "{\"reason\":\"Owner cancels\"}")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("CANCELLED"));
+    }
+
+    @Test
+    void emailsTheCustomerWhenTheOrderIsPlacedShippedAndCancelledButOnlyWithAnAddress() throws Exception {
+        String number = read(checkout("COD", 1, "110001").andExpect(status().isCreated()), "$.orderNumber");
+        admin("/" + number + "/ship", "{\"courier\":\"Local\",\"trackingNumber\":\"T-9\"}")
+                .andExpect(status().isOk());
+        admin("/" + number + "/cancel", "{\"reason\":null}").andExpect(status().isOk());
+
+        var mine = emails.to(customerEmail);
+        assertThat(mine)
+                .extracting(EmailMessage::subject)
+                .containsExactly(
+                        "Your Vaabhi order " + number + " is placed",
+                        "Your Vaabhi order " + number + " has shipped",
+                        "Your Vaabhi order " + number + " is cancelled");
+        assertThat(mine.get(0).text())
+                .contains("Delivering to: Meera Iyer, 4 Lake View, Delhi")
+                .contains("Total: ₹");
+        assertThat(mine.get(0).html()).contains("/account/orders");
+        assertThat(mine.get(1).text()).contains("on its way with Local, tracking number T-9.");
+
+        // A customer who signed in with a phone only has no email address: nothing is sent.
+        long phoneOnly = jdbc.sql("INSERT INTO customer (name, phone) VALUES ('Ravi', :phone) RETURNING id")
+                .param("phone", "+9196" + PHONES.incrementAndGet() + "123")
+                .query(Long.class)
+                .single();
+        customer = jwt().jwt(j -> j.subject(Long.toString(phoneOnly)))
+                .authorities(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
+        int before = emails.sent.size();
+        checkout("COD", 1, "110001").andExpect(status().isCreated());
+        assertThat(emails.sent).hasSize(before);
+    }
+
+    @Test
+    void emailsEachStepOfAReturn() throws Exception {
+        String number = read(checkout("COD", 1, "110001").andExpect(status().isCreated()), "$.orderNumber");
+        admin("/" + number + "/deliver", "").andExpect(status().isOk());
+        String returnNumber = read(
+                customerPost("/orders/" + number + "/returns", """
+                                {"reason":"Too long","items":[{"position":0,"quantity":1}]}
+                                """).andExpect(status().isCreated()),
+                "$.returns[0].number");
+        admin("/returns/" + returnNumber + "/approve", "{\"note\":\"Pickup tomorrow\"}")
+                .andExpect(status().isOk());
+        admin("/returns/" + returnNumber + "/pickup", "").andExpect(status().isOk());
+        admin("/returns/" + returnNumber + "/refund", "{\"amountRupees\":100,\"reference\":\"UPI-7\"}")
+                .andExpect(status().isOk());
+
+        assertThat(emails.to(customerEmail))
+                .extracting(EmailMessage::subject)
+                .contains(
+                        "Your Vaabhi order " + number + " is delivered",
+                        "Your return " + returnNumber + " is approved",
+                        "Pickup booked for your return " + returnNumber,
+                        "Your refund for return " + returnNumber);
+        assertThat(emails.to(customerEmail).getLast().text()).contains("₹100 has been sent to you (reference UPI-7).");
     }
 
     // --- helpers ------------------------------------------------------------------------------------------------

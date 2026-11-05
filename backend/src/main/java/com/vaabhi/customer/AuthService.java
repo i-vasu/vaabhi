@@ -54,6 +54,11 @@ class AuthService {
         this.clock = clock;
     }
 
+    /** Which sign-in methods the storefront should offer. */
+    public AuthOptions options() {
+        return new AuthOptions(sms.configured(), google.configured());
+    }
+
     /** Sends a 6-digit code. Rolls back (so it does not count) if the SMS cannot be sent. */
     @Transactional
     public OtpSent requestOtp(String rawPhone) {

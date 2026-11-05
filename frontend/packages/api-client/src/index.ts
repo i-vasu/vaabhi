@@ -181,6 +181,7 @@ export type SettingsSections = {
 export type OtpSent = Schemas["OtpSent"];
 export type AuthSession = Schemas["AuthSession"];
 export type CustomerProfile = Schemas["CustomerProfile"];
+export type AuthOptions = Schemas["AuthOptions"];
 export type CheckoutRequest = Schemas["CheckoutRequest"];
 export type CheckoutStart = Schemas["CheckoutStart"];
 export type PaymentConfirmation = Schemas["PaymentConfirmation"];
@@ -318,6 +319,8 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
       /** Admin dashboard sign-in (email + password). */
       staffLogin: (credentials: StaffLoginRequest) =>
         send<StaffSession>("POST", "/api/v1/auth/staff/login", credentials),
+      /** Which customer sign-in methods work right now (the sign-in page hides the others). */
+      signInOptions: () => request<AuthOptions>("/api/v1/auth/options", { cache: "no-store" }),
       requestOtp: (phone: string) => send<OtpSent>("POST", "/api/v1/auth/otp/request", { phone }),
       verifyOtp: (phone: string, code: string) => send<AuthSession>("POST", "/api/v1/auth/otp/verify", { phone, code }),
       signInWithGoogle: (credential: string) => send<AuthSession>("POST", "/api/v1/auth/google", { credential }),

@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
@@ -29,12 +30,19 @@ public class WebOrderReturns {
     private final CheckoutService orders;
     private final RazorpayClient razorpay;
     private final CatalogStock stock;
+    private final ApplicationEventPublisher events;
 
-    WebOrderReturns(JdbcClient jdbc, CheckoutService orders, RazorpayClient razorpay, CatalogStock stock) {
+    WebOrderReturns(
+            JdbcClient jdbc,
+            CheckoutService orders,
+            RazorpayClient razorpay,
+            CatalogStock stock,
+            ApplicationEventPublisher events) {
         this.jdbc = jdbc;
         this.orders = orders;
         this.razorpay = razorpay;
         this.stock = stock;
+        this.events = events;
     }
 
     /** The customer's request; at most the quantities delivered and not already being returned. */
@@ -101,6 +109,7 @@ public class WebOrderReturns {
             throw conflict("Only a requested return can be approved");
         }
         decide(returnNumber, "APPROVED", form.note());
+        publish(WebOrderReturnEvent.Type.APPROVED, current.orderNumber(), returnNumber);
         return orders.shopOrder(current.orderNumber());
     }
 
@@ -111,6 +120,7 @@ public class WebOrderReturns {
             throw conflict("This return is already closed");
         }
         decide(returnNumber, "REJECTED", form.note());
+        publish(WebOrderReturnEvent.Type.REJECTED, current.orderNumber(), returnNumber);
         return orders.shopOrder(current.orderNumber());
     }
 
@@ -182,6 +192,7 @@ public class WebOrderReturns {
                 .list()
                 .forEach(e -> back.merge(e.getKey(), e.getValue(), Integer::sum));
         stock.restore(back);
+        publish(WebOrderReturnEvent.Type.REFUNDED, current.orderNumber(), returnNumber);
         return orders.shopOrder(current.orderNumber());
     }
 
@@ -229,6 +240,11 @@ public class WebOrderReturns {
                 .param("awb", awb)
                 .param(NUMBER, returnNumber)
                 .update();
+        publish(WebOrderReturnEvent.Type.PICKUP_BOOKED, find(returnNumber).orderNumber(), returnNumber);
+    }
+
+    private void publish(WebOrderReturnEvent.Type type, String orderNumber, String returnNumber) {
+        events.publishEvent(new WebOrderReturnEvent(type, orderNumber, returnNumber));
     }
 
     private void decide(String returnNumber, String status, @Nullable String note) {

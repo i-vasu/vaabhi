@@ -76,10 +76,22 @@ vaabhi:
     shipping-rupees: ${SHIPPING_RUPEES:99}
     # Days after delivery the customer can ask to return items.
     return-days: ${RETURN_DAYS:7}
+    # The shop's website, linked from order emails.
+    storefront-url: ${STOREFRONT_URL:https://vaabhi.com}
 
   # Customer sign-in. Without GOOGLE_CLIENT_ID, Google sign-in answers 503 (phone sign-in still works).
   auth:
     google-client-id: ${GOOGLE_CLIENT_ID:}
+
+  # Order emails to customers over SMTP (MSG91 Email, Google Workspace, ZeptoMail, SES…). Without MAIL_HOST,
+  # emails go to the backend log in development and are skipped in production.
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    from: ${MAIL_FROM:}
+    reply-to: ${MAIL_REPLY_TO:}
 
   # SMS for sign-in codes: "log" prints them to the backend log (dev), "msg91" sends them (prod default).
   # MSG91 needs a DLT-approved template whose code variable is ##otp##; see docs/AUTH.md.

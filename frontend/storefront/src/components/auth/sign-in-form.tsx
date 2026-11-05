@@ -40,9 +40,14 @@ function useCountdown(): [number, (seconds: number) => void] {
 
 /**
  * Sign in or sign up in one flow: Google, or mobile number + 6-digit code. New phone customers are asked for a
- * name (optional). Afterwards the customer goes back to where they came from.
+ * name (optional). Afterwards the customer goes back to where they came from. `phoneSignIn` is false while the
+ * shop cannot send codes (no SMS service yet): the phone form is then hidden.
  */
-export function SignInForm({ googleClientId, next }: Readonly<{ googleClientId: string | null; next: string }>) {
+export function SignInForm({
+  googleClientId,
+  next,
+  phoneSignIn = true,
+}: Readonly<{ googleClientId: string | null; next: string; phoneSignIn?: boolean }>) {
   const router = useRouter();
   const ids = { phone: useId(), code: useId(), name: useId() };
   const [step, setStep] = useState<Step>({ kind: "phone" });
@@ -149,20 +154,31 @@ export function SignInForm({ googleClientId, next }: Readonly<{ googleClientId: 
     );
   }
 
+  if (!googleClientId && !phoneSignIn) {
+    return (
+      <p role="status" className="text-center text-text-secondary">
+        Sign-in is not available right now. Please try again later.
+      </p>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {googleClientId && step.kind === "phone" && (
         <>
           <GoogleButton clientId={googleClientId} onCredential={onGoogle} onError={onGoogleError} />
-          <div className="flex items-center gap-3 text-xs uppercase tracking-[0.08em] text-text-muted">
-            <span className="h-px flex-1 bg-border-default" />
-            or
-            <span className="h-px flex-1 bg-border-default" />
-          </div>
+          {phoneSignIn && (
+            <div className="flex items-center gap-3 text-xs uppercase tracking-[0.08em] text-text-muted">
+              <span className="h-px flex-1 bg-border-default" />
+              or
+              <span className="h-px flex-1 bg-border-default" />
+            </div>
+          )}
+          {!phoneSignIn && message()}
         </>
       )}
 
-      {step.kind === "phone" ? (
+      {step.kind === "phone" && !phoneSignIn ? null : step.kind === "phone" ? (
         <form
           className="space-y-4"
           onSubmit={(e) => {
