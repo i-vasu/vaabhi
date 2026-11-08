@@ -6,12 +6,47 @@ import { product } from "@/test/listing-fixture";
 import HomePage from "./page";
 
 const FEATURED = `${API}/api/v1/store/featured`;
+const HOME = `${API}/api/v1/store/home`;
+
+const banner = (over: Record<string, unknown>) => ({
+  id: 1,
+  slot: "HERO",
+  position: 1,
+  eyebrow: null,
+  title: "Banner",
+  subtitle: null,
+  ctaLabel: null,
+  link: null,
+  imageKey: "site/00000000-0000-0000-0000-000000000000",
+  altText: null,
+  active: true,
+  startsOn: null,
+  endsOn: null,
+  live: true,
+  ...over,
+});
 
 describe("HomePage", () => {
   let featuredUrl: string | undefined;
   beforeEach(() => {
     featuredUrl = undefined;
     server.use(
+      http.get(HOME, () =>
+        HttpResponse.json({
+          hero: [
+            banner({
+              title: "Heirloom silks for the season",
+              eyebrow: "THE WEDDING EDIT · 2026",
+              ctaLabel: "Explore the edit",
+              link: "/c/sarees?occasion=wedding",
+            }),
+          ],
+          occasions: [
+            banner({ id: 2, slot: "OCCASION", title: "Haldi & Mehendi", link: "/c/kurta-sets?occasion=haldi" }),
+          ],
+          craft: banner({ id: 3, slot: "CRAFT", title: "Woven by hand, worn for generations" }),
+        }),
+      ),
       http.get(FEATURED, ({ request }) => {
         featuredUrl = request.url;
         return HttpResponse.json([
@@ -26,13 +61,20 @@ describe("HomePage", () => {
     render(await HomePage());
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Heirloom silks for the season");
+    expect(screen.getByRole("link", { name: "Explore the edit" })).toHaveAttribute(
+      "href",
+      "/c/sarees?occasion=wedding",
+    );
 
     const categoryNav = screen.getByRole("navigation", { name: "Shop by category" });
     const links = within(categoryNav).getAllByRole("link");
     expect(links.map((link) => link.textContent)).toEqual(categories.map((c) => c.name));
     expect(links[0]).toHaveAttribute("href", `/c/${categories[0]!.slug}`);
 
-    expect(screen.getByRole("link", { name: /Haldi & Mehendi/ })).toHaveAttribute("href", "/occasion/haldi-mehendi");
+    expect(screen.getByRole("link", { name: /Haldi & Mehendi/ })).toHaveAttribute(
+      "href",
+      "/c/kurta-sets?occasion=haldi",
+    );
 
     expect(featuredUrl).toBe(`${FEATURED}?badge=BESTSELLER&limit=8`);
     const bestsellers = screen.getByRole("region", { name: "Bestsellers" });
@@ -57,5 +99,15 @@ describe("HomePage", () => {
     expect(screen.queryByRole("navigation", { name: "Shop by category" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Bestsellers" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Woven by hand, worn for generations" })).toBeInTheDocument();
+  });
+
+  it("leaves out banner sections that have nothing live, without a made-up hero button", async () => {
+    server.use(http.get(HOME, () => HttpResponse.json({ hero: [], occasions: [], craft: null })));
+
+    render(await HomePage());
+
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Handwoven sarees, lehengas & kurta sets");
+    expect(screen.queryByRole("heading", { name: "Shop by occasion" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Explore the edit" })).not.toBeInTheDocument();
   });
 });

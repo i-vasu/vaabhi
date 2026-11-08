@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Category, ProductSummary } from "@vaabhi/api-client";
+import type { Banner, Category, HomeContent, ProductSummary } from "@vaabhi/api-client";
 import {
   buttonClasses,
   CashIcon,
@@ -11,8 +11,8 @@ import {
   TruckIcon,
 } from "@vaabhi/ui";
 import { api } from "@/lib/api";
-import { categoryColors, fallbackCategoryColors, occasions, weaves } from "@/lib/home-content";
-import { productCardProps } from "@/lib/listing";
+import { categoryColors, fallbackCategoryColors, occasionTones } from "@/lib/home-content";
+import { mediaUrl, photoSrcSet, productCardProps } from "@/lib/listing";
 
 // Rendered on request; the API response is cached for 60 s, so builds do not need the API.
 export const dynamic = "force-dynamic";
@@ -34,6 +34,23 @@ async function loadBestsellers(): Promise<ProductSummary[]> {
   }
 }
 
+const NO_BANNERS: HomeContent = { hero: [], occasions: [], craft: null };
+
+/** Banners set in the admin (Storefront); sections without a live banner are left out. */
+async function loadHome(): Promise<HomeContent> {
+  try {
+    return await api.store.getHome({ next: { revalidate: 60 } });
+  } catch {
+    return NO_BANNERS;
+  }
+}
+
+/** A banner's photo at full width; undefined without a media domain (local development). */
+function bannerPhoto(banner: Banner, sizes: string) {
+  const src = mediaUrl(banner.imageKey, 1600);
+  return src ? { src, srcSet: photoSrcSet(banner.imageKey), sizes, alt: banner.altText ?? "" } : undefined;
+}
+
 const container = "mx-auto w-full max-w-6xl px-4";
 const whatsappHref = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
   ? `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi Vaabhi, I'd like festive drop updates")}`
@@ -42,29 +59,46 @@ const whatsappHref = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
 const occasionText = { light: "text-text-on-brand", olive: "text-brand-olive", dark: "text-text-primary" } as const;
 
 export default async function HomePage() {
-  const [categories, bestsellers] = await Promise.all([loadCategories(), loadBestsellers()]);
+  const [categories, bestsellers, home] = await Promise.all([loadCategories(), loadBestsellers(), loadHome()]);
+  const hero = home.hero[0];
+  const heroPhoto = hero && bannerPhoto(hero, "100vw");
+  const craftPhoto = home.craft && bannerPhoto(home.craft, "(min-width: 768px) 50vw, 100vw");
 
   return (
     <>
-      {/* Hero */}
+      {/* Hero: the first live hero banner; without one, a plain brand heading */}
       <section
         aria-labelledby="hero-title"
-        className="flex min-h-[520px] items-end bg-gradient-to-b from-[#C8B8A2] to-[#4E2F2B] md:min-h-[600px]"
+        className="relative isolate flex min-h-[520px] items-end overflow-hidden bg-gradient-to-b from-[#C8B8A2] to-[#4E2F2B] md:min-h-[600px]"
       >
+        {heroPhoto && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element -- R2 serves fixed WebP sizes; srcset picks one */}
+            <img
+              {...heroPhoto}
+              alt={heroPhoto.alt}
+              fetchPriority="high"
+              className="absolute inset-0 -z-10 size-full object-cover"
+            />
+            <span aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-black/60 to-transparent" />
+          </>
+        )}
         <div className={`${container} flex flex-col gap-3 py-6 md:py-16`}>
-          <p className="text-xs tracking-[0.16em] text-brand-accent-soft">THE WEDDING EDIT · 2026</p>
+          {hero?.eyebrow && (
+            <p className="text-xs uppercase tracking-[0.16em] text-brand-accent-soft">{hero.eyebrow}</p>
+          )}
           <h1
             id="hero-title"
             className="max-w-xl font-serif text-[40px] font-semibold leading-[44px] text-text-on-brand md:text-[56px] md:leading-[64px]"
           >
-            Heirloom silks for the season
+            {hero?.title ?? "Handwoven sarees, lehengas & kurta sets"}
           </h1>
-          <p className="max-w-md text-base text-text-on-brand">
-            Banarasi, Kanjeevaram and Paithani — handwoven, ready to ship.
-          </p>
-          <Link href="/edit/wedding" className={buttonClasses("primary", "self-start")}>
-            Explore the edit
-          </Link>
+          {hero?.subtitle && <p className="max-w-md text-base text-text-on-brand">{hero.subtitle}</p>}
+          {hero?.link && (
+            <Link href={hero.link} className={buttonClasses("primary", "self-start")}>
+              {hero.ctaLabel ?? "Shop now"}
+            </Link>
+          )}
         </div>
       </section>
 
@@ -76,44 +110,79 @@ export default async function HomePage() {
         ) : (
           <nav aria-label="Shop by category" className="-mx-4 overflow-x-auto px-4">
             <ul className="flex gap-4 md:justify-center md:gap-10">
-              {categories.map((category) => (
-                <li key={category.id}>
-                  <CategoryTile
-                    label={category.name ?? ""}
-                    href={`/c/${category.slug}`}
-                    colors={categoryColors[category.slug ?? ""] ?? fallbackCategoryColors}
-                  />
-                </li>
-              ))}
+              {categories.map((category) => {
+                const src = category.imageKey ? mediaUrl(category.imageKey, 400) : undefined;
+                return (
+                  <li key={category.id}>
+                    <CategoryTile
+                      label={category.name ?? ""}
+                      href={`/c/${category.slug}`}
+                      colors={categoryColors[category.slug ?? ""] ?? fallbackCategoryColors}
+                      image={src && category.imageKey ? { src, srcSet: photoSrcSet(category.imageKey) } : undefined}
+                    />
+                  </li>
+                );
+              })}
             </ul>
           </nav>
         )}
       </section>
 
-      {/* Shop by occasion */}
-      <section aria-labelledby="occasions-title" className={`${container} flex flex-col gap-4 py-8`}>
-        <SectionHeader
-          id="occasions-title"
-          title="Shop by occasion"
-          action={{ label: "View all", href: "/occasion" }}
-        />
-        <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          {occasions.map((occasion) => (
-            <li key={occasion.href}>
-              <Link
-                href={occasion.href}
-                className="flex h-[150px] flex-col justify-end gap-1 rounded-sm p-4 transition-opacity hover:opacity-90 md:h-[220px]"
-                style={{ backgroundImage: `linear-gradient(180deg, ${occasion.colors[0]}, ${occasion.colors[1]})` }}
-              >
-                <span className={`font-serif text-[22px] font-semibold leading-7 ${occasionText[occasion.tone]}`}>
-                  {occasion.label}
-                </span>
-                <span className={`text-xs tracking-[0.04em] ${occasionText[occasion.tone]}`}>Shop now →</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {/* Shop by occasion: one tile per live occasion banner */}
+      {home.occasions.length > 0 && (
+        <section aria-labelledby="occasions-title" className={`${container} flex flex-col gap-4 py-8`}>
+          <SectionHeader id="occasions-title" title="Shop by occasion" />
+          <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            {home.occasions.map((occasion, index) => {
+              const photo = bannerPhoto(occasion, "(min-width: 768px) 25vw, 50vw");
+              const tone = occasionTones[index % occasionTones.length]!;
+              const text = occasionText[photo ? "light" : tone.text];
+              const tile =
+                "relative isolate flex h-[150px] flex-col justify-end gap-1 overflow-hidden rounded-sm p-4 transition-opacity hover:opacity-90 md:h-[220px]";
+              const body = (
+                <>
+                  {photo ? (
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element -- R2 serves fixed WebP sizes */}
+                      <img
+                        {...photo}
+                        alt={photo.alt}
+                        loading="lazy"
+                        className="absolute inset-0 -z-10 size-full object-cover"
+                      />
+                      <span
+                        aria-hidden="true"
+                        className="absolute inset-0 -z-10 bg-gradient-to-t from-black/60 to-transparent"
+                      />
+                    </>
+                  ) : (
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-0 -z-10"
+                      style={{ backgroundImage: `linear-gradient(180deg, ${tone.colors[0]}, ${tone.colors[1]})` }}
+                    />
+                  )}
+                  <span className={`font-serif text-[22px] font-semibold leading-7 ${text}`}>{occasion.title}</span>
+                  {occasion.link && (
+                    <span className={`text-xs tracking-[0.04em] ${text}`}>{occasion.ctaLabel ?? "Shop now"} →</span>
+                  )}
+                </>
+              );
+              return (
+                <li key={occasion.id}>
+                  {occasion.link ? (
+                    <Link href={occasion.link} className={tile}>
+                      {body}
+                    </Link>
+                  ) : (
+                    <div className={tile}>{body}</div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       {/* Bestsellers */}
       {bestsellers.length > 0 && (
@@ -135,32 +204,36 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* The craft (olive accent) */}
-      <section aria-labelledby="craft-title" className="bg-brand-olive-soft">
-        <div className={`${container} flex max-w-6xl flex-col gap-3.5 py-8`}>
-          <p className="text-xs tracking-[0.16em] text-brand-olive">THE CRAFT</p>
-          <h2 id="craft-title" className="font-serif text-[26px] font-semibold leading-tight text-text-primary">
-            Woven by hand, worn for generations
-          </h2>
-          <p className="max-w-xl text-base text-text-secondary">
-            We work directly with weaving clusters in Varanasi, Kanchipuram and Chanderi — every piece carries its
-            weaver’s story.
-          </p>
-          <ul className="flex flex-wrap gap-2" aria-label="Weaves">
-            {weaves.map((weave) => (
-              <li
-                key={weave}
-                className="rounded-full border border-brand-olive bg-bg-page px-3 py-1.5 text-sm text-brand-olive"
-              >
-                {weave}
-              </li>
-            ))}
-          </ul>
-          <Link href="/weavers" className={buttonClasses("secondary", "mt-1 self-start")}>
-            Meet the weavers
-          </Link>
-        </div>
-      </section>
+      {/* The craft (olive accent): the live craft banner's photo and words */}
+      {home.craft && (
+        <section aria-labelledby="craft-title" className="bg-brand-olive-soft">
+          <div className={`${container} grid items-center gap-6 py-8 md:grid-cols-2`}>
+            <div className="flex flex-col gap-3.5">
+              {home.craft.eyebrow && (
+                <p className="text-xs uppercase tracking-[0.16em] text-brand-olive">{home.craft.eyebrow}</p>
+              )}
+              <h2 id="craft-title" className="font-serif text-[26px] font-semibold leading-tight text-text-primary">
+                {home.craft.title}
+              </h2>
+              {home.craft.subtitle && <p className="max-w-xl text-base text-text-secondary">{home.craft.subtitle}</p>}
+              {home.craft.link && (
+                <Link href={home.craft.link} className={buttonClasses("secondary", "mt-1 self-start")}>
+                  {home.craft.ctaLabel ?? "Read more"}
+                </Link>
+              )}
+            </div>
+            {craftPhoto && (
+              // eslint-disable-next-line @next/next/no-img-element -- R2 serves fixed WebP sizes; srcset picks one
+              <img
+                {...craftPhoto}
+                alt={craftPhoto.alt}
+                loading="lazy"
+                className="aspect-[4/3] w-full rounded-sm object-cover"
+              />
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Trust */}
       <section aria-label="Why shop with us" className="border-y border-border-default">

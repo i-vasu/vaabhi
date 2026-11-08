@@ -13,6 +13,7 @@ import {
   ImageIcon,
   HomeIcon,
   InboxIcon,
+  LayoutIcon,
   LockIcon,
   MoreIcon,
   PhoneIcon,
@@ -317,7 +318,16 @@ export const moreSections: { title: string; items: NavItem[] }[] = [
   },
   {
     title: "Catalogue",
-    items: [products],
+    items: [
+      products,
+      {
+        href: "/storefront/",
+        label: "Storefront",
+        icon: LayoutIcon,
+        description: "Home page banners, occasions and category photos",
+        permission: "CATALOGUE",
+      },
+    ],
   },
   {
     title: "Updates",

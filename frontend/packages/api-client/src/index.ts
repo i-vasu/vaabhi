@@ -13,6 +13,11 @@ export type ProductDetail = Schemas["ProductDetailResponse"];
 export type ProductVariant = Schemas["VariantResponse"];
 export type ProductAddon = Schemas["AddonResponse"];
 export type Media = Schemas["MediaResponse"];
+export type Banner = Schemas["Banner"];
+export type BannerForm = Schemas["BannerForm"];
+export type BannerSlot = Banner["slot"];
+export type HomeContent = Schemas["HomeContent"];
+export type SiteImageUpload = Schemas["SiteImageUpload"];
 
 export type BagQuote = Schemas["BagQuote"];
 export type BagQuoteLine = Schemas["BagQuoteLine"];
@@ -311,6 +316,8 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
       /** Every published product, most recently published first. */
       listNewArrivals: (params: { page?: number; pageSize?: number } = {}, init?: RequestOptions) =>
         request<NewArrivalsPage>(`/api/v1/store/new-arrivals${queryString(params)}`, init),
+      /** Live home-page banners (hero slides, occasion tiles, craft photo), in order. */
+      getHome: (init?: RequestOptions) => request<HomeContent>("/api/v1/store/home", init),
       /** Current prices and stock for the bag kept in the browser. */
       quoteBag: (bag: BagQuoteRequest) => send<BagQuote>("POST", "/api/v1/store/bag/quote", bag),
     },
@@ -453,6 +460,23 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         messages: (params: { clientId?: number; orderId?: number } = {}) =>
           request<Message[]>(`/api/v1/admin/engage/messages${queryString(params)}`),
         prepareMessage: (form: MessageForm) => send<Message>("POST", "/api/v1/admin/engage/messages", form),
+      },
+      /** Home-page banners and category photos (CATALOGUE permission). */
+      storefront: {
+        listBanners: (slot?: BannerSlot) =>
+          request<Banner[]>(`/api/v1/admin/storefront/banners${queryString({ slot })}`),
+        createBanner: (form: BannerForm) => send<Banner>("POST", "/api/v1/admin/storefront/banners", form),
+        updateBanner: (id: number, form: BannerForm) =>
+          send<Banner>("PUT", `/api/v1/admin/storefront/banners/${id}`, form),
+        removeBanner: (id: number) => send<void>("DELETE", `/api/v1/admin/storefront/banners/${id}`),
+        /** Every banner of the slot, first to last. */
+        reorderBanners: (slot: BannerSlot, ids: number[]) =>
+          send<Banner[]>("PUT", "/api/v1/admin/storefront/banners/order", { slot, ids }),
+        /** Presigned URLs for a photo's 400/800/1600 px WebPs; save the key once all are uploaded. */
+        startUpload: () => send<SiteImageUpload>("POST", "/api/v1/admin/storefront/uploads"),
+        listCategories: () => request<Category[]>("/api/v1/admin/storefront/categories"),
+        setCategoryImage: (id: number, imageKey: string | null) =>
+          send<Category>("PUT", `/api/v1/admin/storefront/categories/${id}/image`, { imageKey }),
       },
       gallery: {
         list: (params: { kind?: GalleryPhoto["kind"]; templateId?: number; clientId?: number; q?: string } = {}) =>

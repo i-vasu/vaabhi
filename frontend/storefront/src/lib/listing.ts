@@ -206,8 +206,9 @@ export function mediaUrl(
   return base ? `${base.replace(/\/$/, "")}/${key}/${width}.webp` : undefined;
 }
 
-function srcSet(key: string): string {
-  return RENDITIONS.map((width) => `${mediaUrl(key, width)} ${width}w`).join(", ");
+/** `srcset` for a photo key's 400/800/1600 px WebPs (product photos, banners, category photos). */
+export function photoSrcSet(key: string, base: string | undefined = serverMediaBase()): string {
+  return RENDITIONS.map((width) => `${mediaUrl(key, width, base)} ${width}w`).join(", ");
 }
 
 function stockNote(product: ProductSummary): string | undefined {
@@ -231,7 +232,7 @@ export function productCardProps(product: ProductSummary): ProductCardProps {
     badge: product.badge ? { label: product.badge.toLowerCase(), tone: badgeTones[product.badge] } : undefined,
     image:
       src && product.image
-        ? { src, alt: product.image.alt, srcSet: srcSet(product.image.key), sizes: CARD_SIZES }
+        ? { src, alt: product.image.alt, srcSet: photoSrcSet(product.image.key), sizes: CARD_SIZES }
         : { placeholder: colour ? [colour, shade(colour)] : PLACEHOLDER },
   };
 }
