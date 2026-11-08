@@ -9,10 +9,12 @@ import { appVersion } from "@vaabhi/observability";
 import { api } from "@/lib/api";
 import { clearSession, getStaff, getToken } from "@/lib/auth";
 import { canSee, isActive, moreNav, primaryNav, searchableNav } from "@/lib/nav";
-import { BellIcon, LogoutIcon, SearchIcon } from "./icons";
+import { BellIcon, CalendarPlusIcon, LogoutIcon, SearchIcon } from "./icons";
 import { Sheet, inputClasses } from "./ui";
 
 const SHOP_NAME = "vaabhi";
+/** Opens a new event (or task, from the same screen) in the signed-in Google account's calendar. */
+const GOOGLE_CALENDAR_NEW_EVENT = "https://calendar.google.com/calendar/r/eventedit";
 
 const StaffContext = createContext<StaffProfile | undefined>(undefined);
 
@@ -90,8 +92,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
 function Sidebar({ pathname, staff }: { pathname: string; staff: StaffProfile }) {
   return (
-    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-line bg-panel p-4 md:flex print:hidden">
-      <Link href="/" className="mb-8 px-2 text-lg font-semibold tracking-[0.2em]">
+    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col bg-nav p-4 text-nav-ink md:flex print:hidden">
+      <Link href="/" className="mb-8 px-2 font-serif text-2xl font-semibold tracking-[0.2em] text-gold-bright">
         VAABHI
       </Link>
       <nav aria-label="Main" className="flex flex-col gap-1">
@@ -104,7 +106,9 @@ function Sidebar({ pathname, staff }: { pathname: string; staff: StaffProfile })
               aria-current={isActive(item, pathname) ? "page" : undefined}
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm",
-                isActive(item, pathname) ? "bg-accent-soft text-accent-ink" : "text-ink-soft hover:bg-panel-2",
+                isActive(item, pathname)
+                  ? "bg-nav-strong font-medium text-gold-bright shadow-[inset_3px_0_0_var(--color-gold-bright)]"
+                  : "text-nav-ink-soft hover:bg-nav-strong/60 hover:text-nav-ink",
               )}
             >
               <item.icon />
@@ -112,7 +116,7 @@ function Sidebar({ pathname, staff }: { pathname: string; staff: StaffProfile })
             </Link>
           ))}
       </nav>
-      <p className="mt-auto px-2 pt-6 text-xs text-ink-faint" data-testid="app-version">
+      <p className="mt-auto px-2 pt-6 text-xs text-nav-ink-soft/80" data-testid="app-version">
         {appVersion().label}
       </p>
     </aside>
@@ -123,7 +127,7 @@ function BottomBar({ pathname, staff }: { pathname: string; staff: StaffProfile 
   return (
     <nav
       aria-label="Main"
-      className="fixed inset-x-0 bottom-0 z-40 flex border-t border-line bg-panel pb-[env(safe-area-inset-bottom)] md:hidden print:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 flex bg-nav pb-[env(safe-area-inset-bottom)] md:hidden print:hidden"
     >
       {[...primaryNav, moreNav]
         .filter((item) => canSee(item, staff))
@@ -136,12 +140,12 @@ function BottomBar({ pathname, staff }: { pathname: string; staff: StaffProfile 
               aria-current={active ? "page" : undefined}
               className={cn(
                 "flex flex-1 flex-col items-center gap-1 py-2.5 text-xs",
-                active ? "text-ink" : "text-ink-faint",
+                active ? "text-gold-bright" : "text-nav-ink-soft",
               )}
             >
               <item.icon size={22} />
               {item.label}
-              <span className={cn("h-0.5 w-6 rounded-full", active ? "bg-ink" : "bg-transparent")} />
+              <span className={cn("h-0.5 w-6 rounded-full", active ? "bg-gold-bright" : "bg-transparent")} />
             </Link>
           );
         })}
@@ -161,7 +165,7 @@ function Header({ staff, onSignOut }: { staff: StaffProfile; onSignOut: () => vo
         <span className="sr-only">Account: </span>
         <span
           aria-hidden="true"
-          className="grid size-11 shrink-0 place-items-center rounded-full bg-accent font-semibold text-white"
+          className="grid size-11 shrink-0 place-items-center rounded-full bg-accent font-semibold text-white ring-2 ring-gold ring-offset-2 ring-offset-panel"
         >
           {initials(staff.name)}
         </span>
@@ -176,6 +180,16 @@ function Header({ staff, onSignOut }: { staff: StaffProfile; onSignOut: () => vo
         <button type="button" className={iconButton} aria-label="Search" onClick={() => setSearching(true)}>
           <SearchIcon />
         </button>
+        <a
+          href={GOOGLE_CALENDAR_NEW_EVENT}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={iconButton}
+          aria-label="Add to Google Calendar"
+          title="Add to Google Calendar"
+        >
+          <CalendarPlusIcon />
+        </a>
         <Link href="/notifications/" className={iconButton} aria-label="Notifications">
           <BellIcon />
         </Link>
@@ -225,7 +239,7 @@ function GoToSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
               onClick={onClose}
               className="flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-panel-2"
             >
-              <item.icon className="text-accent-ink" />
+              <item.icon className="text-gold-ink" />
               <span>
                 <span className="block">{item.label}</span>
                 {item.description && <span className="block text-sm text-ink-soft">{item.description}</span>}

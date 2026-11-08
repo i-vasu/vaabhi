@@ -176,6 +176,7 @@ export type Report = Schemas["Report"];
 export type ReportColumn = Report["columns"][number];
 export type ReportInfo = Schemas["ReportInfo"];
 export type ReportsOverview = Schemas["ReportsOverview"];
+export type Dashboard = Schemas["Dashboard"];
 export type TailoringImagePurpose = Schemas["TailoringImageRequest"]["purpose"];
 
 /** The JSON settings sections, by their API path. */
@@ -463,6 +464,7 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         request<ActivityPage>(`/api/v1/admin/activity${queryString(params)}`),
       reports: {
         list: () => request<ReportInfo[]>("/api/v1/admin/reports"),
+        dashboard: () => request<Dashboard>("/api/v1/admin/reports/dashboard"),
         overview: () => request<ReportsOverview>("/api/v1/admin/reports/overview"),
         get: (name: string, params: { from?: string; to?: string } = {}) =>
           request<Report>(`/api/v1/admin/reports/${encodeURIComponent(name)}${queryString(params)}`),

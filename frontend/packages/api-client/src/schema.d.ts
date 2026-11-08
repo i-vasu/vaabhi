@@ -2068,6 +2068,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/reports/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getDashboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/payroll/staff/{staffId}/statement": {
         parameters: {
             query?: never;
@@ -4186,6 +4202,13 @@ export interface components {
             outstandingRupees: number;
             months: components["schemas"]["MonthFigures"][];
             ageing: components["schemas"]["AgeingBucket"][];
+        };
+        Dashboard: {
+            revenueRupees: number;
+            expensesRupees: number;
+            profitRupees: number;
+            /** Format: int64 */
+            ordersInPipeline: number;
         };
         AdminProductPage: {
             items: components["schemas"]["AdminProductSummary"][];
@@ -8659,6 +8682,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ReportsOverview"];
+                };
+            };
+        };
+    };
+    getDashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Dashboard"];
                 };
             };
         };

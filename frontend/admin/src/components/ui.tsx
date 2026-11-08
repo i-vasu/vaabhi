@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useId, useRef, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@vaabhi/ui";
 import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, type Icon } from "./icons";
 
@@ -280,7 +281,7 @@ export function ListRow({
   const body = (
     <>
       {RowIcon && (
-        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent-ink">
+        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-gold-soft text-gold-ink">
           <RowIcon />
         </span>
       )}
@@ -521,9 +522,11 @@ export function Sheet({
   }, [open, onClose]);
 
   if (!open) return null;
-  return (
+  // Portalled to <body>: a parent with backdrop-filter (the sticky header) would otherwise trap this fixed
+  // overlay inside itself, squashing the sheet into the header bar.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
-      <button type="button" aria-label="Close" className="absolute inset-0 bg-black/60" onClick={onClose} />
+      <button type="button" aria-label="Close" className="absolute inset-0 bg-ink/40" onClick={onClose} />
       <div
         ref={panel}
         role="dialog"
@@ -540,6 +543,7 @@ export function Sheet({
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

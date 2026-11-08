@@ -162,8 +162,8 @@ export function formFromState(state: EditorState): ProductForm {
       stockQty: toInt(v.stock),
       active: v.active,
     })),
-    addons: state.addons.map((a): AddonForm => ({
-      code: a.code.trim(),
+    addons: withCodes(state.addons).map((a): AddonForm => ({
+      code: a.code,
       kind: "BLOUSE",
       name: a.name.trim(),
       description: orNull(a.description),
@@ -172,6 +172,32 @@ export function formFromState(state: EditorState): ProductForm {
       active: a.active,
     })),
   };
+}
+
+/** "Stitched blouse, made to measure" → "stitched-blouse-made-to-measure" (the API's code format, 40 characters). */
+export function addonCode(name: string): string {
+  const slug = name
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40)
+    .replace(/-+$/, "");
+  return slug || "addon";
+}
+
+/** Rows with a code each: saved add-ons keep theirs, new ones get one from their name, unique on the product. */
+export function withCodes(rows: AddonRow[]): AddonRow[] {
+  const taken = new Set(rows.map((r) => r.code.trim()).filter(Boolean));
+  return rows.map((row) => {
+    const own = row.code.trim();
+    if (own) return { ...row, code: own };
+    const base = addonCode(row.name);
+    let code = base;
+    for (let n = 2; taken.has(code); n++) code = `${base.slice(0, 40 - String(n).length - 1)}-${n}`;
+    taken.add(code);
+    return { ...row, code };
+  });
 }
 
 /** The three blouse choices most sarees offer; prices are a starting point to edit. */

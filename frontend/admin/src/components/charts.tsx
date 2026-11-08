@@ -4,15 +4,15 @@ import { useState } from "react";
 import { rupees } from "@/lib/settings";
 
 /*
- * Small charts for the reports hub. Colours are categorical slots 1–3 of the reference palette stepped for a dark
- * surface (validated against the panel colour #111a2e); text always uses ink tokens, never series colours. Every
+ * Small charts for the reports hub. Series colours are the brand maroon, gold and olive on the white panel;
+ * text always uses ink tokens, never series colours. Every
  * chart has a legend, a hover tooltip and the same numbers as a table for screen readers.
  */
 
 export const SERIES = [
-  { key: "bookedRupees", label: "Booked", color: "#3987e5" },
-  { key: "collectedRupees", label: "Collected", color: "#d95926" },
-  { key: "expensesRupees", label: "Spent", color: "#199e70" },
+  { key: "bookedRupees", label: "Booked", color: "#6e2a35" },
+  { key: "collectedRupees", label: "Collected", color: "#a88b5a" },
+  { key: "expensesRupees", label: "Spent", color: "#5e6b3a" },
 ] as const;
 
 type MonthRow = { month: string; bookedRupees: number; collectedRupees: number; expensesRupees: number };

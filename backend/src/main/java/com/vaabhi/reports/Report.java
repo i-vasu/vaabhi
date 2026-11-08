@@ -60,4 +60,13 @@ public record Report(
             BigDecimal outstandingRupees,
             List<MonthFigures> months,
             List<AgeingBucket> ageing) {}
+
+    /**
+     * The home page's figures for this month so far. Revenue is money taken at the counter (order and alteration
+     * payments) plus website orders paid, less website refunds; profit is revenue less expenses.
+     *
+     * @param ordersInPipeline counter and website orders not yet delivered or cancelled
+     */
+    public record Dashboard(
+            BigDecimal revenueRupees, BigDecimal expensesRupees, BigDecimal profitRupees, long ordersInPipeline) {}
 }

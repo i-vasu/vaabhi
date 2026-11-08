@@ -388,3 +388,10 @@ export function isActive(item: NavItem, pathname: string): boolean {
   const path = pathname.endsWith("/") ? pathname : `${pathname}/`;
   return item.href === "/" ? path === "/" : path.startsWith(item.href);
 }
+
+const allPages = (): NavItem[] => [...primaryNav, products, ...moreSections.flatMap((section) => section.items)];
+
+/** Shortcuts on the home page, in this order; each still needs its own permission. */
+export const quickActions: NavItem[] = ["/stock/", "/storefront/", "/activity/", "/workshop/"]
+  .map((href) => allPages().find((item) => item.href === href))
+  .filter((item): item is NavItem => item !== undefined);

@@ -6089,6 +6089,26 @@
                 }
             }
         },
+        "/api/v1/admin/reports/dashboard": {
+            "get": {
+                "tags": [
+                    "report-controller"
+                ],
+                "operationId": "getDashboard",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Dashboard"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/payroll/staff/{staffId}/statement": {
             "get": {
                 "tags": [
@@ -15160,6 +15180,30 @@
                     "ordersBooked",
                     "ordersDelivered",
                     "outstandingRupees"
+                ]
+            },
+            "Dashboard": {
+                "type": "object",
+                "properties": {
+                    "revenueRupees": {
+                        "type": "number"
+                    },
+                    "expensesRupees": {
+                        "type": "number"
+                    },
+                    "profitRupees": {
+                        "type": "number"
+                    },
+                    "ordersInPipeline": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "expensesRupees",
+                    "ordersInPipeline",
+                    "profitRupees",
+                    "revenueRupees"
                 ]
             },
             "AdminProductPage": {

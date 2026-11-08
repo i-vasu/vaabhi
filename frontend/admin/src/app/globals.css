@@ -3,41 +3,49 @@
 @source "../../../packages/ui/src";
 
 /*
- * Admin dashboard theme: dark navy surfaces with a blue accent, built for long days at the shop counter.
- * Utilities: bg-app, bg-panel, bg-panel-2, bg-field, border-line, border-line-strong, text-ink, text-ink-soft,
- * text-ink-faint, bg-accent / text-accent / bg-accent-soft, and ok / warn / bad (+ -soft) for status.
+ * Admin theme in the Vaabhi brand palette, 60-30-10:
+ *   60% ivory   — page, cards, fields (bg-app, bg-panel, bg-panel-2, bg-field)
+ *   30% maroon  — sidebar / bottom bar (bg-nav), primary buttons, selected states (bg-accent, text-accent-ink)
+ *   10% gold    — highlights only: active navigation, icons, small marks (text-gold, bg-gold-soft, text-gold-ink)
+ * Status colours ok / warn / bad (+ -soft) are tuned for text on ivory (≥ 4.5:1).
  */
 @theme {
-  --color-app: #0b1220;
-  --color-panel: #111a2e;
-  --color-panel-2: #172238;
-  --color-field: #0d1526;
-  --color-line: #1e2a44;
-  --color-line-strong: #2c3b5c;
-  --color-ink: #e7edf7;
-  --color-ink-soft: #a3b0c7;
-  --color-ink-faint: #8a97b0;
-  --color-accent: #2563eb;
-  --color-accent-strong: #1d4ed8;
-  --color-accent-ink: #7fb0ff;
-  --color-accent-soft: #15254a;
-  --color-ok: #5ad691;
-  --color-ok-soft: #0f2a21;
-  --color-warn: #f2c94c;
-  --color-warn-soft: #2c2412;
-  --color-bad: #f68a8a;
-  --color-bad-soft: #2c1519;
+  --color-app: #faf7f2;
+  --color-panel: #ffffff;
+  --color-panel-2: #f2ece3;
+  --color-field: #ffffff;
+  --color-line: #e4dcd0;
+  --color-line-strong: #c9bfb2;
+  --color-ink: #2b2622;
+  --color-ink-soft: #5e554e;
+  --color-ink-faint: #70665e;
+
+  --color-accent: #6e2a35;
+  --color-accent-strong: #4e1a24;
+  --color-accent-ink: #6e2a35;
+  --color-accent-soft: #f1e3e4;
+
+  --color-gold: #a88b5a;
+  --color-gold-ink: #7c6337;
+  --color-gold-soft: #f3ebdd;
+  /* gold on the maroon navigation */
+  --color-gold-bright: #dcc493;
+
+  --color-nav: #6e2a35;
+  --color-nav-strong: #4e1a24;
+  --color-nav-ink: #faf7f2;
+  --color-nav-ink-soft: #e9d9da;
+
+  --color-ok: #2e7d4f;
+  --color-ok-soft: #e4f1e8;
+  --color-warn: #8a5a00;
+  --color-warn-soft: #f8ecd4;
+  --color-bad: #b3261e;
+  --color-bad-soft: #f9e4e2;
 }
 
-/* The shared @vaabhi/ui components (Button, Chip…) follow the admin accent instead of the store's maroon. */
 :root {
-  color-scheme: dark;
-  --color-brand-primary: var(--color-accent);
-  --color-brand-primary-hover: var(--color-accent-strong);
-  --color-brand-primary-soft: var(--color-accent-soft);
-  /* the blue reads too dark as text on navy (contrast 3.6:1); the lighter accent ink passes 4.5:1 */
-  --color-brand-primary-ink: var(--color-accent-ink);
-  --color-text-on-brand: #ffffff;
+  color-scheme: light;
 }
 
 body {
@@ -56,4 +64,9 @@ textarea {
 input::placeholder,
 textarea::placeholder {
   color: var(--color-ink-faint);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--color-accent);
 }
