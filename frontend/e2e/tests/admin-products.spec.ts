@@ -52,6 +52,8 @@ test.describe("Admin products", () => {
     await expect(page.getByText("Draft", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Save & publish" })).toBeDisabled();
 
+    // The URL name sits under the collapsed "More details" section.
+    await page.getByText("More details: web address, care, parcel weight").click();
     const slug = await page.getByRole("textbox", { name: /URL name/ }).inputValue();
     expect((await request.get(`${urls.api}/api/v1/store/products/${slug}`)).status()).toBe(404);
   });

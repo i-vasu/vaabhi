@@ -71,7 +71,9 @@ describe("HomePage", () => {
 
     const categoryNav = screen.getByRole("navigation", { name: "Shop by category" });
     const links = within(categoryNav).getAllByRole("link");
-    expect(links.map((link) => link.textContent)).toEqual(categories.map((c) => c.name));
+    // Named by the label; the tile's initial (shown when there is no photo) is aria-hidden.
+    expect(links).toHaveLength(categories.length);
+    categories.forEach((c, i) => expect(links[i]).toHaveAccessibleName(c.name));
     expect(links[0]).toHaveAttribute("href", `/c/${categories[0]!.slug}`);
 
     expect(screen.getByRole("link", { name: /Wedding/ })).toHaveAttribute("href", "/search?occasion=wedding");
@@ -107,7 +109,8 @@ describe("HomePage", () => {
     render(await HomePage());
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Handwoven sarees, lehengas & kurta sets");
-    expect(screen.queryByRole("heading", { name: "Shop by occasion" })).not.toBeInTheDocument();
+    // Occasions come from product tags, not banners, so only the craft section goes.
+    expect(screen.queryByRole("heading", { name: "Woven by hand, worn for generations" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Explore the edit" })).not.toBeInTheDocument();
   });
 });
