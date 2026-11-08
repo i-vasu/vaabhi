@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, Inter } from "next/font/google";
 import { Faro, appVersion } from "@vaabhi/observability";
 import { MediaBaseProvider } from "@/components/media-base";
+import { ShopWhatsApp } from "@/components/shop-whatsapp";
 import { SiteFooter } from "@/components/site-footer";
 import { serverMediaBase } from "@/lib/listing";
 import { siteUrl } from "@/lib/site";
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <SiteHeader />
           <main>{children}</main>
           <SiteFooter />
+          <ShopWhatsApp />
         </MediaBaseProvider>
       </body>
     </html>

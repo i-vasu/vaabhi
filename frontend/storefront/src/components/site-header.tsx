@@ -1,8 +1,7 @@
-import Link from "next/link";
-import { SearchIcon } from "@vaabhi/ui";
 import { AccountMenu } from "./account-menu";
 import { BagLink } from "./bag-link";
 import { LogoLink } from "./logo-link";
+import { SearchBox } from "./search-box";
 import { SiteMenu } from "./site-menu";
 
 const iconButton = "rounded-sm p-0.5 text-text-primary hover:text-brand-primary";
@@ -20,9 +19,7 @@ export function SiteHeader() {
           </div>
           <LogoLink className="font-serif text-[26px] font-semibold tracking-[0.14em] text-brand-primary" />
           <div className="flex flex-1 items-center justify-end gap-4">
-            <Link href="/search" aria-label="Search" className={iconButton}>
-              <SearchIcon size={22} />
-            </Link>
+            <SearchBox className={iconButton} />
             <BagLink className={iconButton} />
             <AccountMenu className={iconButton} />
           </div>
