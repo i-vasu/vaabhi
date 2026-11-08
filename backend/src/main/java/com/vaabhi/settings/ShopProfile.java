@@ -79,7 +79,7 @@ public record ShopProfile(
     static final String HTTPS_MESSAGE = "must start with https://";
     /** A channel (whatsapp.com/channel/…) or a community/group invite (chat.whatsapp.com/…). */
     static final String WHATSAPP_CHANNEL =
-            "^https://((www\\.)?whatsapp\\.com/channel|chat\\.whatsapp\\.com)/[A-Za-z0-9]+.*$";
+            "^https://((www\\.)?whatsapp\\.com/channel|chat\\.whatsapp\\.com)/[A-Za-z0-9].*$";
 
     public enum BusinessType {
         LADIES_BOUTIQUE,

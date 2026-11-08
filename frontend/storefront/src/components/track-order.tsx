@@ -52,7 +52,7 @@ export function TrackOrder({ initialNumber = "" }: Readonly<{ initialNumber?: st
     <div className="text-left">
       <form onSubmit={submit} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1 text-sm">
-          Order number
+          <span>Order number</span>
           <input
             className={field}
             value={number}
@@ -64,7 +64,7 @@ export function TrackOrder({ initialNumber = "" }: Readonly<{ initialNumber?: st
           />
         </label>
         <label className="flex flex-col gap-1 text-sm">
-          Mobile number used for the order
+          <span>Mobile number used for the order</span>
           <input
             className={field}
             value={phone}

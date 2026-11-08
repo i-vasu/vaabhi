@@ -180,9 +180,10 @@ export function addonCode(name: string): string {
     .toLowerCase()
     .normalize("NFKD")
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
+    // Runs are already one dash, so a single one is trimmed from each end (no backtracking).
+    .replace(/^-|-$/g, "")
     .slice(0, 40)
-    .replace(/-+$/, "");
+    .replace(/-$/, "");
   return slug || "addon";
 }
 

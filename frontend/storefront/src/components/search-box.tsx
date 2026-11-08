@@ -44,6 +44,18 @@ export function SearchBox({ className }: Readonly<{ className?: string }>) {
     if (!open && el.open) el.close();
   }, [open]);
 
+  // A click on the dialog itself (not its content) is a click on the backdrop, which closes it; keyboard users
+  // close it with Escape, which the dialog handles natively.
+  useEffect(() => {
+    const el = dialog.current;
+    if (!el) return;
+    const onBackdrop = (event: MouseEvent) => {
+      if (event.target === el) setOpen(false);
+    };
+    el.addEventListener("click", onBackdrop);
+    return () => el.removeEventListener("click", onBackdrop);
+  }, []);
+
   useEffect(() => {
     const q = query.trim();
     // Too short to search: the render shows nothing (see `shown`), so there is nothing to ask for.
@@ -89,7 +101,6 @@ export function SearchBox({ className }: Readonly<{ className?: string }>) {
         ref={dialog}
         aria-label="Search the shop"
         onClose={close}
-        onClick={(event) => event.target === dialog.current && close()}
         className="fixed inset-x-0 top-0 m-0 w-full max-w-none bg-transparent p-0 backdrop:bg-[#2B2622]/45 [&:not([open])]:hidden"
       >
         <div className="bg-bg-surface shadow-lg">

@@ -32,9 +32,10 @@ export function slugify(text: string, typing = false): string {
     .toLowerCase()
     .normalize("NFKD")
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+/, "")
+    .replace(/^-/, "")
     .slice(0, 60);
-  return typing ? slug : slug.replace(/-+$/, "");
+  // Runs are already one dash, so at most one trails.
+  return typing ? slug : slug.replace(/-$/, "");
 }
 
 /** Pages shoppers look for before they buy; offered until each one exists. Names only — the shop writes the text. */

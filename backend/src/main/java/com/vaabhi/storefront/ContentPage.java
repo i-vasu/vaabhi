@@ -40,7 +40,8 @@ public record ContentPage(
             @NotBlank
             @Size(max = 60)
             @Pattern(
-                    regexp = "^[a-z0-9]+(-[a-z0-9]+)*$",
+                    // Words joined by single dashes, written without a repeated group (that can overflow the stack).
+                    regexp = "^(?!-)(?!.*--)[a-z0-9-]+(?<!-)$",
                     message = "use lowercase letters, numbers and dashes, e.g. size-guide")
             String slug,
 

@@ -231,7 +231,7 @@ function PageSheet({
             if (!form.title.trim()) return action.setError("Give the page a title.");
             if (!form.slug) return action.setError("Give the page a web address.");
             if (!form.body.trim()) return action.setError("Write the page's text.");
-            const body = { ...form, slug: form.slug.replace(/-+$/, "") };
+            const body = { ...form, slug: form.slug.replace(/-$/, "") };
             const saved = await action.run(() =>
               id ? api.admin.storefront.updatePage(id, body) : api.admin.storefront.createPage(body),
             );
