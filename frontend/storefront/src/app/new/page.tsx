@@ -6,7 +6,7 @@ import { MAX_PAGES, type SearchParams } from "@/lib/listing";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "New arrivals | Vaabhi", alternates: { canonical: "/new" } };
+export const metadata: Metadata = { title: "New arrivals", alternates: { canonical: "/new" } };
 
 const PAGE_SIZE = 24;
 

@@ -91,7 +91,7 @@ describe("ProductPage", () => {
     vi.stubEnv("MEDIA_URL", "https://media.vaabhi.com");
     server.use(http.get(PRODUCT, () => HttpResponse.json(saree())));
     await expect(generateMetadata(props("meta"))).resolves.toEqual({
-      title: "Kanjeevaram silk saree | Vaabhi",
+      title: "Kanjeevaram silk saree",
       description: "Temple border, pure zari",
       alternates: { canonical: "/p/kanjeevaram-silk-saree" },
       openGraph: {

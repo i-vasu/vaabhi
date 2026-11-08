@@ -15,6 +15,13 @@ Source: the "Vaabhi Storefront Audit & Comprehensive Improvement Checklist" Goog
   - Header and footer only link to pages that exist: Pre Order, Collections and Blog are gone, and Track order goes
     to `/account/orders`.
   - Branded 404, and the drawer title is now "Menu".
+- **Phase 2 — done** (`feat/storefront`):
+  - Page titles no longer repeat the brand ("Sarees · Vaabhi").
+  - Filter panel headings are read once.
+  - Card prices and occasion tiles read as separate words.
+  - "Prices include all taxes" on listings (the product page already said so).
+  - `sitemap.xml` and `robots.txt` built from the API, with absolute canonicals via `SITE_URL`.
+  - Fuller homepage description.
 
 ## What the live site actually shows
 

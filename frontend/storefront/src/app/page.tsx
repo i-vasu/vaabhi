@@ -175,7 +175,7 @@ export default async function HomePage() {
                       style={{ backgroundImage: `linear-gradient(180deg, ${tone.colors[0]}, ${tone.colors[1]})` }}
                     />
                   )}
-                  <span className={`font-serif text-[22px] font-semibold leading-7 ${text}`}>{occasion.title}</span>
+                  <span className={`font-serif text-[22px] font-semibold leading-7 ${text}`}>{occasion.title}</span>{" "}
                   {occasion.link && (
                     <span className={`text-xs tracking-[0.04em] ${text}`}>{occasion.ctaLabel ?? "Shop now"} →</span>
                   )}

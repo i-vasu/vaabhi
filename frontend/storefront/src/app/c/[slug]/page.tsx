@@ -46,7 +46,7 @@ async function loadListing(slug: string, state: ListingState): Promise<ProductLi
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const name = slug.replaceAll("-", " ").replace(/^\w/, (c) => c.toUpperCase());
-  return { title: `${name} | Vaabhi`, alternates: { canonical: `/c/${slug}` } };
+  return { title: name, alternates: { canonical: `/c/${slug}` } };
 }
 
 export default async function CategoryPage({ params, searchParams }: Readonly<Props>) {
@@ -119,7 +119,7 @@ export default async function CategoryPage({ params, searchParams }: Readonly<Pr
           </ul>
         )}
         <p className="py-3 text-xs tracking-[0.02em] text-text-muted" aria-live="polite">
-          {total} {total === 1 ? "result" : "results"}
+          {total} {total === 1 ? "result" : "results"} · prices include all taxes
         </p>
 
         {items.length === 0 ? (

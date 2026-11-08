@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { AccountView } from "@/components/auth/account-view";
 
-export const metadata: Metadata = { title: "Your account | Vaabhi", robots: { index: false } };
+export const metadata: Metadata = { title: "Your account", robots: { index: false } };
 
 export default function AccountPage() {
   return (

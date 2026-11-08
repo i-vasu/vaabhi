@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { OrdersView } from "@/components/auth/orders-view";
 
-export const metadata: Metadata = { title: "Your orders | Vaabhi", robots: { index: false } };
+export const metadata: Metadata = { title: "Your orders", robots: { index: false } };
 
 export default function OrdersPage() {
   return (

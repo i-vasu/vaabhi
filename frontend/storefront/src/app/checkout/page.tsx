@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { CheckoutView } from "@/components/checkout/checkout-view";
 
-export const metadata: Metadata = { title: "Checkout | Vaabhi", robots: { index: false } };
+export const metadata: Metadata = { title: "Checkout", robots: { index: false } };
 
 export const dynamic = "force-dynamic";
 

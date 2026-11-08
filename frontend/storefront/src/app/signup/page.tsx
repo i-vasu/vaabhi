@@ -4,7 +4,7 @@ import { SignInForm } from "@/components/auth/sign-in-form";
 import { api } from "@/lib/api";
 import { safeNext } from "@/lib/session";
 
-export const metadata: Metadata = { title: "Sign in or sign up | Vaabhi", robots: { index: false } };
+export const metadata: Metadata = { title: "Sign in or sign up", robots: { index: false } };
 
 /** One page for both: a new number or Google account simply creates the account. */
 export default async function SignupPage({ searchParams }: Readonly<{ searchParams: Promise<{ next?: string }> }>) {

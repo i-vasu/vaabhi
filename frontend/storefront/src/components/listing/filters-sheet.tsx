@@ -109,7 +109,10 @@ export function FiltersSheet({
           aria-labelledby={`filter-tab-${active.code}`}
           className="min-w-0 grow overflow-y-auto px-4 pt-2 pb-4"
         >
-          <p className="pb-1 text-xs uppercase tracking-[0.12em] text-text-muted">{active.name}</p>
+          {/* Visual heading only: the tab labels the panel and each fieldset has its legend. */}
+          <p aria-hidden="true" className="pb-1 text-xs uppercase tracking-[0.12em] text-text-muted">
+            {active.name}
+          </p>
           <Panel tab={active} state={state} onChange={onChange} />
         </div>
       </div>

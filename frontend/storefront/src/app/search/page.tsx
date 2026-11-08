@@ -126,7 +126,7 @@ function SearchResultsView({
           </ul>
         )}
         <p className="py-3 text-xs tracking-[0.02em] text-text-muted" aria-live="polite">
-          {total} {total === 1 ? "result" : "results"}
+          {total} {total === 1 ? "result" : "results"} · prices include all taxes
         </p>
 
         {items.length === 0 ? (

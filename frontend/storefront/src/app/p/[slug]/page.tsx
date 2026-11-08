@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: Readonly<Props>): Promise<Met
   const image = product.media[0] ? mediaUrl(product.media[0].key, 1600) : undefined;
   const description = product.subtitle ?? product.description ?? undefined;
   return {
-    title: `${product.name} | Vaabhi`,
+    title: product.name,
     description,
     alternates: { canonical: `/p/${product.slug}` },
     openGraph: { title: product.name, description, images: image ? [image] : undefined },

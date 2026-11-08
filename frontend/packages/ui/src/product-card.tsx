@@ -58,14 +58,15 @@ export function ProductCard({ name, detail, price, mrp, discount, href, badge, i
         </a>
       </h3>
       <p className="text-xs text-text-muted">{detail}</p>
+      {/* The spaces keep the copied/read text apart ("₹12,499 MRP ₹15,999 22% off"); flex ignores them in layout. */}
       <p className="flex items-center gap-1.5">
-        <span className="text-[15px] font-semibold text-text-primary">{price}</span>
+        <span className="text-[15px] font-semibold text-text-primary">{price}</span>{" "}
         {mrp && (
           <span className="text-xs text-text-muted line-through">
             <span className="sr-only">MRP </span>
             {mrp}
           </span>
-        )}
+        )}{" "}
         {discount && <span className="text-xs text-brand-primary">{discount}</span>}
       </p>
     </article>

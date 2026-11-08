@@ -5,7 +5,7 @@ import { api } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Bestsellers | Vaabhi", alternates: { canonical: "/bestsellers" } };
+export const metadata: Metadata = { title: "Bestsellers", alternates: { canonical: "/bestsellers" } };
 
 /** The most the API returns for one badge. */
 const LIMIT = 24;
