@@ -11,8 +11,8 @@ export type ProductCardProps = {
   discount?: string;
   href: string;
   badge?: { label: string; tone: BadgeTone };
-  /** Product photo; until photos exist, a two-colour placeholder gradient. */
-  image: { src: string; alt: string; srcSet?: string; sizes?: string } | { placeholder: [string, string] };
+  /** Product photo; null until the shop uploads one (the card then says so, with no made-up artwork). */
+  image: { src: string; alt: string; srcSet?: string; sizes?: string } | null;
   /**
    * The wishlist control in the photo's corner, supplied by the app (it owns where the wishlist is kept); usually
    * a {@link WishlistHeart}. Without it the card shows no heart.
@@ -40,7 +40,7 @@ export function ProductCard({ name, detail, price, mrp, discount, href, badge, i
     <article className="flex flex-col gap-1.5">
       <div className="relative aspect-[3/4] overflow-hidden rounded-sm">
         <a href={href} className="block h-full" aria-label={name}>
-          {"src" in image ? (
+          {image ? (
             // eslint-disable-next-line @next/next/no-img-element -- package is framework-agnostic; apps pass optimised URLs
             <img
               src={image.src}
@@ -52,12 +52,9 @@ export function ProductCard({ name, detail, price, mrp, discount, href, badge, i
               className="h-full w-full object-cover"
             />
           ) : (
-            <div
-              role="img"
-              aria-label={name}
-              className="h-full w-full"
-              style={{ backgroundImage: `linear-gradient(180deg, ${image.placeholder[0]}, ${image.placeholder[1]})` }}
-            />
+            <span className="grid h-full w-full place-items-center bg-bg-muted text-xs text-text-muted">
+              Photo coming soon
+            </span>
           )}
         </a>
         {badge && (

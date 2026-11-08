@@ -80,7 +80,7 @@ describe("ProductCard", () => {
         mrp="₹15,999"
         discount="22% off"
         badge={{ label: "Handloom", tone: "gold" }}
-        image={{ placeholder: ["#1E6B52", "#0E3B2E"] }}
+        image={null}
         wishlist={<WishlistHeart name={base.name} pressed={false} onToggle={onToggle} />}
       />,
     );
@@ -92,9 +92,7 @@ describe("ProductCard", () => {
     expect(screen.getByText("22% off")).toBeInTheDocument();
     expect(screen.getByText("Handloom")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: `Add ${base.name} to wishlist` })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: base.name })).toHaveStyle({
-      backgroundImage: "linear-gradient(180deg, #1E6B52, #0E3B2E)",
-    });
+    expect(screen.getByText("Photo coming soon")).toBeInTheDocument();
   });
 
   it("renders a real photo when one is given and omits optional parts", () => {

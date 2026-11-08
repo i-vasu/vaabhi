@@ -182,25 +182,13 @@ export const badgeTones: Record<NonNullable<ProductSummary["badge"]>, BadgeTone>
   HANDLOOM: "olive",
 };
 
-/** Darkens a #RRGGBB colour, for the two-tone photo placeholder. */
-export function shade(hex: string, factor = 0.55): string {
-  const n = Number.parseInt(hex.slice(1), 16);
-  const channel = (shift: number) =>
-    Math.round(((n >> shift) & 255) * factor)
-      .toString(16)
-      .padStart(2, "0");
-  return `#${channel(16)}${channel(8)}${channel(0)}`.toUpperCase();
-}
-
-const PLACEHOLDER: [string, string] = ["#E4DCD0", "#A88B5A"];
-
 const RENDITIONS = [400, 800, 1600] as const;
 const CARD_SIZES = "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw";
 
 /**
  * The R2 media domain. MEDIA_URL is read on the server at runtime (set in docker-compose); client components
  * cannot read it, so they get it from the layout through useMediaBase() and pass it in. Without it (local
- * development without photos) photos fall back to colour placeholders.
+ * development without photos) items show "Photo coming soon".
  */
 export function serverMediaBase(): string | undefined {
   return process.env.MEDIA_URL || process.env.NEXT_PUBLIC_MEDIA_URL || undefined;
@@ -230,7 +218,6 @@ export function productCardProps(product: ProductSummary): ProductCardProps {
   const mrp = product.mrpRupees;
   const detail = [product.subtitle, stockNote(product)].filter(Boolean).join(" · ");
   const src = product.image ? mediaUrl(product.image.key) : undefined;
-  const colour = product.colours[0]?.hex;
   return {
     name: product.name,
     detail,
@@ -243,7 +230,7 @@ export function productCardProps(product: ProductSummary): ProductCardProps {
     image:
       src && product.image
         ? { src, alt: product.image.alt, srcSet: photoSrcSet(product.image.key), sizes: CARD_SIZES }
-        : { placeholder: colour ? [colour, shade(colour)] : PLACEHOLDER },
+        : null,
   };
 }
 

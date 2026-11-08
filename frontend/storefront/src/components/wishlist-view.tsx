@@ -12,8 +12,6 @@ import { mediaUrl, photoSrcSet } from "@/lib/listing";
 
 type Loaded = { state: "loading" } | { state: "error" } | { state: "done"; items: WishlistItem[] };
 
-const PLACEHOLDER: [string, string] = ["#E4DCD0", "#A88B5A"];
-
 /**
  * The products saved with the heart (kept in this browser). Tapping a card's heart again removes it here at once;
  * products that were taken off the shop are dropped from the list.
@@ -98,7 +96,7 @@ export function WishlistView() {
                         srcSet: photoSrcSet(item.imageKey, base),
                         sizes: "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw",
                       }
-                    : { placeholder: PLACEHOLDER }
+                    : null
                 }
                 wishlist={<CardWishlist slug={item.slug} name={item.name} />}
               />

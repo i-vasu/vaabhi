@@ -40,6 +40,15 @@ async function loadRelated(product: ProductDetail): Promise<ProductSummary[]> {
   }
 }
 
+/** The shop's size guide (website page "size-guide"), when published; the product page links to it. */
+async function loadSizeGuide(): Promise<string | null> {
+  try {
+    return (await api.store.getPage("size-guide", { next: { revalidate: 300 } })).body;
+  } catch {
+    return null;
+  }
+}
+
 export async function generateMetadata({ params }: Readonly<Props>): Promise<Metadata> {
   const { slug } = await params;
   const product = await loadProduct(slug);
@@ -101,7 +110,7 @@ export default async function ProductPage({ params, searchParams }: Readonly<Pro
     );
   }
   const colourParam = (await searchParams).colour;
-  const related = await loadRelated(product);
+  const [related, sizeGuide] = await Promise.all([loadRelated(product), loadSizeGuide()]);
   const details: Array<[string, string]> = [
     ...product.attributes.map((a): [string, string] => [a.name, a.values.map((v) => v.name).join(", ")]),
     ...(product.sareeLengthM === null ? [] : [["Saree length", `${product.sareeLengthM} m`] as [string, string]]),
@@ -143,7 +152,11 @@ export default async function ProductPage({ params, searchParams }: Readonly<Pro
       </nav>
 
       <div className={container}>
-        <ProductView product={product} colour={Array.isArray(colourParam) ? colourParam[0] : colourParam} />
+        <ProductView
+          product={product}
+          colour={Array.isArray(colourParam) ? colourParam[0] : colourParam}
+          sizeGuide={sizeGuide}
+        />
       </div>
 
       <TrustStrip />

@@ -19,7 +19,7 @@ import {
 import { bagStitchingDays, fetchQuote, isBuyable, priceChanged } from "@/lib/bag-quote";
 import { formatPrice } from "@/lib/format";
 import { useMediaBase } from "@/components/media-base";
-import { mediaUrl, shade } from "@/lib/listing";
+import { mediaUrl } from "@/lib/listing";
 import { SHIPPING_AND_RETURNS } from "@/lib/policies";
 
 const rupees = (amount: number) => formatPrice(amount);
@@ -124,12 +124,9 @@ export function BagView() {
                       // eslint-disable-next-line @next/next/no-img-element -- R2 rendition
                       <img src={image} alt="" className="aspect-[3/4] w-24 rounded-sm object-cover" />
                     ) : (
-                      <span
-                        className="block aspect-[3/4] w-24 rounded-sm"
-                        style={{
-                          backgroundImage: `linear-gradient(180deg, ${line.colourHex}, ${shade(line.colourHex)})`,
-                        }}
-                      />
+                      <span className="grid aspect-[3/4] w-24 place-items-center rounded-sm bg-bg-muted px-1 text-center text-[11px] text-text-muted">
+                        Photo coming soon
+                      </span>
                     )}
                   </Link>
                   <div>

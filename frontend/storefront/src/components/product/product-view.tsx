@@ -12,7 +12,6 @@ import { badgeTones } from "@/lib/listing";
 import { REASSURANCE } from "@/lib/policies";
 import {
   addonChoices,
-  BLOUSE_SIZE_GUIDE,
   BLOUSE_SIZES,
   colourOptions,
   defaultChoice,
@@ -25,6 +24,7 @@ import {
   variantsOf,
   videosFor,
 } from "@/lib/product";
+import { PageBody } from "@/components/page-body";
 import { DeliveryCheck } from "./delivery-check";
 import { ProductGallery } from "./product-gallery";
 
@@ -38,7 +38,15 @@ const chip = (checked: boolean, disabled = false) =>
   );
 
 /** Everything the shopper chooses on the product page: colour, size, blouse option, then add to bag. */
-export function ProductView({ product, colour: requested }: Readonly<{ product: ProductDetail; colour?: string }>) {
+/**
+ * `sizeGuide`: the text of the shop's "size-guide" website page (Storefront → Website pages); without it the
+ * "Size guide" link is left out.
+ */
+export function ProductView({
+  product,
+  colour: requested,
+  sizeGuide = null,
+}: Readonly<{ product: ProductDetail; colour?: string; sizeGuide?: string | null }>) {
   const colours = colourOptions(product);
   const oneSize = isOneSize(product);
   const choices = addonChoices(product);
@@ -61,7 +69,6 @@ export function ProductView({ product, colour: requested }: Readonly<{ product: 
   const addonPrice = choice?.priceRupees ?? 0;
   const total = shown.priceRupees + addonPrice;
   const stock = stockLine(variant, colour);
-  const allBlouse = product.addons.every((a) => a.kind === "BLOUSE");
 
   useEffect(() => {
     const el = actions.current;
@@ -116,7 +123,6 @@ export function ProductView({ product, colour: requested }: Readonly<{ product: 
         photos={photosFor(product, colour)}
         videos={videosFor(product, colour)}
         name={`${product.name}, ${colour}`}
-        hex={shown.colourHex}
         overlay={
           <>
             {product.badge && (
@@ -219,10 +225,8 @@ export function ProductView({ product, colour: requested }: Readonly<{ product: 
           <>
             <hr className="border-border-default" />
             <fieldset>
-              <legend className="font-serif text-[22px] font-semibold">{allBlouse ? "Blouse" : "Options"}</legend>
-              <p className="mb-3 mt-1 text-sm text-text-muted">
-                {allBlouse ? "Choose how you’d like the blouse piece" : "Choose an option"}
-              </p>
+              <legend className="font-serif text-[22px] font-semibold">Add-ons</legend>
+              <p className="mb-3 mt-1 text-sm text-text-muted">Add something to this piece, or keep it as listed</p>
               <div className="flex flex-col gap-2.5">
                 {choices.map((c) => {
                   const on = c.code === choiceCode;
@@ -291,13 +295,15 @@ export function ProductView({ product, colour: requested }: Readonly<{ product: 
                                 {s}
                               </label>
                             ))}
-                            <button
-                              type="button"
-                              onClick={() => setGuideOpen(true)}
-                              className="text-sm text-brand-primary underline"
-                            >
-                              Size guide
-                            </button>
+                            {sizeGuide && (
+                              <button
+                                type="button"
+                                onClick={() => setGuideOpen(true)}
+                                className="text-sm text-brand-primary underline"
+                              >
+                                Size guide
+                              </button>
+                            )}
                           </div>
                         </fieldset>
                       )}
@@ -389,33 +395,13 @@ export function ProductView({ product, colour: requested }: Readonly<{ product: 
         </button>
       </div>
 
-      <Sheet open={guideOpen} onClose={() => setGuideOpen(false)} title="Blouse size guide" size="short">
-        <div className="px-4 pb-6 pt-3">
-          <p className="mb-3 text-sm text-text-muted">
-            Measure around the fullest part of the bust. Between sizes? Choose the larger one.
-          </p>
-          <table className="w-full border-collapse text-sm tabular-nums">
-            <thead>
-              <tr className="text-left text-xs uppercase tracking-[0.06em] text-text-muted">
-                <th className="border-b border-border-default px-2 py-2.5 font-medium">Size</th>
-                <th className="border-b border-border-default px-2 py-2.5 font-medium">Bust (in)</th>
-                <th className="border-b border-border-default px-2 py-2.5 font-medium">Waist (in)</th>
-                <th className="border-b border-border-default px-2 py-2.5 font-medium">Length (in)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {BLOUSE_SIZE_GUIDE.map((r) => (
-                <tr key={r.size}>
-                  <td className="border-b border-border-default px-2 py-2.5">{r.size}</td>
-                  <td className="border-b border-border-default px-2 py-2.5">{r.bust}</td>
-                  <td className="border-b border-border-default px-2 py-2.5">{r.waist}</td>
-                  <td className="border-b border-border-default px-2 py-2.5">{r.length}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Sheet>
+      {sizeGuide && (
+        <Sheet open={guideOpen} onClose={() => setGuideOpen(false)} title="Size guide" size="short">
+          <div className="px-4 pb-6 pt-3">
+            <PageBody body={sizeGuide} />
+          </div>
+        </Sheet>
+      )}
     </div>
   );
 }

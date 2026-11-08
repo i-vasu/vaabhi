@@ -66,7 +66,7 @@ describe("ProductView", () => {
     render(<ProductView product={lehenga()} />);
 
     expect(screen.getByText("Choose a size to see availability")).toBeInTheDocument();
-    expect(radio(/Without blouse stitching/)).toBeChecked();
+    expect(radio(/No add-on/)).toBeChecked();
     fireEvent.click(addButton());
     expect(screen.getByText("Choose a size first.")).toBeInTheDocument();
 
@@ -83,12 +83,12 @@ describe("ProductView", () => {
   });
 
   it("opens the size guide and toggles the wishlist", () => {
-    render(<ProductView product={saree()} />);
+    render(<ProductView product={saree()} sizeGuide={"## Blouse\n\n- 34: bust 34 in"} />);
 
     fireEvent.click(radio(/standard size/));
     fireEvent.click(screen.getByRole("button", { name: "Size guide" }));
-    const guide = screen.getByRole("dialog", { name: "Blouse size guide" });
-    expect(within(guide).getAllByRole("row")).toHaveLength(8);
+    const guide = screen.getByRole("dialog", { name: "Size guide" });
+    expect(within(guide).getByText("34: bust 34 in")).toBeInTheDocument();
     fireEvent.click(within(guide).getByRole("button", { name: "Close" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 

@@ -77,10 +77,14 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hero: the first live hero banner; without one, a plain brand heading */}
+      {/* Hero: the first live hero banner with its photo; without one, a plain heading (no stand-in artwork) */}
       <section
         aria-labelledby="hero-title"
-        className="relative isolate flex min-h-[520px] items-end overflow-hidden bg-gradient-to-b from-[#C8B8A2] to-[#4E2F2B] md:min-h-[600px]"
+        className={
+          heroPhoto
+            ? "relative isolate flex min-h-[520px] items-end overflow-hidden md:min-h-[600px]"
+            : "flex items-end bg-bg-muted"
+        }
       >
         {heroPhoto && (
           <>
@@ -96,15 +100,23 @@ export default async function HomePage() {
         )}
         <div className={`${container} flex flex-col gap-3 py-6 md:py-16`}>
           {hero?.eyebrow && (
-            <p className="text-xs uppercase tracking-[0.16em] text-brand-accent-soft">{hero.eyebrow}</p>
+            <p
+              className={`text-xs uppercase tracking-[0.16em] ${heroPhoto ? "text-brand-accent-soft" : "text-text-muted"}`}
+            >
+              {hero.eyebrow}
+            </p>
           )}
           <h1
             id="hero-title"
-            className="max-w-xl font-serif text-[40px] font-semibold leading-[44px] text-text-on-brand md:text-[56px] md:leading-[64px]"
+            className={`max-w-xl font-serif text-[40px] font-semibold leading-[44px] md:text-[56px] md:leading-[64px] ${heroPhoto ? "text-text-on-brand" : "text-text-primary"}`}
           >
             {hero?.title ?? "Handwoven sarees, lehengas & kurta sets"}
           </h1>
-          {hero?.subtitle && <p className="max-w-md text-base text-text-on-brand">{hero.subtitle}</p>}
+          {hero?.subtitle && (
+            <p className={`max-w-md text-base ${heroPhoto ? "text-text-on-brand" : "text-text-secondary"}`}>
+              {hero.subtitle}
+            </p>
+          )}
           {hero?.link && (
             <Link href={hero.link} className={buttonClasses("primary", "self-start")}>
               {hero.ctaLabel ?? "Shop now"}

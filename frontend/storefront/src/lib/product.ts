@@ -6,17 +6,6 @@ export type ColourOption = { name: string; hex: string; inStock: boolean };
 
 export const BLOUSE_SIZES = ["32", "34", "36", "38", "40", "42", "44"] as const;
 
-/** Standard blouse measurements (inches) for the size guide. */
-export const BLOUSE_SIZE_GUIDE = [
-  { size: "32", bust: 32, waist: 26, length: 14 },
-  { size: "34", bust: 34, waist: 28, length: 14.5 },
-  { size: "36", bust: 36, waist: 30, length: 14.5 },
-  { size: "38", bust: 38, waist: 32, length: 15 },
-  { size: "40", bust: 40, waist: 34, length: 15 },
-  { size: "42", bust: 42, waist: 36, length: 15.5 },
-  { size: "44", bust: 44, waist: 38, length: 15.5 },
-] as const;
-
 /** Colours in the order the shop set them, each in stock when any of its sizes is. */
 export function colourOptions(product: ProductDetail): ColourOption[] {
   const colours = new Map<string, ColourOption>();
@@ -85,8 +74,8 @@ export type AddonChoice = {
 };
 
 /**
- * The choices shown as radio cards. When no add-on is free (e.g. a lehenga offering only custom stitching),
- * a free "without" choice comes first so stitching stays optional.
+ * The add-ons the admin set up on the product, as radio cards. When none is free (e.g. a lehenga offering only
+ * custom stitching), a "No add-on" choice comes first so add-ons stay optional.
  */
 export function addonChoices(product: ProductDetail): AddonChoice[] {
   const choices: AddonChoice[] = product.addons.map((a) => ({
@@ -99,8 +88,8 @@ export function addonChoices(product: ProductDetail): AddonChoice[] {
   if (choices.length && !choices.some((c) => c.priceRupees === 0)) {
     choices.unshift({
       code: null,
-      name: "Without blouse stitching",
-      description: "Blouse fabric as supplied",
+      name: "No add-on",
+      description: "Just the piece, as listed",
       priceRupees: 0,
       input: "NONE",
     });

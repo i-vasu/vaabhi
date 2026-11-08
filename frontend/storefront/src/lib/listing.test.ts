@@ -10,7 +10,6 @@ import {
   parseListingState,
   priceLabel,
   productCardProps,
-  shade,
   toggleValue,
   withInStock,
   withPage,
@@ -143,10 +142,6 @@ describe("appliedFilters", () => {
 describe("product cards", () => {
   afterEach(() => vi.unstubAllEnvs());
 
-  it("darkens colours for the placeholder", () => {
-    expect(shade("#C2185B")).toBe("#6B0D32");
-  });
-
   it("maps a product to card props", () => {
     expect(productCardProps(product())).toEqual({
       name: "Kanjeevaram silk saree",
@@ -156,7 +151,7 @@ describe("product cards", () => {
       discount: "16% off",
       href: "/p/kanjeevaram-silk-saree",
       badge: { label: "handloom", tone: "olive" },
-      image: { placeholder: ["#C2185B", "#6B0D32"] },
+      image: null,
       wishlist: expect.objectContaining({ props: { slug: "kanjeevaram-silk-saree", name: "Kanjeevaram silk saree" } }),
     });
   });
@@ -169,7 +164,7 @@ describe("product cards", () => {
     const out = productCardProps(product({ inStock: false, subtitle: null, colours: [], badge: null }));
     expect(out.detail).toBe("Out of stock");
     expect(out.badge).toBeUndefined();
-    expect(out.image).toEqual({ placeholder: ["#E4DCD0", "#A88B5A"] });
+    expect(out.image).toBeNull();
   });
 
   it("uses the R2 photo when the media URL is configured", () => {
@@ -181,7 +176,7 @@ describe("product cards", () => {
       width: 1600,
       height: 2133,
     };
-    expect(productCardProps(product({ image })).image).toHaveProperty("placeholder");
+    expect(productCardProps(product({ image })).image).toBeNull();
     vi.stubEnv("NEXT_PUBLIC_MEDIA_URL", "https://media.vaabhi.com/");
     expect(mediaUrl("products/k/1", 400)).toBe("https://media.vaabhi.com/products/k/1/400.webp");
     expect(productCardProps(product({ image })).image).toEqual({

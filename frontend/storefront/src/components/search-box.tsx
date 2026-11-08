@@ -172,11 +172,9 @@ function SearchResults({
                 onClick={onPick}
                 className="flex items-center gap-3 px-4 py-2.5 hover:bg-bg-muted focus-visible:bg-bg-muted"
               >
-                {src ? (
+                {src && (
                   // eslint-disable-next-line @next/next/no-img-element -- R2 serves fixed WebP sizes
                   <img src={src} alt="" className="h-16 w-12 shrink-0 rounded-sm object-cover" />
-                ) : (
-                  <span aria-hidden="true" className="h-16 w-12 shrink-0 rounded-sm bg-bg-muted" />
                 )}
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm text-text-primary">{item.name}</span>
