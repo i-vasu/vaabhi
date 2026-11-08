@@ -13,8 +13,6 @@ export const menuLinks: readonly NavLink[] = [
   ["Customise", "/customise"],
   ["Collections", "/collections"],
   ["Blogs", "/blog"],
-  ["Search", "/search"],
-  ["Your orders", "/account/orders"],
   ["Contact us", "/contact"],
 ];
 
