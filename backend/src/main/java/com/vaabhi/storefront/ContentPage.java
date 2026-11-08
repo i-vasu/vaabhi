@@ -43,6 +43,7 @@ public record ContentPage(
                     regexp = "^[a-z0-9]+(-[a-z0-9]+)*$",
                     message = "use lowercase letters, numbers and dashes, e.g. size-guide")
             String slug,
+
             @NotNull Section section,
             @NotBlank @Size(max = 120) String title,
             @Nullable @Size(max = 300) String summary,
@@ -56,5 +57,9 @@ public record ContentPage(
      * @param updatedAt when it was last saved, shown as the post's date
      */
     public record ContentPageLink(
-            String slug, Section section, String title, @Nullable String summary, OffsetDateTime updatedAt) {}
+            String slug,
+            Section section,
+            String title,
+            @Nullable String summary,
+            OffsetDateTime updatedAt) {}
 }

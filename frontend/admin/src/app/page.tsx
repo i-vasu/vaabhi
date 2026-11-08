@@ -75,7 +75,9 @@ export default function HomePage() {
               status === "UP" ? "bg-ok" : status === "DOWN" ? "bg-bad" : "animate-pulse bg-ink-faint",
             )}
           />
-          <span className="sr-only">{status === "UP" ? "API is up" : status === "DOWN" ? "API is down" : "Checking API"}</span>
+          <span className="sr-only">
+            {status === "UP" ? "API is up" : status === "DOWN" ? "API is down" : "Checking API"}
+          </span>
           <span aria-hidden="true">API</span>
         </span>
       </div>

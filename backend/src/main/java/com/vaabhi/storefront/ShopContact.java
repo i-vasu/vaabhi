@@ -60,13 +60,7 @@ public record ShopContact(
         if (p.address() != null && !p.address().isBlank()) {
             return p.address().trim();
         }
-        var line = Stream.of(
-                        p.doorNo(),
-                        p.street(),
-                        p.area(),
-                        p.city(),
-                        p.state(),
-                        p.pinCode())
+        var line = Stream.of(p.doorNo(), p.street(), p.area(), p.city(), p.state(), p.pinCode())
                 .filter(Objects::nonNull)
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())

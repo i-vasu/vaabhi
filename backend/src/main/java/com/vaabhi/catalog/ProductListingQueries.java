@@ -436,7 +436,8 @@ class ProductListingQueries {
         var selectedCategories = filters.selected(ListingFilters.CATEGORY_CODE);
         if (categoryCounts.size() > 1 || !selectedCategories.isEmpty()) {
             record CategoryName(String slug, String name) {}
-            var categories = jdbc.sql("SELECT slug, name FROM category ORDER BY position, id")
+            var categories = jdbc
+                    .sql("SELECT slug, name FROM category ORDER BY position, id")
                     .query(CategoryName.class)
                     .list()
                     .stream()
@@ -448,7 +449,8 @@ class ProductListingQueries {
                             categoryCounts.getOrDefault(c.slug(), 0L),
                             selectedCategories.contains(c.slug())))
                     .toList();
-            addIfNotEmpty(groups, new FilterGroup(ListingFilters.CATEGORY_CODE, "Category", FilterType.FACET, categories));
+            addIfNotEmpty(
+                    groups, new FilterGroup(ListingFilters.CATEGORY_CODE, "Category", FilterType.FACET, categories));
         }
 
         groups.add(choices(filters, counts, ListingFilters.DISCOUNT_CODE, "Discount", DISCOUNT_NAMES));
@@ -466,7 +468,11 @@ class ProductListingQueries {
         var options = named.stream()
                 .filter(e -> found.getOrDefault(e.getKey(), 0L) > 0 || selected.contains(e.getKey()))
                 .map(e -> new FilterOption(
-                        e.getKey(), e.getValue(), null, found.getOrDefault(e.getKey(), 0L), selected.contains(e.getKey())))
+                        e.getKey(),
+                        e.getValue(),
+                        null,
+                        found.getOrDefault(e.getKey(), 0L),
+                        selected.contains(e.getKey())))
                 .toList();
         return new FilterGroup(code, name, FilterType.FACET, options);
     }

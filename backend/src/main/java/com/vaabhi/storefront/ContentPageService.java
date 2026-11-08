@@ -39,9 +39,7 @@ public class ContentPageService {
                         SELECT slug, section, title, summary, updated_at FROM content_page WHERE published
                         ORDER BY section, CASE WHEN section = 'BLOG' THEN -EXTRACT(EPOCH FROM created_at) END,
                                  position, id
-                        """)
-                .query(ContentPage.ContentPageLink.class)
-                .list();
+                        """).query(ContentPage.ContentPageLink.class).list();
     }
 
     /** A published page by slug; 404 for drafts and unknown slugs. */
@@ -83,7 +81,11 @@ public class ContentPageService {
                     .param("slug", form.slug())
                     .param("section", form.section().name())
                     .param("title", form.title().trim())
-                    .param("summary", form.summary() == null || form.summary().isBlank() ? null : form.summary().trim())
+                    .param(
+                            "summary",
+                            form.summary() == null || form.summary().isBlank()
+                                    ? null
+                                    : form.summary().trim())
                     .param("body", form.body().strip())
                     .param("published", form.published())
                     .param("id", id)

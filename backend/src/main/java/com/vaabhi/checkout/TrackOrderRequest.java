@@ -10,5 +10,8 @@ import jakarta.validation.constraints.Size;
  * @param phone the mobile number the order was placed with, with or without {@code +91}
  */
 public record TrackOrderRequest(
-        @NotBlank(message = "Enter your order number") @Size(max = 32) String number,
-        @NotBlank(message = "Enter your mobile number") @Size(max = 20) String phone) {}
+        @NotBlank(message = "Enter your order number") @Size(max = 32)
+        String number,
+
+        @NotBlank(message = "Enter your mobile number") @Size(max = 20)
+        String phone) {}

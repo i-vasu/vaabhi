@@ -111,7 +111,8 @@ final class ListingFilters {
         }
         tags = query.facets().getOrDefault(TAG_CODE, Set.of()).stream()
                 .map(t -> t.toUpperCase(java.util.Locale.ROOT))
-                .filter(t -> java.util.Arrays.stream(Badge.values()).anyMatch(b -> b.name().equals(t)))
+                .filter(t -> java.util.Arrays.stream(Badge.values())
+                        .anyMatch(b -> b.name().equals(t)))
                 .collect(java.util.stream.Collectors.toUnmodifiableSet());
         if (!tags.isEmpty()) {
             params.put("tags", List.copyOf(tags));

@@ -750,8 +750,7 @@ function Addons({
             Add-ons
           </h2>
           <p className="text-sm text-ink-soft">
-            Optional extras shoppers can choose on the product page. Their price is added to the item; 0 means
-            included.
+            Optional extras shoppers can choose on the product page. Their price is added to the item; 0 means included.
           </p>
         </div>
         <Button variant="secondary" onClick={() => onChange([...rows, blankAddon()])}>

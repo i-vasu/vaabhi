@@ -27,6 +27,7 @@ class StoreProductController {
     /** Query parameters with a fixed meaning; every other parameter is read as a facet filter. */
     private static final Set<String> RESERVED =
             Set.of("q", "colour", "size", "inStock", "priceMin", "priceMax", "sort", "page", "pageSize");
+
     private static final int MAX_QUERY_LENGTH = 100;
 
     private static final String FACET_HELP = "Comma-separated facet value codes (OR within the facet)";

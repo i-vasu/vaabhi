@@ -54,7 +54,8 @@ class StoreOrderTrackingController {
         }
         var phone = lastTenDigits(request.phone());
         var order = orders.findByNumber(number)
-                .filter(o -> phone.length() == 10 && lastTenDigits(o.contactPhone()).equals(phone))
+                .filter(o ->
+                        phone.length() == 10 && lastTenDigits(o.contactPhone()).equals(phone))
                 .orElseThrow(() -> {
                     wrongTries.get(number, k -> new AtomicInteger()).incrementAndGet();
                     return new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND);
