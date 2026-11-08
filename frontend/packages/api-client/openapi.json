@@ -59,6 +59,54 @@
                 }
             }
         },
+        "/api/v1/customer/me/details": {
+            "get": {
+                "tags": [
+                    "customer-controller"
+                ],
+                "operationId": "getDetails",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomerDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "customer-controller"
+                ],
+                "operationId": "updateDetails",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CustomerDetails"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomerDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/workshop/staff/{staffId}/stages": {
             "put": {
                 "tags": [
@@ -5374,6 +5422,29 @@
                 }
             }
         },
+        "/api/v1/store/measurement-forms": {
+            "get": {
+                "tags": [
+                    "content-page-controller"
+                ],
+                "operationId": "listMeasurementForms",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShopMeasurementForm"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/store/home": {
             "get": {
                 "tags": [
@@ -6721,6 +6792,75 @@
                     "id",
                     "name",
                     "phone"
+                ]
+            },
+            "CustomerDetails": {
+                "type": "object",
+                "properties": {
+                    "dateOfBirth": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "addressLine1": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 200,
+                        "minLength": 0
+                    },
+                    "addressLine2": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 200,
+                        "minLength": 0
+                    },
+                    "city": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 80,
+                        "minLength": 0
+                    },
+                    "state": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 80,
+                        "minLength": 0
+                    },
+                    "pincode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "pattern": "^[1-9][0-9]{5}$"
+                    },
+                    "measurements": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "required": [
+                    "addressLine1",
+                    "addressLine2",
+                    "city",
+                    "dateOfBirth",
+                    "measurements",
+                    "pincode",
+                    "state"
                 ]
             },
             "StaffStages": {
@@ -14300,6 +14440,48 @@
                     "page",
                     "pageSize",
                     "total"
+                ]
+            },
+            "MeasurementField": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "unit": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "key",
+                    "label",
+                    "unit"
+                ]
+            },
+            "ShopMeasurementForm": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "fields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MeasurementField"
+                        }
+                    }
+                },
+                "required": [
+                    "fields",
+                    "id",
+                    "name"
                 ]
             },
             "HomeContent": {

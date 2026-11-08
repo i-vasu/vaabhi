@@ -1,4 +1,4 @@
-import type { CustomerProfile, FieldError, OtpSent } from "@vaabhi/api-client";
+import type { CustomerDetails, CustomerProfile, FieldError, OtpSent } from "@vaabhi/api-client";
 import { localStore } from "./local-store";
 
 /**
@@ -79,6 +79,10 @@ export const auth = {
     call<SignedIn>("/api/auth/google", "POST", { credential }, fetcher),
   updateName: (name: string, fetcher?: typeof fetch) =>
     call<{ customer: CustomerProfile }>("/api/auth/profile", "PUT", { name }, fetcher),
+  details: (fetcher?: typeof fetch) =>
+    call<{ details: CustomerDetails }>("/api/auth/details", "GET", undefined, fetcher),
+  saveDetails: (details: CustomerDetails, fetcher?: typeof fetch) =>
+    call<{ details: CustomerDetails }>("/api/auth/details", "PUT", details, fetcher),
 };
 
 /** Asks the server who is signed in (renewing the session) and updates the cached copy. Offline: no change. */

@@ -24,6 +24,8 @@ export type ContentPageForm = Schemas["ContentPageForm"];
 export type ContentPageLink = Schemas["ContentPageLink"];
 export type PageSection = ContentPage["section"];
 export type ShopContact = Schemas["ShopContact"];
+export type CustomerDetails = Schemas["CustomerDetails"];
+export type ShopMeasurementForm = Schemas["ShopMeasurementForm"];
 
 export type BagQuote = Schemas["BagQuote"];
 export type BagQuoteLine = Schemas["BagQuoteLine"];
@@ -333,6 +335,9 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         request<ContentPage>(`/api/v1/store/pages/${encodeURIComponent(slug)}`, init),
       /** Phone, WhatsApp, email, address, socials and hours from the shop profile. */
       getShop: (init?: RequestOptions) => request<ShopContact>("/api/v1/store/shop", init),
+      /** The shop's measurement forms (garment templates), for the account page. */
+      listMeasurementForms: (init?: RequestOptions) =>
+        request<ShopMeasurementForm[]>("/api/v1/store/measurement-forms", init),
       /** Current prices and stock for the bag kept in the browser. */
       quoteBag: (bag: BagQuoteRequest) => send<BagQuote>("POST", "/api/v1/store/bag/quote", bag),
     },
@@ -358,6 +363,15 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
           method: "PUT",
           headers: { ...bearer(accessToken), "Content-Type": "application/json" },
           body: JSON.stringify({ name }),
+        }),
+      /** Date of birth, address and measurements. */
+      getDetails: (accessToken: string) =>
+        request<CustomerDetails>("/api/v1/customer/me/details", { headers: bearer(accessToken), cache: "no-store" }),
+      updateDetails: (accessToken: string, details: CustomerDetails) =>
+        request<CustomerDetails>("/api/v1/customer/me/details", {
+          method: "PUT",
+          headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+          body: JSON.stringify(details),
         }),
       /** Places the order from the bag; the answer opens Razorpay Checkout. */
       startCheckout: (accessToken: string, checkout: CheckoutRequest) =>

@@ -19,6 +19,17 @@ public class CustomerService {
         return customers.find(customerId).orElseThrow(() -> AuthException.unauthorized("Please sign in again"));
     }
 
+    @Transactional(readOnly = true)
+    public CustomerDetails details(long customerId) {
+        return customers.details(customerId).orElseThrow(() -> AuthException.unauthorized("Please log in again"));
+    }
+
+    @Transactional
+    public CustomerDetails updateDetails(long customerId, CustomerDetails details) {
+        customers.updateDetails(customerId, details);
+        return details(customerId);
+    }
+
     @Transactional
     public CustomerProfile updateName(long customerId, String name) {
         customers.updateName(customerId, name.strip());

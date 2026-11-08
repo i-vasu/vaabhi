@@ -20,6 +20,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/customer/me/details": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getDetails"];
+        put: operations["updateDetails"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/workshop/staff/{staffId}/stages": {
         parameters: {
             query?: never;
@@ -1748,6 +1764,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/store/measurement-forms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listMeasurementForms"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/store/home": {
         parameters: {
             query?: never;
@@ -2305,6 +2337,20 @@ export interface components {
             name: string | null;
             email: string | null;
             phone: string | null;
+        };
+        CustomerDetails: {
+            /** Format: date */
+            dateOfBirth: string | null;
+            addressLine1: string | null;
+            addressLine2: string | null;
+            city: string | null;
+            state: string | null;
+            pincode: string | null;
+            measurements: {
+                [key: string]: {
+                    [key: string]: string;
+                };
+            };
         };
         StaffStages: {
             stageIds: number[];
@@ -3947,6 +3993,17 @@ export interface components {
             /** Format: int32 */
             pageSize: number;
         };
+        MeasurementField: {
+            key: string;
+            label: string;
+            unit: string;
+        };
+        ShopMeasurementForm: {
+            /** Format: int64 */
+            id: number;
+            name: string;
+            fields: components["schemas"]["MeasurementField"][];
+        };
         HomeContent: {
             hero: components["schemas"]["Banner"][];
             occasions: components["schemas"]["Banner"][];
@@ -4432,6 +4489,50 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CustomerProfile"];
+                };
+            };
+        };
+    };
+    getDetails: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomerDetails"];
+                };
+            };
+        };
+    };
+    updateDetails: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerDetails"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomerDetails"];
                 };
             };
         };
@@ -8059,6 +8160,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["NewArrivalsPage"];
+                };
+            };
+        };
+    };
+    listMeasurementForms: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShopMeasurementForm"][];
                 };
             };
         };

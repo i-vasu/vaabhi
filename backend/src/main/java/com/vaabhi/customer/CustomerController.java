@@ -31,6 +31,17 @@ class CustomerController {
         return service.updateName(customerId(jwt), update.name());
     }
 
+    /** Date of birth, address and measurements, for the account page. */
+    @GetMapping("/me/details")
+    CustomerDetails getDetails(@AuthenticationPrincipal Jwt jwt) {
+        return service.details(customerId(jwt));
+    }
+
+    @PutMapping("/me/details")
+    CustomerDetails updateDetails(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CustomerDetails details) {
+        return service.updateDetails(customerId(jwt), details);
+    }
+
     private static long customerId(Jwt jwt) {
         try {
             return Long.parseLong(jwt.getSubject());
