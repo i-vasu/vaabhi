@@ -38,10 +38,7 @@ describe("AccountMenu", () => {
     expect(screen.getByRole("link", { name: "Orders" })).toHaveAttribute("href", "/account/orders");
     expect(screen.getByRole("link", { name: "Wishlist" })).toHaveAttribute("href", "/wishlist");
     // Comes back to the page after signing in.
-    expect(screen.getByRole("link", { name: "Sign in / Sign up" })).toHaveAttribute(
-      "href",
-      "/signup?next=%2Fp%2Fbanarasi-silk",
-    );
+    expect(screen.getByRole("link", { name: "Login" })).toHaveAttribute("href", "/login?next=%2Fp%2Fbanarasi-silk");
     expect(screen.queryByRole("button", { name: "Log out" })).not.toBeInTheDocument();
     await waitFor(() => expect(sessionStore.read()).toBeNull());
   });
@@ -51,13 +48,13 @@ describe("AccountMenu", () => {
     render(<AccountMenu />);
     fireEvent.click(toggle());
     expect(await screen.findByText("Hi, Asha")).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Sign in / Sign up" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Login" })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Log out" }));
     await waitFor(() => expect(sessionStore.read()).toBeNull());
     expect(loggedOut).toBe(true);
     fireEvent.click(toggle());
-    expect(screen.getByRole("link", { name: "Sign in / Sign up" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Login" })).toBeInTheDocument();
   });
 
   it("forgets a cached session the server no longer has (signed out elsewhere or expired)", async () => {

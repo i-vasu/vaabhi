@@ -11,6 +11,6 @@ export { ColourSwatch } from "./colour-swatch";
 export type { ColourSwatchProps } from "./colour-swatch";
 export { cn } from "./cn";
 export * from "./icons";
-export { ProductCard } from "./product-card";
+export { ProductCard, WishlistHeart } from "./product-card";
 export type { ProductCardProps } from "./product-card";
 export { SectionHeader } from "./section-header";

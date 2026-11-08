@@ -1,6 +1,7 @@
 package com.vaabhi.catalog;
 
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,12 @@ public class ProductService {
                 .findFirst()
                 .orElseThrow(() -> new CatalogNotFoundException("Category", query.categorySlug()));
         return listingQueries.list(category, query, facetCatalog.definitions());
+    }
+
+    /** Products from every category matching the text (all of them without text) and the filters. */
+    @Transactional(readOnly = true)
+    public SearchResponse search(@Nullable String text, ListingQuery query) {
+        return listingQueries.search(text, query, facetCatalog.definitions());
     }
 
     /** Up to {@code limit} published products with the badge, most popular first. */

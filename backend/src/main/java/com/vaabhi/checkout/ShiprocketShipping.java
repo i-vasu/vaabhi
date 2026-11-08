@@ -3,9 +3,13 @@ package com.vaabhi.checkout;
 import com.vaabhi.catalog.CatalogStock;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -23,6 +27,7 @@ import tools.jackson.databind.json.JsonMapper;
 class ShiprocketShipping {
 
     private static final JsonMapper JSON = JsonMapper.builder().build();
+    private static final Logger log = LoggerFactory.getLogger(ShiprocketShipping.class);
 
     private final CheckoutService orders;
     private final WebOrderReturns returns;
@@ -64,6 +69,27 @@ class ShiprocketShipping {
             orders.recordShippingLabel(number, label);
         }
         return orders.shopOrder(number);
+    }
+
+    /**
+     * For guest tracking: the order with the courier's latest status when ours is older than {@code maxAge}. A
+     * shipped order only, with a Shiprocket AWB. If Shiprocket can't answer, the order as it was, since the status we
+     * have is still worth showing.
+     */
+    WebOrder withFreshTracking(WebOrder order, Duration maxAge, OffsetDateTime now) {
+        if (order.status() != WebOrder.Status.SHIPPED || order.trackingUrl() == null || !shiprocket.configured()) {
+            return order;
+        }
+        var updatedAt = orders.trackingUpdatedAt(order.number());
+        if (updatedAt != null && updatedAt.isAfter(now.minus(maxAge))) {
+            return order;
+        }
+        try {
+            return refreshTracking(order.number());
+        } catch (RuntimeException e) {
+            log.warn("Live tracking refresh failed for {}: {}", order.number(), e.getMessage());
+            return order;
+        }
     }
 
     /** Asks Shiprocket for the latest courier status now (for when the webhook is not set up or was missed). */

@@ -59,7 +59,7 @@ describe("CategoryPage", () => {
     );
     expect(applied.getByRole("link", { name: "Clear all" })).toHaveAttribute("href", "/c/sarees?sort=new");
 
-    expect(screen.getByText("3 results")).toBeInTheDocument();
+    expect(screen.getByText("3 results · prices include all taxes")).toBeInTheDocument();
     const grid = within(screen.getByRole("list", { name: "Sarees products" }));
     expect(grid.getAllByRole("article")).toHaveLength(2);
     expect(screen.getByText("Showing 2 of 3")).toBeInTheDocument();
@@ -109,7 +109,7 @@ describe("CategoryPage", () => {
 
     expect(screen.getByText("Nothing matches these filters")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Clear filters" })).toHaveAttribute("href", "/c/sarees");
-    expect(screen.getByText("0 results")).toBeInTheDocument();
+    expect(screen.getByText("0 results · prices include all taxes")).toBeInTheDocument();
     expect(screen.queryByText(/styles/)).not.toBeInTheDocument();
   });
 
@@ -129,7 +129,7 @@ describe("CategoryPage", () => {
 
   it("has a title and canonical URL", async () => {
     await expect(generateMetadata(props({}, "kurta-sets"))).resolves.toEqual({
-      title: "Kurta sets | Vaabhi",
+      title: "Kurta sets",
       alternates: { canonical: "/c/kurta-sets" },
     });
   });

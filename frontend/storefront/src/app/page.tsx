@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Category, ProductSummary } from "@vaabhi/api-client";
+import type { Banner, HomeContent, ProductSummary } from "@vaabhi/api-client";
 import {
   buttonClasses,
   CashIcon,
@@ -11,19 +11,12 @@ import {
   TruckIcon,
 } from "@vaabhi/ui";
 import { api } from "@/lib/api";
-import { categoryColors, fallbackCategoryColors, occasions, weaves } from "@/lib/home-content";
-import { productCardProps } from "@/lib/listing";
+import { whatsappLink } from "@/lib/whatsapp";
+import { mediaUrl, photoSrcSet, productCardProps } from "@/lib/listing";
+import { loadCategoryTiles, loadOccasionTiles } from "@/lib/shop-sections";
 
 // Rendered on request; the API response is cached for 60 s, so builds do not need the API.
 export const dynamic = "force-dynamic";
-
-async function loadCategories(): Promise<Category[] | null> {
-  try {
-    return await api.store.listCategories({ next: { revalidate: 60 } });
-  } catch {
-    return null;
-  }
-}
 
 /** Products marked Bestseller in the admin, most popular first; an empty list hides the section. */
 async function loadBestsellers(): Promise<ProductSummary[]> {
@@ -34,86 +27,176 @@ async function loadBestsellers(): Promise<ProductSummary[]> {
   }
 }
 
-const container = "mx-auto w-full max-w-6xl px-4";
-const whatsappHref = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
-  ? `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi Vaabhi, I'd like festive drop updates")}`
-  : "/contact";
+const NO_BANNERS: HomeContent = { hero: [], occasions: [], craft: null };
 
-const occasionText = { light: "text-text-on-brand", olive: "text-brand-olive", dark: "text-text-primary" } as const;
+/** Banners set in the admin (Storefront); sections without a live banner are left out. */
+async function loadHome(): Promise<HomeContent> {
+  try {
+    return await api.store.getHome({ next: { revalidate: 60 } });
+  } catch {
+    return NO_BANNERS;
+  }
+}
+
+/** A banner's photo at full width; undefined without a media domain (local development). */
+function bannerPhoto(banner: Banner, sizes: string) {
+  const src = mediaUrl(banner.imageKey, 1600);
+  return src ? { src, srcSet: photoSrcSet(banner.imageKey), sizes, alt: banner.altText ?? "" } : undefined;
+}
+
+/**
+ * Where "Join on WhatsApp" goes, from Settings → Shop profile: the shop's WhatsApp channel (or community) when it
+ * has one, else a chat with the shop's number, else the contact page (no number, or the API is down).
+ */
+async function loadJoinLink(): Promise<{ href: string; external: boolean }> {
+  try {
+    const shop = await api.store.getShop({ next: { revalidate: 60 } });
+    if (shop.whatsappChannel) return { href: shop.whatsappChannel, external: true };
+    if (shop.whatsapp) {
+      return { href: whatsappLink(shop.whatsapp, "Hi Vaabhi, I'd like festive drop updates"), external: true };
+    }
+  } catch {
+    // Falls through to the contact page.
+  }
+  return { href: "/contact", external: false };
+}
+
+const container = "mx-auto w-full max-w-6xl px-4";
 
 export default async function HomePage() {
-  const [categories, bestsellers] = await Promise.all([loadCategories(), loadBestsellers()]);
+  const [categories, occasions, bestsellers, home, join] = await Promise.all([
+    loadCategoryTiles(),
+    loadOccasionTiles(),
+    loadBestsellers(),
+    loadHome(),
+    loadJoinLink(),
+  ]);
+  const hero = home.hero[0];
+  const heroPhoto = hero && bannerPhoto(hero, "100vw");
+  const craftPhoto = home.craft && bannerPhoto(home.craft, "(min-width: 768px) 50vw, 100vw");
 
   return (
     <>
-      {/* Hero */}
+      {/* Hero: the first live hero banner with its photo; without one, a plain heading (no stand-in artwork) */}
       <section
         aria-labelledby="hero-title"
-        className="flex min-h-[520px] items-end bg-gradient-to-b from-[#C8B8A2] to-[#4E2F2B] md:min-h-[600px]"
+        className={
+          heroPhoto
+            ? "relative isolate flex min-h-[520px] items-end overflow-hidden md:min-h-[600px]"
+            : "flex items-end bg-bg-muted"
+        }
       >
+        {heroPhoto && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element -- R2 serves fixed WebP sizes; srcset picks one */}
+            <img
+              {...heroPhoto}
+              alt={heroPhoto.alt}
+              fetchPriority="high"
+              className="absolute inset-0 -z-10 size-full object-cover"
+            />
+            <span aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-black/60 to-transparent" />
+          </>
+        )}
         <div className={`${container} flex flex-col gap-3 py-6 md:py-16`}>
-          <p className="text-xs tracking-[0.16em] text-brand-accent-soft">THE WEDDING EDIT · 2026</p>
+          {hero?.eyebrow && (
+            <p
+              className={`text-xs uppercase tracking-[0.16em] ${heroPhoto ? "text-brand-accent-soft" : "text-text-muted"}`}
+            >
+              {hero.eyebrow}
+            </p>
+          )}
           <h1
             id="hero-title"
-            className="max-w-xl font-serif text-[40px] font-semibold leading-[44px] text-text-on-brand md:text-[56px] md:leading-[64px]"
+            className={`max-w-xl font-serif text-[40px] font-semibold leading-[44px] md:text-[56px] md:leading-[64px] ${heroPhoto ? "text-text-on-brand" : "text-text-primary"}`}
           >
-            Heirloom silks for the season
+            {hero?.title ?? "Handwoven sarees, lehengas & kurta sets"}
           </h1>
-          <p className="max-w-md text-base text-text-on-brand">
-            Banarasi, Kanjeevaram and Paithani — handwoven, ready to ship.
-          </p>
-          <Link href="/edit/wedding" className={buttonClasses("primary", "self-start")}>
-            Explore the edit
-          </Link>
+          {hero?.subtitle && (
+            <p className={`max-w-md text-base ${heroPhoto ? "text-text-on-brand" : "text-text-secondary"}`}>
+              {hero.subtitle}
+            </p>
+          )}
+          {hero?.link && (
+            <Link href={hero.link} className={buttonClasses("primary", "self-start")}>
+              {hero.ctaLabel ?? "Shop now"}
+            </Link>
+          )}
         </div>
       </section>
 
-      {/* Shop by category */}
-      <section aria-labelledby="categories-title" className={`${container} flex flex-col gap-4 py-8`}>
-        <SectionHeader id="categories-title" title="Shop by category" />
-        {categories === null ? (
+      {/* Shop by category: the categories that have products, pictured with a real photo */}
+      {categories === null ? (
+        <section aria-labelledby="categories-title" className={`${container} flex flex-col gap-4 py-8`}>
+          <SectionHeader id="categories-title" title="Shop by category" />
           <p className="text-sm text-feedback-error">The catalogue is unavailable right now.</p>
-        ) : (
-          <nav aria-label="Shop by category" className="-mx-4 overflow-x-auto px-4">
-            <ul className="flex gap-4 md:justify-center md:gap-10">
-              {categories.map((category) => (
-                <li key={category.id}>
-                  <CategoryTile
-                    label={category.name ?? ""}
-                    href={`/c/${category.slug}`}
-                    colors={categoryColors[category.slug ?? ""] ?? fallbackCategoryColors}
-                  />
-                </li>
-              ))}
-            </ul>
-          </nav>
-        )}
-      </section>
+        </section>
+      ) : (
+        categories.length > 0 && (
+          <section aria-labelledby="categories-title" className={`${container} flex flex-col gap-4 py-8`}>
+            <SectionHeader id="categories-title" title="Shop by category" />
+            <nav aria-label="Shop by category" className="-mx-4 overflow-x-auto px-4">
+              <ul className="flex gap-4 md:justify-center md:gap-10">
+                {categories.map((category) => {
+                  const src = category.imageKey ? mediaUrl(category.imageKey, 400) : undefined;
+                  return (
+                    <li key={category.href}>
+                      <CategoryTile
+                        label={category.label}
+                        href={category.href}
+                        image={src && category.imageKey ? { src, srcSet: photoSrcSet(category.imageKey) } : undefined}
+                      />
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+          </section>
+        )
+      )}
 
-      {/* Shop by occasion */}
-      <section aria-labelledby="occasions-title" className={`${container} flex flex-col gap-4 py-8`}>
-        <SectionHeader
-          id="occasions-title"
-          title="Shop by occasion"
-          action={{ label: "View all", href: "/occasion" }}
-        />
-        <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          {occasions.map((occasion) => (
-            <li key={occasion.href}>
-              <Link
-                href={occasion.href}
-                className="flex h-[150px] flex-col justify-end gap-1 rounded-sm p-4 transition-opacity hover:opacity-90 md:h-[220px]"
-                style={{ backgroundImage: `linear-gradient(180deg, ${occasion.colors[0]}, ${occasion.colors[1]})` }}
-              >
-                <span className={`font-serif text-[22px] font-semibold leading-7 ${occasionText[occasion.tone]}`}>
-                  {occasion.label}
-                </span>
-                <span className={`text-xs tracking-[0.04em] ${occasionText[occasion.tone]}`}>Shop now →</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {/* Shop by occasion: the occasions products are tagged with, each across every category */}
+      {occasions.length > 0 && (
+        <section aria-labelledby="occasions-title" className={`${container} flex flex-col gap-4 py-8`}>
+          <SectionHeader id="occasions-title" title="Shop by occasion" />
+          <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            {occasions.map((occasion) => {
+              const src = occasion.imageKey ? mediaUrl(occasion.imageKey, 800) : undefined;
+              const text = src ? "text-text-on-brand" : "text-text-primary";
+              return (
+                <li key={occasion.href}>
+                  <Link
+                    href={occasion.href}
+                    className={`relative isolate flex h-[150px] flex-col justify-end gap-1 overflow-hidden rounded-sm p-4 transition-opacity hover:opacity-90 md:h-[220px] ${src ? "" : "border border-border-default bg-bg-muted"}`}
+                  >
+                    {src && occasion.imageKey && (
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element -- R2 serves fixed WebP sizes */}
+                        <img
+                          src={src}
+                          srcSet={photoSrcSet(occasion.imageKey)}
+                          sizes="(min-width: 768px) 25vw, 50vw"
+                          alt=""
+                          loading="lazy"
+                          className="absolute inset-0 -z-10 size-full object-cover"
+                        />
+                        <span
+                          aria-hidden="true"
+                          className="absolute inset-0 -z-10 bg-gradient-to-t from-black/60 to-transparent"
+                        />
+                      </>
+                    )}
+                    <span className={`font-serif text-[22px] font-semibold leading-7 ${text}`}>{occasion.label}</span>{" "}
+                    <span className={`text-xs tracking-[0.04em] ${text}`}>
+                      {occasion.count} {occasion.count === 1 ? "piece" : "pieces"} · Shop now →
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       {/* Bestsellers */}
       {bestsellers.length > 0 && (
@@ -135,32 +218,36 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* The craft (olive accent) */}
-      <section aria-labelledby="craft-title" className="bg-brand-olive-soft">
-        <div className={`${container} flex max-w-6xl flex-col gap-3.5 py-8`}>
-          <p className="text-xs tracking-[0.16em] text-brand-olive">THE CRAFT</p>
-          <h2 id="craft-title" className="font-serif text-[26px] font-semibold leading-tight text-text-primary">
-            Woven by hand, worn for generations
-          </h2>
-          <p className="max-w-xl text-base text-text-secondary">
-            We work directly with weaving clusters in Varanasi, Kanchipuram and Chanderi — every piece carries its
-            weaver’s story.
-          </p>
-          <ul className="flex flex-wrap gap-2" aria-label="Weaves">
-            {weaves.map((weave) => (
-              <li
-                key={weave}
-                className="rounded-full border border-brand-olive bg-bg-page px-3 py-1.5 text-sm text-brand-olive"
-              >
-                {weave}
-              </li>
-            ))}
-          </ul>
-          <Link href="/weavers" className={buttonClasses("secondary", "mt-1 self-start")}>
-            Meet the weavers
-          </Link>
-        </div>
-      </section>
+      {/* The craft (olive accent): the live craft banner's photo and words */}
+      {home.craft && (
+        <section aria-labelledby="craft-title" className="bg-brand-olive-soft">
+          <div className={`${container} grid items-center gap-6 py-8 md:grid-cols-2`}>
+            <div className="flex flex-col gap-3.5">
+              {home.craft.eyebrow && (
+                <p className="text-xs uppercase tracking-[0.16em] text-brand-olive">{home.craft.eyebrow}</p>
+              )}
+              <h2 id="craft-title" className="font-serif text-[26px] font-semibold leading-tight text-text-primary">
+                {home.craft.title}
+              </h2>
+              {home.craft.subtitle && <p className="max-w-xl text-base text-text-secondary">{home.craft.subtitle}</p>}
+              {home.craft.link && (
+                <Link href={home.craft.link} className={buttonClasses("secondary", "mt-1 self-start")}>
+                  {home.craft.ctaLabel ?? "Read more"}
+                </Link>
+              )}
+            </div>
+            {craftPhoto && (
+              // eslint-disable-next-line @next/next/no-img-element -- R2 serves fixed WebP sizes; srcset picks one
+              <img
+                {...craftPhoto}
+                alt={craftPhoto.alt}
+                loading="lazy"
+                className="aspect-[4/3] w-full rounded-sm object-cover"
+              />
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Trust */}
       <section aria-label="Why shop with us" className="border-y border-border-default">
@@ -196,7 +283,11 @@ export default async function HomePage() {
         <p className="max-w-sm text-sm text-text-muted">
           New collections, restocks and private sale access — on WhatsApp.
         </p>
-        <a href={whatsappHref} className={buttonClasses("primary")}>
+        <a
+          href={join.href}
+          {...(join.external ? { target: "_blank", rel: "noopener" } : {})}
+          className={buttonClasses("primary")}
+        >
           Join on WhatsApp
         </a>
       </section>

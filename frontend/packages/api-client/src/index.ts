@@ -13,6 +13,19 @@ export type ProductDetail = Schemas["ProductDetailResponse"];
 export type ProductVariant = Schemas["VariantResponse"];
 export type ProductAddon = Schemas["AddonResponse"];
 export type Media = Schemas["MediaResponse"];
+export type Banner = Schemas["Banner"];
+export type BannerForm = Schemas["BannerForm"];
+export type BannerSlot = Banner["slot"];
+export type HomeContent = Schemas["HomeContent"];
+export type SiteImageUpload = Schemas["SiteImageUpload"];
+export type SearchResults = Schemas["SearchResponse"];
+export type ContentPage = Schemas["ContentPage"];
+export type ContentPageForm = Schemas["ContentPageForm"];
+export type ContentPageLink = Schemas["ContentPageLink"];
+export type PageSection = ContentPage["section"];
+export type ShopContact = Schemas["ShopContact"];
+export type CustomerDetails = Schemas["CustomerDetails"];
+export type ShopMeasurementForm = Schemas["ShopMeasurementForm"];
 
 export type BagQuote = Schemas["BagQuote"];
 export type BagQuoteLine = Schemas["BagQuoteLine"];
@@ -163,6 +176,7 @@ export type Report = Schemas["Report"];
 export type ReportColumn = Report["columns"][number];
 export type ReportInfo = Schemas["ReportInfo"];
 export type ReportsOverview = Schemas["ReportsOverview"];
+export type Dashboard = Schemas["Dashboard"];
 export type TailoringImagePurpose = Schemas["TailoringImageRequest"]["purpose"];
 
 /** The JSON settings sections, by their API path. */
@@ -194,6 +208,8 @@ export type ReturnStatus = OrderReturn["status"];
 export type ReturnRequestForm = Schemas["ReturnRequestForm"];
 export type ReturnDecisionForm = Schemas["ReturnDecisionForm"];
 export type ReturnRefundForm = Schemas["ReturnRefundForm"];
+export type TrackOrderRequest = Schemas["TrackOrderRequest"];
+export type TrackedOrder = Schemas["TrackedOrder"];
 
 /** Field-level message from the API, e.g. `{ field: "variants[0].priceRupees", message: "must be greater than 0" }`. */
 export type FieldError = { field: string; message: string };
@@ -311,8 +327,24 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
       /** Every published product, most recently published first. */
       listNewArrivals: (params: { page?: number; pageSize?: number } = {}, init?: RequestOptions) =>
         request<NewArrivalsPage>(`/api/v1/store/new-arrivals${queryString(params)}`, init),
+      /** Live home-page banners (hero slides, occasion tiles, craft photo), in order. */
+      getHome: (init?: RequestOptions) => request<HomeContent>("/api/v1/store/home", init),
+      /** Products from every category matching `q` (all of them without it), with the category filters. */
+      search: (params?: ListingParams & { q?: string }, init?: RequestOptions) =>
+        request<SearchResults>(`/api/v1/store/products${listingQueryString(params)}`, init),
+      /** Published content pages, for the footer. */
+      listPages: (init?: RequestOptions) => request<ContentPageLink[]>("/api/v1/store/pages", init),
+      getPage: (slug: string, init?: RequestOptions) =>
+        request<ContentPage>(`/api/v1/store/pages/${encodeURIComponent(slug)}`, init),
+      /** Phone, WhatsApp, email, address, socials and hours from the shop profile. */
+      getShop: (init?: RequestOptions) => request<ShopContact>("/api/v1/store/shop", init),
+      /** The shop's measurement forms (garment templates), for the account page. */
+      listMeasurementForms: (init?: RequestOptions) =>
+        request<ShopMeasurementForm[]>("/api/v1/store/measurement-forms", init),
       /** Current prices and stock for the bag kept in the browser. */
       quoteBag: (bag: BagQuoteRequest) => send<BagQuote>("POST", "/api/v1/store/bag/quote", bag),
+      /** Guest order tracking: the order number plus the phone it was placed with. */
+      trackOrder: (lookup: TrackOrderRequest) => send<TrackedOrder>("POST", "/api/v1/store/orders/track", lookup),
     },
     /** Sign-in. Customer calls come from the storefront's server, which keeps the tokens in httpOnly cookies. */
     auth: {
@@ -336,6 +368,15 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
           method: "PUT",
           headers: { ...bearer(accessToken), "Content-Type": "application/json" },
           body: JSON.stringify({ name }),
+        }),
+      /** Date of birth, address and measurements. */
+      getDetails: (accessToken: string) =>
+        request<CustomerDetails>("/api/v1/customer/me/details", { headers: bearer(accessToken), cache: "no-store" }),
+      updateDetails: (accessToken: string, details: CustomerDetails) =>
+        request<CustomerDetails>("/api/v1/customer/me/details", {
+          method: "PUT",
+          headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+          body: JSON.stringify(details),
         }),
       /** Places the order from the bag; the answer opens Razorpay Checkout. */
       startCheckout: (accessToken: string, checkout: CheckoutRequest) =>
@@ -423,6 +464,7 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         request<ActivityPage>(`/api/v1/admin/activity${queryString(params)}`),
       reports: {
         list: () => request<ReportInfo[]>("/api/v1/admin/reports"),
+        dashboard: () => request<Dashboard>("/api/v1/admin/reports/dashboard"),
         overview: () => request<ReportsOverview>("/api/v1/admin/reports/overview"),
         get: (name: string, params: { from?: string; to?: string } = {}) =>
           request<Report>(`/api/v1/admin/reports/${encodeURIComponent(name)}${queryString(params)}`),
@@ -453,6 +495,28 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         messages: (params: { clientId?: number; orderId?: number } = {}) =>
           request<Message[]>(`/api/v1/admin/engage/messages${queryString(params)}`),
         prepareMessage: (form: MessageForm) => send<Message>("POST", "/api/v1/admin/engage/messages", form),
+      },
+      /** Home-page banners and category photos (CATALOGUE permission). */
+      storefront: {
+        listBanners: (slot?: BannerSlot) =>
+          request<Banner[]>(`/api/v1/admin/storefront/banners${queryString({ slot })}`),
+        createBanner: (form: BannerForm) => send<Banner>("POST", "/api/v1/admin/storefront/banners", form),
+        updateBanner: (id: number, form: BannerForm) =>
+          send<Banner>("PUT", `/api/v1/admin/storefront/banners/${id}`, form),
+        removeBanner: (id: number) => send<void>("DELETE", `/api/v1/admin/storefront/banners/${id}`),
+        /** Every banner of the slot, first to last. */
+        reorderBanners: (slot: BannerSlot, ids: number[]) =>
+          send<Banner[]>("PUT", "/api/v1/admin/storefront/banners/order", { slot, ids }),
+        /** Presigned URLs for a photo's 400/800/1600 px WebPs; save the key once all are uploaded. */
+        startUpload: () => send<SiteImageUpload>("POST", "/api/v1/admin/storefront/uploads"),
+        listCategories: () => request<Category[]>("/api/v1/admin/storefront/categories"),
+        setCategoryImage: (id: number, imageKey: string | null) =>
+          send<Category>("PUT", `/api/v1/admin/storefront/categories/${id}/image`, { imageKey }),
+        listPages: () => request<ContentPage[]>("/api/v1/admin/storefront/pages"),
+        createPage: (form: ContentPageForm) => send<ContentPage>("POST", "/api/v1/admin/storefront/pages", form),
+        updatePage: (id: number, form: ContentPageForm) =>
+          send<ContentPage>("PUT", `/api/v1/admin/storefront/pages/${id}`, form),
+        removePage: (id: number) => send<void>("DELETE", `/api/v1/admin/storefront/pages/${id}`),
       },
       gallery: {
         list: (params: { kind?: GalleryPhoto["kind"]; templateId?: number; clientId?: number; q?: string } = {}) =>

@@ -11,7 +11,7 @@ export async function PUT(request: Request): Promise<Response> {
   const name = body.name;
   try {
     const customer = await withCustomer((token) => api.customer.updateProfile(token, name));
-    if (!customer) return Response.json({ detail: "Please sign in again", errors: [] }, { status: 401 });
+    if (!customer) return Response.json({ detail: "Please log in again", errors: [] }, { status: 401 });
     return Response.json({ customer }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     return problemResponse(error);

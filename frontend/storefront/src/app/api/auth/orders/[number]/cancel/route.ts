@@ -11,7 +11,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ num
     const order = await withCustomer((token) =>
       api.customer.cancelOrder(token, number, { reason: body?.reason ?? null }),
     );
-    if (!order) return Response.json({ detail: "Please sign in again", errors: [] }, { status: 401 });
+    if (!order) return Response.json({ detail: "Please log in again", errors: [] }, { status: 401 });
     return Response.json(order, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     return problemResponse(error);

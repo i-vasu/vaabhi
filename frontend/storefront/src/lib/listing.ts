@@ -1,5 +1,7 @@
+import { createElement } from "react";
 import type { ListingParams, ProductListing, ProductSummary } from "@vaabhi/api-client";
 import type { BadgeTone, ProductCardProps } from "@vaabhi/ui";
+import { CardWishlist } from "@/components/card-wishlist";
 import { discountLabel, formatPrice } from "./format";
 
 /**
@@ -13,6 +15,8 @@ export type ListingState = {
   priceMin?: number;
   priceMax?: number;
   sort: SortValue;
+  /** Search text (the /search page only); kept when filters change. */
+  q?: string;
   /** Pages loaded so far ("load more" grows this). */
   page: number;
 };
@@ -40,7 +44,9 @@ export const PRICE_BANDS = [
   { label: "Above ₹20,000", min: 20000 },
 ] as const satisfies ReadonlyArray<{ label: string; min?: number; max?: number }>;
 
-const RESERVED = new Set(["inStock", "priceMin", "priceMax", "sort", "page"]);
+const RESERVED = new Set(["q", "inStock", "priceMin", "priceMax", "sort", "page"]);
+/** Same limit as the API. */
+const MAX_QUERY = 100;
 const CODE = /^[a-z0-9-]{1,60}$/i;
 
 function first(value: string | string[] | undefined): string | undefined {
@@ -67,7 +73,8 @@ export function parseListingState(params: SearchParams): ListingState {
     [priceMin, priceMax] = [priceMax, priceMin];
   }
   const page = Math.min(Math.max(positiveInt(first(params.page)) ?? 1, 1), MAX_PAGES);
-  return { selected, inStock: first(params.inStock) === "true", priceMin, priceMax, sort, page };
+  const q = first(params.q)?.trim().slice(0, MAX_QUERY) || undefined;
+  return { selected, inStock: first(params.inStock) === "true", priceMin, priceMax, sort, page, ...(q ? { q } : {}) };
 }
 
 const byCode = (a: string, b: string) => a.localeCompare(b, "en");
@@ -75,6 +82,7 @@ const byCode = (a: string, b: string) => a.localeCompare(b, "en");
 /** Canonical query string for a state (sorted keys, defaults omitted), with a leading "?" or empty. */
 export function listingHref(pathname: string, state: ListingState): string {
   const search = new URLSearchParams();
+  if (state.q) search.set("q", state.q);
   for (const key of Object.keys(state.selected).sort(byCode)) {
     const codes = state.selected[key];
     if (codes?.length) search.set(key, [...codes].sort(byCode).join(","));
@@ -133,6 +141,7 @@ export function apiParams(state: ListingState, page: number): ListingParams {
   for (const [group, codes] of Object.entries(state.selected)) params[group] = codes.join(",");
   if (state.priceMin !== undefined) params.priceMin = state.priceMin;
   if (state.priceMax !== undefined) params.priceMax = state.priceMax;
+  if (state.q) params.q = state.q;
   return params;
 }
 
@@ -151,7 +160,7 @@ export function priceLabel(min?: number, max?: number): string | undefined {
 export type AppliedFilter = { key: string; label: string; remove: ListingState };
 
 /** One removable chip per applied value, labelled with the names the API returned. */
-export function appliedFilters(state: ListingState, listing: ProductListing): AppliedFilter[] {
+export function appliedFilters(state: ListingState, listing: Pick<ProductListing, "filters">): AppliedFilter[] {
   const chips: AppliedFilter[] = [];
   for (const [group, codes] of Object.entries(state.selected)) {
     const options = listing.filters.find((g) => g.code === group)?.options ?? [];
@@ -173,25 +182,13 @@ export const badgeTones: Record<NonNullable<ProductSummary["badge"]>, BadgeTone>
   HANDLOOM: "olive",
 };
 
-/** Darkens a #RRGGBB colour, for the two-tone photo placeholder. */
-export function shade(hex: string, factor = 0.55): string {
-  const n = Number.parseInt(hex.slice(1), 16);
-  const channel = (shift: number) =>
-    Math.round(((n >> shift) & 255) * factor)
-      .toString(16)
-      .padStart(2, "0");
-  return `#${channel(16)}${channel(8)}${channel(0)}`.toUpperCase();
-}
-
-const PLACEHOLDER: [string, string] = ["#E4DCD0", "#A88B5A"];
-
 const RENDITIONS = [400, 800, 1600] as const;
 const CARD_SIZES = "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw";
 
 /**
  * The R2 media domain. MEDIA_URL is read on the server at runtime (set in docker-compose); client components
  * cannot read it, so they get it from the layout through useMediaBase() and pass it in. Without it (local
- * development without photos) photos fall back to colour placeholders.
+ * development without photos) items show "Photo coming soon".
  */
 export function serverMediaBase(): string | undefined {
   return process.env.MEDIA_URL || process.env.NEXT_PUBLIC_MEDIA_URL || undefined;
@@ -206,8 +203,9 @@ export function mediaUrl(
   return base ? `${base.replace(/\/$/, "")}/${key}/${width}.webp` : undefined;
 }
 
-function srcSet(key: string): string {
-  return RENDITIONS.map((width) => `${mediaUrl(key, width)} ${width}w`).join(", ");
+/** `srcset` for a photo key's 400/800/1600 px WebPs (product photos, banners, category photos). */
+export function photoSrcSet(key: string, base: string | undefined = serverMediaBase()): string {
+  return RENDITIONS.map((width) => `${mediaUrl(key, width, base)} ${width}w`).join(", ");
 }
 
 function stockNote(product: ProductSummary): string | undefined {
@@ -220,7 +218,6 @@ export function productCardProps(product: ProductSummary): ProductCardProps {
   const mrp = product.mrpRupees;
   const detail = [product.subtitle, stockNote(product)].filter(Boolean).join(" · ");
   const src = product.image ? mediaUrl(product.image.key) : undefined;
-  const colour = product.colours[0]?.hex;
   return {
     name: product.name,
     detail,
@@ -228,11 +225,12 @@ export function productCardProps(product: ProductSummary): ProductCardProps {
     mrp: mrp > price ? formatPrice(mrp) : undefined,
     discount: discountLabel(price, mrp),
     href: `/p/${product.slug}`,
+    wishlist: createElement(CardWishlist, { slug: product.slug, name: product.name }),
     badge: product.badge ? { label: product.badge.toLowerCase(), tone: badgeTones[product.badge] } : undefined,
     image:
       src && product.image
-        ? { src, alt: product.image.alt, srcSet: srcSet(product.image.key), sizes: CARD_SIZES }
-        : { placeholder: colour ? [colour, shade(colour)] : PLACEHOLDER },
+        ? { src, alt: product.image.alt, srcSet: photoSrcSet(product.image.key), sizes: CARD_SIZES }
+        : null,
   };
 }
 

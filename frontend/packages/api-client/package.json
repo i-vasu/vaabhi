@@ -7,7 +7,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "generate": "openapi-typescript ${OPENAPI_URL:-http://localhost:8080/v3/api-docs} -o src/schema.d.ts && curl -sf ${OPENAPI_URL:-http://localhost:8080/v3/api-docs} -o openapi.json",
+    "generate": "node generate.mjs",
     "generate:offline": "openapi-typescript openapi.json -o src/schema.d.ts",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",

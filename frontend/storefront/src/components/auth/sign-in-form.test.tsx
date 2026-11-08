@@ -23,7 +23,7 @@ function sendsCode(resendAfterSeconds = 30) {
 
 async function enterPhone() {
   fireEvent.change(screen.getByLabelText("Mobile number"), { target: { value: "98765 43210" } });
-  fireEvent.click(screen.getByRole("button", { name: "Send OTP" }));
+  fireEvent.click(screen.getByRole("button", { name: "Get OTP" }));
   expect(await screen.findByText("+91 98765 43210")).toBeInTheDocument();
 }
 
@@ -75,11 +75,11 @@ describe("SignInForm", () => {
       ),
     );
     render(<SignInForm googleClientId={null} next="/account" />);
-    fireEvent.click(screen.getByRole("button", { name: "Send OTP" }));
+    fireEvent.click(screen.getByRole("button", { name: "Get OTP" }));
     expect(screen.getByRole("alert")).toHaveTextContent("Enter a valid 10-digit Indian mobile number");
 
     fireEvent.change(screen.getByLabelText("Mobile number"), { target: { value: "58765 43210" } });
-    fireEvent.click(screen.getByRole("button", { name: "Send OTP" }));
+    fireEvent.click(screen.getByRole("button", { name: "Get OTP" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Enter a valid 10-digit Indian mobile number");
 
     sendsCode();
@@ -166,7 +166,7 @@ describe("SignInForm", () => {
 
   it("says so when no way to sign in works", () => {
     render(<SignInForm googleClientId={null} phoneSignIn={false} next="/account" />);
-    expect(screen.getByRole("status")).toHaveTextContent("Sign-in is not available right now. Please try again later.");
+    expect(screen.getByRole("status")).toHaveTextContent("Login is not available right now. Please try again later.");
     expect(screen.queryByLabelText("Mobile number")).not.toBeInTheDocument();
   });
 });

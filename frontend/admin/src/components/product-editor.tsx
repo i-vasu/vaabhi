@@ -279,30 +279,6 @@ export function ProductEditor({ id, notice, problem }: Readonly<{ id?: number; n
               ))}
             </select>
           </Field>
-          <Field label="URL name" hint="Leave empty to generate it from the name" error={fieldError("slug")}>
-            <input
-              className={input}
-              value={state.slug}
-              placeholder="kanjeevaram-silk-saree"
-              onChange={(e) => update({ slug: e.target.value })}
-            />
-          </Field>
-          <Field label="Care instructions" error={fieldError("careInstructions")}>
-            <input
-              className={input}
-              value={state.careInstructions}
-              onChange={(e) => update({ careInstructions: e.target.value })}
-            />
-          </Field>
-          <Field label="Parcel weight per piece (grams)" error={fieldError("shippingWeightGrams")}>
-            <input
-              className={input}
-              inputMode="numeric"
-              placeholder="Shop default"
-              value={state.shippingWeightGrams}
-              onChange={(e) => update({ shippingWeightGrams: e.target.value })}
-            />
-          </Field>
           <Field label="Description" error={fieldError("description")} className="md:col-span-2">
             <textarea
               className={cn(input, "h-28")}
@@ -311,6 +287,41 @@ export function ProductEditor({ id, notice, problem }: Readonly<{ id?: number; n
             />
           </Field>
         </div>
+        {/* Rarely changed: open by default only when one of them has a problem to fix. */}
+        <details
+          className="mt-4 border-t border-line pt-4"
+          open={Boolean(fieldError("slug") || fieldError("careInstructions") || fieldError("shippingWeightGrams"))}
+        >
+          <summary className="cursor-pointer text-sm font-medium text-ink-soft hover:text-ink">
+            More details: web address, care, parcel weight
+          </summary>
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            <Field label="URL name" hint="Leave empty to generate it from the name" error={fieldError("slug")}>
+              <input
+                className={input}
+                value={state.slug}
+                placeholder="kanjeevaram-silk-saree"
+                onChange={(e) => update({ slug: e.target.value })}
+              />
+            </Field>
+            <Field label="Care instructions" error={fieldError("careInstructions")}>
+              <input
+                className={input}
+                value={state.careInstructions}
+                onChange={(e) => update({ careInstructions: e.target.value })}
+              />
+            </Field>
+            <Field label="Parcel weight per piece (grams)" error={fieldError("shippingWeightGrams")}>
+              <input
+                className={input}
+                inputMode="numeric"
+                placeholder="Shop default"
+                value={state.shippingWeightGrams}
+                onChange={(e) => update({ shippingWeightGrams: e.target.value })}
+              />
+            </Field>
+          </div>
+        </details>
       </section>
 
       {state.categorySlug === "sarees" && (
@@ -708,6 +719,20 @@ function Variants({
   );
 }
 
+const blankAddon = (): AddonRow => ({
+  key: newKey(),
+  code: "",
+  name: "",
+  description: "",
+  price: "0",
+  input: "NONE",
+  active: true,
+});
+
+/**
+ * The add-ons shoppers pick from on the product page (shown there as "Add-ons", with a free "No add-on" first
+ * when none is free). Codes are made from the name on save, so the admin only names and prices each one.
+ */
 function Addons({
   rows,
   errors,
@@ -715,105 +740,117 @@ function Addons({
 }: Readonly<{ rows: AddonRow[]; errors: FieldError[]; onChange: (rows: AddonRow[]) => void }>) {
   const set = (index: number, patch: Partial<AddonRow>) =>
     onChange(rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
+  const presets = standardBlouseAddons().filter((p) => !rows.some((r) => r.code === p.code || r.name === p.name));
 
   return (
     <section className={card} aria-labelledby="addons">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-2">
         <div>
           <h2 id="addons" className="font-semibold">
-            Blouse options
+            Add-ons
           </h2>
-          <p className="text-sm text-ink-soft">Choices shown on the product page; the price is added to the item.</p>
+          <p className="text-sm text-ink-soft">
+            Optional extras shoppers can choose on the product page. Their price is added to the item; 0 means included.
+          </p>
         </div>
-        <div className="flex gap-2">
-          {rows.length === 0 && (
-            <Button variant="secondary" onClick={() => onChange(standardBlouseAddons())}>
-              Add standard blouse options
-            </Button>
-          )}
-          <Button
-            variant="secondary"
-            onClick={() =>
-              onChange([
-                ...rows,
-                { key: newKey(), code: "", name: "", description: "", price: "0", input: "NONE", active: true },
-              ])
-            }
-          >
-            Add option
-          </Button>
-        </div>
+        <Button variant="secondary" onClick={() => onChange([...rows, blankAddon()])}>
+          Add add-on
+        </Button>
       </div>
-      {rows.map((row, i) => {
-        const rowErrors = errorsFor(errors, `addons[${i}]`);
-        const n = i + 1;
-        return (
-          <fieldset key={row.key} className="mb-3 grid gap-3 border-t border-line pt-3 md:grid-cols-12">
-            <legend className="sr-only">Option {n}</legend>
-            <label className={cn(label, "md:col-span-3")}>
-              <span>Name</span>
-              <input className={input} value={row.name} onChange={(e) => set(i, { name: e.target.value })} />
-            </label>
-            <label className={cn(label, "md:col-span-2")}>
-              <span>Code</span>
-              <input
-                className={cn(input, "font-mono text-xs")}
-                value={row.code}
-                placeholder="blouse-custom"
-                onChange={(e) => set(i, { code: e.target.value })}
-              />
-            </label>
-            <label className={cn(label, "md:col-span-3")}>
-              <span>Note</span>
-              <input
-                className={input}
-                value={row.description}
-                onChange={(e) => set(i, { description: e.target.value })}
-              />
-            </label>
-            <label className={cn(label, "md:col-span-1")}>
-              <span>Price ₹</span>
-              <input
-                className={input}
-                inputMode="decimal"
-                value={row.price}
-                onChange={(e) => set(i, { price: e.target.value })}
-              />
-            </label>
-            <label className={cn(label, "md:col-span-2")}>
-              <span>Ask for</span>
-              <select
-                className={input}
-                value={row.input}
-                onChange={(e) => set(i, { input: e.target.value as AddonRow["input"] })}
-              >
-                <option value="NONE">Nothing</option>
-                <option value="SIZE">A standard size</option>
-                <option value="MEASUREMENTS">Measurements</option>
-              </select>
-            </label>
-            <div className="flex items-end justify-between gap-2 pb-1.5 md:col-span-1">
-              <label className="flex items-center gap-1 text-sm">
-                <input type="checkbox" checked={row.active} onChange={(e) => set(i, { active: e.target.checked })} />
-                <span>On</span>
+
+      {presets.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-faint">Quick add</span>
+          {presets.map((preset) => (
+            <button
+              key={preset.code}
+              type="button"
+              onClick={() => onChange([...rows, preset])}
+              className="rounded-full border border-line-strong px-3 py-1 text-sm hover:border-accent hover:text-accent-ink"
+            >
+              + {preset.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {rows.length === 0 && <p className="text-sm text-ink-soft">No add-ons. The item is sold as it is.</p>}
+
+      <div className="flex flex-col gap-3">
+        {rows.map((row, i) => {
+          const rowErrors = errorsFor(errors, `addons[${i}]`);
+          const n = i + 1;
+          return (
+            <fieldset
+              key={row.key}
+              className={cn(
+                "grid gap-3 rounded-md border border-line p-3 sm:grid-cols-[1fr_7rem_11rem_auto]",
+                !row.active && "opacity-60",
+              )}
+            >
+              <legend className="sr-only">Add-on {n}</legend>
+              <label className={label}>
+                <span>Name</span>
+                <input
+                  className={input}
+                  value={row.name}
+                  placeholder="Stitched blouse, made to measure"
+                  onChange={(e) => set(i, { name: e.target.value })}
+                />
               </label>
-              <button
-                type="button"
-                className="text-ink-soft hover:text-bad"
-                aria-label={`Remove option ${n}`}
-                onClick={() => onChange(rows.filter((_, j) => j !== i))}
-              >
-                ✕
-              </button>
-            </div>
-            {rowErrors.map((m) => (
-              <p key={m} className="text-xs text-bad md:col-span-12">
-                {m}
-              </p>
-            ))}
-          </fieldset>
-        );
-      })}
+              <label className={label}>
+                <span>Price ₹</span>
+                <input
+                  className={input}
+                  inputMode="decimal"
+                  value={row.price}
+                  onChange={(e) => set(i, { price: e.target.value })}
+                />
+              </label>
+              <label className={label}>
+                <span>Ask for</span>
+                <select
+                  className={input}
+                  value={row.input}
+                  onChange={(e) => set(i, { input: e.target.value as AddonRow["input"] })}
+                >
+                  <option value="NONE">Nothing</option>
+                  <option value="SIZE">A standard size</option>
+                  <option value="MEASUREMENTS">Measurements</option>
+                </select>
+              </label>
+              <div className="flex items-end gap-3 pb-1.5">
+                <label className="flex items-center gap-1.5 text-sm">
+                  <input type="checkbox" checked={row.active} onChange={(e) => set(i, { active: e.target.checked })} />
+                  <span>Shown</span>
+                </label>
+                <button
+                  type="button"
+                  className="text-ink-soft hover:text-bad"
+                  aria-label={`Remove add-on ${n}`}
+                  onClick={() => onChange(rows.filter((_, j) => j !== i))}
+                >
+                  ✕
+                </button>
+              </div>
+              <label className={cn(label, "sm:col-span-4")}>
+                <span>Note</span>
+                <input
+                  className={input}
+                  value={row.description}
+                  placeholder="Shown under the name, e.g. delivery time"
+                  onChange={(e) => set(i, { description: e.target.value })}
+                />
+              </label>
+              {rowErrors.map((m) => (
+                <p key={m} className="text-xs text-bad sm:col-span-4">
+                  {m}
+                </p>
+              ))}
+            </fieldset>
+          );
+        })}
+      </div>
     </section>
   );
 }

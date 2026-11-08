@@ -562,6 +562,33 @@ public class ReportService {
         };
     }
 
+    // --- dashboard --------------------------------------------------------------------------------------------------
+
+    @Transactional(readOnly = true)
+    public Report.Dashboard dashboard() {
+        var today = LocalDate.now(clock);
+        var p = range(today.withDayOfMonth(1), today);
+        var row = jdbc.sql("""
+                        SELECT
+                          (SELECT COALESCE(SUM(amount_rupees), 0) FROM order_payment
+                             WHERE received_at >= :start AND received_at < :end)
+                          + (SELECT COALESCE(SUM(amount_rupees), 0) FROM alteration_payment
+                             WHERE received_at >= :start AND received_at < :end)
+                          + (SELECT COALESCE(SUM(total_rupees), 0) FROM web_order
+                             WHERE paid_at >= :start AND paid_at < :end)
+                          - (SELECT COALESCE(SUM(refunded_rupees), 0) FROM web_order
+                             WHERE refunded_at >= :start AND refunded_at < :end) AS revenue,
+                          (SELECT COALESCE(SUM(amount_rupees), 0) FROM expense
+                             WHERE spent_on BETWEEN :from AND :to) AS expenses,
+                          (SELECT COUNT(*) FROM order_list
+                             WHERE status NOT IN ('DELIVERED', 'CANCELLED')) AS pipeline
+                        """).params(p).query().singleRow();
+        var revenue = money(row.get("revenue"));
+        var expenses = money(row.get("expenses"));
+        return new Report.Dashboard(
+                revenue, expenses, Rupees.of(revenue.subtract(expenses)), ((Number) row.get("pipeline")).longValue());
+    }
+
     // --- overview ---------------------------------------------------------------------------------------------------
 
     @Transactional(readOnly = true)

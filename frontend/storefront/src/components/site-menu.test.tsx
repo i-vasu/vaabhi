@@ -10,17 +10,17 @@ describe("SiteMenu", () => {
 
     fireEvent.click(button);
     expect(button).toHaveAttribute("aria-expanded", "true");
-    const nav = within(screen.getByRole("dialog", { name: "Hey, how are you doing today?" })).getByRole("navigation", {
+    const nav = within(screen.getByRole("dialog", { name: "Menu" })).getByRole("navigation", {
       name: "Site",
     });
     const links = within(nav).getAllByRole("link");
     expect(links.map((l) => [l.textContent, l.getAttribute("href")])).toEqual([
       ["Best sellers", "/bestsellers"],
       ["New arrivals", "/new"],
-      ["Pre Order", "/pre-order"],
+      ["Customise", "/customise"],
       ["Collections", "/collections"],
-      ["Support", "/support"],
-      ["Blogs", "/blog"],
+      ["Blog", "/blog"],
+      ["Contact us", "/contact"],
     ]);
 
     fireEvent.click(within(nav).getByRole("link", { name: "New arrivals" }));

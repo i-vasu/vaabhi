@@ -8,6 +8,7 @@ import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -58,14 +59,21 @@ class AuthService {
         this.clock = clock;
     }
 
-    /** A sign-in code can go out: by WhatsApp when its sign-in template is set up, otherwise by SMS. */
+    /** How a sign-in code would go out: by WhatsApp when its sign-in template is set up, else SMS; null: neither. */
+    private AuthOptions.@Nullable OtpChannel otpChannel() {
+        if (whatsApp.configured(SmsSender.OTP_TEMPLATE)) {
+            return AuthOptions.OtpChannel.WHATSAPP;
+        }
+        return sms.configured() ? AuthOptions.OtpChannel.SMS : null;
+    }
+
     private boolean codesCanBeSent() {
-        return whatsApp.configured(SmsSender.OTP_TEMPLATE) || sms.configured();
+        return otpChannel() != null;
     }
 
     /** Which sign-in methods the storefront should offer. */
     public AuthOptions options() {
-        return new AuthOptions(codesCanBeSent(), google.configured());
+        return new AuthOptions(codesCanBeSent(), google.configured(), otpChannel());
     }
 
     /** Sends a 6-digit code. Rolls back (so it does not count) if the SMS cannot be sent. */
@@ -91,8 +99,11 @@ class AuthService {
         }
         var code = Secrets.otpCode();
         otps.replace(phone, hash(phone, code), now, now.plus(otp.ttl()));
+        var channel = whatsApp.configured(SmsSender.OTP_TEMPLATE)
+                ? AuthOptions.OtpChannel.WHATSAPP
+                : AuthOptions.OtpChannel.SMS;
         try {
-            if (whatsApp.configured(SmsSender.OTP_TEMPLATE)) {
+            if (channel == AuthOptions.OtpChannel.WHATSAPP) {
                 whatsApp.send(phone, SmsSender.OTP_TEMPLATE, Map.of("otp", code));
             } else {
                 sms.send(phone, SmsSender.OTP_TEMPLATE, Map.of("otp", code));
@@ -101,7 +112,7 @@ class AuthService {
             log.warn("Could not send OTP to {}: {}", PhoneNumbers.masked(phone), e.getMessage());
             throw AuthException.badGateway("We could not send the code. Please try again.");
         }
-        return new OtpSent(phone, otp.ttl().toSeconds(), otp.resendAfter().toSeconds());
+        return new OtpSent(phone, otp.ttl().toSeconds(), otp.resendAfter().toSeconds(), channel);
     }
 
     /** Wrong guesses are counted even though the call fails, hence no rollback for {@link AuthException}. */

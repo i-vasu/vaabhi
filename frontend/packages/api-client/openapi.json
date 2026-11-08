@@ -59,6 +59,54 @@
                 }
             }
         },
+        "/api/v1/customer/me/details": {
+            "get": {
+                "tags": [
+                    "customer-controller"
+                ],
+                "operationId": "getDetails",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomerDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "customer-controller"
+                ],
+                "operationId": "updateDetails",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CustomerDetails"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomerDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/workshop/staff/{staffId}/stages": {
             "put": {
                 "tags": [
@@ -137,6 +185,69 @@
                                 }
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/storefront/pages/{id}": {
+            "put": {
+                "tags": [
+                    "content-page-controller"
+                ],
+                "operationId": "updatePage",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ContentPageForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContentPage"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "content-page-controller"
+                ],
+                "operationId": "deletePage",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     }
                 }
             }
@@ -1838,40 +1949,6 @@
                 }
             }
         },
-        "/api/v1/webhooks/delivery-updates": {
-            "post": {
-                "tags": [
-                    "shiprocket-webhook-controller"
-                ],
-                "operationId": "deliveryUpdate",
-                "parameters": [
-                    {
-                        "name": "x-api-key",
-                        "in": "header",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "default": ""
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                }
-            }
-        },
         "/api/v1/webhooks/razorpay": {
             "post": {
                 "tags": [
@@ -1906,6 +1983,70 @@
                 }
             }
         },
+        "/api/v1/webhooks/delivery-updates": {
+            "post": {
+                "tags": [
+                    "shiprocket-webhook-controller"
+                ],
+                "operationId": "deliveryUpdate",
+                "parameters": [
+                    {
+                        "name": "x-api-key",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/store/orders/track": {
+            "post": {
+                "tags": [
+                    "store-order-tracking-controller"
+                ],
+                "operationId": "track",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TrackOrderRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TrackedOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/store/bag/quote": {
             "post": {
                 "tags": [
@@ -1929,6 +2070,46 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/BagQuote"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/customer/orders/{number}/returns": {
+            "post": {
+                "tags": [
+                    "checkout-controller"
+                ],
+                "operationId": "requestReturn",
+                "parameters": [
+                    {
+                        "name": "number",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReturnRequestForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebOrder"
                                 }
                             }
                         }
@@ -2035,46 +2216,6 @@
                 "responses": {
                     "200": {
                         "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/WebOrder"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/customer/orders/{number}/returns": {
-            "post": {
-                "tags": [
-                    "checkout-controller"
-                ],
-                "operationId": "requestReturn",
-                "parameters": [
-                    {
-                        "name": "number",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ReturnRequestForm"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created",
                         "content": {
                             "*/*": {
                                 "schema": {
@@ -2365,6 +2506,57 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/SiteImageUpload"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/storefront/pages": {
+            "get": {
+                "tags": [
+                    "content-page-controller"
+                ],
+                "operationId": "listPages",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ContentPage"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "content-page-controller"
+                ],
+                "operationId": "createPage",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ContentPageForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContentPage"
                                 }
                             }
                         }
@@ -3774,12 +3966,12 @@
                 }
             }
         },
-        "/api/v1/admin/online-orders/{number}/ship": {
+        "/api/v1/admin/online-orders/{number}/tracking": {
             "post": {
                 "tags": [
                     "admin-web-order-controller"
                 ],
-                "operationId": "shipOnlineOrder",
+                "operationId": "refreshOnlineOrderTracking",
                 "parameters": [
                     {
                         "name": "number",
@@ -3790,166 +3982,6 @@
                         }
                     }
                 ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ShipmentForm"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/WebOrder"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/admin/online-orders/returns/{returnNumber}/approve": {
-            "post": {
-                "tags": [
-                    "admin-web-order-controller"
-                ],
-                "operationId": "approveReturn",
-                "parameters": [
-                    {
-                        "name": "returnNumber",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ReturnDecisionForm"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/WebOrder"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/admin/online-orders/returns/{returnNumber}/reject": {
-            "post": {
-                "tags": [
-                    "admin-web-order-controller"
-                ],
-                "operationId": "rejectReturn",
-                "parameters": [
-                    {
-                        "name": "returnNumber",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ReturnDecisionForm"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/WebOrder"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/admin/online-orders/returns/{returnNumber}/pickup": {
-            "post": {
-                "tags": [
-                    "admin-web-order-controller"
-                ],
-                "operationId": "bookReturnPickup",
-                "parameters": [
-                    {
-                        "name": "returnNumber",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/WebOrder"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/admin/online-orders/returns/{returnNumber}/refund": {
-            "post": {
-                "tags": [
-                    "admin-web-order-controller"
-                ],
-                "operationId": "refundReturn",
-                "parameters": [
-                    {
-                        "name": "returnNumber",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ReturnRefundForm"
-                            }
-                        }
-                    },
-                    "required": true
-                },
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -3994,12 +4026,12 @@
                 }
             }
         },
-        "/api/v1/admin/online-orders/{number}/tracking": {
+        "/api/v1/admin/online-orders/{number}/ship": {
             "post": {
                 "tags": [
                     "admin-web-order-controller"
                 ],
-                "operationId": "refreshOnlineOrderTracking",
+                "operationId": "shipOnlineOrder",
                 "parameters": [
                     {
                         "name": "number",
@@ -4010,6 +4042,16 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ShipmentForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -4075,6 +4117,156 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/CancelWebOrderForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/online-orders/returns/{returnNumber}/reject": {
+            "post": {
+                "tags": [
+                    "admin-web-order-controller"
+                ],
+                "operationId": "rejectReturn",
+                "parameters": [
+                    {
+                        "name": "returnNumber",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReturnDecisionForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/online-orders/returns/{returnNumber}/refund": {
+            "post": {
+                "tags": [
+                    "admin-web-order-controller"
+                ],
+                "operationId": "refundReturn",
+                "parameters": [
+                    {
+                        "name": "returnNumber",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReturnRefundForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/online-orders/returns/{returnNumber}/pickup": {
+            "post": {
+                "tags": [
+                    "admin-web-order-controller"
+                ],
+                "operationId": "bookReturnPickup",
+                "parameters": [
+                    {
+                        "name": "returnNumber",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/online-orders/returns/{returnNumber}/approve": {
+            "post": {
+                "tags": [
+                    "admin-web-order-controller"
+                ],
+                "operationId": "approveReturn",
+                "parameters": [
+                    {
+                        "name": "returnNumber",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReturnDecisionForm"
                             }
                         }
                     },
@@ -4956,6 +5148,183 @@
                 }
             }
         },
+        "/api/v1/store/shop": {
+            "get": {
+                "tags": [
+                    "content-page-controller"
+                ],
+                "operationId": "getShopContact",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ShopContact"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/store/products": {
+            "get": {
+                "tags": [
+                    "store-product-controller"
+                ],
+                "operationId": "searchProducts",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Search text, at most 100 characters",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "example": "kanjeevaram"
+                    },
+                    {
+                        "name": "colour",
+                        "in": "query",
+                        "description": "Comma-separated colour family codes",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "example": "red,maroon"
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "Comma-separated sizes",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "example": "M,L"
+                    },
+                    {
+                        "name": "inStock",
+                        "in": "query",
+                        "description": "Only products with stock in the selected colour/size",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    {
+                        "name": "priceMin",
+                        "in": "query",
+                        "description": "Minimum price in rupees",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "number",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "priceMax",
+                        "in": "query",
+                        "description": "Maximum price in rupees",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "number",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "popular",
+                            "enum": [
+                                "popular",
+                                "new",
+                                "price_asc",
+                                "price_desc",
+                                "discount"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "1-based page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "description": "Products per page, at most 48",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 24
+                        }
+                    },
+                    {
+                        "name": "fabric",
+                        "in": "query",
+                        "description": "Comma-separated facet value codes (OR within the facet)",
+                        "example": "silk,cotton"
+                    },
+                    {
+                        "name": "occasion",
+                        "in": "query",
+                        "description": "Comma-separated facet value codes (OR within the facet)",
+                        "example": "wedding"
+                    },
+                    {
+                        "name": "weave",
+                        "in": "query",
+                        "description": "Comma-separated facet value codes (OR within the facet)",
+                        "example": "banarasi"
+                    },
+                    {
+                        "name": "work",
+                        "in": "query",
+                        "description": "Comma-separated facet value codes (OR within the facet)",
+                        "example": "zari"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SearchResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/store/products/{slug}": {
             "get": {
                 "tags": [
@@ -4979,6 +5348,59 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ProductDetailResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/store/pages": {
+            "get": {
+                "tags": [
+                    "content-page-controller"
+                ],
+                "operationId": "listPublishedPages",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ContentPageLink"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/store/pages/{slug}": {
+            "get": {
+                "tags": [
+                    "content-page-controller"
+                ],
+                "operationId": "getPublishedPage",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContentPage"
                                 }
                             }
                         }
@@ -5023,6 +5445,29 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/NewArrivalsPage"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/store/measurement-forms": {
+            "get": {
+                "tags": [
+                    "content-page-controller"
+                ],
+                "operationId": "listMeasurementForms",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShopMeasurementForm"
+                                    }
                                 }
                             }
                         }
@@ -5637,6 +6082,26 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ReportsOverview"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/reports/dashboard": {
+            "get": {
+                "tags": [
+                    "report-controller"
+                ],
+                "operationId": "getDashboard",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Dashboard"
                                 }
                             }
                         }
@@ -6379,6 +6844,75 @@
                     "phone"
                 ]
             },
+            "CustomerDetails": {
+                "type": "object",
+                "properties": {
+                    "dateOfBirth": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "addressLine1": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 200,
+                        "minLength": 0
+                    },
+                    "addressLine2": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 200,
+                        "minLength": 0
+                    },
+                    "city": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 80,
+                        "minLength": 0
+                    },
+                    "state": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 80,
+                        "minLength": 0
+                    },
+                    "pincode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "pattern": "^[1-9][0-9]{5}$"
+                    },
+                    "measurements": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "required": [
+                    "addressLine1",
+                    "addressLine2",
+                    "city",
+                    "dateOfBirth",
+                    "measurements",
+                    "pincode",
+                    "state"
+                ]
+            },
             "StaffStages": {
                 "type": "object",
                 "properties": {
@@ -6594,6 +7128,110 @@
                     "stage",
                     "stageSince",
                     "trialDate"
+                ]
+            },
+            "ContentPageForm": {
+                "type": "object",
+                "properties": {
+                    "slug": {
+                        "type": "string",
+                        "maxLength": 60,
+                        "minLength": 0,
+                        "pattern": "^(?!-)(?!.*--)[a-z0-9-]+(?<!-)$"
+                    },
+                    "section": {
+                        "type": "string",
+                        "enum": [
+                            "HELP",
+                            "POLICY",
+                            "ABOUT",
+                            "BLOG"
+                        ]
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 120,
+                        "minLength": 0
+                    },
+                    "summary": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 300,
+                        "minLength": 0
+                    },
+                    "body": {
+                        "type": "string",
+                        "maxLength": 50000,
+                        "minLength": 0
+                    },
+                    "published": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "body",
+                    "published",
+                    "section",
+                    "slug",
+                    "summary",
+                    "title"
+                ]
+            },
+            "ContentPage": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "slug": {
+                        "type": "string"
+                    },
+                    "section": {
+                        "type": "string",
+                        "enum": [
+                            "HELP",
+                            "POLICY",
+                            "ABOUT",
+                            "BLOG"
+                        ]
+                    },
+                    "position": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "summary": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "body": {
+                        "type": "string"
+                    },
+                    "published": {
+                        "type": "boolean"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "body",
+                    "id",
+                    "position",
+                    "published",
+                    "section",
+                    "slug",
+                    "summary",
+                    "title",
+                    "updatedAt"
                 ]
             },
             "CategoryImageForm": {
@@ -7588,6 +8226,15 @@
                         "minLength": 0,
                         "pattern": "^https://.*"
                     },
+                    "whatsappChannel": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 300,
+                        "minLength": 0,
+                        "pattern": "^https://((www\\.)?whatsapp\\.com/channel|chat\\.whatsapp\\.com)/[A-Za-z0-9].*$"
+                    },
                     "address": {
                         "type": [
                             "string",
@@ -7703,6 +8350,7 @@
                     "street",
                     "threads",
                     "website",
+                    "whatsappChannel",
                     "youtube"
                 ]
             },
@@ -10193,6 +10841,177 @@
                     "values"
                 ]
             },
+            "TrackOrderRequest": {
+                "type": "object",
+                "properties": {
+                    "number": {
+                        "type": "string",
+                        "maxLength": 32,
+                        "minLength": 0
+                    },
+                    "phone": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "number",
+                    "phone"
+                ]
+            },
+            "TrackedLine": {
+                "type": "object",
+                "properties": {
+                    "productSlug": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "colourName": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "size": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "imageKey": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "colourName",
+                    "imageKey",
+                    "name",
+                    "productSlug",
+                    "quantity",
+                    "size"
+                ]
+            },
+            "TrackedOrder": {
+                "type": "object",
+                "properties": {
+                    "number": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "PENDING_PAYMENT",
+                            "FAILED",
+                            "PLACED",
+                            "SHIPPED",
+                            "DELIVERED",
+                            "CANCELLED"
+                        ]
+                    },
+                    "paymentMethod": {
+                        "type": "string",
+                        "enum": [
+                            "ONLINE",
+                            "COD"
+                        ]
+                    },
+                    "city": {
+                        "type": "string"
+                    },
+                    "totalRupees": {
+                        "type": "number"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "paidAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "shippedAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "deliveredAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "cancelledAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "courier": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "trackingNumber": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "trackingStatus": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "trackingUrl": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TrackedLine"
+                        }
+                    }
+                },
+                "required": [
+                    "cancelledAt",
+                    "city",
+                    "courier",
+                    "createdAt",
+                    "deliveredAt",
+                    "lines",
+                    "number",
+                    "paidAt",
+                    "paymentMethod",
+                    "shippedAt",
+                    "status",
+                    "totalRupees",
+                    "trackingNumber",
+                    "trackingStatus",
+                    "trackingUrl"
+                ]
+            },
             "BagQuoteRequest": {
                 "type": "object",
                 "properties": {
@@ -10387,29 +11206,46 @@
                     "stockLeft"
                 ]
             },
-            "PaymentConfirmation": {
+            "ReturnItem": {
                 "type": "object",
                 "properties": {
-                    "razorpayOrderId": {
-                        "type": "string",
-                        "maxLength": 40,
-                        "minLength": 0
+                    "position": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
                     },
-                    "razorpayPaymentId": {
-                        "type": "string",
-                        "maxLength": 40,
-                        "minLength": 0
-                    },
-                    "razorpaySignature": {
-                        "type": "string",
-                        "maxLength": 128,
-                        "minLength": 0
+                    "quantity": {
+                        "type": "integer",
+                        "format": "int32",
+                        "maximum": 100,
+                        "minimum": 1
                     }
                 },
                 "required": [
-                    "razorpayOrderId",
-                    "razorpayPaymentId",
-                    "razorpaySignature"
+                    "position",
+                    "quantity"
+                ]
+            },
+            "ReturnRequestForm": {
+                "type": "object",
+                "properties": {
+                    "reason": {
+                        "type": "string",
+                        "maxLength": 500,
+                        "minLength": 0
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ReturnItem"
+                        },
+                        "maxItems": 50,
+                        "minItems": 1
+                    }
+                },
+                "required": [
+                    "items",
+                    "reason"
                 ]
             },
             "Line": {
@@ -10486,6 +11322,141 @@
                     "size",
                     "sku",
                     "unitRupees"
+                ]
+            },
+            "OrderReturn": {
+                "type": "object",
+                "properties": {
+                    "number": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "REQUESTED",
+                            "APPROVED",
+                            "REJECTED",
+                            "REFUNDED"
+                        ]
+                    },
+                    "reason": {
+                        "type": "string"
+                    },
+                    "shopNote": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "itemsRupees": {
+                        "type": "number"
+                    },
+                    "refundRupees": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "refundMethod": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "RAZORPAY",
+                            "MANUAL"
+                        ]
+                    },
+                    "refundReference": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "refundStatus": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "PENDING",
+                            "PROCESSED",
+                            "FAILED"
+                        ]
+                    },
+                    "pickupCourier": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "pickupAwb": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "pickupStatus": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "requestedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "refundedAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ReturnLine"
+                        }
+                    }
+                },
+                "required": [
+                    "itemsRupees",
+                    "lines",
+                    "number",
+                    "pickupAwb",
+                    "pickupCourier",
+                    "pickupStatus",
+                    "reason",
+                    "refundMethod",
+                    "refundReference",
+                    "refundRupees",
+                    "refundStatus",
+                    "refundedAt",
+                    "requestedAt",
+                    "shopNote",
+                    "status"
+                ]
+            },
+            "ReturnLine": {
+                "type": "object",
+                "properties": {
+                    "position": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                },
+                "required": [
+                    "name",
+                    "position",
+                    "quantity"
                 ]
             },
             "WebOrder": {
@@ -10703,6 +11674,120 @@
                     "trackingUrl"
                 ]
             },
+            "PaymentConfirmation": {
+                "type": "object",
+                "properties": {
+                    "razorpayOrderId": {
+                        "type": "string",
+                        "maxLength": 40,
+                        "minLength": 0
+                    },
+                    "razorpayPaymentId": {
+                        "type": "string",
+                        "maxLength": 40,
+                        "minLength": 0
+                    },
+                    "razorpaySignature": {
+                        "type": "string",
+                        "maxLength": 128,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "razorpayOrderId",
+                    "razorpayPaymentId",
+                    "razorpaySignature"
+                ]
+            },
+            "CheckoutStart": {
+                "type": "object",
+                "properties": {
+                    "orderNumber": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "PENDING_PAYMENT",
+                            "FAILED",
+                            "PLACED",
+                            "SHIPPED",
+                            "DELIVERED",
+                            "CANCELLED"
+                        ]
+                    },
+                    "paymentMethod": {
+                        "type": "string",
+                        "enum": [
+                            "ONLINE",
+                            "COD"
+                        ]
+                    },
+                    "totalRupees": {
+                        "type": "number"
+                    },
+                    "razorpayOrderId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "razorpayKeyId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "amountPaise": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "amountPaise",
+                    "currency",
+                    "email",
+                    "name",
+                    "orderNumber",
+                    "paymentMethod",
+                    "phone",
+                    "razorpayKeyId",
+                    "razorpayOrderId",
+                    "status",
+                    "totalRupees"
+                ]
+            },
+            "CancelWebOrderForm": {
+                "type": "object",
+                "properties": {
+                    "reason": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 200,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "reason"
+                ]
+            },
             "Address": {
                 "type": "object",
                 "properties": {
@@ -10784,79 +11869,6 @@
                     "address",
                     "lines",
                     "paymentMethod"
-                ]
-            },
-            "CheckoutStart": {
-                "type": "object",
-                "properties": {
-                    "orderNumber": {
-                        "type": "string"
-                    },
-                    "status": {
-                        "type": "string",
-                        "enum": [
-                            "PENDING_PAYMENT",
-                            "FAILED",
-                            "PLACED",
-                            "SHIPPED",
-                            "DELIVERED",
-                            "CANCELLED"
-                        ]
-                    },
-                    "paymentMethod": {
-                        "type": "string",
-                        "enum": [
-                            "ONLINE",
-                            "COD"
-                        ]
-                    },
-                    "totalRupees": {
-                        "type": "number"
-                    },
-                    "razorpayOrderId": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "razorpayKeyId": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "amountPaise": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "currency": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "phone": {
-                        "type": "string"
-                    },
-                    "email": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    }
-                },
-                "required": [
-                    "amountPaise",
-                    "currency",
-                    "email",
-                    "name",
-                    "orderNumber",
-                    "paymentMethod",
-                    "phone",
-                    "razorpayKeyId",
-                    "razorpayOrderId",
-                    "status",
-                    "totalRupees"
                 ]
             },
             "StaffLoginRequest": {
@@ -11043,9 +12055,17 @@
                     "resendAfterSeconds": {
                         "type": "integer",
                         "format": "int64"
+                    },
+                    "channel": {
+                        "type": "string",
+                        "enum": [
+                            "WHATSAPP",
+                            "SMS"
+                        ]
                     }
                 },
                 "required": [
+                    "channel",
                     "expiresInSeconds",
                     "phone",
                     "resendAfterSeconds"
@@ -12151,199 +13171,6 @@
                     "trackingNumber"
                 ]
             },
-            "CancelWebOrderForm": {
-                "type": "object",
-                "properties": {
-                    "reason": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "maxLength": 200,
-                        "minLength": 0
-                    }
-                },
-                "required": [
-                    "reason"
-                ]
-            },
-            "OrderReturn": {
-                "type": "object",
-                "properties": {
-                    "number": {
-                        "type": "string"
-                    },
-                    "status": {
-                        "type": "string",
-                        "enum": [
-                            "REQUESTED",
-                            "APPROVED",
-                            "REJECTED",
-                            "REFUNDED"
-                        ]
-                    },
-                    "reason": {
-                        "type": "string"
-                    },
-                    "shopNote": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "itemsRupees": {
-                        "type": "number"
-                    },
-                    "refundRupees": {
-                        "type": [
-                            "number",
-                            "null"
-                        ]
-                    },
-                    "refundMethod": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "enum": [
-                            "RAZORPAY",
-                            "MANUAL"
-                        ]
-                    },
-                    "refundReference": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "refundStatus": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "enum": [
-                            "PENDING",
-                            "PROCESSED",
-                            "FAILED"
-                        ]
-                    },
-                    "pickupCourier": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "pickupAwb": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "pickupStatus": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "requestedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "refundedAt": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "format": "date-time"
-                    },
-                    "lines": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ReturnLine"
-                        }
-                    }
-                },
-                "required": [
-                    "itemsRupees",
-                    "lines",
-                    "number",
-                    "pickupAwb",
-                    "pickupCourier",
-                    "pickupStatus",
-                    "reason",
-                    "refundMethod",
-                    "refundReference",
-                    "refundRupees",
-                    "refundStatus",
-                    "refundedAt",
-                    "requestedAt",
-                    "shopNote",
-                    "status"
-                ]
-            },
-            "ReturnLine": {
-                "type": "object",
-                "properties": {
-                    "position": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "quantity": {
-                        "type": "integer",
-                        "format": "int32"
-                    }
-                },
-                "required": [
-                    "name",
-                    "position",
-                    "quantity"
-                ]
-            },
-            "ReturnRequestForm": {
-                "type": "object",
-                "properties": {
-                    "reason": {
-                        "type": "string",
-                        "maxLength": 500,
-                        "minLength": 0
-                    },
-                    "items": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/ReturnItem"
-                        },
-                        "maxItems": 50,
-                        "minItems": 1
-                    }
-                },
-                "required": [
-                    "items",
-                    "reason"
-                ]
-            },
-            "ReturnItem": {
-                "type": "object",
-                "properties": {
-                    "position": {
-                        "type": "integer",
-                        "format": "int32",
-                        "minimum": 0
-                    },
-                    "quantity": {
-                        "type": "integer",
-                        "format": "int32",
-                        "maximum": 100,
-                        "minimum": 1
-                    }
-                },
-                "required": [
-                    "position",
-                    "quantity"
-                ]
-            },
             "ReturnDecisionForm": {
                 "type": "object",
                 "properties": {
@@ -13160,6 +13987,364 @@
                     "status"
                 ]
             },
+            "ShopContact": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "whatsapp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "whatsappChannel": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "email": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "address": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "mapsLink": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "instagram": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "facebook": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "youtube": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "opensAt": {
+                        "type": "string",
+                        "format": "time-local"
+                    },
+                    "closesAt": {
+                        "type": "string",
+                        "format": "time-local"
+                    }
+                },
+                "required": [
+                    "address",
+                    "closesAt",
+                    "email",
+                    "facebook",
+                    "instagram",
+                    "mapsLink",
+                    "name",
+                    "opensAt",
+                    "phone",
+                    "whatsapp",
+                    "whatsappChannel",
+                    "youtube"
+                ]
+            },
+            "ColourSwatch": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "hex": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "hex",
+                    "name"
+                ]
+            },
+            "FilterGroup": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "COLOUR",
+                            "SIZE",
+                            "FACET"
+                        ]
+                    },
+                    "options": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/FilterOption"
+                        }
+                    }
+                },
+                "required": [
+                    "code",
+                    "name",
+                    "options",
+                    "type"
+                ]
+            },
+            "FilterOption": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "hex": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "count": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "selected": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "code",
+                    "count",
+                    "hex",
+                    "name",
+                    "selected"
+                ]
+            },
+            "MediaResponse": {
+                "type": "object",
+                "properties": {
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "IMAGE",
+                            "VIDEO"
+                        ]
+                    },
+                    "key": {
+                        "type": "string"
+                    },
+                    "alt": {
+                        "type": "string"
+                    },
+                    "colourName": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "width": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "height": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    }
+                },
+                "required": [
+                    "alt",
+                    "colourName",
+                    "height",
+                    "key",
+                    "kind",
+                    "width"
+                ]
+            },
+            "PriceRange": {
+                "type": "object",
+                "properties": {
+                    "minRupees": {
+                        "type": "number"
+                    },
+                    "maxRupees": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "maxRupees",
+                    "minRupees"
+                ]
+            },
+            "ProductSummary": {
+                "type": "object",
+                "properties": {
+                    "slug": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "subtitle": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "badge": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "NEW",
+                            "BESTSELLER",
+                            "BRIDAL",
+                            "HANDLOOM"
+                        ]
+                    },
+                    "priceRupees": {
+                        "type": "number"
+                    },
+                    "mrpRupees": {
+                        "type": "number"
+                    },
+                    "discountPercent": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "colours": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ColourSwatch"
+                        }
+                    },
+                    "inStock": {
+                        "type": "boolean"
+                    },
+                    "stockLeft": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "image": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/MediaResponse"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "badge",
+                    "colours",
+                    "discountPercent",
+                    "image",
+                    "inStock",
+                    "mrpRupees",
+                    "name",
+                    "priceRupees",
+                    "slug",
+                    "stockLeft",
+                    "subtitle"
+                ]
+            },
+            "SearchResponse": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ProductSummary"
+                        }
+                    },
+                    "total": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "page": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "pageSize": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sort": {
+                        "type": "string"
+                    },
+                    "filters": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/FilterGroup"
+                        }
+                    },
+                    "priceRange": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/PriceRange"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "filters",
+                    "items",
+                    "page",
+                    "pageSize",
+                    "priceRange",
+                    "query",
+                    "sort",
+                    "total"
+                ]
+            },
             "AddonResponse": {
                 "type": "object",
                 "properties": {
@@ -13252,52 +14437,6 @@
                 "required": [
                     "name",
                     "slug"
-                ]
-            },
-            "MediaResponse": {
-                "type": "object",
-                "properties": {
-                    "kind": {
-                        "type": "string",
-                        "enum": [
-                            "IMAGE",
-                            "VIDEO"
-                        ]
-                    },
-                    "key": {
-                        "type": "string"
-                    },
-                    "alt": {
-                        "type": "string"
-                    },
-                    "colourName": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "width": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ],
-                        "format": "int32"
-                    },
-                    "height": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ],
-                        "format": "int32"
-                    }
-                },
-                "required": [
-                    "alt",
-                    "colourName",
-                    "height",
-                    "key",
-                    "kind",
-                    "width"
                 ]
             },
             "ProductDetailResponse": {
@@ -13458,19 +14597,41 @@
                     "stockLeft"
                 ]
             },
-            "ColourSwatch": {
+            "ContentPageLink": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "slug": {
                         "type": "string"
                     },
-                    "hex": {
+                    "section": {
+                        "type": "string",
+                        "enum": [
+                            "HELP",
+                            "POLICY",
+                            "ABOUT",
+                            "BLOG"
+                        ]
+                    },
+                    "title": {
                         "type": "string"
+                    },
+                    "summary": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 },
                 "required": [
-                    "hex",
-                    "name"
+                    "section",
+                    "slug",
+                    "summary",
+                    "title",
+                    "updatedAt"
                 ]
             },
             "NewArrivalsPage": {
@@ -13502,82 +14663,46 @@
                     "total"
                 ]
             },
-            "ProductSummary": {
+            "MeasurementField": {
                 "type": "object",
                 "properties": {
-                    "slug": {
+                    "key": {
                         "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "unit": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "key",
+                    "label",
+                    "unit"
+                ]
+            },
+            "ShopMeasurementForm": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
                     },
                     "name": {
                         "type": "string"
                     },
-                    "subtitle": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "badge": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "enum": [
-                            "NEW",
-                            "BESTSELLER",
-                            "BRIDAL",
-                            "HANDLOOM"
-                        ]
-                    },
-                    "priceRupees": {
-                        "type": "number"
-                    },
-                    "mrpRupees": {
-                        "type": "number"
-                    },
-                    "discountPercent": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "colours": {
+                    "fields": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/ColourSwatch"
+                            "$ref": "#/components/schemas/MeasurementField"
                         }
-                    },
-                    "inStock": {
-                        "type": "boolean"
-                    },
-                    "stockLeft": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ],
-                        "format": "int32"
-                    },
-                    "image": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/MediaResponse"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ]
                     }
                 },
                 "required": [
-                    "badge",
-                    "colours",
-                    "discountPercent",
-                    "image",
-                    "inStock",
-                    "mrpRupees",
-                    "name",
-                    "priceRupees",
-                    "slug",
-                    "stockLeft",
-                    "subtitle"
+                    "fields",
+                    "id",
+                    "name"
                 ]
             },
             "HomeContent": {
@@ -13610,83 +14735,6 @@
                     "craft",
                     "hero",
                     "occasions"
-                ]
-            },
-            "FilterGroup": {
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string",
-                        "enum": [
-                            "COLOUR",
-                            "SIZE",
-                            "FACET"
-                        ]
-                    },
-                    "options": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/FilterOption"
-                        }
-                    }
-                },
-                "required": [
-                    "code",
-                    "name",
-                    "options",
-                    "type"
-                ]
-            },
-            "FilterOption": {
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "hex": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "count": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "selected": {
-                        "type": "boolean"
-                    }
-                },
-                "required": [
-                    "code",
-                    "count",
-                    "hex",
-                    "name",
-                    "selected"
-                ]
-            },
-            "PriceRange": {
-                "type": "object",
-                "properties": {
-                    "minRupees": {
-                        "type": "number"
-                    },
-                    "maxRupees": {
-                        "type": "number"
-                    }
-                },
-                "required": [
-                    "maxRupees",
-                    "minRupees"
                 ]
             },
             "ProductListingResponse": {
@@ -13752,10 +14800,21 @@
                     },
                     "googleSignIn": {
                         "type": "boolean"
+                    },
+                    "otpChannel": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "WHATSAPP",
+                            "SMS"
+                        ]
                     }
                 },
                 "required": [
                     "googleSignIn",
+                    "otpChannel",
                     "phoneSignIn"
                 ]
             },
@@ -14121,6 +15180,30 @@
                     "ordersBooked",
                     "ordersDelivered",
                     "outstandingRupees"
+                ]
+            },
+            "Dashboard": {
+                "type": "object",
+                "properties": {
+                    "revenueRupees": {
+                        "type": "number"
+                    },
+                    "expensesRupees": {
+                        "type": "number"
+                    },
+                    "profitRupees": {
+                        "type": "number"
+                    },
+                    "ordersInPipeline": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "expensesRupees",
+                    "ordersInPipeline",
+                    "profitRupees",
+                    "revenueRupees"
                 ]
             },
             "AdminProductPage": {

@@ -96,9 +96,9 @@ describe("CheckoutView", () => {
   it("asks a signed-out shopper to sign in first", async () => {
     serve({ signedIn: false });
     render(<CheckoutView />);
-    expect(await screen.findByRole("link", { name: "Sign in to check out" })).toHaveAttribute(
+    expect(await screen.findByRole("link", { name: "Login to check out" })).toHaveAttribute(
       "href",
-      "/signup?next=/checkout",
+      "/login?next=/checkout",
     );
   });
 
@@ -189,10 +189,10 @@ describe("CheckoutView", () => {
   });
 
   it("sends a shopper whose session ended back to sign in", async () => {
-    serve({ checkout: HttpResponse.json({ detail: "Please sign in again", errors: [] }, { status: 401 }) });
+    serve({ checkout: HttpResponse.json({ detail: "Please log in again", errors: [] }, { status: 401 }) });
     render(<CheckoutView />);
     await fillAddress();
     fireEvent.click((await screen.findAllByRole("button", { name: "Pay ₹18,500" }))[0]!);
-    expect(await screen.findByRole("link", { name: "Sign in to check out" })).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: "Login to check out" })).toBeInTheDocument();
   });
 });

@@ -20,7 +20,7 @@ class ProductListingQueries {
     /** Published products of one category with their cheapest active variant's price and total stock. */
     private static final String LISTED = """
             WITH listed AS (
-                SELECT p.id, p.slug, p.name, p.subtitle, p.badge, p.popularity, p.published_at,
+                SELECT p.id, p.slug, p.name, p.subtitle, p.badge, p.popularity, p.published_at, p.category_id,
                        cheapest.price_rupees, cheapest.mrp_rupees, stock.stock_total, stock.in_stock
                 FROM product p
                 JOIN LATERAL (
@@ -50,10 +50,22 @@ class ProductListingQueries {
         this.jdbc = jdbc;
     }
 
+    /**
+     * Published products from every category whose name, subtitle, category or facet values (Banarasi, wedding…)
+     * contain the text; with no text, every product. Replaces the category condition of {@link #LISTED}.
+     */
+    private static final String MATCHES = """
+            (CAST(:q AS varchar) IS NULL
+                 OR p.name ILIKE :qLike OR p.subtitle ILIKE :qLike
+                 OR EXISTS (SELECT 1 FROM category c WHERE c.id = p.category_id AND c.name ILIKE :qLike)
+                 OR EXISTS (SELECT 1 FROM product_facet_value pfv JOIN facet_value fv ON fv.id = pfv.facet_value_id
+                            WHERE pfv.product_id = p.id AND fv.name ILIKE :qLike))
+            """;
+
     ProductListingResponse list(CategoryResponse category, ListingQuery query, FacetCatalog.Definitions definitions) {
         var filters = new ListingFilters(category.id(), query, definitions);
-        var counts = counts(filters);
-        var items = items(filters, query);
+        var counts = counts(LISTED, filters);
+        var items = items(LISTED, filters, query);
         return new ProductListingResponse(
                 category,
                 items,
@@ -61,8 +73,33 @@ class ProductListingQueries {
                 query.page(),
                 query.pageSize(),
                 query.sort().param(),
-                filterGroups(query, definitions, counts),
+                withExtras(filterGroups(query, definitions, counts), extraGroups(filters, counts)),
                 counts.priceRange());
+    }
+
+    /** Search across the catalogue, with the same filters, counts and sorts as a category listing. */
+    SearchResponse search(@Nullable String text, ListingQuery query, FacetCatalog.Definitions definitions) {
+        var q = text == null || text.isBlank() ? null : text.trim();
+        var filters = new ListingFilters(0, query, definitions);
+        filters.params().put("q", q);
+        filters.params().put("qLike", q == null ? null : "%" + escapeLike(q) + "%");
+        var listed = LISTED.replace("p.category_id = :categoryId", MATCHES);
+        var counts = counts(listed, filters);
+        var items = items(listed, filters, query);
+        return new SearchResponse(
+                q,
+                items,
+                counts.total(),
+                query.page(),
+                query.pageSize(),
+                query.sort().param(),
+                withExtras(filterGroups(query, definitions, counts), extraGroups(filters, counts)),
+                counts.priceRange());
+    }
+
+    /** `ILIKE` treats % and _ as wildcards; a customer typing them means the characters themselves. */
+    private static String escapeLike(String text) {
+        return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 
     // --- items -------------------------------------------------------------------------------------------
@@ -78,13 +115,13 @@ class ProductListingQueries {
             long stockTotal,
             boolean inStock) {}
 
-    private List<ProductSummary> items(ListingFilters filters, ListingQuery query) {
+    private List<ProductSummary> items(String listed, ListingFilters filters, ListingQuery query) {
         var params = new HashMap<>(filters.params());
         params.put("limit", query.pageSize());
         params.put("offset", query.offset());
         // Reviewed for SQL injection (java:S2077): the SQL text is built only from constants, the ProductSort enum
         // and generated parameter names (ListingFilters); every user-supplied value is a bind parameter.
-        var sql = LISTED
+        var sql = listed
                 + "SELECT l.id, l.slug, l.name, l.subtitle, l.badge, l.price_rupees, l.mrp_rupees,"
                 + " l.stock_total, l.in_stock FROM listed l WHERE "
                 + filters.where(null)
@@ -226,7 +263,7 @@ class ProductListingQueries {
     }
 
     /** Total, price range and every option count in one round trip (UNION ALL of one branch per dimension). */
-    private Counts counts(ListingFilters filters) {
+    private Counts counts(String listed, ListingFilters filters) {
         var branches = new ArrayList<String>();
         branches.add(
                 "SELECT 'total' AS dimension, '' AS code, COUNT(*) AS n FROM listed l WHERE " + filters.where(null));
@@ -260,9 +297,22 @@ class ProductListingQueries {
                     + " GROUP BY f.code, fv.code");
         }
 
+        // Category, discount, tag and add-on choices, each counted without its own selection.
+        branches.add("SELECT 'x:category', c.slug, COUNT(*) FROM listed l JOIN category c ON c.id = l.category_id"
+                + " WHERE " + filters.where(Dimension.CATEGORY) + " GROUP BY c.slug");
+        for (var discount : ListingFilters.DISCOUNTS.entrySet()) {
+            branches.add("SELECT 'x:discount', '" + discount.getKey() + "', COUNT(*) FROM listed l WHERE "
+                    + ListingFilters.discountAtLeast(String.valueOf(discount.getValue())) + AND
+                    + filters.where(Dimension.DISCOUNT));
+        }
+        branches.add("SELECT 'x:tag', LOWER(l.badge), COUNT(*) FROM listed l WHERE l.badge IS NOT NULL AND "
+                + filters.where(Dimension.TAG) + " GROUP BY l.badge");
+        branches.add("SELECT 'x:addons', 'yes', COUNT(*) FROM listed l WHERE " + ListingFilters.addonExists() + AND
+                + filters.where(Dimension.ADDONS));
+
         // Reviewed for SQL injection (java:S2077): constant fragments and generated parameter names only, as in
-        // items().
-        var sql = LISTED + String.join("\nUNION ALL\n", branches);
+        // items(); the discount keys and percentages come from the fixed ListingFilters.DISCOUNTS map.
+        var sql = listed + String.join("\nUNION ALL\n", branches);
         var rows = jdbc.sql(sql) // NOSONAR
                 .params(filters.params())
                 .query(CountRow.class)
@@ -357,6 +407,74 @@ class ProductListingQueries {
             addIfNotEmpty(groups, new FilterGroup(facet.code(), facet.name(), FilterType.FACET, options));
         }
         return groups;
+    }
+
+    private static List<FilterGroup> withExtras(List<FilterGroup> groups, List<FilterGroup> extras) {
+        var all = new ArrayList<>(groups);
+        all.addAll(extras);
+        return all;
+    }
+
+    /** Discount choices in the order shown. */
+    private static final List<Map.Entry<String, String>> DISCOUNT_NAMES = List.of(
+            Map.entry("sale", "On sale"), Map.entry("20", "20% off or more"), Map.entry("40", "40% off or more"));
+
+    private static final List<Map.Entry<String, String>> TAG_NAMES = List.of(
+            Map.entry("new", "New"),
+            Map.entry("bestseller", "Bestseller"),
+            Map.entry("bridal", "Bridal"),
+            Map.entry("handloom", "Handloom"));
+
+    /**
+     * Category (only where a listing spans several), discount, tags and add-ons: choices that match nothing are
+     * left out unless selected, and a group without choices is left out.
+     */
+    private List<FilterGroup> extraGroups(ListingFilters filters, Counts counts) {
+        var groups = new ArrayList<FilterGroup>();
+
+        var categoryCounts = counts.of("x:" + ListingFilters.CATEGORY_CODE);
+        var selectedCategories = filters.selected(ListingFilters.CATEGORY_CODE);
+        if (categoryCounts.size() > 1 || !selectedCategories.isEmpty()) {
+            record CategoryName(String slug, String name) {}
+            var categories = jdbc
+                    .sql("SELECT slug, name FROM category ORDER BY position, id")
+                    .query(CategoryName.class)
+                    .list()
+                    .stream()
+                    .filter(c -> categoryCounts.containsKey(c.slug()) || selectedCategories.contains(c.slug()))
+                    .map(c -> new FilterOption(
+                            c.slug(),
+                            c.name(),
+                            null,
+                            categoryCounts.getOrDefault(c.slug(), 0L),
+                            selectedCategories.contains(c.slug())))
+                    .toList();
+            addIfNotEmpty(
+                    groups, new FilterGroup(ListingFilters.CATEGORY_CODE, "Category", FilterType.FACET, categories));
+        }
+
+        groups.add(choices(filters, counts, ListingFilters.DISCOUNT_CODE, "Discount", DISCOUNT_NAMES));
+        groups.add(choices(filters, counts, ListingFilters.TAG_CODE, "Tags", TAG_NAMES));
+        groups.add(choices(
+                filters, counts, ListingFilters.ADDONS_CODE, "Add-ons", List.of(Map.entry("yes", "Offers add-ons"))));
+        groups.removeIf(g -> g.options().isEmpty());
+        return groups;
+    }
+
+    private static FilterGroup choices(
+            ListingFilters filters, Counts counts, String code, String name, List<Map.Entry<String, String>> named) {
+        var found = counts.of("x:" + code);
+        var selected = filters.selected(code);
+        var options = named.stream()
+                .filter(e -> found.getOrDefault(e.getKey(), 0L) > 0 || selected.contains(e.getKey()))
+                .map(e -> new FilterOption(
+                        e.getKey(),
+                        e.getValue(),
+                        null,
+                        found.getOrDefault(e.getKey(), 0L),
+                        selected.contains(e.getKey())))
+                .toList();
+        return new FilterGroup(code, name, FilterType.FACET, options);
     }
 
     private static void addIfNotEmpty(List<FilterGroup> groups, FilterGroup group) {

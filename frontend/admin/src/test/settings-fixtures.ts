@@ -30,6 +30,7 @@ export const shopProfile: ShopProfile = {
   facebook: null,
   youtube: null,
   threads: null,
+  whatsappChannel: null,
   address: "Andhra Pradesh, India",
   doorNo: null,
   street: null,

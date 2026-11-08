@@ -1,5 +1,6 @@
 package com.vaabhi.customer;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import org.jspecify.annotations.Nullable;
@@ -95,5 +96,78 @@ class CustomerStore {
                 .param("id", id)
                 .param("name", name)
                 .update();
+    }
+
+    private record DetailsRow(
+            @Nullable LocalDate dateOfBirth,
+            @Nullable String addressLine1,
+            @Nullable String addressLine2,
+            @Nullable String city,
+            @Nullable String state,
+            @Nullable String pincode,
+            String measurements) {}
+
+    private static final tools.jackson.databind.json.JsonMapper JSON =
+            tools.jackson.databind.json.JsonMapper.builder().build();
+    private static final tools.jackson.core.type.TypeReference<java.util.Map<String, java.util.Map<String, String>>>
+            MEASUREMENTS = new tools.jackson.core.type.TypeReference<>() {};
+
+    Optional<CustomerDetails> details(long id) {
+        return jdbc.sql("""
+                        SELECT date_of_birth, address_line1, address_line2, city, state, pincode,
+                               measurements::text AS measurements
+                        FROM customer WHERE id = :id
+                        """)
+                .param("id", id)
+                .query(DetailsRow.class)
+                .optional()
+                .map(r -> new CustomerDetails(
+                        r.dateOfBirth(),
+                        r.addressLine1(),
+                        r.addressLine2(),
+                        r.city(),
+                        r.state(),
+                        r.pincode(),
+                        JSON.readValue(r.measurements(), MEASUREMENTS)));
+    }
+
+    void updateDetails(long id, CustomerDetails details) {
+        jdbc.sql("""
+                        UPDATE customer SET date_of_birth = :dob, address_line1 = :line1, address_line2 = :line2,
+                            city = :city, state = :state, pincode = :pincode,
+                            measurements = CAST(:measurements AS jsonb)
+                        WHERE id = :id
+                        """)
+                .param("id", id)
+                .param("dob", details.dateOfBirth())
+                .param("line1", blank(details.addressLine1()))
+                .param("line2", blank(details.addressLine2()))
+                .param("city", blank(details.city()))
+                .param("state", blank(details.state()))
+                .param("pincode", blank(details.pincode()))
+                .param("measurements", JSON.writeValueAsString(withoutBlanks(details.measurements())))
+                .update();
+    }
+
+    /** Drops empty values and garments with nothing filled in, so the stored document holds only answers. */
+    private static java.util.Map<String, java.util.Map<String, String>> withoutBlanks(
+            java.util.Map<String, java.util.Map<String, String>> measurements) {
+        var kept = new java.util.TreeMap<String, java.util.Map<String, String>>();
+        measurements.forEach((garment, fields) -> {
+            var values = new java.util.TreeMap<String, String>();
+            fields.forEach((key, value) -> {
+                if (value != null && !value.isBlank()) {
+                    values.put(key, value.strip());
+                }
+            });
+            if (!values.isEmpty()) {
+                kept.put(garment, values);
+            }
+        });
+        return kept;
+    }
+
+    private static @Nullable String blank(@Nullable String text) {
+        return text == null || text.isBlank() ? null : text.strip();
     }
 }

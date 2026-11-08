@@ -26,7 +26,9 @@ class StoreProductController {
 
     /** Query parameters with a fixed meaning; every other parameter is read as a facet filter. */
     private static final Set<String> RESERVED =
-            Set.of("colour", "size", "inStock", "priceMin", "priceMax", "sort", "page", "pageSize");
+            Set.of("q", "colour", "size", "inStock", "priceMin", "priceMax", "sort", "page", "pageSize");
+
+    private static final int MAX_QUERY_LENGTH = 100;
 
     private static final String FACET_HELP = "Comma-separated facet value codes (OR within the facet)";
 
@@ -86,6 +88,69 @@ class StoreProductController {
                 productSort,
                 page,
                 pageSize));
+    }
+
+    /**
+     * Search the whole catalogue (name, subtitle, category, weave/occasion…), or list every product without
+     * {@code q}; e.g. {@code ?occasion=wedding} is one occasion across categories. Same filters as a category.
+     */
+    @GetMapping("/products")
+    @Parameter(name = "fabric", in = ParameterIn.QUERY, description = FACET_HELP, example = "silk,cotton")
+    @Parameter(name = "occasion", in = ParameterIn.QUERY, description = FACET_HELP, example = "wedding")
+    @Parameter(name = "weave", in = ParameterIn.QUERY, description = FACET_HELP, example = "banarasi")
+    @Parameter(name = "work", in = ParameterIn.QUERY, description = FACET_HELP, example = "zari")
+    SearchResponse searchProducts(
+            @Parameter(description = "Search text, at most 100 characters", example = "kanjeevaram")
+                    @RequestParam(required = false)
+                    @Nullable
+                    String q,
+            @Parameter(description = "Comma-separated colour family codes", example = "red,maroon")
+                    @RequestParam(required = false)
+                    @Nullable
+                    String colour,
+            @Parameter(description = "Comma-separated sizes", example = "M,L") @RequestParam(required = false) @Nullable
+                    String size,
+            @Parameter(description = "Only products with stock in the selected colour/size")
+                    @RequestParam(defaultValue = "false")
+                    boolean inStock,
+            @Parameter(description = "Minimum price in rupees") @RequestParam(required = false) @Nullable
+                    BigDecimal priceMin,
+            @Parameter(description = "Maximum price in rupees") @RequestParam(required = false) @Nullable
+                    BigDecimal priceMax,
+            @Parameter(
+                            schema =
+                                    @Schema(
+                                            allowableValues = {"popular", "new", "price_asc", "price_desc", "discount"},
+                                            defaultValue = "popular"))
+                    @RequestParam(defaultValue = "popular")
+                    String sort,
+            @Parameter(description = "1-based page number") @RequestParam(defaultValue = "1") int page,
+            @Parameter(description = "Products per page, at most 48") @RequestParam(defaultValue = "24") int pageSize,
+            @Parameter(hidden = true) @RequestParam MultiValueMap<String, String> allParams) {
+        validatePaging(page, pageSize);
+        validatePrice(priceMin, priceMax);
+        if (q != null && q.length() > MAX_QUERY_LENGTH) {
+            throw badRequest("q must be at most " + MAX_QUERY_LENGTH + " characters");
+        }
+        ProductSort productSort;
+        try {
+            productSort = ProductSort.fromParam(sort);
+        } catch (IllegalArgumentException e) {
+            throw badRequest(e.getMessage());
+        }
+        return productService.search(
+                q,
+                new ListingQuery(
+                        "",
+                        facetFilters(allParams),
+                        split(colour == null ? List.of() : List.of(colour)),
+                        split(size == null ? List.of() : List.of(size)),
+                        inStock,
+                        priceMin,
+                        priceMax,
+                        productSort,
+                        page,
+                        pageSize));
     }
 
     @GetMapping("/products/{slug}")

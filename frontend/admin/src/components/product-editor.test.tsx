@@ -83,7 +83,9 @@ describe("ProductEditor", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "MRP ₹" }), { target: { value: "17800" } });
     fireEvent.click(screen.getByRole("button", { name: "Add colour" }));
     fireEvent.change(screen.getByRole("textbox", { name: "Stock for Ruby" }), { target: { value: "4" } });
-    fireEvent.click(screen.getByRole("button", { name: "Add standard blouse options" }));
+    fireEvent.click(screen.getByRole("button", { name: "+ Unstitched blouse piece" }));
+    fireEvent.click(screen.getByRole("button", { name: "+ Stitched blouse, standard size" }));
+    fireEvent.click(screen.getByRole("button", { name: "+ Stitched blouse, made to measure" }));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/products/edit/?id=42&notice=Saved."));
@@ -298,15 +300,14 @@ describe("ProductEditor", () => {
     text("SKU for Ruby", "vb-ruby-1");
     fireEvent.click(screen.getByRole("checkbox", { name: "Ruby is for sale" }));
     fireEvent.click(screen.getByRole("checkbox", { name: "Silk" }));
-    fireEvent.click(screen.getByRole("button", { name: "Add option" }));
-    const option2 = within(screen.getByRole("group", { name: "Option 2" }));
+    fireEvent.click(screen.getByRole("button", { name: "Add add-on" }));
+    const option2 = within(screen.getByRole("group", { name: "Add-on 2" }));
     fireEvent.change(option2.getByRole("textbox", { name: "Name" }), { target: { value: "Fall and pico" } });
-    fireEvent.change(option2.getByRole("textbox", { name: "Code" }), { target: { value: "fall-pico" } });
     fireEvent.change(option2.getByRole("textbox", { name: "Note" }), { target: { value: "Done for you" } });
     fireEvent.change(option2.getByRole("textbox", { name: "Price ₹" }), { target: { value: "250" } });
     fireEvent.change(option2.getByRole("combobox", { name: "Ask for" }), { target: { value: "SIZE" } });
-    fireEvent.click(option2.getByRole("checkbox", { name: "On" }));
-    fireEvent.click(screen.getByRole("button", { name: "Remove option 1" }));
+    fireEvent.click(option2.getByRole("checkbox", { name: "Shown" }));
+    fireEvent.click(screen.getByRole("button", { name: "Remove add-on 1" }));
     fireEvent.click(screen.getByRole("checkbox", { name: "Blouse piece included" }));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
@@ -325,7 +326,7 @@ describe("ProductEditor", () => {
       variants: [{ sku: "VB-RUBY-1", priceRupees: 15000, active: false }],
       addons: [
         {
-          code: "fall-pico",
+          code: "fall-and-pico",
           name: "Fall and pico",
           description: "Done for you",
           priceRupees: 250,

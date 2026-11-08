@@ -26,6 +26,7 @@ import {
   SearchIcon,
   SectionHeader,
   TruckIcon,
+  WishlistHeart,
 } from "./index";
 
 describe("cn", () => {
@@ -71,31 +72,39 @@ describe("ProductCard", () => {
     href: "/p/emerald",
   };
 
-  it("shows name, detail, prices, badge and a labelled wishlist button", () => {
+  it("shows name, detail, prices, badge and the wishlist control it is given", () => {
+    const onToggle = vi.fn();
     render(
       <ProductCard
         {...base}
         mrp="₹15,999"
         discount="22% off"
         badge={{ label: "Handloom", tone: "gold" }}
-        image={{ placeholder: ["#1E6B52", "#0E3B2E"] }}
+        image={null}
+        wishlist={<WishlistHeart name={base.name} pressed={false} onToggle={onToggle} />}
       />,
     );
+    screen.getByRole("button", { name: `Add ${base.name} to wishlist` }).click();
+    expect(onToggle).toHaveBeenCalledOnce();
     expect(screen.getByRole("heading", { level: 3 })).toHaveTextContent(base.name);
     expect(screen.getByText("₹12,499")).toBeInTheDocument();
     expect(screen.getByText("₹15,999")).toHaveClass("line-through");
     expect(screen.getByText("22% off")).toBeInTheDocument();
     expect(screen.getByText("Handloom")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: `Add ${base.name} to wishlist` })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: base.name })).toHaveStyle({
-      backgroundImage: "linear-gradient(180deg, #1E6B52, #0E3B2E)",
-    });
+    expect(screen.getByText("Photo coming soon")).toBeInTheDocument();
   });
 
   it("renders a real photo when one is given and omits optional parts", () => {
     render(<ProductCard {...base} image={{ src: "https://img.example/saree.jpg", alt: "Model wearing the saree" }} />);
     expect(screen.getByAltText("Model wearing the saree")).toHaveAttribute("src", "https://img.example/saree.jpg");
     expect(screen.queryByText(/off$/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
+
+  it("shows a saved product's heart as pressed", () => {
+    render(<WishlistHeart name="Saree" pressed onToggle={() => {}} />);
+    expect(screen.getByRole("button", { name: "Remove Saree from wishlist" })).toHaveAttribute("aria-pressed", "true");
   });
 });
 

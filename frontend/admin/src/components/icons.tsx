@@ -217,6 +217,13 @@ export const CalendarIcon = icon(
     <path d="M4 10h16M9 3v4M15 3v4" />
   </>,
 );
+export const CalendarPlusIcon = icon(
+  "CalendarPlus",
+  <>
+    <rect x="4" y="5" width="16" height="15" rx="2" />
+    <path d="M4 10h16M9 3v4M15 3v4M12 13v5M9.5 15.5h5" />
+  </>,
+);
 export const LockIcon = icon(
   "Lock",
   <>

@@ -11,7 +11,7 @@ export async function POST(request: Request): Promise<Response> {
   }
   try {
     const started = await withCustomer((token) => api.customer.startCheckout(token, body));
-    if (!started) return Response.json({ detail: "Please sign in to check out", errors: [] }, { status: 401 });
+    if (!started) return Response.json({ detail: "Please log in to check out", errors: [] }, { status: 401 });
     return Response.json(started, { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     return problemResponse(error);

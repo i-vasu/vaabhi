@@ -15,13 +15,16 @@ describe("SiteHeader", () => {
 });
 
 describe("SiteFooter", () => {
-  it("lists shop and help links", () => {
-    render(<SiteFooter />);
+  // An async server component (Shop lists the categories from the API, mocked in test/server), so it is awaited.
+  it("lists shop, help, policy and about links", async () => {
+    render(await SiteFooter());
     for (const name of ["Shop", "Help", "Policies", "About"])
       expect(screen.getByRole("navigation", { name })).toBeInTheDocument();
     expect(screen.getByText(/Handwoven sarees, lehengas and kurta sets/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Privacy" })).toHaveAttribute("href", "/policies/privacy");
+    expect(screen.getByRole("link", { name: "Sarees" })).toHaveAttribute("href", "/c/sarees");
     expect(screen.getByRole("link", { name: "Track order" })).toHaveAttribute("href", "/track");
+    expect(screen.getByRole("link", { name: "Returns & exchanges" })).toHaveAttribute("href", "/policies/returns");
+    expect(screen.getByRole("link", { name: "Meet the weavers" })).toHaveAttribute("href", "/weavers");
     expect(screen.getByText(/Made in India/)).toBeInTheDocument();
   });
 });

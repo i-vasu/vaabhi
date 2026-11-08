@@ -27,7 +27,7 @@ describe("SignupPage", () => {
   it("hides phone sign-in while the shop cannot send codes", async () => {
     options({ phoneSignIn: false, googleSignIn: true });
     await renderPage();
-    expect(screen.getByRole("heading", { name: "Sign in or sign up" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Login" })).toBeInTheDocument();
     expect(screen.queryByLabelText("Mobile number")).not.toBeInTheDocument();
   });
 
@@ -40,7 +40,7 @@ describe("SignupPage", () => {
   it("says so when nothing works, and falls back to phone when the API cannot be asked", async () => {
     options({ phoneSignIn: false, googleSignIn: false });
     await renderPage();
-    expect(screen.getByRole("status")).toHaveTextContent("Sign-in is not available right now.");
+    expect(screen.getByRole("status")).toHaveTextContent("Login is not available right now.");
 
     document.body.innerHTML = "";
     options({ detail: "down" }, 503);

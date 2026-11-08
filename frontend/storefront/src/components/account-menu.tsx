@@ -9,7 +9,7 @@ import { displayName, sessionStore, signOut, syncSession } from "@/lib/session";
 const item = "block w-full px-4 py-2.5 text-left text-sm text-text-primary hover:bg-bg-muted hover:text-brand-primary";
 
 /**
- * Profile icon that opens a menu: profile, orders and wishlist, then log out (signed in) or sign in (guest).
+ * Profile icon that opens a menu: profile, orders and wishlist, then log out (signed in) or log in (guest).
  * Checks the session once per page load, which also keeps the customer signed in (the session is renewed).
  */
 export function AccountMenu({ className }: Readonly<{ className?: string }>) {
@@ -94,11 +94,11 @@ export function AccountMenu({ className }: Readonly<{ className?: string }>) {
                 </button>
               ) : (
                 <Link
-                  href={pathname && pathname !== "/signup" ? `/signup?next=${encodeURIComponent(pathname)}` : "/signup"}
+                  href={pathname && pathname !== "/login" ? `/login?next=${encodeURIComponent(pathname)}` : "/login"}
                   className={`${item} font-medium text-brand-primary`}
                   onClick={close}
                 >
-                  Sign in / Sign up
+                  Login
                 </Link>
               )}
             </li>

@@ -29,6 +29,12 @@ class ReportController {
         return ReportService.CATALOGUE;
     }
 
+    /** Revenue, profit and orders in the pipeline for the home page. */
+    @GetMapping("/dashboard")
+    Report.Dashboard getDashboard() {
+        return reports.dashboard();
+    }
+
     @GetMapping("/overview")
     Report.ReportsOverview getReportsOverview() {
         return reports.overview();

@@ -20,6 +20,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/customer/me/details": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getDetails"];
+        put: operations["updateDetails"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/workshop/staff/{staffId}/stages": {
         parameters: {
             query?: never;
@@ -47,6 +63,22 @@ export interface paths {
         put: operations["assignWorkItem"];
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/storefront/pages/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updatePage"];
+        post?: never;
+        delete: operations["deletePage"];
         options?: never;
         head?: never;
         patch?: never;
@@ -548,22 +580,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/webhooks/delivery-updates": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["deliveryUpdate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/webhooks/razorpay": {
         parameters: {
             query?: never;
@@ -580,6 +596,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/webhooks/delivery-updates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["deliveryUpdate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/store/orders/track": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["track"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/store/bag/quote": {
         parameters: {
             query?: never;
@@ -590,6 +638,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["quoteBag"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customer/orders/{number}/returns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["requestReturn"];
         delete?: never;
         options?: never;
         head?: never;
@@ -638,22 +702,6 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["cancelMyOrder"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/customer/orders/{number}/returns": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["requestReturn"];
         delete?: never;
         options?: never;
         head?: never;
@@ -814,6 +862,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["startSiteImageUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/storefront/pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listPages"];
+        put?: never;
+        post: operations["createPage"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1252,7 +1316,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/online-orders/{number}/ship": {
+    "/api/v1/admin/online-orders/{number}/tracking": {
         parameters: {
             query?: never;
             header?: never;
@@ -1261,71 +1325,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["shipOnlineOrder"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/online-orders/returns/{returnNumber}/approve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["approveReturn"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/online-orders/returns/{returnNumber}/reject": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["rejectReturn"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/online-orders/returns/{returnNumber}/pickup": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["bookReturnPickup"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/online-orders/returns/{returnNumber}/refund": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["refundReturn"];
+        post: operations["refreshOnlineOrderTracking"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1348,7 +1348,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/online-orders/{number}/tracking": {
+    "/api/v1/admin/online-orders/{number}/ship": {
         parameters: {
             query?: never;
             header?: never;
@@ -1357,7 +1357,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["refreshOnlineOrderTracking"];
+        post: operations["shipOnlineOrder"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1390,6 +1390,70 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["cancelOnlineOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/online-orders/returns/{returnNumber}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["rejectReturn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/online-orders/returns/{returnNumber}/refund": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["refundReturn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/online-orders/returns/{returnNumber}/pickup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["bookReturnPickup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/online-orders/returns/{returnNumber}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["approveReturn"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1620,6 +1684,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/store/shop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getShopContact"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/store/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["searchProducts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/store/products/{slug}": {
         parameters: {
             query?: never;
@@ -1636,6 +1732,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/store/pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listPublishedPages"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/store/pages/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getPublishedPage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/store/new-arrivals": {
         parameters: {
             query?: never;
@@ -1644,6 +1772,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["listNewArrivals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/store/measurement-forms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listMeasurementForms"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1916,6 +2060,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getReportsOverview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getDashboard"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2210,6 +2370,20 @@ export interface components {
             email: string | null;
             phone: string | null;
         };
+        CustomerDetails: {
+            /** Format: date */
+            dateOfBirth: string | null;
+            addressLine1: string | null;
+            addressLine2: string | null;
+            city: string | null;
+            state: string | null;
+            pincode: string | null;
+            measurements: {
+                [key: string]: {
+                    [key: string]: string;
+                };
+            };
+        };
         StaffStages: {
             stageIds: number[];
         };
@@ -2264,6 +2438,30 @@ export interface components {
             dueToday: boolean;
             overdue: boolean;
             assignedTo: components["schemas"]["Assignee"] | null;
+        };
+        ContentPageForm: {
+            slug: string;
+            /** @enum {string} */
+            section: "HELP" | "POLICY" | "ABOUT" | "BLOG";
+            title: string;
+            summary: string | null;
+            body: string;
+            published: boolean;
+        };
+        ContentPage: {
+            /** Format: int64 */
+            id: number;
+            slug: string;
+            /** @enum {string} */
+            section: "HELP" | "POLICY" | "ABOUT" | "BLOG";
+            /** Format: int32 */
+            position: number;
+            title: string;
+            summary: string | null;
+            body: string;
+            published: boolean;
+            /** Format: date-time */
+            updatedAt: string;
         };
         CategoryImageForm: {
             imageKey: string | null;
@@ -2464,6 +2662,7 @@ export interface components {
             facebook: string | null;
             youtube: string | null;
             threads: string | null;
+            whatsappChannel: string | null;
             address: string | null;
             doorNo: string | null;
             street: string | null;
@@ -3007,6 +3206,43 @@ export interface components {
             /** Format: date-time */
             takenAt: string;
         };
+        TrackOrderRequest: {
+            number: string;
+            phone: string;
+        };
+        TrackedLine: {
+            productSlug: string;
+            name: string;
+            colourName: string | null;
+            size: string | null;
+            /** Format: int32 */
+            quantity: number;
+            imageKey: string | null;
+        };
+        TrackedOrder: {
+            number: string;
+            /** @enum {string} */
+            status: "PENDING_PAYMENT" | "FAILED" | "PLACED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+            /** @enum {string} */
+            paymentMethod: "ONLINE" | "COD";
+            city: string;
+            totalRupees: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            paidAt: string | null;
+            /** Format: date-time */
+            shippedAt: string | null;
+            /** Format: date-time */
+            deliveredAt: string | null;
+            /** Format: date-time */
+            cancelledAt: string | null;
+            courier: string | null;
+            trackingNumber: string | null;
+            trackingStatus: string | null;
+            trackingUrl: string | null;
+            lines: components["schemas"]["TrackedLine"][];
+        };
         BagQuoteRequest: {
             lines: components["schemas"]["BagRequestLine"][];
         };
@@ -3047,10 +3283,15 @@ export interface components {
             addonInput: "NONE" | "SIZE" | "MEASUREMENTS" | null;
             imageKey: string | null;
         };
-        PaymentConfirmation: {
-            razorpayOrderId: string;
-            razorpayPaymentId: string;
-            razorpaySignature: string;
+        ReturnItem: {
+            /** Format: int32 */
+            position: number;
+            /** Format: int32 */
+            quantity: number;
+        };
+        ReturnRequestForm: {
+            reason: string;
+            items: components["schemas"]["ReturnItem"][];
         };
         Line: {
             /** Format: int32 */
@@ -3068,6 +3309,35 @@ export interface components {
             addonRupees: number;
             amountRupees: number;
             imageKey: string | null;
+        };
+        OrderReturn: {
+            number: string;
+            /** @enum {string} */
+            status: "REQUESTED" | "APPROVED" | "REJECTED" | "REFUNDED";
+            reason: string;
+            shopNote: string | null;
+            itemsRupees: number;
+            refundRupees: number | null;
+            /** @enum {string|null} */
+            refundMethod: "RAZORPAY" | "MANUAL" | null;
+            refundReference: string | null;
+            /** @enum {string|null} */
+            refundStatus: "PENDING" | "PROCESSED" | "FAILED" | null;
+            pickupCourier: string | null;
+            pickupAwb: string | null;
+            pickupStatus: string | null;
+            /** Format: date-time */
+            requestedAt: string;
+            /** Format: date-time */
+            refundedAt: string | null;
+            lines: components["schemas"]["ReturnLine"][];
+        };
+        ReturnLine: {
+            /** Format: int32 */
+            position: number;
+            name: string;
+            /** Format: int32 */
+            quantity: number;
         };
         WebOrder: {
             number: string;
@@ -3112,20 +3382,10 @@ export interface components {
             lines: components["schemas"]["Line"][];
             returns: components["schemas"]["OrderReturn"][];
         };
-        Address: {
-            name: string;
-            phone: string;
-            line1: string;
-            line2: string | null;
-            city: string;
-            state: string;
-            pincode: string;
-        };
-        CheckoutRequest: {
-            lines: components["schemas"]["Line"][];
-            address: components["schemas"]["Address"];
-            /** @enum {string|null} */
-            paymentMethod: "ONLINE" | "COD" | null;
+        PaymentConfirmation: {
+            razorpayOrderId: string;
+            razorpayPaymentId: string;
+            razorpaySignature: string;
         };
         CheckoutStart: {
             orderNumber: string;
@@ -3142,6 +3402,24 @@ export interface components {
             name: string;
             phone: string;
             email: string | null;
+        };
+        CancelWebOrderForm: {
+            reason: string | null;
+        };
+        Address: {
+            name: string;
+            phone: string;
+            line1: string;
+            line2: string | null;
+            city: string;
+            state: string;
+            pincode: string;
+        };
+        CheckoutRequest: {
+            lines: components["schemas"]["Line"][];
+            address: components["schemas"]["Address"];
+            /** @enum {string|null} */
+            paymentMethod: "ONLINE" | "COD" | null;
         };
         StaffLoginRequest: {
             /** Format: email */
@@ -3190,6 +3468,8 @@ export interface components {
             expiresInSeconds: number;
             /** Format: int64 */
             resendAfterSeconds: number;
+            /** @enum {string} */
+            channel: "WHATSAPP" | "SMS";
         };
         GoogleSignIn: {
             credential: string;
@@ -3443,48 +3723,6 @@ export interface components {
             courier: string | null;
             trackingNumber: string | null;
         };
-        CancelWebOrderForm: {
-            reason: string | null;
-        };
-        OrderReturn: {
-            number: string;
-            /** @enum {string} */
-            status: "REQUESTED" | "APPROVED" | "REJECTED" | "REFUNDED";
-            reason: string;
-            shopNote: string | null;
-            itemsRupees: number;
-            refundRupees: number | null;
-            /** @enum {string|null} */
-            refundMethod: "RAZORPAY" | "MANUAL" | null;
-            refundReference: string | null;
-            /** @enum {string|null} */
-            refundStatus: "PENDING" | "PROCESSED" | "FAILED" | null;
-            pickupCourier: string | null;
-            pickupAwb: string | null;
-            pickupStatus: string | null;
-            /** Format: date-time */
-            requestedAt: string;
-            /** Format: date-time */
-            refundedAt: string | null;
-            lines: components["schemas"]["ReturnLine"][];
-        };
-        ReturnLine: {
-            /** Format: int32 */
-            position: number;
-            name: string;
-            /** Format: int32 */
-            quantity: number;
-        };
-        ReturnRequestForm: {
-            reason: string;
-            items: components["schemas"]["ReturnItem"][];
-        };
-        ReturnItem: {
-            /** Format: int32 */
-            position: number;
-            /** Format: int32 */
-            quantity: number;
-        };
         ReturnDecisionForm: {
             note: string | null;
         };
@@ -3672,6 +3910,85 @@ export interface components {
             /** @enum {string|null} */
             mode: "CASH" | "UPI" | "CARD" | "BANK" | null;
         };
+        ShopContact: {
+            name: string;
+            phone: string | null;
+            whatsapp: string | null;
+            whatsappChannel: string | null;
+            email: string | null;
+            address: string | null;
+            mapsLink: string | null;
+            instagram: string | null;
+            facebook: string | null;
+            youtube: string | null;
+            /** Format: time-local */
+            opensAt: string;
+            /** Format: time-local */
+            closesAt: string;
+        };
+        ColourSwatch: {
+            name: string;
+            hex: string;
+        };
+        FilterGroup: {
+            code: string;
+            name: string;
+            /** @enum {string} */
+            type: "COLOUR" | "SIZE" | "FACET";
+            options: components["schemas"]["FilterOption"][];
+        };
+        FilterOption: {
+            code: string;
+            name: string;
+            hex: string | null;
+            /** Format: int64 */
+            count: number;
+            selected: boolean;
+        };
+        MediaResponse: {
+            /** @enum {string} */
+            kind: "IMAGE" | "VIDEO";
+            key: string;
+            alt: string;
+            colourName: string | null;
+            /** Format: int32 */
+            width: number | null;
+            /** Format: int32 */
+            height: number | null;
+        };
+        PriceRange: {
+            minRupees: number;
+            maxRupees: number;
+        };
+        ProductSummary: {
+            slug: string;
+            name: string;
+            subtitle: string | null;
+            /** @enum {string|null} */
+            badge: "NEW" | "BESTSELLER" | "BRIDAL" | "HANDLOOM" | null;
+            priceRupees: number;
+            mrpRupees: number;
+            /** Format: int32 */
+            discountPercent: number;
+            colours: components["schemas"]["ColourSwatch"][];
+            inStock: boolean;
+            /** Format: int32 */
+            stockLeft: number | null;
+            image: components["schemas"]["MediaResponse"] | null;
+        };
+        SearchResponse: {
+            query: string | null;
+            items: components["schemas"]["ProductSummary"][];
+            /** Format: int64 */
+            total: number;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+            sort: string;
+            filters: components["schemas"]["FilterGroup"][];
+            priceRange: components["schemas"]["PriceRange"] | null;
+        };
         AddonResponse: {
             code: string;
             /** @enum {string} */
@@ -3694,17 +4011,6 @@ export interface components {
         CategoryRef: {
             slug: string;
             name: string;
-        };
-        MediaResponse: {
-            /** @enum {string} */
-            kind: "IMAGE" | "VIDEO";
-            key: string;
-            alt: string;
-            colourName: string | null;
-            /** Format: int32 */
-            width: number | null;
-            /** Format: int32 */
-            height: number | null;
         };
         ProductDetailResponse: {
             slug: string;
@@ -3738,9 +4044,14 @@ export interface components {
             /** Format: int32 */
             stockLeft: number | null;
         };
-        ColourSwatch: {
-            name: string;
-            hex: string;
+        ContentPageLink: {
+            slug: string;
+            /** @enum {string} */
+            section: "HELP" | "POLICY" | "ABOUT" | "BLOG";
+            title: string;
+            summary: string | null;
+            /** Format: date-time */
+            updatedAt: string;
         };
         NewArrivalsPage: {
             items: components["schemas"]["ProductSummary"][];
@@ -3751,45 +4062,21 @@ export interface components {
             /** Format: int32 */
             pageSize: number;
         };
-        ProductSummary: {
-            slug: string;
+        MeasurementField: {
+            key: string;
+            label: string;
+            unit: string;
+        };
+        ShopMeasurementForm: {
+            /** Format: int64 */
+            id: number;
             name: string;
-            subtitle: string | null;
-            /** @enum {string|null} */
-            badge: "NEW" | "BESTSELLER" | "BRIDAL" | "HANDLOOM" | null;
-            priceRupees: number;
-            mrpRupees: number;
-            /** Format: int32 */
-            discountPercent: number;
-            colours: components["schemas"]["ColourSwatch"][];
-            inStock: boolean;
-            /** Format: int32 */
-            stockLeft: number | null;
-            image: components["schemas"]["MediaResponse"] | null;
+            fields: components["schemas"]["MeasurementField"][];
         };
         HomeContent: {
             hero: components["schemas"]["Banner"][];
             occasions: components["schemas"]["Banner"][];
             craft: components["schemas"]["Banner"] | null;
-        };
-        FilterGroup: {
-            code: string;
-            name: string;
-            /** @enum {string} */
-            type: "COLOUR" | "SIZE" | "FACET";
-            options: components["schemas"]["FilterOption"][];
-        };
-        FilterOption: {
-            code: string;
-            name: string;
-            hex: string | null;
-            /** Format: int64 */
-            count: number;
-            selected: boolean;
-        };
-        PriceRange: {
-            minRupees: number;
-            maxRupees: number;
         };
         ProductListingResponse: {
             category: components["schemas"]["CategoryResponse"];
@@ -3807,6 +4094,8 @@ export interface components {
         AuthOptions: {
             phoneSignIn: boolean;
             googleSignIn: boolean;
+            /** @enum {string|null} */
+            otpChannel: "WHATSAPP" | "SMS" | null;
         };
         StageLoad: {
             stage: components["schemas"]["ProductionStage"];
@@ -3913,6 +4202,13 @@ export interface components {
             outstandingRupees: number;
             months: components["schemas"]["MonthFigures"][];
             ageing: components["schemas"]["AgeingBucket"][];
+        };
+        Dashboard: {
+            revenueRupees: number;
+            expensesRupees: number;
+            profitRupees: number;
+            /** Format: int64 */
+            ordersInPipeline: number;
         };
         AdminProductPage: {
             items: components["schemas"]["AdminProductSummary"][];
@@ -4273,6 +4569,50 @@ export interface operations {
             };
         };
     };
+    getDetails: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomerDetails"];
+                };
+            };
+        };
+    };
+    updateDetails: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerDetails"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomerDetails"];
+                };
+            };
+        };
+    };
     saveWorkshopStaffStages: {
         parameters: {
             query?: never;
@@ -4322,6 +4662,52 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["WorkItem"];
                 };
+            };
+        };
+    };
+    updatePage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContentPageForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ContentPage"];
+                };
+            };
+        };
+    };
+    deletePage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -5613,30 +5999,6 @@ export interface operations {
             };
         };
     };
-    deliveryUpdate: {
-        parameters: {
-            query?: never;
-            header?: {
-                "x-api-key"?: string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": string;
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     razorpayWebhook: {
         parameters: {
             query?: never;
@@ -5661,6 +6023,54 @@ export interface operations {
             };
         };
     };
+    deliveryUpdate: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-api-key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": string;
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    track: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TrackOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TrackedOrder"];
+                };
+            };
+        };
+    };
     quoteBag: {
         parameters: {
             query?: never;
@@ -5681,6 +6091,32 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["BagQuote"];
+                };
+            };
+        };
+    };
+    requestReturn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReturnRequestForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebOrder"];
                 };
             };
         };
@@ -5750,32 +6186,6 @@ export interface operations {
         responses: {
             /** @description OK */
             200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["WebOrder"];
-                };
-            };
-        };
-    };
-    requestReturn: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                number: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReturnRequestForm"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -6015,6 +6425,50 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["SiteImageUpload"];
+                };
+            };
+        };
+    };
+    listPages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ContentPage"][];
+                };
+            };
+        };
+    };
+    createPage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContentPageForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ContentPage"];
                 };
             };
         };
@@ -6881,7 +7335,7 @@ export interface operations {
             };
         };
     };
-    shipOnlineOrder: {
+    refreshOnlineOrderTracking: {
         parameters: {
             query?: never;
             header?: never;
@@ -6890,111 +7344,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ShipmentForm"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["WebOrder"];
-                };
-            };
-        };
-    };
-    approveReturn: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                returnNumber: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReturnDecisionForm"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["WebOrder"];
-                };
-            };
-        };
-    };
-    rejectReturn: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                returnNumber: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReturnDecisionForm"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["WebOrder"];
-                };
-            };
-        };
-    };
-    bookReturnPickup: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                returnNumber: string;
-            };
-            cookie?: never;
-        };
         requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["WebOrder"];
-                };
-            };
-        };
-    };
-    refundReturn: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                returnNumber: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReturnRefundForm"];
-            };
-        };
         responses: {
             /** @description OK */
             200: {
@@ -7029,7 +7379,7 @@ export interface operations {
             };
         };
     };
-    refreshOnlineOrderTracking: {
+    shipOnlineOrder: {
         parameters: {
             query?: never;
             header?: never;
@@ -7038,7 +7388,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShipmentForm"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
@@ -7085,6 +7439,106 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["CancelWebOrderForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebOrder"];
+                };
+            };
+        };
+    };
+    rejectReturn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                returnNumber: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReturnDecisionForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebOrder"];
+                };
+            };
+        };
+    };
+    refundReturn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                returnNumber: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReturnRefundForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebOrder"];
+                };
+            };
+        };
+    };
+    bookReturnPickup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                returnNumber: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebOrder"];
+                };
+            };
+        };
+    };
+    approveReturn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                returnNumber: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReturnDecisionForm"];
             };
         };
         responses: {
@@ -7634,6 +8088,93 @@ export interface operations {
             };
         };
     };
+    getShopContact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShopContact"];
+                };
+            };
+        };
+    };
+    searchProducts: {
+        parameters: {
+            query?: {
+                /**
+                 * @description Search text, at most 100 characters
+                 * @example kanjeevaram
+                 */
+                q?: string | null;
+                /**
+                 * @description Comma-separated colour family codes
+                 * @example red,maroon
+                 */
+                colour?: string | null;
+                /**
+                 * @description Comma-separated sizes
+                 * @example M,L
+                 */
+                size?: string | null;
+                /** @description Only products with stock in the selected colour/size */
+                inStock?: boolean;
+                /** @description Minimum price in rupees */
+                priceMin?: number | null;
+                /** @description Maximum price in rupees */
+                priceMax?: number | null;
+                sort?: "popular" | "new" | "price_asc" | "price_desc" | "discount";
+                /** @description 1-based page number */
+                page?: number;
+                /** @description Products per page, at most 48 */
+                pageSize?: number;
+                /**
+                 * @description Comma-separated facet value codes (OR within the facet)
+                 * @example silk,cotton
+                 */
+                fabric?: string;
+                /**
+                 * @description Comma-separated facet value codes (OR within the facet)
+                 * @example wedding
+                 */
+                occasion?: string;
+                /**
+                 * @description Comma-separated facet value codes (OR within the facet)
+                 * @example banarasi
+                 */
+                weave?: string;
+                /**
+                 * @description Comma-separated facet value codes (OR within the facet)
+                 * @example zari
+                 */
+                work?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SearchResponse"];
+                };
+            };
+        };
+    };
     getProduct: {
         parameters: {
             query?: never;
@@ -7652,6 +8193,48 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ProductDetailResponse"];
+                };
+            };
+        };
+    };
+    listPublishedPages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ContentPageLink"][];
+                };
+            };
+        };
+    };
+    getPublishedPage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ContentPage"];
                 };
             };
         };
@@ -7677,6 +8260,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["NewArrivalsPage"];
+                };
+            };
+        };
+    };
+    listMeasurementForms: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShopMeasurementForm"][];
                 };
             };
         };
@@ -8079,6 +8682,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ReportsOverview"];
+                };
+            };
+        };
+    };
+    getDashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Dashboard"];
                 };
             };
         };

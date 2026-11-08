@@ -15,6 +15,7 @@ import org.jspecify.annotations.Nullable;
  * @param logoKey object key of the uploaded logo (see the settings image upload)
  * @param country ISO 3166 code; decides the tax system (GST for IN)
  * @param opensAt alerts are held outside shop hours and delivered when the shop next opens
+ * @param whatsappChannel the storefront's "Join on WhatsApp" opens it; without it, a chat with {@code phone}
  */
 public record ShopProfile(
         @NotBlank @Size(max = 120) String ownerName,
@@ -47,6 +48,11 @@ public record ShopProfile(
         @Nullable @Size(max = 300) @Pattern(regexp = HTTPS, message = HTTPS_MESSAGE)
         String threads,
 
+        @Nullable
+        @Size(max = 300)
+        @Pattern(regexp = WHATSAPP_CHANNEL, message = "must be a WhatsApp channel or community invite link")
+        String whatsappChannel,
+
         @Nullable @Size(max = 300) String address,
         @Nullable @Size(max = 40) String doorNo,
         @Nullable @Size(max = 120) String street,
@@ -71,6 +77,9 @@ public record ShopProfile(
     static final String PHONE = "^\\+?[0-9 ]{7,16}$";
     static final String HTTPS = "^https://.*";
     static final String HTTPS_MESSAGE = "must start with https://";
+    /** A channel (whatsapp.com/channel/…) or a community/group invite (chat.whatsapp.com/…). */
+    static final String WHATSAPP_CHANNEL =
+            "^https://((www\\.)?whatsapp\\.com/channel|chat\\.whatsapp\\.com)/[A-Za-z0-9].*$";
 
     public enum BusinessType {
         LADIES_BOUTIQUE,
@@ -85,6 +94,7 @@ public record ShopProfile(
                 "Owner",
                 "vaabhi",
                 BusinessType.LADIES_BOUTIQUE,
+                null,
                 null,
                 null,
                 null,

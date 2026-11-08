@@ -109,7 +109,7 @@ describe("OrdersView", () => {
   it("asks a signed-out visitor to sign in, and explains a failed load", async () => {
     server.use(http.get("*/api/auth/orders", () => new HttpResponse(null, { status: 401 })));
     const { unmount } = render(<OrdersView />);
-    expect(await screen.findByRole("link", { name: "Sign in to see your orders" })).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: "Login to see your orders" })).toBeInTheDocument();
     unmount();
     server.use(http.get("*/api/auth/orders", () => new HttpResponse(null, { status: 500 })));
     render(<OrdersView />);

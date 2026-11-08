@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import type { Media } from "@vaabhi/api-client";
 import { ChevronRightIcon, cn } from "@vaabhi/ui";
 import { useMediaBase } from "@/components/media-base";
-import { mediaUrl, shade, videoUrl } from "@/lib/listing";
+import { mediaUrl, videoUrl } from "@/lib/listing";
 
 const SIZES = "(min-width: 900px) 55vw, 100vw";
 
@@ -22,16 +22,15 @@ type Slide = { key: string; alt: string; src?: ReturnType<typeof sources>; video
 
 /**
  * Swipeable photos (CSS scroll snap, so touch works without JavaScript) with arrows, a counter and thumbnails.
- * Videos, if any, come after the first photo, with that photo as their poster. Without photos, the colour
- * stands in, as on listing cards.
+ * Videos, if any, come after the first photo, with that photo as their poster. Without photos it says they are
+ * coming (no made-up artwork).
  */
 export function ProductGallery({
   photos,
   videos = [],
   name,
-  hex,
   overlay,
-}: Readonly<{ photos: Media[]; videos?: Media[]; name: string; hex: string; overlay?: React.ReactNode }>) {
+}: Readonly<{ photos: Media[]; videos?: Media[]; name: string; overlay?: React.ReactNode }>) {
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const base = useMediaBase();
@@ -98,12 +97,9 @@ export function ProductGallery({
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div
-                  role="img"
-                  aria-label={slide.alt}
-                  className="h-full w-full"
-                  style={{ backgroundImage: `linear-gradient(180deg, ${hex}, ${shade(hex)})` }}
-                />
+                <div className="grid h-full w-full place-items-center bg-bg-muted text-sm text-text-muted">
+                  Photos coming soon
+                </div>
               )}
             </figure>
           ))}

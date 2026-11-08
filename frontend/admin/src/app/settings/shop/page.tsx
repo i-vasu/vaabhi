@@ -102,7 +102,10 @@ export default function ShopProfilePage() {
             value={profile.businessType}
             onChange={(businessType) => update({ businessType })}
           />
-          {text("phone", "Phone number", { type: "tel" })}
+          {text("phone", "Phone number", {
+            type: "tel",
+            hint: "Also your WhatsApp: the website's chat button and Contact page use it.",
+          })}
           {text("publicEmail", "Public email", { type: "email", placeholder: "shop@example.com" })}
           {text("googleReviewLink", "Google review link", {
             placeholder: "https://g.page/r/…",
@@ -114,6 +117,10 @@ export default function ShopProfilePage() {
           {text("facebook", "Facebook", { placeholder: "https://facebook.com/…" })}
           {text("youtube", "YouTube", { placeholder: "https://youtube.com/…" })}
           {text("threads", "Threads", { placeholder: "https://threads.net/…" })}
+          {text("whatsappChannel", "WhatsApp channel link", {
+            placeholder: "https://whatsapp.com/channel/…",
+            hint: "The website's “Join on WhatsApp” button opens it. A community invite (chat.whatsapp.com/…) works too. Empty: customers message your phone instead.",
+          })}
         </div>
 
         <SectionLabel>Address</SectionLabel>

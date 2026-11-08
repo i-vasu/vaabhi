@@ -12,7 +12,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ num
   }
   try {
     const order = await withCustomer((token) => api.customer.requestReturn(token, number, body));
-    if (!order) return Response.json({ detail: "Please sign in again", errors: [] }, { status: 401 });
+    if (!order) return Response.json({ detail: "Please log in again", errors: [] }, { status: 401 });
     return Response.json(order, { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     return problemResponse(error);
