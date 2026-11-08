@@ -12,12 +12,14 @@ import org.jspecify.annotations.Nullable;
  * footer. Only what the shop shares publicly; nothing else from the profile leaves the server.
  *
  * @param whatsapp the phone as a wa.me number (digits, with 91 in front of a 10-digit Indian number)
+ * @param whatsappChannel the shop's WhatsApp channel or community invite link, for "Join on WhatsApp"
  * @param address one line built from the address fields
  */
 public record ShopContact(
         String name,
         @Nullable String phone,
         @Nullable String whatsapp,
+        @Nullable String whatsappChannel,
         @Nullable String email,
         @Nullable String address,
         @Nullable String mapsLink,
@@ -32,6 +34,7 @@ public record ShopContact(
                 profile.shopName(),
                 profile.phone(),
                 whatsappNumber(profile.phone()),
+                profile.whatsappChannel(),
                 profile.publicEmail(),
                 address(profile),
                 profile.mapsLink(),

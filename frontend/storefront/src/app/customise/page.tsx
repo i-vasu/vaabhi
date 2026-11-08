@@ -39,8 +39,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Made-to-order and alterations: the shop's page about custom work when it has written one, and a way to start a
- * conversation either way (WhatsApp with the shop's number, or the contact page).
+ * Made-to-order and alterations: the shop's page about custom work when it has written one, and a "Contact us"
+ * button that opens a WhatsApp chat with the shop (the contact page when the shop has no phone set).
  */
 export default async function CustomisePage() {
   const [page, shop] = await Promise.all([loadPage(), loadShop()]);
@@ -59,16 +59,23 @@ export default async function CustomisePage() {
           and we’ll take it from there.
         </p>
       )}
-      <div className="flex flex-wrap gap-3 pt-2">
-        {whatsapp && (
-          <a href={whatsapp} target="_blank" rel="noopener" className={buttonClasses("primary", "gap-2")}>
+      <div className="pt-2">
+        {whatsapp ? (
+          <a
+            href={whatsapp}
+            target="_blank"
+            rel="noopener"
+            aria-label="Contact us on WhatsApp"
+            className={buttonClasses("primary", "gap-2")}
+          >
             <WhatsAppIcon size={18} />
-            Chat on WhatsApp
+            Contact us
           </a>
+        ) : (
+          <Link href="/contact" className={buttonClasses("primary")}>
+            Contact us
+          </Link>
         )}
-        <Link href="/contact" className={buttonClasses(whatsapp ? "secondary" : "primary")}>
-          Contact us
-        </Link>
       </div>
     </article>
   );

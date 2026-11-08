@@ -2584,6 +2584,7 @@ export interface components {
             facebook: string | null;
             youtube: string | null;
             threads: string | null;
+            whatsappChannel: string | null;
             address: string | null;
             doorNo: string | null;
             street: string | null;
@@ -3796,6 +3797,7 @@ export interface components {
             name: string;
             phone: string | null;
             whatsapp: string | null;
+            whatsappChannel: string | null;
             email: string | null;
             address: string | null;
             mapsLink: string | null;

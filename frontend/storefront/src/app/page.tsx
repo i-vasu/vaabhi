@@ -52,13 +52,21 @@ function bannerPhoto(banner: Banner, sizes: string) {
   return src ? { src, srcSet: photoSrcSet(banner.imageKey), sizes, alt: banner.altText ?? "" } : undefined;
 }
 
-/** The shop's WhatsApp number from Settings → Shop profile, or null when it has none (or the API is down). */
-async function loadWhatsapp(): Promise<string | null> {
+/**
+ * Where "Join on WhatsApp" goes, from Settings → Shop profile: the shop's WhatsApp channel (or community) when it
+ * has one, else a chat with the shop's number, else the contact page (no number, or the API is down).
+ */
+async function loadJoinLink(): Promise<{ href: string; external: boolean }> {
   try {
-    return (await api.store.getShop({ next: { revalidate: 60 } })).whatsapp ?? null;
+    const shop = await api.store.getShop({ next: { revalidate: 60 } });
+    if (shop.whatsappChannel) return { href: shop.whatsappChannel, external: true };
+    if (shop.whatsapp) {
+      return { href: whatsappLink(shop.whatsapp, "Hi Vaabhi, I'd like festive drop updates"), external: true };
+    }
   } catch {
-    return null;
+    // Falls through to the contact page.
   }
+  return { href: "/contact", external: false };
 }
 
 const container = "mx-auto w-full max-w-6xl px-4";
@@ -66,13 +74,12 @@ const container = "mx-auto w-full max-w-6xl px-4";
 const occasionText = { light: "text-text-on-brand", olive: "text-brand-olive", dark: "text-text-primary" } as const;
 
 export default async function HomePage() {
-  const [categories, bestsellers, home, whatsapp] = await Promise.all([
+  const [categories, bestsellers, home, join] = await Promise.all([
     loadCategories(),
     loadBestsellers(),
     loadHome(),
-    loadWhatsapp(),
+    loadJoinLink(),
   ]);
-  const whatsappHref = whatsapp ? whatsappLink(whatsapp, "Hi Vaabhi, I'd like festive drop updates") : "/contact";
   const hero = home.hero[0];
   const heroPhoto = hero && bannerPhoto(hero, "100vw");
   const craftPhoto = home.craft && bannerPhoto(home.craft, "(min-width: 768px) 50vw, 100vw");
@@ -282,7 +289,11 @@ export default async function HomePage() {
         <p className="max-w-sm text-sm text-text-muted">
           New collections, restocks and private sale access — on WhatsApp.
         </p>
-        <a href={whatsappHref} className={buttonClasses("primary")}>
+        <a
+          href={join.href}
+          {...(join.external ? { target: "_blank", rel: "noopener" } : {})}
+          className={buttonClasses("primary")}
+        >
           Join on WhatsApp
         </a>
       </section>
