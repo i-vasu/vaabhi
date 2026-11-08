@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { ApiError, type AdminProduct, type CatalogOptions, type FieldError } from "@vaabhi/api-client";
 import { Button, cn } from "@vaabhi/ui";
 import { api } from "@/lib/api";
-import { ProductPhotos } from "./product-photos";
+import { mediaReady, ProductPhotos, releasePreview, uploadQueued, type QueuedMedia } from "./product-photos";
 import {
   BADGES,
   emptyState,
@@ -26,9 +26,9 @@ import {
 const STOREFRONT_URL = process.env.NEXT_PUBLIC_STOREFRONT_URL || "https://vaabhi.com";
 
 const input =
-  "w-full rounded-md border border-neutral-300 bg-white px-2.5 py-1.5 text-sm focus:border-neutral-900 focus:outline-none";
+  "w-full rounded-md border border-line-strong bg-panel px-2.5 py-1.5 text-sm focus:border-accent focus:outline-none";
 const label = "flex flex-col gap-1 text-sm font-medium";
-const card = "rounded-lg border border-neutral-200 p-5";
+const card = "rounded-lg border border-line p-5";
 
 type LoadState = { kind: "loading" } | { kind: "error"; message: string } | { kind: "ready" };
 
@@ -41,18 +41,23 @@ function describe(error: unknown): string {
   return "Could not reach the API. Check your connection and try again.";
 }
 
-/** Create (no id) or edit a product. Saving always keeps the current status; publishing is a separate step. */
-export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: string }>) {
+/**
+ * Create (no id) or edit a product. Saving always keeps the current status; publishing is a separate step and
+ * needs at least one photo and a video. Photos and the video picked before the first save upload right after it.
+ */
+export function ProductEditor({ id, notice, problem }: Readonly<{ id?: number; notice?: string; problem?: string }>) {
   const router = useRouter();
   const [options, setOptions] = useState<CatalogOptions | null>(null);
   const [product, setProduct] = useState<AdminProduct | null>(null);
   const [state, setState] = useState<EditorState>(emptyState());
   const [load, setLoad] = useState<LoadState>({ kind: "loading" });
   const [errors, setErrors] = useState<FieldError[]>([]);
-  const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(
-    notice ? { tone: "ok", text: notice } : null,
-  );
+  const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(() => {
+    if (problem) return { tone: "error", text: problem };
+    return notice ? { tone: "ok", text: notice } : null;
+  });
   const [busy, setBusy] = useState(false);
+  const [queued, setQueued] = useState<QueuedMedia[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,23 +101,69 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
     }
   }
 
+  /**
+   * Uploads the photos and video picked before the first save, one at a time. Returns the product's media
+   * afterwards and a line per file that failed.
+   */
+  async function uploadWaiting(saved: AdminProduct): Promise<{ media: AdminProduct["media"]; failed: string[] }> {
+    let media = saved.media;
+    const failed: string[] = [];
+    if (queued.length === 0) return { media, failed };
+    setBusy(true);
+    const colours = [...new Set(saved.variants.map((v) => v.colourName))];
+    const left: QueuedMedia[] = [];
+    // Photos first: the video goes after them, and the first photo is the listing photo.
+    for (const item of [...queued].sort((a, b) => Number(a.kind === "VIDEO") - Number(b.kind === "VIDEO"))) {
+      setMessage({ tone: "ok", text: `Uploading ${item.file.name}…` });
+      try {
+        media = await uploadQueued(saved.id, item, saved.name, colours);
+        releasePreview(item);
+      } catch (error) {
+        failed.push(
+          `${item.file.name}: ${error instanceof ApiError || !(error instanceof Error) ? describe(error) : error.message}`,
+        );
+        left.push(item);
+      }
+    }
+    setQueued(left);
+    setProduct((p) => (p ? { ...p, media } : p));
+    setBusy(false);
+    return { media, failed };
+  }
+
   /** A new product moves to its edit URL once the whole action is done (the page reloads it from the API). */
-  function done(saved: AdminProduct, text: string) {
+  function done(saved: AdminProduct, text: string, failed: string[] = []) {
+    const problemText = failed.length ? `Some files did not upload. ${failed.join(" · ")}` : undefined;
     if (product) {
-      setMessage({ tone: "ok", text });
+      setMessage(problemText ? { tone: "error", text: problemText } : { tone: "ok", text });
     } else {
-      router.replace(`/products/edit/?id=${saved.id}&notice=${encodeURIComponent(text)}`);
+      const extra = problemText ? `&problem=${encodeURIComponent(problemText)}` : "";
+      router.replace(`/products/edit/?id=${saved.id}&notice=${encodeURIComponent(text)}${extra}`);
     }
   }
 
   async function submit() {
     const saved = await save();
-    if (saved) done(saved, "Saved.");
+    if (!saved) return;
+    const { failed } = await uploadWaiting(saved);
+    done(saved, "Saved.", failed);
   }
 
   async function changeStatus(action: "publish" | "unpublish" | "archive") {
     const saved = await save();
     if (!saved) return;
+    const { media, failed } = await uploadWaiting(saved);
+    if (action === "publish") {
+      if (failed.length) {
+        done(saved, "Saved as a draft.", failed);
+        return;
+      }
+      const ready = mediaReady(media, []);
+      if (!ready.hasPhoto || !ready.hasVideo) {
+        done(saved, "Saved as a draft.", ["Add at least one photo and a video before publishing."]);
+        return;
+      }
+    }
     setBusy(true);
     try {
       const changed = await api.admin.setStatus(saved.id, action);
@@ -126,11 +177,11 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
     }
   }
 
-  if (load.kind === "loading") return <p className="text-sm text-neutral-500">Loading…</p>;
+  if (load.kind === "loading") return <p className="text-sm text-ink-soft">Loading…</p>;
   if (load.kind === "error" || !options) {
     return (
       <div className="flex flex-col items-start gap-3">
-        <p className="text-sm text-red-700">{load.kind === "error" ? load.message : "Something went wrong."}</p>
+        <p className="text-sm text-bad">{load.kind === "error" ? load.message : "Something went wrong."}</p>
         <Link href="/login/" className="text-sm underline">
           Sign in
         </Link>
@@ -140,6 +191,11 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
 
   const status = product?.status ?? "DRAFT";
   const fieldError = (field: string) => errorsFor(errors, field)[0];
+  const ready = mediaReady(product?.media ?? [], queued);
+  const canPublish = ready.hasPhoto && ready.hasVideo;
+  let publishHint = "";
+  if (!ready.hasPhoto) publishHint = "Add photos and a video to publish.";
+  else if (!ready.hasVideo) publishHint = "Add a video to publish.";
 
   return (
     <form
@@ -149,47 +205,26 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
         void submit();
       }}
     >
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Link href="/products/" className="text-sm text-neutral-500 hover:underline">
-            ← Products
-          </Link>
-          <h1 className="text-2xl font-semibold">{product ? product.name : "New product"}</h1>
-          <StatusBadge status={status} />
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {status === "PUBLISHED" && product && (
-            <a
-              href={`${STOREFRONT_URL}/p/${product.slug}`}
-              target="_blank"
-              rel="noreferrer"
-              className="text-sm underline"
-            >
-              View in store
-            </a>
-          )}
-          {status !== "ARCHIVED" && product && (
-            <Button variant="secondary" disabled={busy} onClick={() => void changeStatus("archive")}>
-              Archive
-            </Button>
-          )}
-          {status === "PUBLISHED" ? (
-            <Button variant="secondary" disabled={busy} onClick={() => void changeStatus("unpublish")}>
-              Unpublish
-            </Button>
-          ) : (
-            <Button variant="secondary" disabled={busy} onClick={() => void changeStatus("publish")}>
-              Save &amp; publish
-            </Button>
-          )}
-          <Button type="submit" disabled={busy}>
-            {busy ? "Saving…" : "Save"}
-          </Button>
-        </div>
+      <header className="flex flex-wrap items-center gap-3">
+        <Link href="/products/" className="text-sm text-ink-soft hover:underline">
+          ← Products
+        </Link>
+        <h1 className="text-2xl font-semibold">{product ? product.name : "New product"}</h1>
+        <StatusBadge status={status} />
+        {status === "PUBLISHED" && product && (
+          <a
+            href={`${STOREFRONT_URL}/p/${product.slug}`}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm underline"
+          >
+            View in store
+          </a>
+        )}
       </header>
 
       {message?.tone === "error" && (
-        <div role="alert" className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-800">
+        <div role="alert" className="rounded-md bg-bad-soft px-4 py-3 text-sm text-bad">
           <p>{message.text}</p>
           {errors.length > 1 && (
             <ul className="mt-2 list-disc pl-5">
@@ -203,7 +238,7 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
         </div>
       )}
       {message?.tone === "ok" && (
-        <output className="block rounded-md bg-green-50 px-4 py-3 text-sm text-green-800">{message.text}</output>
+        <output className="block rounded-md bg-ok-soft px-4 py-3 text-sm text-ok">{message.text}</output>
       )}
 
       <section className={card} aria-labelledby="basics">
@@ -259,6 +294,15 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
               onChange={(e) => update({ careInstructions: e.target.value })}
             />
           </Field>
+          <Field label="Parcel weight per piece (grams)" error={fieldError("shippingWeightGrams")}>
+            <input
+              className={input}
+              inputMode="numeric"
+              placeholder="Shop default"
+              value={state.shippingWeightGrams}
+              onChange={(e) => update({ shippingWeightGrams: e.target.value })}
+            />
+          </Field>
           <Field label="Description" error={fieldError("description")} className="md:col-span-2">
             <textarea
               className={cn(input, "h-28")}
@@ -309,7 +353,7 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
         <h2 id="attributes" className="mb-1 font-semibold">
           Attributes
         </h2>
-        <p className="mb-4 text-sm text-neutral-500">Shoppers filter by these in the store.</p>
+        <p className="mb-4 text-sm text-ink-soft">Shoppers filter by these in the store.</p>
         <div className="flex flex-col gap-4">
           {options.facets.map((facet) => {
             const selected = state.attributes[facet.code] ?? [];
@@ -324,7 +368,7 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
                         key={value.code}
                         className={cn(
                           "cursor-pointer rounded-full border px-3 py-1 text-sm has-[:focus-visible]:outline-2",
-                          on ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-300",
+                          on ? "border-accent bg-accent text-white" : "border-line-strong",
                         )}
                       >
                         <input
@@ -368,7 +412,35 @@ export function ProductEditor({ id, notice }: Readonly<{ id?: number; notice?: s
         colours={[...new Set(state.variants.map((v) => v.colourName))]}
         media={product?.media ?? []}
         onChange={(media) => setProduct((p) => (p ? { ...p, media } : p))}
+        queued={queued}
+        onQueue={setQueued}
       />
+
+      {/* Kept in reach at the bottom of the screen; on phones it sits above the app's tab bar. */}
+      <div
+        role="group"
+        aria-label="Product actions"
+        className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-20 -mx-4 flex flex-wrap items-center justify-end gap-2 border-t border-line bg-app/95 px-4 py-3 backdrop-blur md:bottom-0 md:-mx-8 md:px-8"
+      >
+        {status !== "PUBLISHED" && publishHint && <span className="mr-auto text-xs text-ink-soft">{publishHint}</span>}
+        {status !== "ARCHIVED" && product && (
+          <Button variant="secondary" disabled={busy} onClick={() => void changeStatus("archive")}>
+            Archive
+          </Button>
+        )}
+        {status === "PUBLISHED" ? (
+          <Button variant="secondary" disabled={busy} onClick={() => void changeStatus("unpublish")}>
+            Unpublish
+          </Button>
+        ) : (
+          <Button variant="secondary" disabled={busy || !canPublish} onClick={() => void changeStatus("publish")}>
+            Save &amp; publish
+          </Button>
+        )}
+        <Button type="submit" disabled={busy}>
+          {busy ? "Saving…" : "Save"}
+        </Button>
+      </div>
     </form>
   );
 }
@@ -378,9 +450,9 @@ function StatusBadge({ status }: Readonly<{ status: AdminProduct["status"] }>) {
     <span
       className={cn(
         "rounded-full px-2.5 py-0.5 text-xs font-medium",
-        status === "PUBLISHED" && "bg-green-100 text-green-800",
-        status === "DRAFT" && "bg-amber-100 text-amber-900",
-        status === "ARCHIVED" && "bg-neutral-200 text-neutral-700",
+        status === "PUBLISHED" && "bg-ok-soft text-ok",
+        status === "DRAFT" && "bg-warn-soft text-warn",
+        status === "ARCHIVED" && "bg-panel-2 text-ink",
       )}
     >
       {STATUS_LABELS[status]}
@@ -399,14 +471,14 @@ function Field({
     <label className={cn(label, className)}>
       <span>{text}</span>
       {children}
-      {hint && !error && <span className="text-xs font-normal text-neutral-500">{hint}</span>}
+      {hint && !error && <span className="text-xs font-normal text-ink-soft">{hint}</span>}
       <FieldMessage message={error} />
     </label>
   );
 }
 
 function FieldMessage({ message }: Readonly<{ message?: string }>) {
-  return message ? <span className="text-xs font-normal text-red-700">{message}</span> : null;
+  return message ? <span className="text-xs font-normal text-bad">{message}</span> : null;
 }
 
 function Variants({
@@ -439,16 +511,16 @@ function Variants({
       <h2 id="variants" className="mb-1 font-semibold">
         Variants
       </h2>
-      <p className="mb-4 text-sm text-neutral-500">
+      <p className="mb-4 text-sm text-ink-soft">
         One row per colour{oneSize ? "" : " and size"}. Prices in rupees. SKUs are generated when left empty.
       </p>
       {general.map((m) => (
-        <p key={m} className="mb-3 text-sm text-red-700">
+        <p key={m} className="mb-3 text-sm text-bad">
           {m}
         </p>
       ))}
 
-      <fieldset className="mb-5 grid gap-3 rounded-md bg-neutral-50 p-4 md:grid-cols-6">
+      <fieldset className="mb-5 grid gap-3 rounded-md bg-panel p-4 md:grid-cols-6">
         <legend className="sr-only">Add a colour</legend>
         <label className={cn(label, "md:col-span-2")}>
           <span>Colour name</span>
@@ -463,7 +535,7 @@ function Variants({
           <span>Swatch</span>
           <input
             type="color"
-            className="h-9 w-full rounded-md border border-neutral-300"
+            className="h-9 w-full rounded-md border border-line-strong"
             value={colour.colourHex}
             onChange={(e) => setColour({ ...colour, colourHex: e.target.value.toUpperCase() })}
           />
@@ -531,11 +603,11 @@ function Variants({
       </fieldset>
 
       {rows.length === 0 ? (
-        <p className="text-sm text-neutral-500">No variants yet. Add a colour above.</p>
+        <p className="text-sm text-ink-soft">No variants yet. Add a colour above.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[820px] text-left text-sm">
-            <thead className="text-xs uppercase text-neutral-500">
+            <thead className="text-xs uppercase text-ink-soft">
               <tr>
                 <th className="py-2 pr-2 font-medium">Colour</th>
                 <th className="py-2 pr-2 font-medium">Size</th>
@@ -554,18 +626,18 @@ function Variants({
                 const rowErrors = errorsFor(errors, `variants[${i}]`);
                 const name = [row.colourName, row.size].filter(Boolean).join(" ");
                 return (
-                  <tr key={row.key} className="border-t border-neutral-100 align-top">
+                  <tr key={row.key} className="border-t border-line align-top">
                     <td className="py-2 pr-2">
                       <span className="flex items-center gap-2">
                         <span
                           aria-hidden="true"
-                          className="size-4 shrink-0 rounded-full border border-neutral-300"
+                          className="size-4 shrink-0 rounded-full border border-line-strong"
                           style={{ backgroundColor: row.colourHex }}
                         />
                         {row.colourName}
                       </span>
                       {rowErrors.map((m) => (
-                        <span key={m} className="block text-xs text-red-700">
+                        <span key={m} className="block text-xs text-bad">
                           {m}
                         </span>
                       ))}
@@ -618,7 +690,7 @@ function Variants({
                     <td className="py-2">
                       <button
                         type="button"
-                        className="text-neutral-500 hover:text-red-700"
+                        className="text-ink-soft hover:text-bad"
                         aria-label={`Remove ${name}`}
                         onClick={() => onChange(rows.filter((_, j) => j !== i))}
                       >
@@ -651,7 +723,7 @@ function Addons({
           <h2 id="addons" className="font-semibold">
             Blouse options
           </h2>
-          <p className="text-sm text-neutral-500">Choices shown on the product page; the price is added to the item.</p>
+          <p className="text-sm text-ink-soft">Choices shown on the product page; the price is added to the item.</p>
         </div>
         <div className="flex gap-2">
           {rows.length === 0 && (
@@ -676,7 +748,7 @@ function Addons({
         const rowErrors = errorsFor(errors, `addons[${i}]`);
         const n = i + 1;
         return (
-          <fieldset key={row.key} className="mb-3 grid gap-3 border-t border-neutral-100 pt-3 md:grid-cols-12">
+          <fieldset key={row.key} className="mb-3 grid gap-3 border-t border-line pt-3 md:grid-cols-12">
             <legend className="sr-only">Option {n}</legend>
             <label className={cn(label, "md:col-span-3")}>
               <span>Name</span>
@@ -727,7 +799,7 @@ function Addons({
               </label>
               <button
                 type="button"
-                className="text-neutral-500 hover:text-red-700"
+                className="text-ink-soft hover:text-bad"
                 aria-label={`Remove option ${n}`}
                 onClick={() => onChange(rows.filter((_, j) => j !== i))}
               >
@@ -735,7 +807,7 @@ function Addons({
               </button>
             </div>
             {rowErrors.map((m) => (
-              <p key={m} className="text-xs text-red-700 md:col-span-12">
+              <p key={m} className="text-xs text-bad md:col-span-12">
                 {m}
               </p>
             ))}

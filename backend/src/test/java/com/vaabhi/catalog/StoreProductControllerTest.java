@@ -25,7 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 class StoreProductControllerTest {
 
     private static final ProductListingResponse EMPTY = new ProductListingResponse(
-            new CategoryResponse(1L, "sarees", "Sarees", null), List.of(), 0, 1, 24, "popular", List.of(), null);
+            new CategoryResponse(1L, "sarees", "Sarees", null, null), List.of(), 0, 1, 24, "popular", List.of(), null);
 
     @Autowired
     private MockMvc mockMvc;
@@ -61,8 +61,8 @@ class StoreProductControllerTest {
         assertThat(query.colours()).containsExactlyInAnyOrder("red", "maroon");
         assertThat(query.sizes()).containsExactly("M");
         assertThat(query.inStock()).isTrue();
-        assertThat(query.priceMinPaise()).isEqualTo(100000);
-        assertThat(query.priceMaxPaise()).isNull();
+        assertThat(query.priceMinRupees()).isEqualByComparingTo("100000");
+        assertThat(query.priceMaxRupees()).isNull();
         assertThat(query.sort()).isEqualTo(ProductSort.PRICE_DESC);
         assertThat(query.page()).isEqualTo(2);
         assertThat(query.pageSize()).isEqualTo(12);

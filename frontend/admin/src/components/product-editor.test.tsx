@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ProductForm } from "@vaabhi/api-client";
+import type { AdminMedia, ProductForm } from "@vaabhi/api-client";
 import { options, product } from "@/test/admin-fixtures";
 import { API, server } from "@/test/server";
 import { ProductEditor } from "./product-editor";
@@ -9,12 +9,59 @@ import { ProductEditor } from "./product-editor";
 const replace = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
 
+// Uploads go to R2; here each one "succeeds" with the next media list, unless the file is named fail.*.
+const uploaded: string[] = [];
+const upload = async (_id: number, file: File) => {
+  if (file.name.startsWith("fail")) throw new Error("R2 said no");
+  uploaded.push(file.name);
+  return MEDIA.slice(0, uploaded.length);
+};
+vi.mock("@/lib/photo-upload", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/photo-upload")>()),
+  uploadPhoto: (id: number, file: File) => upload(id, file),
+  uploadVideo: (id: number, file: File) => upload(id, file),
+}));
+
+async function fillNewProduct() {
+  fireEvent.change(await screen.findByRole("textbox", { name: "Name" }), { target: { value: "Ruby silk saree" } });
+  fireEvent.change(screen.getByRole("textbox", { name: "Colour name" }), { target: { value: "Ruby" } });
+  fireEvent.click(screen.getByRole("button", { name: "Add colour" }));
+}
+
+const pick = (label: string, file: File) =>
+  fireEvent.change(screen.getByLabelText(label), { target: { files: [file] } });
+
 const OPTIONS = `${API}/api/v1/admin/catalog/options`;
 const PRODUCTS = `${API}/api/v1/admin/products`;
+
+// Ready to publish: a photo and a video.
+const MEDIA: AdminMedia[] = [
+  {
+    id: 1,
+    kind: "IMAGE",
+    key: "products/7/p1",
+    alt: "Front",
+    colourName: null,
+    width: 1200,
+    height: 1600,
+    status: "READY",
+  },
+  {
+    id: 2,
+    kind: "VIDEO",
+    key: "products/7/v2",
+    alt: "Drape",
+    colourName: null,
+    width: null,
+    height: null,
+    status: "READY",
+  },
+];
 
 describe("ProductEditor", () => {
   beforeEach(() => {
     replace.mockClear();
+    uploaded.length = 0;
     server.use(http.get(OPTIONS, () => HttpResponse.json(options)));
   });
 
@@ -45,9 +92,75 @@ describe("ProductEditor", () => {
       categorySlug: "sarees",
       sareeLengthM: 5.5,
       attributes: { fabric: ["silk"] },
-      variants: [{ colourName: "Ruby", colourFamily: "red", size: null, pricePaise: 1425000, stockQty: 4 }],
+      variants: [{ colourName: "Ruby", colourFamily: "red", size: null, priceRupees: 14250, stockQty: 4 }],
     });
     expect(sent?.addons.map((a) => a.code)).toEqual(["blouse-unstitched", "blouse-standard", "blouse-custom"]);
+  });
+
+  it("keeps Save on but Publish off until there are photos and a video, all at the bottom", async () => {
+    render(<ProductEditor />);
+    await fillNewProduct();
+    const actions = screen.getByRole("group", { name: "Product actions" });
+    expect(within(actions).getByRole("button", { name: "Save" })).toBeEnabled();
+    expect(within(actions).getByRole("button", { name: "Save & publish" })).toBeDisabled();
+    expect(actions).toHaveTextContent("Add photos and a video to publish.");
+
+    pick("Add photos", new File(["x"], "front.jpg", { type: "image/jpeg" }));
+    expect(actions).toHaveTextContent("Add a video to publish.");
+    expect(within(actions).getByRole("button", { name: "Save & publish" })).toBeDisabled();
+    pick("Add video", new File(["x"], "drape.mp4", { type: "video/mp4" }));
+    expect(within(actions).getByRole("button", { name: "Save & publish" })).toBeEnabled();
+  });
+
+  it("publishes a new product: creates it, uploads the waiting photo and video, then publishes", async () => {
+    const calls: string[] = [];
+    server.use(
+      http.post(PRODUCTS, () => {
+        calls.push("create");
+        return HttpResponse.json(product({ id: 42 }), { status: 201 });
+      }),
+      http.post(`${PRODUCTS}/42/publish`, () => {
+        calls.push(`publish after ${uploaded.join(", ")}`);
+        return HttpResponse.json(product({ id: 42, status: "PUBLISHED", media: MEDIA }));
+      }),
+    );
+    render(<ProductEditor />);
+    await fillNewProduct();
+    // Picked in the "wrong" order: the photo still uploads first.
+    pick("Add photos", new File(["x"], "front.jpg", { type: "image/jpeg" }));
+    pick("Add video", new File(["x"], "drape.mp4", { type: "video/mp4" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save & publish" }));
+
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/products/edit/?id=42&notice=Published."));
+    expect(calls).toEqual(["create", "publish after front.jpg, drape.mp4"]);
+  });
+
+  it("keeps a new product as a draft when a waiting file does not upload", async () => {
+    let published = false;
+    server.use(
+      http.post(PRODUCTS, () => HttpResponse.json(product({ id: 42 }), { status: 201 })),
+      http.post(`${PRODUCTS}/42/publish`, () => {
+        published = true;
+        return HttpResponse.json(product({ id: 42, status: "PUBLISHED" }));
+      }),
+    );
+    render(<ProductEditor />);
+    await fillNewProduct();
+    pick("Add photos", new File(["x"], "front.jpg", { type: "image/jpeg" }));
+    pick("Add video", new File(["x"], "fail.mp4", { type: "video/mp4" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save & publish" }));
+
+    await waitFor(() => expect(replace).toHaveBeenCalled());
+    const url = new URL(replace.mock.lastCall![0], "https://admin.test");
+    expect(url.searchParams.get("notice")).toBe("Saved as a draft.");
+    expect(url.searchParams.get("problem")).toBe("Some files did not upload. fail.mp4: R2 said no");
+    expect(published).toBe(false);
+  });
+
+  it("shows a problem passed from the create step", async () => {
+    server.use(http.get(`${PRODUCTS}/7`, () => HttpResponse.json(product())));
+    render(<ProductEditor id={7} notice="Saved." problem="Some files did not upload. a.jpg: no" />);
+    expect(await screen.findByRole("alert")).toHaveTextContent("Some files did not upload. a.jpg: no");
   });
 
   it("adds one row per chosen size for stitched categories", async () => {
@@ -72,27 +185,27 @@ describe("ProductEditor", () => {
   it("edits, shows field errors from the API, then publishes", async () => {
     let status = "DRAFT";
     server.use(
-      http.get(`${PRODUCTS}/7`, () => HttpResponse.json(product())),
+      http.get(`${PRODUCTS}/7`, () => HttpResponse.json(product({ media: MEDIA }))),
       http.put(`${PRODUCTS}/7`, async ({ request }) => {
         const form = (await request.json()) as ProductForm;
-        if (form.variants[0]!.mrpPaise < form.variants[0]!.pricePaise) {
+        if (form.variants[0]!.mrpRupees < form.variants[0]!.priceRupees) {
           return HttpResponse.json(
             {
               status: 400,
               detail: "MRP must be at least the selling price",
               errors: [
-                { field: "variants[0].mrpPaise", message: "MRP must be at least the selling price" },
+                { field: "variants[0].mrpRupees", message: "MRP must be at least the selling price" },
                 { field: "name", message: "Name is too long" },
               ],
             },
             { status: 400 },
           );
         }
-        return HttpResponse.json(product({ status: status as "DRAFT", name: form.name }));
+        return HttpResponse.json(product({ status: status as "DRAFT", name: form.name, media: MEDIA }));
       }),
       http.post(`${PRODUCTS}/7/publish`, () => {
         status = "PUBLISHED";
-        return HttpResponse.json(product({ status: "PUBLISHED" }));
+        return HttpResponse.json(product({ status: "PUBLISHED", media: MEDIA }));
       }),
     );
     render(<ProductEditor id={7} notice="Saved." />);
@@ -137,8 +250,8 @@ describe("ProductEditor", () => {
 
   it("reports a failed status change and a failed save", async () => {
     server.use(
-      http.get(`${PRODUCTS}/7`, () => HttpResponse.json(product())),
-      http.put(`${PRODUCTS}/7`, () => HttpResponse.json(product())),
+      http.get(`${PRODUCTS}/7`, () => HttpResponse.json(product({ media: MEDIA }))),
+      http.put(`${PRODUCTS}/7`, () => HttpResponse.json(product({ media: MEDIA }))),
       http.post(`${PRODUCTS}/7/publish`, () =>
         HttpResponse.json(
           {
@@ -207,14 +320,15 @@ describe("ProductEditor", () => {
       sareeLengthM: 6.3,
       blouseIncluded: false,
       blouseLengthM: null,
+      shippingWeightGrams: null,
       attributes: {},
-      variants: [{ sku: "VB-RUBY-1", pricePaise: 1500000, active: false }],
+      variants: [{ sku: "VB-RUBY-1", priceRupees: 15000, active: false }],
       addons: [
         {
           code: "fall-pico",
           name: "Fall and pico",
           description: "Done for you",
-          pricePaise: 25000,
+          priceRupees: 250,
           input: "SIZE",
           active: false,
         },

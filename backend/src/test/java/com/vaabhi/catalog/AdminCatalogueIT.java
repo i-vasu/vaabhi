@@ -25,11 +25,12 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("demo")
+@ActiveProfiles("dev")
 @Import(TestcontainersConfiguration.class)
 class AdminCatalogueIT {
 
-    private static final RequestPostProcessor ADMIN = jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"));
+    private static final RequestPostProcessor ADMIN =
+            jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_OWNER"));
 
     private static final String FORM = """
             {"name":"Mint organza lehenga","slug":null,"subtitle":"Mirror work","description":"Light and bright",
@@ -38,11 +39,11 @@ class AdminCatalogueIT {
              "attributes":{"fabric":["organza"],"occasion":["festive"]},
              "variants":[
                {"sku":null,"colourName":"Mint","colourHex":"#bfe3d0","colourFamily":"green","size":"M",
-                "pricePaise":1500000,"mrpPaise":1800000,"stockQty":2,"active":true},
+                "priceRupees":1500000,"mrpRupees":1800000,"stockQty":2,"active":true},
                {"sku":null,"colourName":"Mint","colourHex":"#bfe3d0","colourFamily":"green","size":"L",
-                "pricePaise":1500000,"mrpPaise":1800000,"stockQty":0,"active":true}],
+                "priceRupees":1500000,"mrpRupees":1800000,"stockQty":0,"active":true}],
              "addons":[{"code":"blouse-custom","kind":"BLOUSE","name":"Made-to-measure blouse","description":null,
-                        "pricePaise":150000,"input":"MEASUREMENTS","active":true}]}
+                        "priceRupees":150000,"input":"MEASUREMENTS","active":true}]}
             """;
 
     @Autowired
@@ -126,7 +127,7 @@ class AdminCatalogueIT {
     void reportsBusinessRuleViolationsAndConflicts() throws Exception {
         var invalid = FORM.replace("\"categorySlug\":\"lehengas\"", "\"categorySlug\":\"shoes\"")
                 .replace("\"organza\"", "\"nylon\"")
-                .replaceFirst("\"mrpPaise\":1800000", "\"mrpPaise\":100");
+                .replaceFirst("\"mrpRupees\":1800000", "\"mrpRupees\":100");
         mockMvc.perform(post("/api/v1/admin/products")
                         .with(ADMIN)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -134,7 +135,7 @@ class AdminCatalogueIT {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors[*].field")
                         .value(org.hamcrest.Matchers.containsInAnyOrder(
-                                "categorySlug", "attributes.fabric", "variants[0].mrpPaise")));
+                                "categorySlug", "attributes.fabric", "variants[0].mrpRupees")));
 
         var takenSku = FORM.replaceFirst("\"sku\":null", "\"sku\":\"DEMO-FA748E-1\"");
         mockMvc.perform(post("/api/v1/admin/products")

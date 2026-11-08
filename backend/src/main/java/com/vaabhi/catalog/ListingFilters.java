@@ -57,11 +57,11 @@ final class ListingFilters {
         if (!query.sizes().isEmpty()) {
             params.put("sizes", List.copyOf(query.sizes()));
         }
-        if (query.priceMinPaise() != null) {
-            params.put("priceMin", query.priceMinPaise());
+        if (query.priceMinRupees() != null) {
+            params.put("priceMin", query.priceMinRupees());
         }
-        if (query.priceMaxPaise() != null) {
-            params.put("priceMax", query.priceMaxPaise());
+        if (query.priceMaxRupees() != null) {
+            params.put("priceMax", query.priceMaxRupees());
         }
     }
 
@@ -92,11 +92,11 @@ final class ListingFilters {
                     .append(")");
         }
         if (!Dimension.PRICE.equals(excluded)) {
-            if (query.priceMinPaise() != null) {
-                sql.append(" AND l.price_paise >= :priceMin");
+            if (query.priceMinRupees() != null) {
+                sql.append(" AND l.price_rupees >= :priceMin");
             }
-            if (query.priceMaxPaise() != null) {
-                sql.append(" AND l.price_paise <= :priceMax");
+            if (query.priceMaxRupees() != null) {
+                sql.append(" AND l.price_rupees <= :priceMax");
             }
         }
         return sql.toString();

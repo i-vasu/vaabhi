@@ -8,6 +8,7 @@ import {
   isOneSize,
   oneSizeLine,
   photosFor,
+  videosFor,
   selectedVariant,
   stockLine,
 } from "./product";
@@ -39,8 +40,21 @@ describe("product rules", () => {
     expect(selectedVariant(lehenga(), "Red", "M")?.sku).toBe("VB-RED-M");
   });
 
+  it("shows the colour's own videos, then All colours ones; photos never include them", () => {
+    const clip = (key: string, colourName: string | null) =>
+      ({ kind: "VIDEO", key, alt: "Drape", colourName, width: null, height: null }) as const;
+    expect(videosFor(saree(), "Mustard")).toEqual([]);
+    const withVideos = saree({
+      media: [...saree().media, clip("products/1/v-all", null), clip("products/1/v-mustard", "Mustard")],
+    });
+    expect(videosFor(withVideos, "Mustard").map((m) => m.key)).toEqual(["products/1/v-mustard", "products/1/v-all"]);
+    expect(videosFor(withVideos, "Rani pink").map((m) => m.key)).toEqual(["products/1/v-all"]);
+    expect(photosFor(withVideos, "Mustard").map((m) => m.kind)).toEqual(["IMAGE", "IMAGE"]);
+  });
+
   it("shows photos for the colour plus untagged ones", () => {
-    expect(photosFor(saree(), "Mustard").map((m) => m.key)).toEqual(["products/1/front", "products/1/mustard"]);
+    // The colour's own photos come before the "All colours" ones.
+    expect(photosFor(saree(), "Mustard").map((m) => m.key)).toEqual(["products/1/mustard", "products/1/front"]);
     expect(photosFor(saree(), "Rani pink").map((m) => m.key)).toEqual(["products/1/front"]);
     const tagged = saree({ media: [saree().media[1]!] });
     expect(photosFor(tagged, "Rani pink").map((m) => m.key)).toEqual(["products/1/mustard"]);
@@ -49,9 +63,9 @@ describe("product rules", () => {
   it("adds a free choice when no add-on is free", () => {
     expect(addonChoices(saree()).map((c) => c.code)).toEqual(["blouse-unstitched", "blouse-standard", "blouse-custom"]);
     const choices = addonChoices(lehenga());
-    expect(choices.map((c) => [c.code, c.pricePaise])).toEqual([
+    expect(choices.map((c) => [c.code, c.priceRupees])).toEqual([
       [null, 0],
-      ["blouse-custom", 150000],
+      ["blouse-custom", 1500],
     ]);
     expect(defaultChoice(choices)?.code).toBeNull();
     expect(addonChoices(saree({ addons: [] }))).toEqual([]);

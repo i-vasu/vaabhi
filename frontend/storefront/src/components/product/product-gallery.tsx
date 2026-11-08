@@ -3,31 +3,47 @@
 import { useRef, useState } from "react";
 import type { Media } from "@vaabhi/api-client";
 import { ChevronRightIcon, cn } from "@vaabhi/ui";
-import { mediaUrl, shade } from "@/lib/listing";
+import { useMediaBase } from "@/components/media-base";
+import { mediaUrl, shade, videoUrl } from "@/lib/listing";
 
 const SIZES = "(min-width: 900px) 55vw, 100vw";
 
-function sources(key: string) {
-  const src = mediaUrl(key, 800);
+function sources(key: string, base: string | undefined) {
+  const src = mediaUrl(key, 800, base);
   if (!src) return undefined;
-  return { src, srcSet: ([400, 800, 1600] as const).map((w) => `${mediaUrl(key, w)} ${w}w`).join(", ") };
+  return {
+    src,
+    srcSet: ([400, 800, 1600] as const).map((w) => `${mediaUrl(key, w, base)} ${w}w`).join(", "),
+    thumb: mediaUrl(key, 400, base),
+  };
 }
+
+type Slide = { key: string; alt: string; src?: ReturnType<typeof sources>; video?: string };
 
 /**
  * Swipeable photos (CSS scroll snap, so touch works without JavaScript) with arrows, a counter and thumbnails.
- * Without photos, the colour stands in, as on listing cards.
+ * Videos, if any, come after the first photo, with that photo as their poster. Without photos, the colour
+ * stands in, as on listing cards.
  */
 export function ProductGallery({
   photos,
+  videos = [],
   name,
   hex,
   overlay,
-}: Readonly<{ photos: Media[]; name: string; hex: string; overlay?: React.ReactNode }>) {
+}: Readonly<{ photos: Media[]; videos?: Media[]; name: string; hex: string; overlay?: React.ReactNode }>) {
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
-  const slides: Array<{ key: string; alt: string; src?: ReturnType<typeof sources> }> = photos.length
-    ? photos.map((p) => ({ key: p.key, alt: p.alt, src: sources(p.key) }))
+  const base = useMediaBase();
+  const slides: Slide[] = photos.length
+    ? photos.map((p) => ({ key: p.key, alt: p.alt, src: sources(p.key, base) }))
     : [{ key: "placeholder", alt: name }];
+  const videoSlides = videos.flatMap((v) => {
+    const src = videoUrl(v.key, base);
+    return src ? [{ key: v.key, alt: v.alt, video: src }] : [];
+  });
+  slides.splice(1, 0, ...videoSlides);
+  const poster = photos[0] ? mediaUrl(photos[0].key, 800, base) : undefined;
   const count = slides.length;
 
   const go = (i: number) => {
@@ -59,7 +75,19 @@ export function ProductGallery({
               aria-label={`${i + 1} of ${count}`}
               className="m-0 h-full w-full shrink-0 snap-start"
             >
-              {slide.src ? (
+              {slide.video ? (
+                <video
+                  src={slide.video}
+                  poster={poster}
+                  controls
+                  playsInline
+                  muted
+                  loop
+                  preload="metadata"
+                  aria-label={slide.alt}
+                  className="h-full w-full bg-bg-surface object-cover"
+                />
+              ) : slide.src ? (
                 // eslint-disable-next-line @next/next/no-img-element -- R2 serves pre-sized WebP renditions
                 <img
                   src={slide.src.src}
@@ -111,7 +139,11 @@ export function ProductGallery({
             <button
               key={slide.key}
               type="button"
-              aria-label={`Show photo ${i + 1}`}
+              aria-label={
+                slide.video
+                  ? `Play video ${slides.slice(0, i + 1).filter((s) => s.video).length}`
+                  : `Show photo ${slides.slice(0, i + 1).filter((s) => !s.video).length}`
+              }
               aria-current={i === index}
               onClick={() => go(i)}
               className={cn(
@@ -119,14 +151,31 @@ export function ProductGallery({
                 i === index ? "border-brand-primary" : "border-transparent",
               )}
             >
-              {slide.src ? (
-                // eslint-disable-next-line @next/next/no-img-element -- thumbnail rendition
-                <img src={mediaUrl(slide.key, 400)} alt="" className="h-full w-full object-cover" />
-              ) : null}
+              <Thumbnail slide={slide} poster={photos[0] && mediaUrl(photos[0].key, 400, base)} />
             </button>
           ))}
         </div>
       )}
     </section>
   );
+}
+
+/** A thumbnail: the photo itself, or the first photo with a play mark for a video. */
+function Thumbnail({ slide, poster }: Readonly<{ slide: Slide; poster?: string }>) {
+  if (slide.video) {
+    return (
+      <span className="relative grid h-full w-full place-items-center bg-bg-surface">
+        {poster && (
+          // eslint-disable-next-line @next/next/no-img-element -- thumbnail rendition
+          <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70" />
+        )}
+        <span aria-hidden="true" className="relative text-lg text-text-primary">
+          ▶
+        </span>
+      </span>
+    );
+  }
+  if (!slide.src) return null;
+  // eslint-disable-next-line @next/next/no-img-element -- thumbnail rendition
+  return <img src={slide.src.thumb} alt="" className="h-full w-full object-cover" />;
 }

@@ -1,7 +1,9 @@
 # Vaabhi
 
 Fashion e-commerce platform: a Spring Boot modular monolith with two Next.js frontends.
-See [docs/PLAN.md](docs/PLAN.md) for the architecture and roadmap.
+See [docs/PLAN.md](docs/PLAN.md) for the architecture and roadmap, and [docs/ADMIN_PORTAL.md](docs/ADMIN_PORTAL.md)
+for the admin dashboard phases and staff sign-in.
+Customer sign-in (Google, mobile + OTP) and its setup: [docs/AUTH.md](docs/AUTH.md).
 
 | Path | What | Runs on |
 |---|---|---|
@@ -20,7 +22,7 @@ docker compose -f infra/docker-compose.dev.yml up -d   # Postgres on :5432
 ```
 
 ```bash
-cd backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=demo   # http://localhost:8080, with demo products (Swagger UI at /swagger-ui.html)
+cd backend && ./mvnw spring-boot:run                  # http://localhost:8080, dev profile (default) with demo products, Swagger UI at /swagger-ui.html
 ```
 
 ```bash

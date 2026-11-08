@@ -56,7 +56,7 @@ export async function generateMetadata({ params }: Readonly<Props>): Promise<Met
 
 /** schema.org Product data so search engines can show price and stock. */
 function structuredData(product: ProductDetail) {
-  const prices = product.variants.map((v) => v.pricePaise / 100);
+  const prices = product.variants.map((v) => v.priceRupees);
   return {
     "@context": "https://schema.org",
     "@type": "Product",

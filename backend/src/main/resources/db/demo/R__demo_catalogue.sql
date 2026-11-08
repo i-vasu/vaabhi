@@ -1,4 +1,4 @@
--- DEMO DATA: loaded only with the "demo" Spring profile (local, CI end-to-end tests, the Neon dev branch).
+-- DEMO DATA: loaded only with the "dev" Spring profile (local, CI end-to-end tests, the Neon dev branch).
 -- Never enable that profile in production. Re-runs whenever this file changes and touches only its own slugs.
 --
 -- Covers the listing and product page edge cases: one DRAFT product (never visible), one out of stock,
@@ -108,7 +108,7 @@ FROM demo_product d
 JOIN category c ON c.slug = d.category;
 
 -- Variants: every colour, × sizes XS–XXL for stitched categories. Stock is deterministic per SKU.
-INSERT INTO product_variant (product_id, sku, colour_name, colour_hex, colour_family, size, price_paise, mrp_paise,
+INSERT INTO product_variant (product_id, sku, colour_name, colour_hex, colour_family, size, price_rupees, mrp_rupees,
                              stock_qty, position)
 SELECT p.id,
        upper('DEMO-' || left(md5(d.slug), 6) || '-' || colour.ord || coalesce('-' || sz.size, '')),
@@ -116,8 +116,8 @@ SELECT p.id,
        split_part(colour.spec, ':', 2),
        split_part(colour.spec, ':', 3),
        sz.size,
-       d.price * 100,
-       d.mrp * 100,
+       d.price,
+       d.mrp,
        CASE d.stock
            WHEN 'out' THEN 0
            WHEN 'low' THEN CASE WHEN colour.ord = 1 AND coalesce(sz.ord, 3) = 3 THEN 2 ELSE 0 END
@@ -142,14 +142,14 @@ JOIN facet f ON f.code = split_part(tag, ':', 1)
 JOIN facet_value fv ON fv.facet_id = f.id AND fv.code = split_part(tag, ':', 2);
 
 -- Blouse options for sarees that come with a blouse piece, and custom stitching for lehengas.
-INSERT INTO product_addon (product_id, kind, code, name, description, price_paise, input, position)
-SELECT p.id, 'BLOUSE', a.code, a.name, a.description, a.price_paise, a.input, a.position
+INSERT INTO product_addon (product_id, kind, code, name, description, price_rupees, input, position)
+SELECT p.id, 'BLOUSE', a.code, a.name, a.description, a.price_rupees, a.input, a.position
 FROM demo_product d
 JOIN product p ON p.slug = d.slug
 JOIN (VALUES
     ('sarees', 'blouse-unstitched', 'Unstitched blouse piece', 'Included with the saree.', 0, 'NONE', 1),
-    ('sarees', 'blouse-standard', 'Stitched blouse, standard size', 'Sizes 32 to 44. Ships in 5–7 extra days.', 120000, 'SIZE', 2),
-    ('sarees', 'blouse-custom', 'Stitched blouse, made to measure', 'We call you for measurements. Ships in 7–10 extra days.', 180000, 'MEASUREMENTS', 3),
-    ('lehengas', 'blouse-custom', 'Made-to-measure blouse', 'Blouse stitched to your measurements. Ships in 7–10 extra days.', 150000, 'MEASUREMENTS', 1)
-) AS a (category, code, name, description, price_paise, input, position) ON a.category = d.category
+    ('sarees', 'blouse-standard', 'Stitched blouse, standard size', 'Sizes 32 to 44. Ships in 5–7 extra days.', 1200, 'SIZE', 2),
+    ('sarees', 'blouse-custom', 'Stitched blouse, made to measure', 'We call you for measurements. Ships in 7–10 extra days.', 1800, 'MEASUREMENTS', 3),
+    ('lehengas', 'blouse-custom', 'Made-to-measure blouse', 'Blouse stitched to your measurements. Ships in 7–10 extra days.', 1500, 'MEASUREMENTS', 1)
+) AS a (category, code, name, description, price_rupees, input, position) ON a.category = d.category
 WHERE d.blouse;

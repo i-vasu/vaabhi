@@ -62,15 +62,26 @@ straight to R2 with short-lived signed URLs from the API; the storefront loads t
 
 Without these the site works normally; only photo upload answers "Photo storage is not configured".
 
-## Admin access (until the auth module adds a login)
+## Admin access
 
-The admin app's **Sign in** page takes an access token. Create one on your computer, from the repository root; it
-reads the production `JWT_SECRET` over SSH and expires after 12 hours:
+The admin dashboard has an email + password sign-in for shop staff. The first **owner** account is created by the
+backend on its first start, while no staff account exists, from these lines in `/opt/vaabhi/.env`:
+
+```bash
+STAFF_OWNER_NAME="Your name"
+STAFF_OWNER_EMAIL=you@example.com
+STAFF_OWNER_PASSWORD=<a long random password>
+```
+
+Redeploy (or restart the backend), then sign in at admin.vaabhi.com. Once an account exists the variables are ignored,
+so changing them never resets a password; remove `STAFF_OWNER_PASSWORD` from the file after the first sign-in.
+Five wrong passwords in a row lock the account for 15 minutes. A sign-in lasts 12 hours (`STAFF_TOKEN_TTL`).
+
+For scripts that call the admin API directly (curl), `infra/admin-token.sh` still mints a short-lived token from the
+production `JWT_SECRET`; it is not a dashboard sign-in:
 
 ```bash
 JWT_SECRET=$(ssh -p 20036 deploy@148.113.17.68 "grep '^JWT_SECRET=' /opt/vaabhi/.env | cut -d= -f2-") bash infra/admin-token.sh vasu 12
 ```
 
-Paste the printed token into admin.vaabhi.com → Sign in. It is kept only for that browser tab's session. Anyone with
-the token can edit the catalogue until it expires, so do not share it; rotating `JWT_SECRET` (and redeploying)
-invalidates every token.
+Rotating `JWT_SECRET` (and redeploying) signs everyone out.

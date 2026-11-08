@@ -14,8 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.ErrorResponseException;
 
 /**
- * Product photos in Cloudflare R2. The browser resizes each photo to {@link #RENDITIONS} and uploads them
- * straight to R2 with presigned URLs; the server only records the photo and checks the files arrived.
+ * Product photos and videos in Cloudflare R2. The browser resizes each photo to {@link #RENDITIONS} and uploads
+ * them straight to R2 with presigned URLs; a video goes up as is, to {@code <key>/video}. The server only records
+ * the media and checks the files arrived.
  */
 @Service
 public class ProductMediaService {
@@ -24,7 +25,15 @@ public class ProductMediaService {
     public static final List<Integer> RENDITIONS = List.of(400, 800, 1600);
 
     static final int MAX_PHOTOS = 12;
+    static final int MAX_VIDEOS = 3;
+    /** Every photo and video of a product: the most a reorder can name. */
+    static final int MAX_MEDIA = MAX_PHOTOS + MAX_VIDEOS;
+    /** A video's object name under its key; R2 serves it with the type the browser uploaded it with. */
+    static final String VIDEO_FILE = "video";
+
     private static final Duration UPLOAD_WINDOW = Duration.ofMinutes(15);
+    /** Videos are larger and phones upload slowly; the URL only has to be valid when the PUT starts. */
+    private static final Duration VIDEO_UPLOAD_WINDOW = Duration.ofMinutes(60);
 
     private final ProductMediaStore store;
     private final ObjectStorage storage;
@@ -36,20 +45,18 @@ public class ProductMediaService {
 
     @Transactional
     public MediaUpload startUpload(long productId, MediaUploadRequest request) {
-        if (!storage.configured()) {
-            throw new ErrorResponseException(
-                    HttpStatus.SERVICE_UNAVAILABLE,
-                    ProblemDetail.forStatusAndDetail(
-                            HttpStatus.SERVICE_UNAVAILABLE, "Photo storage is not configured on this server"),
-                    null);
-        }
+        requireStorage();
         requireProduct(productId);
-        if (store.list(productId).size() >= MAX_PHOTOS) {
-            throw new CatalogValidationException(
-                    HttpStatus.BAD_REQUEST, "media", "A product can have at most " + MAX_PHOTOS + " photos");
-        }
-        var key = "products/" + productId + "/" + UUID.randomUUID();
-        var mediaId = store.insertPending(productId, key, request);
+        requireRoom(productId, MediaKind.IMAGE, MAX_PHOTOS, "A product can have at most " + MAX_PHOTOS + " photos");
+        var key = newKey(productId);
+        var mediaId = store.insertPending(
+                productId,
+                MediaKind.IMAGE,
+                key,
+                request.alt(),
+                request.colourName(),
+                request.width(),
+                request.height());
         var renditions = RENDITIONS.stream()
                 .map(width -> new MediaUpload.Rendition(
                         width,
@@ -62,23 +69,42 @@ public class ProductMediaService {
                 Instant.now().plus(UPLOAD_WINDOW));
     }
 
-    /** Marks the photo ready once every rendition is in storage. */
+    @Transactional
+    public VideoUpload startVideoUpload(long productId, VideoUploadRequest request) {
+        requireStorage();
+        requireProduct(productId);
+        requireRoom(productId, MediaKind.VIDEO, MAX_VIDEOS, "A product can have at most " + MAX_VIDEOS + " videos");
+        var key = newKey(productId);
+        var mediaId =
+                store.insertPending(productId, MediaKind.VIDEO, key, request.alt(), request.colourName(), null, null);
+        return new VideoUpload(
+                store.find(productId, mediaId).orElseThrow(),
+                storage.presignPut(videoKey(key), VIDEO_UPLOAD_WINDOW).toString(),
+                Instant.now().plus(VIDEO_UPLOAD_WINDOW));
+    }
+
+    /** Marks a photo ready once every rendition is in storage, or a video once its file is. */
     @Transactional
     public List<AdminMedia> completeUpload(long productId, long mediaId) {
         var media = requireMedia(productId, mediaId);
-        var missing = RENDITIONS.stream()
-                .filter(width -> !storage.exists(renditionKey(media.key(), width)))
-                .map(String::valueOf)
-                .collect(Collectors.joining(", "));
-        if (!missing.isEmpty()) {
-            throw new CatalogValidationException(
-                    HttpStatus.CONFLICT, "media", "Upload incomplete: missing " + missing + " px versions");
+        if (media.kind() == MediaKind.VIDEO) {
+            if (!storage.exists(videoKey(media.key()))) {
+                throw incomplete("the video file");
+            }
+        } else {
+            var missing = RENDITIONS.stream()
+                    .filter(width -> !storage.exists(renditionKey(media.key(), width)))
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(", "));
+            if (!missing.isEmpty()) {
+                throw incomplete(missing + " px versions");
+            }
         }
         store.markReady(mediaId);
         return store.list(productId);
     }
 
-    /** Reorders the photos (list order) and updates alt text and colours. The list must name every photo. */
+    /** Reorders the photos and video (list order) and updates alt text and colours. The list must name them all. */
     @Transactional
     public List<AdminMedia> update(long productId, List<MediaUpdate> updates) {
         requireProduct(productId);
@@ -87,25 +113,58 @@ public class ProductMediaService {
         updates.forEach(u -> given.add(u.id()));
         if (given.size() != updates.size() || !given.equals(existing)) {
             throw new CatalogValidationException(
-                    HttpStatus.BAD_REQUEST, "media", "Send every photo of the product exactly once");
+                    HttpStatus.BAD_REQUEST, "media", "Send every photo and video of the product exactly once");
         }
         store.update(productId, updates);
         return store.list(productId);
     }
 
-    /** Removes the photo; its files are deleted from storage afterwards (best effort). */
+    /** Removes the photo or video; its files are deleted from storage afterwards (best effort). */
     @Transactional
     public List<AdminMedia> delete(long productId, long mediaId) {
         var media = requireMedia(productId, mediaId);
         store.delete(productId, mediaId);
         if (storage.configured()) {
-            RENDITIONS.forEach(width -> storage.delete(renditionKey(media.key(), width)));
+            if (media.kind() == MediaKind.VIDEO) {
+                storage.delete(videoKey(media.key()));
+            } else {
+                RENDITIONS.forEach(width -> storage.delete(renditionKey(media.key(), width)));
+            }
         }
         return store.list(productId);
     }
 
     static String renditionKey(String key, int width) {
         return key + "/" + width + ".webp";
+    }
+
+    static String videoKey(String key) {
+        return key + "/" + VIDEO_FILE;
+    }
+
+    private static CatalogValidationException incomplete(String missing) {
+        return new CatalogValidationException(HttpStatus.CONFLICT, "media", "Upload incomplete: missing " + missing);
+    }
+
+    private static String newKey(long productId) {
+        return "products/" + productId + "/" + UUID.randomUUID();
+    }
+
+    private void requireStorage() {
+        if (!storage.configured()) {
+            throw new ErrorResponseException(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    ProblemDetail.forStatusAndDetail(
+                            HttpStatus.SERVICE_UNAVAILABLE, "Photo storage is not configured on this server"),
+                    null);
+        }
+    }
+
+    private void requireRoom(long productId, MediaKind kind, int max, String message) {
+        var count = store.list(productId).stream().filter(m -> m.kind() == kind).count();
+        if (count >= max) {
+            throw new CatalogValidationException(HttpStatus.BAD_REQUEST, "media", message);
+        }
     }
 
     private void requireProduct(long productId) {

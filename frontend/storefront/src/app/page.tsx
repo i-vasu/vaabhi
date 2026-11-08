@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Category } from "@vaabhi/api-client";
+import type { Category, ProductSummary } from "@vaabhi/api-client";
 import {
   buttonClasses,
   CashIcon,
@@ -11,8 +11,8 @@ import {
   TruckIcon,
 } from "@vaabhi/ui";
 import { api } from "@/lib/api";
-import { discountLabel, formatPrice } from "@/lib/format";
-import { bestsellers, categoryColors, fallbackCategoryColors, occasions, weaves } from "@/lib/home-content";
+import { categoryColors, fallbackCategoryColors, occasions, weaves } from "@/lib/home-content";
+import { productCardProps } from "@/lib/listing";
 
 // Rendered on request; the API response is cached for 60 s, so builds do not need the API.
 export const dynamic = "force-dynamic";
@@ -25,6 +25,15 @@ async function loadCategories(): Promise<Category[] | null> {
   }
 }
 
+/** Products marked Bestseller in the admin, most popular first; an empty list hides the section. */
+async function loadBestsellers(): Promise<ProductSummary[]> {
+  try {
+    return await api.store.listFeatured({ badge: "BESTSELLER", limit: 8 }, { next: { revalidate: 60 } });
+  } catch {
+    return [];
+  }
+}
+
 const container = "mx-auto w-full max-w-6xl px-4";
 const whatsappHref = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
   ? `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi Vaabhi, I'd like festive drop updates")}`
@@ -33,7 +42,7 @@ const whatsappHref = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
 const occasionText = { light: "text-text-on-brand", olive: "text-brand-olive", dark: "text-text-primary" } as const;
 
 export default async function HomePage() {
-  const categories = await loadCategories();
+  const [categories, bestsellers] = await Promise.all([loadCategories(), loadBestsellers()]);
 
   return (
     <>
@@ -107,31 +116,24 @@ export default async function HomePage() {
       </section>
 
       {/* Bestsellers */}
-      <section aria-labelledby="bestsellers-title" className="bg-bg-surface">
-        <div className={`${container} flex flex-col gap-4 py-8`}>
-          <SectionHeader
-            id="bestsellers-title"
-            title="Bestsellers"
-            action={{ label: "View all", href: "/bestsellers" }}
-          />
-          <ul className="grid grid-cols-2 gap-x-4 gap-y-5 md:grid-cols-4 md:gap-6">
-            {bestsellers.map((product) => (
-              <li key={product.slug}>
-                <ProductCard
-                  name={product.name}
-                  detail={product.detail}
-                  price={formatPrice(product.price)}
-                  mrp={product.mrp ? formatPrice(product.mrp) : undefined}
-                  discount={discountLabel(product.price, product.mrp)}
-                  href={`/p/${product.slug}`}
-                  badge={product.badge}
-                  image={{ placeholder: product.colors }}
-                />
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      {bestsellers.length > 0 && (
+        <section aria-labelledby="bestsellers-title" className="bg-bg-surface">
+          <div className={`${container} flex flex-col gap-4 py-8`}>
+            <SectionHeader
+              id="bestsellers-title"
+              title="Bestsellers"
+              action={{ label: "View all", href: "/bestsellers" }}
+            />
+            <ul className="grid grid-cols-2 gap-x-4 gap-y-5 md:grid-cols-4 md:gap-6">
+              {bestsellers.map((product) => (
+                <li key={product.slug}>
+                  <ProductCard {...productCardProps(product)} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
 
       {/* The craft (olive accent) */}
       <section aria-labelledby="craft-title" className="bg-brand-olive-soft">

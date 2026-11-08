@@ -14,8 +14,8 @@ export type BagLine = {
   addonCode: string | null;
   addonName: string | null;
   blouseSize: string | null;
-  unitPricePaise: number;
-  addonPricePaise: number;
+  unitPriceRupees: number;
+  addonPriceRupees: number;
   imageKey: string | null;
   quantity: number;
 };
@@ -23,7 +23,8 @@ export type BagLine = {
 /** Per line, as agreed with the shop (the API enforces the same limit). */
 export const MAX_QUANTITY = 3;
 const EMPTY: BagLine[] = [];
-export const bagStore = localStore<BagLine[]>("bag.v1", EMPTY);
+// v2: prices are rupees (v1 held paise under *Paise names), so v1 bags are left behind.
+export const bagStore = localStore<BagLine[]>("bag.v2", EMPTY);
 
 type LineIdentity = Pick<BagLine, "sku" | "addonCode" | "blouseSize">;
 

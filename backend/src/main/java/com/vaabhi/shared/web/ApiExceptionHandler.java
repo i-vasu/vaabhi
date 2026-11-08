@@ -13,7 +13,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 /**
  * RFC 9457 problem details for every MVC error (replaces Spring Boot's default handler). Bean validation failures
- * also list each field, e.g. {@code errors: [{field: "variants[0].pricePaise", message: "must be greater than 0"}]},
+ * also list each field, e.g. {@code errors: [{field: "variants[0].priceRupees", message: "must be greater than 0"}]},
  * so forms can show messages next to their inputs.
  */
 @RestControllerAdvice

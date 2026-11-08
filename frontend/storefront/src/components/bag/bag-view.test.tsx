@@ -19,8 +19,8 @@ const saved = (o: Partial<BagLine> = {}): BagLine => ({
   addonCode: "blouse-standard",
   addonName: "Stitched blouse, standard size",
   blouseSize: "36",
-  unitPricePaise: 1850000,
-  addonPricePaise: 120000,
+  unitPriceRupees: 18500,
+  addonPriceRupees: 1200,
   imageKey: null,
   quantity: 1,
   ...o,
@@ -28,10 +28,10 @@ const saved = (o: Partial<BagLine> = {}): BagLine => ({
 
 const quoteOf = (lines: BagQuote["lines"], totals: Partial<BagQuote> = {}): BagQuote => ({
   lines,
-  itemsPaise: 1850000,
-  addonsPaise: 120000,
-  mrpPaise: 2320000,
-  totalPaise: 1970000,
+  itemsRupees: 18500,
+  addonsRupees: 1200,
+  mrpRupees: 23200,
+  totalRupees: 19700,
   ...totals,
 });
 
@@ -56,8 +56,8 @@ describe("BagView", () => {
         addonCode: null,
         addonName: null,
         blouseSize: null,
-        unitPricePaise: 480000,
-        addonPricePaise: 0,
+        unitPriceRupees: 4800,
+        addonPriceRupees: 0,
         quantity: 2,
       }),
     ]);
@@ -71,10 +71,10 @@ describe("BagView", () => {
             [
               quoteLine({
                 name: "Kanjeevaram silk saree",
-                pricePaise: 1850000,
-                mrpPaise: 2200000,
+                priceRupees: 18500,
+                mrpRupees: 22000,
                 addonName: "Stitched blouse",
-                addonPricePaise: 120000,
+                addonPriceRupees: 1200,
                 addonInput: "SIZE",
                 stockLeft: 2,
                 maxQuantity: 2,
@@ -82,12 +82,12 @@ describe("BagView", () => {
               quoteLine({
                 sku: "VB-KURTA",
                 name: "Kurta set",
-                pricePaise: 450000,
-                mrpPaise: 620000,
+                priceRupees: 4500,
+                mrpRupees: 6200,
                 quantity: body.lines[1]?.quantity ?? 2,
               }),
             ].filter((l) => body.lines.some((r) => r.sku === l.sku)),
-            { itemsPaise: 2750000, addonsPaise: 120000, mrpPaise: 3560000, totalPaise: 2870000 },
+            { itemsRupees: 27500, addonsRupees: 1200, mrpRupees: 35600, totalRupees: 28700 },
           ),
         );
       }),
@@ -119,9 +119,9 @@ describe("BagView", () => {
     expect(wishlistStore.read()).toEqual(["kurta"]);
     expect(screen.getByText("Moved Kurta set to your wishlist")).toBeInTheDocument();
 
-    await waitFor(() => expect(screen.getAllByRole("button", { name: /checkout/i })[0]).toBeEnabled());
-    fireEvent.click(screen.getByRole("button", { name: "Checkout securely" }));
-    expect(screen.getByText(/Checkout opens with the next update/)).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByRole("link", { name: "Checkout securely" })).toHaveAttribute("href", "/checkout"),
+    );
   });
 
   it("blocks checkout for unavailable items and lowers limited quantities", async () => {
@@ -133,7 +133,7 @@ describe("BagView", () => {
         addonCode: "blouse-unstitched",
         addonName: "Unstitched blouse piece",
         blouseSize: null,
-        addonPricePaise: 0,
+        addonPriceRupees: 0,
       }),
     ]);
     server.use(
@@ -145,10 +145,10 @@ describe("BagView", () => {
               maxQuantity: 2,
               quantity: 3,
               name: "Kanjeevaram silk saree",
-              pricePaise: 1850000,
-              addonPricePaise: 120000,
+              priceRupees: 18500,
+              addonPriceRupees: 1200,
             }),
-            quoteLine({ sku: "GONE", status: "UNAVAILABLE", maxQuantity: 0, name: null, pricePaise: 0, mrpPaise: 0 }),
+            quoteLine({ sku: "GONE", status: "UNAVAILABLE", maxQuantity: 0, name: null, priceRupees: 0, mrpRupees: 0 }),
           ]),
         ),
       ),

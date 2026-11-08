@@ -3,6 +3,7 @@ package com.vaabhi.catalog;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -17,7 +18,7 @@ class StockTest {
 
     @ParameterizedTest
     @CsvSource({"1850000, 2200000, 16", "100, 100, 0", "100, 90, 0", "4999, 9999, 50"})
-    void roundsDiscountLikeTheStorefront(int price, int mrp, int expected) {
+    void roundsDiscountLikeTheStorefront(BigDecimal price, BigDecimal mrp, int expected) {
         assertThat(Stock.discountPercent(price, mrp)).isEqualTo(expected);
     }
 

@@ -3,6 +3,8 @@ package com.vaabhi.catalog;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -17,6 +19,7 @@ import org.jspecify.annotations.Nullable;
  * list: rows left out are removed.
  *
  * @param slug URL name; generated from the name when blank
+ * @param shippingWeightGrams the packed parcel weight for one piece, for the courier; the shop default when empty
  * @param attributes facet value codes by facet code, e.g. {@code fabric -> [silk]}
  */
 public record ProductForm(
@@ -35,6 +38,7 @@ public record ProductForm(
         @Nullable @DecimalMin("0.5") @DecimalMax("9.9") BigDecimal sareeLengthM,
         boolean blouseIncluded,
         @Nullable @DecimalMin("0.1") @DecimalMax("2.0") BigDecimal blouseLengthM,
+        @Nullable @Min(10) @Max(30000) Integer shippingWeightGrams,
         @NotNull Map<String, List<String>> attributes,
         @NotNull @Size(max = 200) List<@Valid @NotNull VariantForm> variants,
         @NotNull @Size(max = 10) List<@Valid @NotNull AddonForm> addons) {}

@@ -23,11 +23,12 @@ import {
   selectedVariant,
   stockLine,
   variantsOf,
+  videosFor,
 } from "@/lib/product";
 import { DeliveryCheck } from "./delivery-check";
 import { ProductGallery } from "./product-gallery";
 
-const rupees = (paise: number) => formatPrice(paise / 100);
+const rupees = (amount: number) => formatPrice(amount);
 const chip = (checked: boolean, disabled = false) =>
   cn(
     "inline-flex min-w-11 cursor-pointer items-center justify-center rounded-full border px-3.5 py-1.5 text-sm tabular-nums",
@@ -57,8 +58,8 @@ export function ProductView({ product, colour: requested }: Readonly<{ product: 
   const variant = selectedVariant(product, colour, size);
   const shown = variant ?? variantsOf(product, colour)[0]!;
   const choice = choices.find((c) => c.code === choiceCode);
-  const addonPrice = choice?.pricePaise ?? 0;
-  const total = shown.pricePaise + addonPrice;
+  const addonPrice = choice?.priceRupees ?? 0;
+  const total = shown.priceRupees + addonPrice;
   const stock = stockLine(variant, colour);
   const allBlouse = product.addons.every((a) => a.kind === "BLOUSE");
 
@@ -89,8 +90,8 @@ export function ProductView({ product, colour: requested }: Readonly<{ product: 
       addonCode: choice?.code ?? null,
       addonName: choice?.code ? choice.name : null,
       blouseSize: choice?.input === "SIZE" ? blouseSize : null,
-      unitPricePaise: variant.pricePaise,
-      addonPricePaise: addonPrice,
+      unitPriceRupees: variant.priceRupees,
+      addonPriceRupees: addonPrice,
       imageKey: photo?.key ?? null,
     });
     if (capped) return setProblem(`You can add up to ${MAX_QUANTITY} of this item.`);
@@ -113,6 +114,7 @@ export function ProductView({ product, colour: requested }: Readonly<{ product: 
     <div className="grid md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] md:gap-10 md:px-4">
       <ProductGallery
         photos={photosFor(product, colour)}
+        videos={videosFor(product, colour)}
         name={`${product.name}, ${colour}`}
         hex={shown.colourHex}
         overlay={
@@ -137,15 +139,15 @@ export function ProductView({ product, colour: requested }: Readonly<{ product: 
           </h1>
           {product.subtitle && <p className="mt-1.5 text-sm text-text-muted">{product.subtitle}</p>}
           <p className="mt-3 flex flex-wrap items-baseline gap-2 tabular-nums">
-            <span className="text-[26px] font-semibold">{rupees(shown.pricePaise)}</span>
-            {shown.mrpPaise > shown.pricePaise && (
+            <span className="text-[26px] font-semibold">{rupees(shown.priceRupees)}</span>
+            {shown.mrpRupees > shown.priceRupees && (
               <>
                 <span className="text-text-muted line-through">
                   <span className="sr-only">MRP </span>
-                  {rupees(shown.mrpPaise)}
+                  {rupees(shown.mrpRupees)}
                 </span>
                 <span className="font-semibold text-brand-primary">
-                  {discountLabel(shown.pricePaise / 100, shown.mrpPaise / 100)}
+                  {discountLabel(shown.priceRupees, shown.mrpRupees)}
                 </span>
               </>
             )}
@@ -267,7 +269,7 @@ export function ProductView({ product, colour: requested }: Readonly<{ product: 
                             on && "text-brand-primary",
                           )}
                         >
-                          {c.pricePaise ? `+${rupees(c.pricePaise)}` : "Included"}
+                          {c.priceRupees ? `+${rupees(c.priceRupees)}` : "Included"}
                         </span>
                       </label>
                       {on && c.input === "SIZE" && (
@@ -328,7 +330,7 @@ export function ProductView({ product, colour: requested }: Readonly<{ product: 
 
         <p className="flex justify-between gap-3 text-sm text-text-secondary tabular-nums">
           <span>
-            {product.category.name.replace(/s$/, "")} {rupees(shown.pricePaise)}
+            {product.category.name.replace(/s$/, "")} {rupees(shown.priceRupees)}
             {addonPrice > 0 && choice ? ` + ${choice.name.toLowerCase()} ${rupees(addonPrice)}` : ""}
           </span>
           <strong className="text-base text-text-primary">{rupees(total)}</strong>

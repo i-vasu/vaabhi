@@ -1,21 +1,30 @@
 package com.vaabhi.shared.security;
 
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authorization.AuthorityAuthorizationManager;
+import org.springframework.security.authorization.AuthorizationManager;
+import org.springframework.security.authorization.AuthorizationManagers;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -43,8 +52,64 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/api/v1/webhooks/**")
                         .permitAll()
+                        // Which sign-in methods work, read by the sign-in page.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/auth/options")
+                        .permitAll()
+                        // Sign-in, refresh and logout: the caller has no access token yet (or it expired).
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/**")
+                        .permitAll()
+                        // Dashboard areas: the owner may use all of them, everyone else needs the area's
+                        // permission (the token's "permissions" claim, set at sign-in from the role).
+                        .requestMatchers("/api/v1/admin/me", "/api/v1/admin/me/**")
+                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/admin/settings/**")
+                        .hasRole("ADMIN")
+                        .requestMatchers("/api/v1/admin/settings/**")
+                        .access(area("SETTINGS"))
+                        // Online orders: cancelling (refunds the payment) and refunding a return are for the owner.
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/v1/admin/online-orders/*/cancel",
+                                "/api/v1/admin/online-orders/returns/*/refund")
+                        .hasRole("OWNER")
+                        .requestMatchers(
+                                "/api/v1/admin/orders/**",
+                                "/api/v1/admin/online-orders/**",
+                                "/api/v1/admin/clients/**",
+                                "/api/v1/admin/alterations/**",
+                                "/api/v1/admin/service-products/**",
+                                "/api/v1/admin/tailoring/**",
+                                // An order's invoice is shown and issued from the order page.
+                                "/api/v1/admin/money/orders/**",
+                                // Counter staff check coupons, see points and message customers.
+                                "/api/v1/admin/engage/coupons/check",
+                                "/api/v1/admin/engage/rewards/clients/**",
+                                "/api/v1/admin/engage/messages/**")
+                        .access(area("ORDERS"))
+                        .requestMatchers("/api/v1/admin/stock/**")
+                        .access(area("STOCK"))
+                        .requestMatchers("/api/v1/admin/engage/**", "/api/v1/admin/gallery/**")
+                        .access(area("MARKETING"))
+                        .requestMatchers("/api/v1/admin/reports/**", "/api/v1/admin/activity/**")
+                        .access(area("REPORTS"))
+                        .requestMatchers("/api/v1/admin/workshop/**")
+                        .access(area("WORKSHOP"))
+                        .requestMatchers("/api/v1/admin/money/**")
+                        .access(area("MONEY"))
+                        // Changing what a role may do is for the owner alone.
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/admin/staff/roles/**")
+                        .hasRole("OWNER")
+                        .requestMatchers("/api/v1/admin/staff/**")
+                        .access(area("STAFF"))
+                        .requestMatchers("/api/v1/admin/payroll/**")
+                        .access(area("PAYROLL"))
+                        .requestMatchers(
+                                "/api/v1/admin/products/**", "/api/v1/admin/catalog/**", "/api/v1/admin/storefront/**")
+                        .access(area("CATALOGUE"))
                         .requestMatchers("/api/v1/admin/**")
                         .hasRole("ADMIN")
+                        .requestMatchers("/api/v1/customer/**")
+                        .hasRole("CUSTOMER")
                         .anyRequest()
                         .authenticated())
                 .oauth2ResourceServer(
@@ -57,6 +122,12 @@ public class SecurityConfig {
         return NimbusJwtDecoder.withSecretKey(secretKey(properties))
                 .macAlgorithm(MacAlgorithm.HS256)
                 .build();
+    }
+
+    /** Signs access tokens (staff and customer sign-in) with the same HS256 secret the decoder verifies. */
+    @Bean
+    JwtEncoder jwtEncoder(SecurityProperties properties) {
+        return new NimbusJwtEncoder(new ImmutableSecret<>(secretKey(properties)));
     }
 
     @Bean
@@ -77,13 +148,35 @@ public class SecurityConfig {
         return new SecretKeySpec(properties.jwtSecret().getBytes(StandardCharsets.UTF_8), "HmacSHA256");
     }
 
-    /** Maps the {@code roles} claim (e.g. ["ADMIN"]) to {@code ROLE_ADMIN} authorities. */
+    /** The owner, or a staff member (ROLE_ADMIN) whose role has the dashboard area's permission. */
+    static AuthorizationManager<RequestAuthorizationContext> area(String permission) {
+        return AuthorizationManagers.anyOf(
+                AuthorityAuthorizationManager.hasRole("OWNER"),
+                AuthorizationManagers.allOf(
+                        AuthorityAuthorizationManager.hasRole("ADMIN"),
+                        AuthorityAuthorizationManager.hasAuthority(PERMISSION_PREFIX + permission)));
+    }
+
+    /** Authority prefix for the {@code permissions} claim, e.g. PERM_ORDERS. */
+    public static final String PERMISSION_PREFIX = "PERM_";
+
+    /**
+     * Maps the {@code roles} claim (e.g. ["ADMIN", "OWNER"]) to {@code ROLE_*} authorities and the {@code permissions}
+     * claim (e.g. ["ORDERS"]) to {@code PERM_*} authorities.
+     */
     private static JwtAuthenticationConverter jwtAuthenticationConverter() {
-        var authorities = new JwtGrantedAuthoritiesConverter();
-        authorities.setAuthoritiesClaimName("roles");
-        authorities.setAuthorityPrefix("ROLE_");
+        var roles = new JwtGrantedAuthoritiesConverter();
+        roles.setAuthoritiesClaimName("roles");
+        roles.setAuthorityPrefix("ROLE_");
+        var permissions = new JwtGrantedAuthoritiesConverter();
+        permissions.setAuthoritiesClaimName("permissions");
+        permissions.setAuthorityPrefix(PERMISSION_PREFIX);
         var converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(authorities);
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            var all = new ArrayList<GrantedAuthority>(roles.convert(jwt));
+            all.addAll(permissions.convert(jwt));
+            return all;
+        });
         return converter;
     }
 }

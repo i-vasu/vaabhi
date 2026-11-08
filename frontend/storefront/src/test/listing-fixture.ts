@@ -5,8 +5,8 @@ export const product = (overrides: Partial<ProductSummary> = {}): ProductSummary
   name: "Kanjeevaram silk saree",
   subtitle: "Temple border, pure zari",
   badge: "HANDLOOM",
-  pricePaise: 1850000,
-  mrpPaise: 2200000,
+  priceRupees: 18500,
+  mrpRupees: 22000,
   discountPercent: 16,
   colours: [{ name: "Rani pink", hex: "#C2185B" }],
   inStock: true,
@@ -44,13 +44,13 @@ export const filters: FilterGroup[] = [
 ];
 
 export const listing = (overrides: Partial<ProductListing> = {}): ProductListing => ({
-  category: { id: 1, slug: "sarees", name: "Sarees", description: "Handloom silks and cottons." },
+  category: { id: 1, slug: "sarees", name: "Sarees", description: "Handloom silks and cottons.", imageKey: null },
   items: [product()],
   total: 1,
   page: 1,
   pageSize: 24,
   sort: "popular",
   filters,
-  priceRange: { minPaise: 160000, maxPaise: 2490000 },
+  priceRange: { minRupees: 1600, maxRupees: 24900 },
   ...overrides,
 });

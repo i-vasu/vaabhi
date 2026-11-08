@@ -36,6 +36,8 @@
   --color-brand-primary: var(--color-maroon-700);
   --color-brand-primary-hover: var(--color-maroon-900);
   --color-brand-primary-soft: var(--color-maroon-100);
+  /* text in the brand colour on the page background (outline buttons); themes on dark surfaces lighten it */
+  --color-brand-primary-ink: var(--color-brand-primary);
   --color-brand-accent: var(--color-gold-600);
   --color-brand-accent-soft: var(--color-gold-100);
   --color-brand-olive: var(--color-olive-700);
