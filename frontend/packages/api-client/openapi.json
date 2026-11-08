@@ -7137,7 +7137,7 @@
                         "type": "string",
                         "maxLength": 60,
                         "minLength": 0,
-                        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                        "pattern": "^(?!-)(?!.*--)[a-z0-9-]+(?<!-)$"
                     },
                     "section": {
                         "type": "string",
@@ -8233,7 +8233,7 @@
                         ],
                         "maxLength": 300,
                         "minLength": 0,
-                        "pattern": "^https://((www\\.)?whatsapp\\.com/channel|chat\\.whatsapp\\.com)/[A-Za-z0-9]+.*$"
+                        "pattern": "^https://((www\\.)?whatsapp\\.com/channel|chat\\.whatsapp\\.com)/[A-Za-z0-9].*$"
                     },
                     "address": {
                         "type": [
