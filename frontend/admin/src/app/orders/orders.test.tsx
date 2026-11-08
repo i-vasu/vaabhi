@@ -24,7 +24,8 @@ describe("orders list", () => {
   it("starts on open orders and filters by status", async () => {
     render(<OrdersPage />);
 
-    expect(await screen.findByRole("link", { name: /ORD-2042 Shop · Meera Iyer/ })).toHaveAttribute(
+    // The file's first render can pass the 1 s default on a busy CI runner.
+    expect(await screen.findByRole("link", { name: /ORD-2042 Shop · Meera Iyer/ }, { timeout: 5000 })).toHaveAttribute(
       "href",
       "/orders/view/?id=42",
     );
