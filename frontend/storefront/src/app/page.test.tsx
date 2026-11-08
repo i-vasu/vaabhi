@@ -2,11 +2,13 @@ import { render, screen, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 import { API, categories, server } from "@/test/server";
-import { product } from "@/test/listing-fixture";
+import { listing, product } from "@/test/listing-fixture";
 import HomePage from "./page";
 
 const FEATURED = `${API}/api/v1/store/featured`;
 const HOME = `${API}/api/v1/store/home`;
+const CATEGORY_PRODUCTS = `${API}/api/v1/store/categories/:slug/products`;
+const SEARCH = `${API}/api/v1/store/products`;
 
 const banner = (over: Record<string, unknown>) => ({
   id: 1,
@@ -41,12 +43,13 @@ describe("HomePage", () => {
               link: "/c/sarees?occasion=wedding",
             }),
           ],
-          occasions: [
-            banner({ id: 2, slot: "OCCASION", title: "Haldi & Mehendi", link: "/c/kurta-sets?occasion=haldi" }),
-          ],
+          occasions: [],
           craft: banner({ id: 3, slot: "CRAFT", title: "Woven by hand, worn for generations" }),
         }),
       ),
+      // Categories show only when they have products; occasions are the tags on products ("Wedding" in the fixture).
+      http.get(CATEGORY_PRODUCTS, () => HttpResponse.json(listing({ total: 2 }))),
+      http.get(SEARCH, () => HttpResponse.json(listing({ total: 3 }))),
       http.get(FEATURED, ({ request }) => {
         featuredUrl = request.url;
         return HttpResponse.json([
@@ -71,10 +74,7 @@ describe("HomePage", () => {
     expect(links.map((link) => link.textContent)).toEqual(categories.map((c) => c.name));
     expect(links[0]).toHaveAttribute("href", `/c/${categories[0]!.slug}`);
 
-    expect(screen.getByRole("link", { name: /Haldi & Mehendi/ })).toHaveAttribute(
-      "href",
-      "/c/kurta-sets?occasion=haldi",
-    );
+    expect(screen.getByRole("link", { name: /Wedding/ })).toHaveAttribute("href", "/search?occasion=wedding");
 
     expect(featuredUrl).toBe(`${FEATURED}?badge=BESTSELLER&limit=8`);
     const bestsellers = screen.getByRole("region", { name: "Bestsellers" });

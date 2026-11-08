@@ -26,7 +26,9 @@ test.describe("Admin products", () => {
     await page.getByRole("textbox", { name: "MRP ₹", exact: true }).fill("17800");
     await page.getByRole("button", { name: "Add colour" }).click();
     await page.getByRole("textbox", { name: "Stock for Ruby" }).fill("3");
-    await page.getByRole("button", { name: "Add standard blouse options" }).click();
+    // Each standard blouse add-on is its own "Quick add" button.
+    for (const preset of ["+ Unstitched blouse piece", "+ Stitched blouse, standard size"])
+      await page.getByRole("button", { name: preset }).click();
     const publish = page.getByRole("button", { name: "Save & publish" });
     await expect(publish).toBeDisabled();
     await expect(page.getByLabel("Add video")).toBeDisabled();

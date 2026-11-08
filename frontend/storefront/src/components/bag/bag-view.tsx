@@ -119,7 +119,11 @@ export function BagView() {
                   key={lineKey(line)}
                   className="grid grid-cols-[96px_minmax(0,1fr)] gap-3.5 border-b border-border-default py-4 first:border-t"
                 >
-                  <Link href={`/p/${line.slug}`} className={cn(!buyable && "opacity-55")} aria-label={line.name}>
+                  <Link
+                    href={`/p/${line.slug}`}
+                    className={cn(!buyable && "opacity-55")}
+                    aria-label={image ? line.name : `${line.name}, photo coming soon`}
+                  >
                     {image ? (
                       // eslint-disable-next-line @next/next/no-img-element -- R2 rendition
                       <img src={image} alt="" className="aspect-[3/4] w-24 rounded-sm object-cover" />

@@ -26,7 +26,7 @@ test.describe("Admin", () => {
     await signIn(page);
 
     await expect(page.getByRole("heading", { name: /^Good (morning|afternoon|evening)/ })).toBeVisible();
-    await expect(page.getByText("UP", { exact: true })).toBeVisible();
+    await expect(page.getByText("API is up", { exact: true })).toBeAttached();
 
     await page.getByRole("button", { name: "Account" }).click();
     await page.getByRole("button", { name: "Sign out" }).click();
@@ -35,7 +35,7 @@ test.describe("Admin", () => {
 
   test("home page has no serious accessibility violations", async ({ page }) => {
     await signIn(page);
-    await expect(page.getByText("UP", { exact: true })).toBeVisible();
+    await expect(page.getByText("API is up", { exact: true })).toBeAttached();
     const results = await new AxeBuilder({ page }).analyze();
     const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
     expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);

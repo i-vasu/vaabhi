@@ -6,7 +6,8 @@ test.describe("Storefront", () => {
   test("home page shows the hero and categories from the API @smoke", async ({ page }) => {
     await page.goto(urls.storefront);
 
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Heirloom silks for the season");
+    // The live hero banner's title, or the plain shop heading when no banner is live (CI's demo data has none).
+    await expect(page.getByRole("heading", { level: 1 })).not.toBeEmpty();
     await expect(page.getByRole("navigation", { name: "Shop by category" }).getByRole("link").first()).toBeVisible();
     await expect(page.getByText("The catalogue is unavailable right now.")).toHaveCount(0);
   });
@@ -33,7 +34,7 @@ test.describe("Storefront", () => {
   test("category page renders from the API @smoke", async ({ page }) => {
     await page.goto(`${urls.storefront}/c/sarees`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sarees");
-    await expect(page.getByText(/^\d+ results?$/)).toBeVisible();
+    await expect(page.getByText(/^\d+ results? · prices include all taxes$/)).toBeVisible();
   });
 
   // Needs the demo catalogue (CI), so not @smoke.

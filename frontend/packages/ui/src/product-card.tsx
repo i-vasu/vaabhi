@@ -39,7 +39,8 @@ export function ProductCard({ name, detail, price, mrp, discount, href, badge, i
   return (
     <article className="flex flex-col gap-1.5">
       <div className="relative aspect-[3/4] overflow-hidden rounded-sm">
-        <a href={href} className="block h-full" aria-label={name}>
+        {/* Without a photo the label includes the visible "Photo coming soon", so what is read matches the screen */}
+        <a href={href} className="block h-full" aria-label={image ? name : `${name}, photo coming soon`}>
           {image ? (
             // eslint-disable-next-line @next/next/no-img-element -- package is framework-agnostic; apps pass optimised URLs
             <img
