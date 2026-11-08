@@ -9,6 +9,12 @@ test.describe("Storefront", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Heirloom silks for the season");
     await expect(page.getByRole("navigation", { name: "Shop by category" }).getByRole("link").first()).toBeVisible();
     await expect(page.getByText("The catalogue is unavailable right now.")).toHaveCount(0);
+  });
+
+  // Bestsellers come from real sales, so production shows them only once things sell (the section is hidden
+  // until then). The demo catalogue has sales, so CI checks them here rather than in the production smoke test.
+  test("home page shows bestsellers from sales", async ({ page }) => {
+    await page.goto(urls.storefront);
     await expect(page.getByRole("region", { name: "Bestsellers" }).getByRole("article")).toHaveCount(4);
   });
 
