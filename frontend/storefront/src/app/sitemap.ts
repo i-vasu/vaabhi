@@ -46,6 +46,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: url("/customise"), changeFrequency: "monthly", priority: 0.5 },
     { url: url("/blog"), changeFrequency: "weekly", priority: 0.5 },
     { url: url("/contact"), changeFrequency: "monthly", priority: 0.4 },
+    { url: url("/track"), changeFrequency: "yearly", priority: 0.2 },
     ...categories.map((c) => ({ url: url(`/c/${c.slug}`), changeFrequency: "daily" as const, priority: 0.9 })),
     ...products.map((slug) => ({ url: url(`/p/${slug}`), changeFrequency: "weekly" as const, priority: 0.7 })),
     // The customise page is already listed above as /customise.

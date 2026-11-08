@@ -612,6 +612,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/store/orders/track": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["track"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/store/bag/quote": {
         parameters: {
             query?: never;
@@ -3173,6 +3189,43 @@ export interface components {
             takenBy: string | null;
             /** Format: date-time */
             takenAt: string;
+        };
+        TrackOrderRequest: {
+            number: string;
+            phone: string;
+        };
+        TrackedLine: {
+            productSlug: string;
+            name: string;
+            colourName: string | null;
+            size: string | null;
+            /** Format: int32 */
+            quantity: number;
+            imageKey: string | null;
+        };
+        TrackedOrder: {
+            number: string;
+            /** @enum {string} */
+            status: "PENDING_PAYMENT" | "FAILED" | "PLACED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+            /** @enum {string} */
+            paymentMethod: "ONLINE" | "COD";
+            city: string;
+            totalRupees: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            paidAt: string | null;
+            /** Format: date-time */
+            shippedAt: string | null;
+            /** Format: date-time */
+            deliveredAt: string | null;
+            /** Format: date-time */
+            cancelledAt: string | null;
+            courier: string | null;
+            trackingNumber: string | null;
+            trackingStatus: string | null;
+            trackingUrl: string | null;
+            lines: components["schemas"]["TrackedLine"][];
         };
         BagQuoteRequest: {
             lines: components["schemas"]["BagRequestLine"][];
@@ -5968,6 +6021,30 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    track: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TrackOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TrackedOrder"];
+                };
             };
         };
     };

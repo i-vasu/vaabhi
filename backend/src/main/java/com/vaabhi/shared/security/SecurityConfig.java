@@ -50,6 +50,9 @@ public class SecurityConfig {
                         // Read-only bag pricing; POST only because the bag does not fit in a URL.
                         .requestMatchers(HttpMethod.POST, "/api/v1/store/bag/quote")
                         .permitAll()
+                        // Guest order tracking (order number + phone); POST so the phone stays out of URLs and logs.
+                        .requestMatchers(HttpMethod.POST, "/api/v1/store/orders/track")
+                        .permitAll()
                         .requestMatchers("/api/v1/webhooks/**")
                         .permitAll()
                         // Which sign-in methods work, read by the sign-in page.

@@ -2017,6 +2017,36 @@
                 }
             }
         },
+        "/api/v1/store/orders/track": {
+            "post": {
+                "tags": [
+                    "store-order-tracking-controller"
+                ],
+                "operationId": "track",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TrackOrderRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TrackedOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/store/bag/quote": {
             "post": {
                 "tags": [
@@ -10789,6 +10819,177 @@
                     "takenBy",
                     "templateId",
                     "values"
+                ]
+            },
+            "TrackOrderRequest": {
+                "type": "object",
+                "properties": {
+                    "number": {
+                        "type": "string",
+                        "maxLength": 32,
+                        "minLength": 0
+                    },
+                    "phone": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "number",
+                    "phone"
+                ]
+            },
+            "TrackedLine": {
+                "type": "object",
+                "properties": {
+                    "productSlug": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "colourName": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "size": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "imageKey": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "colourName",
+                    "imageKey",
+                    "name",
+                    "productSlug",
+                    "quantity",
+                    "size"
+                ]
+            },
+            "TrackedOrder": {
+                "type": "object",
+                "properties": {
+                    "number": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "PENDING_PAYMENT",
+                            "FAILED",
+                            "PLACED",
+                            "SHIPPED",
+                            "DELIVERED",
+                            "CANCELLED"
+                        ]
+                    },
+                    "paymentMethod": {
+                        "type": "string",
+                        "enum": [
+                            "ONLINE",
+                            "COD"
+                        ]
+                    },
+                    "city": {
+                        "type": "string"
+                    },
+                    "totalRupees": {
+                        "type": "number"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "paidAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "shippedAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "deliveredAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "cancelledAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "courier": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "trackingNumber": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "trackingStatus": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "trackingUrl": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TrackedLine"
+                        }
+                    }
+                },
+                "required": [
+                    "cancelledAt",
+                    "city",
+                    "courier",
+                    "createdAt",
+                    "deliveredAt",
+                    "lines",
+                    "number",
+                    "paidAt",
+                    "paymentMethod",
+                    "shippedAt",
+                    "status",
+                    "totalRupees",
+                    "trackingNumber",
+                    "trackingStatus",
+                    "trackingUrl"
                 ]
             },
             "BagQuoteRequest": {

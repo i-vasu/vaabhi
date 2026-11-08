@@ -40,7 +40,7 @@ export const footerColumns: readonly { title: string; links: readonly NavLink[] 
   {
     title: "Help",
     links: [
-      ["Track order", "/account/orders"],
+      ["Track order", "/track"],
       ["Size guide", "/size-guide"],
       ["Saree care guide", "/care-guide"],
       ["FAQs", "/faq"],

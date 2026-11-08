@@ -23,6 +23,13 @@ Source: the "Vaabhi Storefront Audit & Comprehensive Improvement Checklist" Goog
   - `sitemap.xml` and `robots.txt` built from the API, with absolute canonicals via `SITE_URL`.
   - Fuller homepage description.
   - Footer Shop column lists the categories from `GET /store/categories`; the menu says "Blog".
+- **Phase 3 — built** (`feat/storefront`): guest order tracking (Phase 1 item 8).
+  - `POST /api/v1/store/orders/track` (order number + phone). It returns status, dates, courier and items, but no
+    address, email or phone. A wrong number and a wrong phone get the same 404. After 10 wrong tries an order
+    number answers 429 for 15 minutes.
+  - Live Shiprocket refresh: for a shipped order whose saved courier status is older than 30 minutes, the lookup
+    asks Shiprocket first (at most once per order per 30 minutes). If Shiprocket fails, it shows the saved status.
+  - `/track` page (`?order=WEB-1042` fills in the number); the footer's "Track order" goes there.
 
 ## What the live site actually shows
 
@@ -125,3 +132,5 @@ Source: the "Vaabhi Storefront Audit & Comprehensive Improvement Checklist" Goog
 - **Phase 1:** click every header, drawer and footer link → none 404. Publish and unpublish a policy page → its
   footer link appears and disappears. The WhatsApp button opens WhatsApp with the shop number.
 - **Phase 2:** browser tab titles read "Sarees · Vaabhi". `/sitemap.xml` lists the live products.
+- **Phase 3:** footer → Track order → enter a real order number and its phone → status and items show. A wrong
+  phone says "couldn't find". `WEB-` can be left off.

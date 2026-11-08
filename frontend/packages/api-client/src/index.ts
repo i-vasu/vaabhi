@@ -207,6 +207,8 @@ export type ReturnStatus = OrderReturn["status"];
 export type ReturnRequestForm = Schemas["ReturnRequestForm"];
 export type ReturnDecisionForm = Schemas["ReturnDecisionForm"];
 export type ReturnRefundForm = Schemas["ReturnRefundForm"];
+export type TrackOrderRequest = Schemas["TrackOrderRequest"];
+export type TrackedOrder = Schemas["TrackedOrder"];
 
 /** Field-level message from the API, e.g. `{ field: "variants[0].priceRupees", message: "must be greater than 0" }`. */
 export type FieldError = { field: string; message: string };
@@ -340,6 +342,8 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         request<ShopMeasurementForm[]>("/api/v1/store/measurement-forms", init),
       /** Current prices and stock for the bag kept in the browser. */
       quoteBag: (bag: BagQuoteRequest) => send<BagQuote>("POST", "/api/v1/store/bag/quote", bag),
+      /** Guest order tracking: the order number plus the phone it was placed with. */
+      trackOrder: (lookup: TrackOrderRequest) => send<TrackedOrder>("POST", "/api/v1/store/orders/track", lookup),
     },
     /** Sign-in. Customer calls come from the storefront's server, which keeps the tokens in httpOnly cookies. */
     auth: {

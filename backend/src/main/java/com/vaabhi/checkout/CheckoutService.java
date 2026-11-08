@@ -598,6 +598,23 @@ public class CheckoutService {
         return byNumber(number);
     }
 
+    /** Any online order by its number, for guest tracking (the caller checks the phone). */
+    @Transactional(readOnly = true)
+    Optional<WebOrder> findByNumber(String number) {
+        return find(" WHERE o.number = :number", Map.of(NUMBER, number));
+    }
+
+    /** When the courier status was last saved (webhook or refresh); null when it never was. */
+    @Transactional(readOnly = true)
+    @Nullable
+    OffsetDateTime trackingUpdatedAt(String number) {
+        return jdbc.sql("SELECT tracking_updated_at FROM web_order WHERE number = :number")
+                .param(NUMBER, number)
+                .query(OffsetDateTime.class)
+                .optional()
+                .orElse(null);
+    }
+
     private WebOrder byNumber(String number) {
         return find(" WHERE o.number = :number", Map.of(NUMBER, number))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));

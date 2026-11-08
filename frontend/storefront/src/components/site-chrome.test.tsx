@@ -21,7 +21,7 @@ describe("SiteFooter", () => {
       expect(screen.getByRole("navigation", { name })).toBeInTheDocument();
     expect(screen.getByText(/Handwoven sarees, lehengas and kurta sets/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Sarees" })).toHaveAttribute("href", "/c/sarees");
-    expect(screen.getByRole("link", { name: "Track order" })).toHaveAttribute("href", "/account/orders");
+    expect(screen.getByRole("link", { name: "Track order" })).toHaveAttribute("href", "/track");
     expect(screen.getByRole("link", { name: "Returns & exchanges" })).toHaveAttribute("href", "/policies/returns");
     expect(screen.getByRole("link", { name: "Meet the weavers" })).toHaveAttribute("href", "/weavers");
     expect(screen.getByText(/Made in India/)).toBeInTheDocument();
