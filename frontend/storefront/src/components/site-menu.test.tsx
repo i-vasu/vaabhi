@@ -19,7 +19,7 @@ describe("SiteMenu", () => {
       ["New arrivals", "/new"],
       ["Customise", "/customise"],
       ["Collections", "/collections"],
-      ["Blogs", "/blog"],
+      ["Blog", "/blog"],
       ["Contact us", "/contact"],
     ]);
 

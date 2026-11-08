@@ -12,7 +12,7 @@ export const menuLinks: readonly NavLink[] = [
   ["New arrivals", "/new"],
   ["Customise", "/customise"],
   ["Collections", "/collections"],
-  ["Blogs", "/blog"],
+  ["Blog", "/blog"],
   ["Contact us", "/contact"],
 ];
 
@@ -26,21 +26,17 @@ export function pageHref(page: Pick<ContentPageLink, "slug" | "section">): strin
 /** The website page the shop writes about custom orders, shown on /customise when published. */
 export const CUSTOMISE_PAGE = "customise";
 
+/** The end of the footer's Shop column, after the shop's categories (loaded from the API in site-footer.tsx). */
+export const footerShopListings: readonly NavLink[] = [
+  ["New arrivals", "/new"],
+  ["Best sellers", "/bestsellers"],
+];
+
 /**
- * The footer, as the shop designed it. The help, policy and about links are website pages written in the
+ * The rest of the footer, as the shop designed it. The help, policy and about links are website pages written in the
  * dashboard (Storefront → Website pages, the suggested pages use these same addresses); each shows once published.
  */
 export const footerColumns: readonly { title: string; links: readonly NavLink[] }[] = [
-  {
-    title: "Shop",
-    links: [
-      ["Sarees", "/c/sarees"],
-      ["Lehengas", "/c/lehengas"],
-      ["Kurta sets", "/c/kurta-sets"],
-      ["New arrivals", "/new"],
-      ["Best sellers", "/bestsellers"],
-    ],
-  },
   {
     title: "Help",
     links: [

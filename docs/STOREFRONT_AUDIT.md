@@ -22,6 +22,7 @@ Source: the "Vaabhi Storefront Audit & Comprehensive Improvement Checklist" Goog
   - "Prices include all taxes" on listings (the product page already said so).
   - `sitemap.xml` and `robots.txt` built from the API, with absolute canonicals via `SITE_URL`.
   - Fuller homepage description.
+  - Footer Shop column lists the categories from `GET /store/categories`; the menu says "Blog".
 
 ## What the live site actually shows
 
