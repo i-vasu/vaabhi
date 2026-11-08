@@ -3353,6 +3353,8 @@ export interface components {
             expiresInSeconds: number;
             /** Format: int64 */
             resendAfterSeconds: number;
+            /** @enum {string} */
+            channel: "WHATSAPP" | "SMS";
         };
         GoogleSignIn: {
             credential: string;
@@ -3966,6 +3968,8 @@ export interface components {
         AuthOptions: {
             phoneSignIn: boolean;
             googleSignIn: boolean;
+            /** @enum {string|null} */
+            otpChannel: "WHATSAPP" | "SMS" | null;
         };
         StageLoad: {
             stage: components["schemas"]["ProductionStage"];

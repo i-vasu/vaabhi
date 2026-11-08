@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Banner, Category, HomeContent, ProductSummary } from "@vaabhi/api-client";
+import type { Banner, HomeContent, ProductSummary } from "@vaabhi/api-client";
 import {
   buttonClasses,
   CashIcon,
@@ -12,19 +12,11 @@ import {
 } from "@vaabhi/ui";
 import { api } from "@/lib/api";
 import { whatsappLink } from "@/lib/whatsapp";
-import { categoryColors, fallbackCategoryColors, occasionTones } from "@/lib/home-content";
 import { mediaUrl, photoSrcSet, productCardProps } from "@/lib/listing";
+import { loadCategoryTiles, loadOccasionTiles } from "@/lib/shop-sections";
 
 // Rendered on request; the API response is cached for 60 s, so builds do not need the API.
 export const dynamic = "force-dynamic";
-
-async function loadCategories(): Promise<Category[] | null> {
-  try {
-    return await api.store.listCategories({ next: { revalidate: 60 } });
-  } catch {
-    return null;
-  }
-}
 
 /** Products marked Bestseller in the admin, most popular first; an empty list hides the section. */
 async function loadBestsellers(): Promise<ProductSummary[]> {
@@ -71,11 +63,10 @@ async function loadJoinLink(): Promise<{ href: string; external: boolean }> {
 
 const container = "mx-auto w-full max-w-6xl px-4";
 
-const occasionText = { light: "text-text-on-brand", olive: "text-brand-olive", dark: "text-text-primary" } as const;
-
 export default async function HomePage() {
-  const [categories, bestsellers, home, join] = await Promise.all([
-    loadCategories(),
+  const [categories, occasions, bestsellers, home, join] = await Promise.all([
+    loadCategoryTiles(),
+    loadOccasionTiles(),
     loadBestsellers(),
     loadHome(),
     loadJoinLink(),
@@ -122,81 +113,72 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Shop by category */}
-      <section aria-labelledby="categories-title" className={`${container} flex flex-col gap-4 py-8`}>
-        <SectionHeader id="categories-title" title="Shop by category" />
-        {categories === null ? (
+      {/* Shop by category: the categories that have products, pictured with a real photo */}
+      {categories === null ? (
+        <section aria-labelledby="categories-title" className={`${container} flex flex-col gap-4 py-8`}>
+          <SectionHeader id="categories-title" title="Shop by category" />
           <p className="text-sm text-feedback-error">The catalogue is unavailable right now.</p>
-        ) : (
-          <nav aria-label="Shop by category" className="-mx-4 overflow-x-auto px-4">
-            <ul className="flex gap-4 md:justify-center md:gap-10">
-              {categories.map((category) => {
-                const src = category.imageKey ? mediaUrl(category.imageKey, 400) : undefined;
-                return (
-                  <li key={category.id}>
-                    <CategoryTile
-                      label={category.name ?? ""}
-                      href={`/c/${category.slug}`}
-                      colors={categoryColors[category.slug ?? ""] ?? fallbackCategoryColors}
-                      image={src && category.imageKey ? { src, srcSet: photoSrcSet(category.imageKey) } : undefined}
-                    />
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-        )}
-      </section>
+        </section>
+      ) : (
+        categories.length > 0 && (
+          <section aria-labelledby="categories-title" className={`${container} flex flex-col gap-4 py-8`}>
+            <SectionHeader id="categories-title" title="Shop by category" />
+            <nav aria-label="Shop by category" className="-mx-4 overflow-x-auto px-4">
+              <ul className="flex gap-4 md:justify-center md:gap-10">
+                {categories.map((category) => {
+                  const src = category.imageKey ? mediaUrl(category.imageKey, 400) : undefined;
+                  return (
+                    <li key={category.href}>
+                      <CategoryTile
+                        label={category.label}
+                        href={category.href}
+                        image={src && category.imageKey ? { src, srcSet: photoSrcSet(category.imageKey) } : undefined}
+                      />
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+          </section>
+        )
+      )}
 
-      {/* Shop by occasion: one tile per live occasion banner */}
-      {home.occasions.length > 0 && (
+      {/* Shop by occasion: the occasions products are tagged with, each across every category */}
+      {occasions.length > 0 && (
         <section aria-labelledby="occasions-title" className={`${container} flex flex-col gap-4 py-8`}>
           <SectionHeader id="occasions-title" title="Shop by occasion" />
           <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            {home.occasions.map((occasion, index) => {
-              const photo = bannerPhoto(occasion, "(min-width: 768px) 25vw, 50vw");
-              const tone = occasionTones[index % occasionTones.length]!;
-              const text = occasionText[photo ? "light" : tone.text];
-              const tile =
-                "relative isolate flex h-[150px] flex-col justify-end gap-1 overflow-hidden rounded-sm p-4 transition-opacity hover:opacity-90 md:h-[220px]";
-              const body = (
-                <>
-                  {photo ? (
-                    <>
-                      {/* eslint-disable-next-line @next/next/no-img-element -- R2 serves fixed WebP sizes */}
-                      <img
-                        {...photo}
-                        alt={photo.alt}
-                        loading="lazy"
-                        className="absolute inset-0 -z-10 size-full object-cover"
-                      />
-                      <span
-                        aria-hidden="true"
-                        className="absolute inset-0 -z-10 bg-gradient-to-t from-black/60 to-transparent"
-                      />
-                    </>
-                  ) : (
-                    <span
-                      aria-hidden="true"
-                      className="absolute inset-0 -z-10"
-                      style={{ backgroundImage: `linear-gradient(180deg, ${tone.colors[0]}, ${tone.colors[1]})` }}
-                    />
-                  )}
-                  <span className={`font-serif text-[22px] font-semibold leading-7 ${text}`}>{occasion.title}</span>{" "}
-                  {occasion.link && (
-                    <span className={`text-xs tracking-[0.04em] ${text}`}>{occasion.ctaLabel ?? "Shop now"} →</span>
-                  )}
-                </>
-              );
+            {occasions.map((occasion) => {
+              const src = occasion.imageKey ? mediaUrl(occasion.imageKey, 800) : undefined;
+              const text = src ? "text-text-on-brand" : "text-text-primary";
               return (
-                <li key={occasion.id}>
-                  {occasion.link ? (
-                    <Link href={occasion.link} className={tile}>
-                      {body}
-                    </Link>
-                  ) : (
-                    <div className={tile}>{body}</div>
-                  )}
+                <li key={occasion.href}>
+                  <Link
+                    href={occasion.href}
+                    className={`relative isolate flex h-[150px] flex-col justify-end gap-1 overflow-hidden rounded-sm p-4 transition-opacity hover:opacity-90 md:h-[220px] ${src ? "" : "border border-border-default bg-bg-muted"}`}
+                  >
+                    {src && occasion.imageKey && (
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element -- R2 serves fixed WebP sizes */}
+                        <img
+                          src={src}
+                          srcSet={photoSrcSet(occasion.imageKey)}
+                          sizes="(min-width: 768px) 25vw, 50vw"
+                          alt=""
+                          loading="lazy"
+                          className="absolute inset-0 -z-10 size-full object-cover"
+                        />
+                        <span
+                          aria-hidden="true"
+                          className="absolute inset-0 -z-10 bg-gradient-to-t from-black/60 to-transparent"
+                        />
+                      </>
+                    )}
+                    <span className={`font-serif text-[22px] font-semibold leading-7 ${text}`}>{occasion.label}</span>{" "}
+                    <span className={`text-xs tracking-[0.04em] ${text}`}>
+                      {occasion.count} {occasion.count === 1 ? "piece" : "pieces"} · Shop now →
+                    </span>
+                  </Link>
                 </li>
               );
             })}

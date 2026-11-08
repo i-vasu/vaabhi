@@ -166,7 +166,7 @@ describe("SignInForm", () => {
 
   it("says so when no way to sign in works", () => {
     render(<SignInForm googleClientId={null} phoneSignIn={false} next="/account" />);
-    expect(screen.getByRole("status")).toHaveTextContent("Sign-in is not available right now. Please try again later.");
+    expect(screen.getByRole("status")).toHaveTextContent("Login is not available right now. Please try again later.");
     expect(screen.queryByLabelText("Mobile number")).not.toBeInTheDocument();
   });
 });

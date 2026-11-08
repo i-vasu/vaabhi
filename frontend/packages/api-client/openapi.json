@@ -11694,9 +11694,17 @@
                     "resendAfterSeconds": {
                         "type": "integer",
                         "format": "int64"
+                    },
+                    "channel": {
+                        "type": "string",
+                        "enum": [
+                            "WHATSAPP",
+                            "SMS"
+                        ]
                     }
                 },
                 "required": [
+                    "channel",
                     "expiresInSeconds",
                     "phone",
                     "resendAfterSeconds"
@@ -14389,10 +14397,21 @@
                     },
                     "googleSignIn": {
                         "type": "boolean"
+                    },
+                    "otpChannel": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "WHATSAPP",
+                            "SMS"
+                        ]
                     }
                 },
                 "required": [
                     "googleSignIn",
+                    "otpChannel",
                     "phoneSignIn"
                 ]
             },

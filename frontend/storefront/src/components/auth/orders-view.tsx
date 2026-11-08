@@ -65,8 +65,8 @@ export function OrdersView() {
   if (load.state === "loading") return <p className="text-text-muted">Loading…</p>;
   if (load.state === "signedOut") {
     return (
-      <Link href="/signup?next=/account/orders" className={buttonClasses("primary")}>
-        Sign in to see your orders
+      <Link href="/login?next=/account/orders" className={buttonClasses("primary")}>
+        Login to see your orders
       </Link>
     );
   }

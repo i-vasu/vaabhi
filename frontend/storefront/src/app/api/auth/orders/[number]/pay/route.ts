@@ -7,7 +7,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ num
   const { number } = await params;
   try {
     const started = await withCustomer((token) => api.customer.payOrderAgain(token, number));
-    if (!started) return Response.json({ detail: "Please sign in again", errors: [] }, { status: 401 });
+    if (!started) return Response.json({ detail: "Please log in again", errors: [] }, { status: 401 });
     return Response.json(started, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     return problemResponse(error);

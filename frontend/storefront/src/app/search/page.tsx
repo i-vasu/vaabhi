@@ -4,6 +4,7 @@ import type { SearchResults } from "@vaabhi/api-client";
 import { buttonClasses, chipClasses, CloseIcon, ProductCard, SearchIcon } from "@vaabhi/ui";
 import { ListingToolbar } from "@/components/listing/listing-toolbar";
 import { api } from "@/lib/api";
+import { searchWithRelated, type SearchOutcome } from "@/lib/related-search";
 import {
   appliedFilters,
   apiParams,
@@ -30,16 +31,20 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   return { title: q ? `“${q}”` : "Search", robots: q ? { index: false } : undefined, alternates: { canonical: PATH } };
 }
 
-/** Loads pages 1..n in parallel, so "load more" is a plain link that also works without JavaScript. */
-async function loadResults(state: ListingState): Promise<SearchResults | null> {
+const cached = { next: { revalidate: 60 } };
+
+/**
+ * Page 1 decides how the text matched (exactly, a related word, or nothing: popular pieces); pages 2..n follow the
+ * same match, so "load more" is a plain link that also works without JavaScript.
+ */
+async function loadResults(state: ListingState): Promise<SearchOutcome | null> {
   try {
-    const pages = await Promise.all(
-      Array.from({ length: state.page }, (_, i) =>
-        api.store.search(apiParams(state, i + 1), { next: { revalidate: 60 } }),
-      ),
+    const first = await searchWithRelated(state.q ?? "", apiParams({ ...state, q: undefined }, 1), cached);
+    const q = first.match === "exact" ? state.q : first.match === "related" ? first.term : undefined;
+    const rest = await Promise.all(
+      Array.from({ length: state.page - 1 }, (_, i) => api.store.search(apiParams({ ...state, q }, i + 2), cached)),
     );
-    const first = pages[0]!;
-    return { ...first, items: pages.flatMap((p) => p.items) };
+    return { ...first, results: { ...first.results, items: [first.results, ...rest].flatMap((p) => p.items) } };
   } catch {
     return null;
   }
@@ -51,7 +56,7 @@ async function loadResults(state: ListingState): Promise<SearchResults | null> {
  */
 export default async function SearchPage({ searchParams }: Readonly<Props>) {
   const state = parseListingState(await searchParams);
-  const results = await loadResults(state);
+  const outcome = await loadResults(state);
   const href = (next: ListingState) => listingHref(PATH, next);
   const filtered = Object.keys(state.selected).length > 0 || state.inStock || state.priceMin || state.priceMax;
   const title = state.q ? `Results for “${state.q}”` : filtered ? "Shop the edit" : "Search";
@@ -80,12 +85,22 @@ export default async function SearchPage({ searchParams }: Readonly<Props>) {
         </form>
       </div>
 
-      {results === null ? (
+      {outcome === null ? (
         <div className={`${container} py-16 text-center`}>
           <p className="text-sm text-feedback-error">Search is unavailable right now. Please try again shortly.</p>
         </div>
       ) : (
-        <SearchResultsView state={state} results={results} href={href} />
+        <>
+          {outcome.match !== "exact" && state.q && (
+            <p className={`${container} pt-2 text-sm text-text-secondary`}>
+              No exact match for “{state.q}”.{" "}
+              {outcome.match === "related"
+                ? `Showing pieces related to “${outcome.term}”.`
+                : "Here are some of our most-loved pieces."}
+            </p>
+          )}
+          <SearchResultsView state={state} results={outcome.results} href={href} />
+        </>
       )}
     </>
   );

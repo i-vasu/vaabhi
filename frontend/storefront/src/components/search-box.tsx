@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { CloseIcon, SearchIcon } from "@vaabhi/ui";
-import type { SearchSuggestion } from "@/app/api/search/route";
+import type { SearchSuggestion, SuggestionsResponse } from "@/app/api/search/route";
 import { useMediaBase } from "@/components/media-base";
 import { formatPrice } from "@/lib/format";
 import { mediaUrl } from "@/lib/listing";
@@ -11,7 +11,7 @@ import { mediaUrl } from "@/lib/listing";
 type Results =
   | { state: "idle" }
   | { state: "loading"; query: string }
-  | { state: "done"; query: string; total: number; items: SearchSuggestion[] }
+  | { state: "done"; query: string; total: number; items: SearchSuggestion[]; match: SuggestionsResponse["match"] }
   | { state: "error"; query: string };
 
 /** Wait this long after the last key before asking, so typing "kanjeevaram" is one request, not eleven. */
@@ -54,8 +54,8 @@ export function SearchBox({ className }: Readonly<{ className?: string }>) {
       try {
         const response = await fetch(`/api/search?q=${encodeURIComponent(q)}`, { signal: controller.signal });
         if (!response.ok) throw new Error(String(response.status));
-        const body = (await response.json()) as { total: number; items: SearchSuggestion[] };
-        setResults({ state: "done", query: q, total: body.total, items: body.items });
+        const body = (await response.json()) as SuggestionsResponse;
+        setResults({ state: "done", query: q, total: body.total, items: body.items, match: body.match });
       } catch {
         // A newer keystroke cancelled this request; only real failures are shown.
         if (!controller.signal.aborted) setResults({ state: "error", query: q });
@@ -153,9 +153,16 @@ function SearchResults({
       </div>
     );
   }
+  const exact = results.match === "exact";
   return (
     <div className="max-h-[70dvh] overflow-y-auto border-t border-border-default">
-      <ul aria-label="Suggested products">
+      {!exact && (
+        <p className="px-4 pb-1 pt-3 text-sm text-text-muted">
+          No exact match for “{results.query}”.{" "}
+          {results.match === "related" ? "Here are related pieces:" : "You may like these:"}
+        </p>
+      )}
+      <ul aria-label={exact ? "Suggested products" : "Related products"}>
         {results.items.map((item) => {
           const src = item.imageKey ? mediaUrl(item.imageKey, 400, base) : undefined;
           return (
@@ -197,7 +204,9 @@ function SearchResults({
         onClick={onPick}
         className="block border-t border-border-default px-4 py-3.5 text-center text-sm font-medium text-brand-primary hover:underline"
       >
-        See all {results.total} {results.total === 1 ? "result" : "results"} for “{results.query}”
+        {exact
+          ? `See all ${results.total} ${results.total === 1 ? "result" : "results"} for “${results.query}”`
+          : `See all ${results.total} related ${results.total === 1 ? "piece" : "pieces"}`}
       </Link>
     </div>
   );

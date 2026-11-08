@@ -5,7 +5,7 @@ import { problemResponse, withCustomer } from "@/lib/auth-server";
 export async function GET(): Promise<Response> {
   try {
     const orders = await withCustomer((token) => api.customer.listOrders(token));
-    if (!orders) return Response.json({ detail: "Please sign in", errors: [] }, { status: 401 });
+    if (!orders) return Response.json({ detail: "Please log in", errors: [] }, { status: 401 });
     return Response.json({ orders }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     return problemResponse(error);
