@@ -50,10 +50,22 @@ class ProductListingQueries {
         this.jdbc = jdbc;
     }
 
+    /**
+     * Published products from every category whose name, subtitle, category or facet values (Banarasi, wedding…)
+     * contain the text; with no text, every product. Replaces the category condition of {@link #LISTED}.
+     */
+    private static final String MATCHES = """
+            (CAST(:q AS varchar) IS NULL
+                 OR p.name ILIKE :qLike OR p.subtitle ILIKE :qLike
+                 OR EXISTS (SELECT 1 FROM category c WHERE c.id = p.category_id AND c.name ILIKE :qLike)
+                 OR EXISTS (SELECT 1 FROM product_facet_value pfv JOIN facet_value fv ON fv.id = pfv.facet_value_id
+                            WHERE pfv.product_id = p.id AND fv.name ILIKE :qLike))
+            """;
+
     ProductListingResponse list(CategoryResponse category, ListingQuery query, FacetCatalog.Definitions definitions) {
         var filters = new ListingFilters(category.id(), query, definitions);
-        var counts = counts(filters);
-        var items = items(filters, query);
+        var counts = counts(LISTED, filters);
+        var items = items(LISTED, filters, query);
         return new ProductListingResponse(
                 category,
                 items,
@@ -63,6 +75,31 @@ class ProductListingQueries {
                 query.sort().param(),
                 filterGroups(query, definitions, counts),
                 counts.priceRange());
+    }
+
+    /** Search across the catalogue, with the same filters, counts and sorts as a category listing. */
+    SearchResponse search(@Nullable String text, ListingQuery query, FacetCatalog.Definitions definitions) {
+        var q = text == null || text.isBlank() ? null : text.trim();
+        var filters = new ListingFilters(0, query, definitions);
+        filters.params().put("q", q);
+        filters.params().put("qLike", q == null ? null : "%" + escapeLike(q) + "%");
+        var listed = LISTED.replace("p.category_id = :categoryId", MATCHES);
+        var counts = counts(listed, filters);
+        var items = items(listed, filters, query);
+        return new SearchResponse(
+                q,
+                items,
+                counts.total(),
+                query.page(),
+                query.pageSize(),
+                query.sort().param(),
+                filterGroups(query, definitions, counts),
+                counts.priceRange());
+    }
+
+    /** `ILIKE` treats % and _ as wildcards; a customer typing them means the characters themselves. */
+    private static String escapeLike(String text) {
+        return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 
     // --- items -------------------------------------------------------------------------------------------
@@ -78,13 +115,13 @@ class ProductListingQueries {
             long stockTotal,
             boolean inStock) {}
 
-    private List<ProductSummary> items(ListingFilters filters, ListingQuery query) {
+    private List<ProductSummary> items(String listed, ListingFilters filters, ListingQuery query) {
         var params = new HashMap<>(filters.params());
         params.put("limit", query.pageSize());
         params.put("offset", query.offset());
         // Reviewed for SQL injection (java:S2077): the SQL text is built only from constants, the ProductSort enum
         // and generated parameter names (ListingFilters); every user-supplied value is a bind parameter.
-        var sql = LISTED
+        var sql = listed
                 + "SELECT l.id, l.slug, l.name, l.subtitle, l.badge, l.price_rupees, l.mrp_rupees,"
                 + " l.stock_total, l.in_stock FROM listed l WHERE "
                 + filters.where(null)
@@ -226,7 +263,7 @@ class ProductListingQueries {
     }
 
     /** Total, price range and every option count in one round trip (UNION ALL of one branch per dimension). */
-    private Counts counts(ListingFilters filters) {
+    private Counts counts(String listed, ListingFilters filters) {
         var branches = new ArrayList<String>();
         branches.add(
                 "SELECT 'total' AS dimension, '' AS code, COUNT(*) AS n FROM listed l WHERE " + filters.where(null));
@@ -262,7 +299,7 @@ class ProductListingQueries {
 
         // Reviewed for SQL injection (java:S2077): constant fragments and generated parameter names only, as in
         // items().
-        var sql = LISTED + String.join("\nUNION ALL\n", branches);
+        var sql = listed + String.join("\nUNION ALL\n", branches);
         var rows = jdbc.sql(sql) // NOSONAR
                 .params(filters.params())
                 .query(CountRow.class)

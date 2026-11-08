@@ -1,8 +1,52 @@
-import { ApiError, type Banner, type BannerForm, type BannerSlot } from "@vaabhi/api-client";
+import {
+  ApiError,
+  type Banner,
+  type BannerForm,
+  type BannerSlot,
+  type ContentPageForm,
+  type PageSection,
+} from "@vaabhi/api-client";
 import { api } from "./api";
 import { resizeToWebp, type Rendition } from "./image-resize";
 
 type Resize = (file: Blob, widths: readonly number[]) => Promise<Rendition[]>;
+
+/** The website footer's columns a page can be listed under. */
+export const PAGE_SECTIONS: { section: PageSection; title: string }[] = [
+  { section: "HELP", title: "Help" },
+  { section: "POLICY", title: "Policies" },
+  { section: "ABOUT", title: "About" },
+];
+
+/** Where the page lives on the website (same rule as the storefront): policies under /policies. */
+export function pagePath(page: Pick<ContentPageForm, "slug" | "section">): string {
+  return page.section === "POLICY" ? `/policies/${page.slug}` : `/${page.slug}`;
+}
+
+/** "Returns & exchanges" → "returns-exchanges"; `typing` keeps a trailing dash so the next word can follow. */
+export function slugify(text: string, typing = false): string {
+  const slug = text
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+/, "")
+    .slice(0, 60);
+  return typing ? slug : slug.replace(/-+$/, "");
+}
+
+/** Pages shoppers look for before they buy; offered until each one exists. Names only — the shop writes the text. */
+export const STARTER_PAGES: Pick<ContentPageForm, "slug" | "section" | "title">[] = [
+  { slug: "shipping", section: "POLICY", title: "Shipping" },
+  { slug: "returns", section: "POLICY", title: "Returns & exchanges" },
+  { slug: "cancellation", section: "POLICY", title: "Cancellations" },
+  { slug: "privacy", section: "POLICY", title: "Privacy" },
+  { slug: "terms", section: "POLICY", title: "Terms of use" },
+  { slug: "size-guide", section: "HELP", title: "Size guide" },
+  { slug: "care-guide", section: "HELP", title: "Garment & saree care" },
+  { slug: "faq", section: "HELP", title: "FAQs" },
+  { slug: "about", section: "ABOUT", title: "Our story" },
+  { slug: "weavers", section: "ABOUT", title: "Meet the weavers" },
+];
 
 /** What each home-page slot is for, as the storefront shows it. */
 export const SLOTS: { slot: BannerSlot; title: string; hint: string }[] = [

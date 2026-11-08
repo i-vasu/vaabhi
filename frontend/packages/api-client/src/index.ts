@@ -18,6 +18,12 @@ export type BannerForm = Schemas["BannerForm"];
 export type BannerSlot = Banner["slot"];
 export type HomeContent = Schemas["HomeContent"];
 export type SiteImageUpload = Schemas["SiteImageUpload"];
+export type SearchResults = Schemas["SearchResponse"];
+export type ContentPage = Schemas["ContentPage"];
+export type ContentPageForm = Schemas["ContentPageForm"];
+export type ContentPageLink = Schemas["ContentPageLink"];
+export type PageSection = ContentPage["section"];
+export type ShopContact = Schemas["ShopContact"];
 
 export type BagQuote = Schemas["BagQuote"];
 export type BagQuoteLine = Schemas["BagQuoteLine"];
@@ -318,6 +324,15 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         request<NewArrivalsPage>(`/api/v1/store/new-arrivals${queryString(params)}`, init),
       /** Live home-page banners (hero slides, occasion tiles, craft photo), in order. */
       getHome: (init?: RequestOptions) => request<HomeContent>("/api/v1/store/home", init),
+      /** Products from every category matching `q` (all of them without it), with the category filters. */
+      search: (params?: ListingParams & { q?: string }, init?: RequestOptions) =>
+        request<SearchResults>(`/api/v1/store/products${listingQueryString(params)}`, init),
+      /** Published content pages, for the footer. */
+      listPages: (init?: RequestOptions) => request<ContentPageLink[]>("/api/v1/store/pages", init),
+      getPage: (slug: string, init?: RequestOptions) =>
+        request<ContentPage>(`/api/v1/store/pages/${encodeURIComponent(slug)}`, init),
+      /** Phone, WhatsApp, email, address, socials and hours from the shop profile. */
+      getShop: (init?: RequestOptions) => request<ShopContact>("/api/v1/store/shop", init),
       /** Current prices and stock for the bag kept in the browser. */
       quoteBag: (bag: BagQuoteRequest) => send<BagQuote>("POST", "/api/v1/store/bag/quote", bag),
     },
@@ -477,6 +492,11 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         listCategories: () => request<Category[]>("/api/v1/admin/storefront/categories"),
         setCategoryImage: (id: number, imageKey: string | null) =>
           send<Category>("PUT", `/api/v1/admin/storefront/categories/${id}/image`, { imageKey }),
+        listPages: () => request<ContentPage[]>("/api/v1/admin/storefront/pages"),
+        createPage: (form: ContentPageForm) => send<ContentPage>("POST", "/api/v1/admin/storefront/pages", form),
+        updatePage: (id: number, form: ContentPageForm) =>
+          send<ContentPage>("PUT", `/api/v1/admin/storefront/pages/${id}`, form),
+        removePage: (id: number) => send<void>("DELETE", `/api/v1/admin/storefront/pages/${id}`),
       },
       gallery: {
         list: (params: { kind?: GalleryPhoto["kind"]; templateId?: number; clientId?: number; q?: string } = {}) =>

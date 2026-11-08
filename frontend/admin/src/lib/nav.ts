@@ -327,6 +327,13 @@ export const moreSections: { title: string; items: NavItem[] }[] = [
         description: "Home page banners, occasions and category photos",
         permission: "CATALOGUE",
       },
+      {
+        href: "/storefront/pages/",
+        label: "Website pages",
+        icon: DocumentIcon,
+        description: "Shipping, returns, size guide, about: the website footer pages",
+        permission: "CATALOGUE",
+      },
     ],
   },
   {

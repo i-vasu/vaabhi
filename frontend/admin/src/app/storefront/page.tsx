@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import type { Banner, BannerForm, BannerSlot, Category } from "@vaabhi/api-client";
 import { ArrowDownIcon, ArrowUpIcon, ImageIcon, PlusIcon, TrashIcon } from "@/components/icons";
@@ -42,7 +43,14 @@ export default function StorefrontPage() {
 
   return (
     <section className="mx-auto max-w-4xl">
-      <PageHeader title="Storefront" />
+      <PageHeader
+        title="Storefront"
+        actions={
+          <Link href="/storefront/pages/" className={buttonSecondary}>
+            Website pages
+          </Link>
+        }
+      />
       <p className="mb-6 text-ink-soft">
         What vaabhi.com shows on its home page. Changes appear on the website within a minute.
       </p>
@@ -286,7 +294,7 @@ function BannerSheet({
         )}
         <TextField
           label="Opens"
-          hint="A page on the website, e.g. /c/sarees or /c/sarees?occasion=wedding"
+          hint="A page on the website: /c/sarees, or /search?occasion=wedding for one occasion across the shop"
           placeholder="/c/sarees"
           maxLength={200}
           value={form.link ?? ""}

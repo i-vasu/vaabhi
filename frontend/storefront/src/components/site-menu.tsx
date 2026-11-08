@@ -23,7 +23,7 @@ export function SiteMenu({ className }: Readonly<{ className?: string }>) {
       >
         <MenuIcon size={22} />
       </button>
-      <Sheet open={open} onClose={close} title="Hey, how are you doing today?" side="start">
+      <Sheet open={open} onClose={close} title="Menu" side="start">
         <nav aria-label="Site">
           <ul>
             {menuLinks.map(([label, href]) => (

@@ -11,6 +11,7 @@ import {
   TruckIcon,
 } from "@vaabhi/ui";
 import { api } from "@/lib/api";
+import { whatsappLink } from "@/lib/whatsapp";
 import { categoryColors, fallbackCategoryColors, occasionTones } from "@/lib/home-content";
 import { mediaUrl, photoSrcSet, productCardProps } from "@/lib/listing";
 
@@ -51,15 +52,27 @@ function bannerPhoto(banner: Banner, sizes: string) {
   return src ? { src, srcSet: photoSrcSet(banner.imageKey), sizes, alt: banner.altText ?? "" } : undefined;
 }
 
+/** The shop's WhatsApp number from Settings → Shop profile, or null when it has none (or the API is down). */
+async function loadWhatsapp(): Promise<string | null> {
+  try {
+    return (await api.store.getShop({ next: { revalidate: 60 } })).whatsapp ?? null;
+  } catch {
+    return null;
+  }
+}
+
 const container = "mx-auto w-full max-w-6xl px-4";
-const whatsappHref = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
-  ? `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi Vaabhi, I'd like festive drop updates")}`
-  : "/contact";
 
 const occasionText = { light: "text-text-on-brand", olive: "text-brand-olive", dark: "text-text-primary" } as const;
 
 export default async function HomePage() {
-  const [categories, bestsellers, home] = await Promise.all([loadCategories(), loadBestsellers(), loadHome()]);
+  const [categories, bestsellers, home, whatsapp] = await Promise.all([
+    loadCategories(),
+    loadBestsellers(),
+    loadHome(),
+    loadWhatsapp(),
+  ]);
+  const whatsappHref = whatsapp ? whatsappLink(whatsapp, "Hi Vaabhi, I'd like festive drop updates") : "/contact";
   const hero = home.hero[0];
   const heroPhoto = hero && bannerPhoto(hero, "100vw");
   const craftPhoto = home.craft && bannerPhoto(home.craft, "(min-width: 768px) 50vw, 100vw");

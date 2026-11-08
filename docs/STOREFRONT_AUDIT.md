@@ -3,6 +3,19 @@
 Checked on 2026-11-08 against https://vaabhi.com (release `v0.2.0 (043ab13)`) and the code on `feat/storefront`.
 Source: the "Vaabhi Storefront Audit & Comprehensive Improvement Checklist" Google Doc (18 modules).
 
+## Progress
+
+- **Phase 0 — done** (`feat/storefront`): admin Storefront screen for banners and category photos; home page reads
+  `GET /store/home`.
+- **Phase 1 — done** (`feat/storefront`):
+  - Website pages: `content_page`, V20. Admin → Website pages; served at `/policies/<slug>` and `/<slug>`; the footer
+    lists the published ones.
+  - `GET /store/shop` feeding `/contact`, the footer and the WhatsApp buttons.
+  - `GET /store/products?q=` and `/search`. This page also covers occasions, e.g. `/search?occasion=wedding`.
+  - Header and footer only link to pages that exist: Pre Order, Collections and Blog are gone, and Track order goes
+    to `/account/orders`.
+  - Branded 404, and the drawer title is now "Menu".
+
 ## What the live site actually shows
 
 - **The catalogue is empty.** Every category says "0 styles". `/new` and `/bestsellers` show their empty states.
