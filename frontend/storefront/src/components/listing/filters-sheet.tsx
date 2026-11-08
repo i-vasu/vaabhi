@@ -9,7 +9,7 @@ import { Sheet } from "@/components/sheet";
 const resultsLabel = (total: number) => `${total} ${total === 1 ? "result" : "results"}`;
 
 /** Group order from the Figma filter sheet; anything new from the API goes after these. */
-const ORDER = ["occasion", "fabric", "weave", "work", "colour", "size"];
+const ORDER = ["category", "occasion", "fabric", "weave", "work", "colour", "size", "discount", "tag", "addons"];
 
 type Tab = { code: string; name: string; selectedCount: number; group?: FilterGroup };
 
