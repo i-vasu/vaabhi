@@ -1,5 +1,7 @@
+import { createElement } from "react";
 import type { ListingParams, ProductListing, ProductSummary } from "@vaabhi/api-client";
 import type { BadgeTone, ProductCardProps } from "@vaabhi/ui";
+import { CardWishlist } from "@/components/card-wishlist";
 import { discountLabel, formatPrice } from "./format";
 
 /**
@@ -236,6 +238,7 @@ export function productCardProps(product: ProductSummary): ProductCardProps {
     mrp: mrp > price ? formatPrice(mrp) : undefined,
     discount: discountLabel(price, mrp),
     href: `/p/${product.slug}`,
+    wishlist: createElement(CardWishlist, { slug: product.slug, name: product.name }),
     badge: product.badge ? { label: product.badge.toLowerCase(), tone: badgeTones[product.badge] } : undefined,
     image:
       src && product.image

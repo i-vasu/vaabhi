@@ -157,6 +157,7 @@ describe("product cards", () => {
       href: "/p/kanjeevaram-silk-saree",
       badge: { label: "handloom", tone: "olive" },
       image: { placeholder: ["#C2185B", "#6B0D32"] },
+      wishlist: expect.objectContaining({ props: { slug: "kanjeevaram-silk-saree", name: "Kanjeevaram silk saree" } }),
     });
   });
 

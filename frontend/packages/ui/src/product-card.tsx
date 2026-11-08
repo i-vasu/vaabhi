@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Badge, type BadgeTone } from "./badge";
 import { HeartIcon } from "./icons";
 
@@ -12,9 +13,29 @@ export type ProductCardProps = {
   badge?: { label: string; tone: BadgeTone };
   /** Product photo; until photos exist, a two-colour placeholder gradient. */
   image: { src: string; alt: string; srcSet?: string; sizes?: string } | { placeholder: [string, string] };
+  /**
+   * The wishlist control in the photo's corner, supplied by the app (it owns where the wishlist is kept); usually
+   * a {@link WishlistHeart}. Without it the card shows no heart.
+   */
+  wishlist?: ReactNode;
 };
 
-export function ProductCard({ name, detail, price, mrp, discount, href, badge, image }: ProductCardProps) {
+/** The round heart button the app puts in a card's `wishlist` slot; `pressed` when the product is saved. */
+export function WishlistHeart({ name, pressed, onToggle }: { name: string; pressed: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={pressed}
+      aria-label={pressed ? `Remove ${name} from wishlist` : `Add ${name} to wishlist`}
+      onClick={onToggle}
+      className="absolute right-2 top-2 rounded-full bg-bg-surface p-[5px] text-text-primary hover:text-brand-primary"
+    >
+      <HeartIcon size={16} className={pressed ? "fill-brand-primary text-brand-primary" : undefined} />
+    </button>
+  );
+}
+
+export function ProductCard({ name, detail, price, mrp, discount, href, badge, image, wishlist }: ProductCardProps) {
   return (
     <article className="flex flex-col gap-1.5">
       <div className="relative aspect-[3/4] overflow-hidden rounded-sm">
@@ -44,13 +65,7 @@ export function ProductCard({ name, detail, price, mrp, discount, href, badge, i
             {badge.label}
           </Badge>
         )}
-        <button
-          type="button"
-          aria-label={`Add ${name} to wishlist`}
-          className="absolute right-2 top-2 rounded-full bg-bg-surface p-[5px] text-text-primary hover:text-brand-primary"
-        >
-          <HeartIcon size={16} />
-        </button>
+        {wishlist}
       </div>
       <h3 className="text-sm leading-5 text-text-primary">
         <a href={href} className="hover:underline">
