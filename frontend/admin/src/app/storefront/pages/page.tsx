@@ -183,7 +183,8 @@ function PageSheet({
           onChange={(e) => set({ title: e.target.value, ...(slugTouched ? {} : { slug: slugify(e.target.value) }) })}
         />
         <SelectField
-          label="Footer column"
+          label="Shows in"
+          hint="A footer column, or the blog (vaabhi.com/blog)"
           options={PAGE_SECTIONS.map(({ section, title }) => ({ value: section, label: title }))}
           value={form.section}
           onChange={(section) => set({ section })}

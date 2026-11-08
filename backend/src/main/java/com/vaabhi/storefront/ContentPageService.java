@@ -32,10 +32,14 @@ public class ContentPageService {
                 .list();
     }
 
-    /** Published pages for the storefront footer, by section and position. */
+    /** Published pages for the storefront footer and blog, by section; blog posts newest first. */
     @Transactional(readOnly = true)
     public List<ContentPage.ContentPageLink> published() {
-        return jdbc.sql("SELECT slug, section, title FROM content_page WHERE published ORDER BY section, position, id")
+        return jdbc.sql("""
+                        SELECT slug, section, title, summary, updated_at FROM content_page WHERE published
+                        ORDER BY section, CASE WHEN section = 'BLOG' THEN -EXTRACT(EPOCH FROM created_at) END,
+                                 position, id
+                        """)
                 .query(ContentPage.ContentPageLink.class)
                 .list();
     }

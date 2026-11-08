@@ -17,6 +17,9 @@ describe("SiteMenu", () => {
     expect(links.map((l) => [l.textContent, l.getAttribute("href")])).toEqual([
       ["Best sellers", "/bestsellers"],
       ["New arrivals", "/new"],
+      ["Customise", "/customise"],
+      ["Collections", "/collections"],
+      ["Blogs", "/blog"],
       ["Search", "/search"],
       ["Your orders", "/account/orders"],
       ["Contact us", "/contact"],

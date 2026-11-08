@@ -18,5 +18,5 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function TopLevelPage({ params }: Readonly<Props>) {
   const { page } = await params;
   if (!SLUG.test(page)) notFound();
-  return <ContentPageView slug={page} at="top" />;
+  return <ContentPageView slug={page} path={`/${page}`} />;
 }

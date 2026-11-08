@@ -11,5 +11,5 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 /** A policy written in the dashboard (Storefront → Pages, section Policies), e.g. /policies/shipping. */
 export default async function PolicyPage({ params }: Readonly<Props>) {
-  return <ContentPageView slug={(await params).slug} at="policies" />;
+  return <ContentPageView slug={(await params).slug} path={`/policies/${(await params).slug}`} />;
 }

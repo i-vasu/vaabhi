@@ -11,16 +11,19 @@ import { resizeToWebp, type Rendition } from "./image-resize";
 
 type Resize = (file: Blob, widths: readonly number[]) => Promise<Rendition[]>;
 
-/** The website footer's columns a page can be listed under. */
+/** Where a page is listed: a website footer column, or the blog. */
 export const PAGE_SECTIONS: { section: PageSection; title: string }[] = [
   { section: "HELP", title: "Help" },
   { section: "POLICY", title: "Policies" },
   { section: "ABOUT", title: "About" },
+  { section: "BLOG", title: "Blog" },
 ];
 
-/** Where the page lives on the website (same rule as the storefront): policies under /policies. */
+/** Where the page lives on the website (same rule as the storefront): policies and blog posts have their own paths. */
 export function pagePath(page: Pick<ContentPageForm, "slug" | "section">): string {
-  return page.section === "POLICY" ? `/policies/${page.slug}` : `/${page.slug}`;
+  if (page.section === "POLICY") return `/policies/${page.slug}`;
+  if (page.section === "BLOG") return `/blog/${page.slug}`;
+  return `/${page.slug}`;
 }
 
 /** "Returns & exchanges" → "returns-exchanges"; `typing` keeps a trailing dash so the next word can follow. */
@@ -44,6 +47,8 @@ export const STARTER_PAGES: Pick<ContentPageForm, "slug" | "section" | "title">[
   { slug: "size-guide", section: "HELP", title: "Size guide" },
   { slug: "care-guide", section: "HELP", title: "Garment & saree care" },
   { slug: "faq", section: "HELP", title: "FAQs" },
+  // Shown on the website's Customise page (menu); the slug must stay "customise".
+  { slug: "customise", section: "HELP", title: "Customise" },
   { slug: "about", section: "ABOUT", title: "Our story" },
   { slug: "weavers", section: "ABOUT", title: "Meet the weavers" },
 ];

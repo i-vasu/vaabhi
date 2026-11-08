@@ -24,11 +24,15 @@ public record ContentPage(
         boolean published,
         OffsetDateTime updatedAt) {
 
-    /** The footer column it is listed under; POLICY pages live at /policies/&lt;slug&gt;, the others at /&lt;slug&gt;. */
+    /**
+     * Where it is listed: a footer column, or the blog. POLICY pages live at /policies/&lt;slug&gt;, BLOG posts at
+     * /blog/&lt;slug&gt; (listed on /blog, not in the footer), the others at /&lt;slug&gt;.
+     */
     public enum Section {
         HELP,
         POLICY,
-        ABOUT
+        ABOUT,
+        BLOG
     }
 
     /** Add or edit a page. */
@@ -45,6 +49,12 @@ public record ContentPage(
             @NotBlank @Size(max = 50_000) String body,
             boolean published) {}
 
-    /** A published page as the footer links to it. */
-    public record ContentPageLink(String slug, Section section, String title) {}
+    /**
+     * A published page as the footer and the blog list link to it.
+     *
+     * @param summary the blog list shows it under the title
+     * @param updatedAt when it was last saved, shown as the post's date
+     */
+    public record ContentPageLink(
+            String slug, Section section, String title, @Nullable String summary, OffsetDateTime updatedAt) {}
 }

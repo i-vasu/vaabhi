@@ -2364,7 +2364,7 @@ export interface components {
         ContentPageForm: {
             slug: string;
             /** @enum {string} */
-            section: "HELP" | "POLICY" | "ABOUT";
+            section: "HELP" | "POLICY" | "ABOUT" | "BLOG";
             title: string;
             summary: string | null;
             body: string;
@@ -2375,7 +2375,7 @@ export interface components {
             id: number;
             slug: string;
             /** @enum {string} */
-            section: "HELP" | "POLICY" | "ABOUT";
+            section: "HELP" | "POLICY" | "ABOUT" | "BLOG";
             /** Format: int32 */
             position: number;
             title: string;
@@ -3928,8 +3928,11 @@ export interface components {
         ContentPageLink: {
             slug: string;
             /** @enum {string} */
-            section: "HELP" | "POLICY" | "ABOUT";
+            section: "HELP" | "POLICY" | "ABOUT" | "BLOG";
             title: string;
+            summary: string | null;
+            /** Format: date-time */
+            updatedAt: string;
         };
         NewArrivalsPage: {
             items: components["schemas"]["ProductSummary"][];

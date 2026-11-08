@@ -10,15 +10,23 @@ export type NavLink = readonly [label: string, href: string];
 export const menuLinks: readonly NavLink[] = [
   ["Best sellers", "/bestsellers"],
   ["New arrivals", "/new"],
+  ["Customise", "/customise"],
+  ["Collections", "/collections"],
+  ["Blogs", "/blog"],
   ["Search", "/search"],
   ["Your orders", "/account/orders"],
   ["Contact us", "/contact"],
 ];
 
-/** Where a content page lives: policies under /policies, the rest at the top level. */
+/** Where a content page lives: policies under /policies, blog posts under /blog, the rest at the top level. */
 export function pageHref(page: Pick<ContentPageLink, "slug" | "section">): string {
-  return page.section === "POLICY" ? `/policies/${page.slug}` : `/${page.slug}`;
+  if (page.section === "POLICY") return `/policies/${page.slug}`;
+  if (page.section === "BLOG") return `/blog/${page.slug}`;
+  return `/${page.slug}`;
 }
+
+/** The website page the shop writes about custom orders, shown on /customise when published. */
+export const CUSTOMISE_PAGE = "customise";
 
 /** The footer columns; a column with no links is left out. */
 export function footerColumns(

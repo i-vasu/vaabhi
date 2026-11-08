@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { api } from "@/lib/api";
-import { pageHref } from "@/lib/site-links";
+import { CUSTOMISE_PAGE, pageHref } from "@/lib/site-links";
 import { siteUrl } from "@/lib/site";
 
 // Built on request from the API (builds have no API); the API answers are cached for an hour.
@@ -42,9 +42,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: url("/"), changeFrequency: "daily", priority: 1 },
     { url: url("/new"), changeFrequency: "daily", priority: 0.8 },
     { url: url("/bestsellers"), changeFrequency: "weekly", priority: 0.8 },
+    { url: url("/collections"), changeFrequency: "weekly", priority: 0.8 },
+    { url: url("/customise"), changeFrequency: "monthly", priority: 0.5 },
+    { url: url("/blog"), changeFrequency: "weekly", priority: 0.5 },
     { url: url("/contact"), changeFrequency: "monthly", priority: 0.4 },
     ...categories.map((c) => ({ url: url(`/c/${c.slug}`), changeFrequency: "daily" as const, priority: 0.9 })),
     ...products.map((slug) => ({ url: url(`/p/${slug}`), changeFrequency: "weekly" as const, priority: 0.7 })),
-    ...pages.map((p) => ({ url: url(pageHref(p)), changeFrequency: "monthly" as const, priority: 0.3 })),
+    // The customise page is already listed above as /customise.
+    ...pages
+      .filter((p) => p.slug !== CUSTOMISE_PAGE)
+      .map((p) => ({ url: url(pageHref(p)), changeFrequency: "monthly" as const, priority: 0.3 })),
   ];
 }

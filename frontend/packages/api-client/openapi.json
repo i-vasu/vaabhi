@@ -6954,7 +6954,8 @@
                         "enum": [
                             "HELP",
                             "POLICY",
-                            "ABOUT"
+                            "ABOUT",
+                            "BLOG"
                         ]
                     },
                     "title": {
@@ -7003,7 +7004,8 @@
                         "enum": [
                             "HELP",
                             "POLICY",
-                            "ABOUT"
+                            "ABOUT",
+                            "BLOG"
                         ]
                     },
                     "position": {
@@ -14220,17 +14222,30 @@
                         "enum": [
                             "HELP",
                             "POLICY",
-                            "ABOUT"
+                            "ABOUT",
+                            "BLOG"
                         ]
                     },
                     "title": {
                         "type": "string"
+                    },
+                    "summary": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 },
                 "required": [
                     "section",
                     "slug",
-                    "title"
+                    "summary",
+                    "title",
+                    "updatedAt"
                 ]
             },
             "NewArrivalsPage": {
