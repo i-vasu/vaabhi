@@ -531,13 +531,19 @@ export function Sheet({
   children: ReactNode;
 }) {
   const panel = useRef<HTMLDivElement>(null);
+  // Callers often pass a fresh onClose each render; keeping it in a ref means the effect below runs only when the
+  // sheet opens, so focusing the panel never steals focus from a field being typed in (it closed phone keyboards).
+  const closeRef = useRef(onClose);
+  useEffect(() => {
+    closeRef.current = onClose;
+  });
   useEffect(() => {
     if (!open) return;
-    const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
+    const onKey = (event: KeyboardEvent) => event.key === "Escape" && closeRef.current();
     document.addEventListener("keydown", onKey);
     panel.current?.focus();
     return () => document.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
   // Portalled to <body>: a parent with backdrop-filter (the sticky header) would otherwise trap this fixed
