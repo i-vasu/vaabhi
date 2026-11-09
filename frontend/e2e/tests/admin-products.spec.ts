@@ -11,7 +11,10 @@ test.describe("Admin products", () => {
 
   // Publishing needs a stored photo, which CI cannot store (no R2 credentials): this covers everything up to
   // that point. AdminCatalogueIT covers publish → visible in the store.
-  test("creates a draft with photos picked before saving; publishing waits for a stored photo", async ({ page, request }) => {
+  test("creates a draft with photos picked before saving; publishing waits for a stored photo", async ({
+    page,
+    request,
+  }) => {
     const name = `E2E Ruby Silk Saree ${Date.now()}`;
     // Products lives under More in the sidebar.
     await page.goto(`${urls.admin}/products/`);
@@ -54,7 +57,7 @@ test.describe("Admin products", () => {
     await expect(page.getByRole("button", { name: "Publish", exact: true })).toBeDisabled();
 
     // The URL name sits under the collapsed "More details" section.
-    await page.getByText("More details: web address, care, parcel weight").click();
+    await page.getByText("More details: web address").click();
     const slug = await page.getByRole("textbox", { name: /URL name/ }).inputValue();
     expect((await request.get(`${urls.api}/api/v1/store/products/${slug}`)).status()).toBe(404);
   });
