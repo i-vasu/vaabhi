@@ -13,7 +13,8 @@
     "test": "turbo run test",
     "generate:api": "pnpm --filter @vaabhi/api-client generate",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "prepare": "git -C .. config core.hooksPath .githooks || true"
   },
   "devDependencies": {
     "prettier": "3.9.10",

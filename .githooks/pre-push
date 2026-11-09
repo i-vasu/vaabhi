@@ -1,0 +1,28 @@
+#!/bin/sh
+# Runs the quick CI checks before a push, only for the parts of the repo that changed.
+# Frontend: Prettier on changed files, then lint + typecheck. Backend: Spotless.
+# Tests stay in CI. Skip once with: git push --no-verify
+set -e
+
+root=$(git rev-parse --show-toplevel)
+git fetch -q origin main 2>/dev/null || true
+base=$(git merge-base HEAD origin/main 2>/dev/null || echo HEAD~1)
+changed=$(git diff --name-only --diff-filter=ACMR "$base" HEAD)
+
+front=$(printf '%s\n' "$changed" | grep '^frontend/' | sed 's#^frontend/##' || true)
+if [ -n "$front" ]; then
+  echo "pre-push: frontend checks"
+  cd "$root/frontend"
+  # Prettier only on changed files it can format; unknown file types are ignored.
+  printf '%s\n' "$front" | xargs pnpm exec prettier --check --ignore-unknown
+  pnpm turbo run lint typecheck --output-logs=errors-only
+  cd "$root"
+fi
+
+if printf '%s\n' "$changed" | grep -q '^backend/'; then
+  echo "pre-push: backend formatting (Spotless)"
+  cd "$root/backend"
+  ./mvnw -q spotless:check || { echo "Run: cd backend && ./mvnw spotless:apply"; exit 1; }
+fi
+
+echo "pre-push: ok"
