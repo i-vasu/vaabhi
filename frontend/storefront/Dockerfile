@@ -17,6 +17,8 @@ WORKDIR /app
 RUN addgroup -S app && adduser -S app -G app
 COPY --from=build --chown=app:app /repo/storefront/.next/standalone ./
 COPY --from=build --chown=app:app /repo/storefront/.next/static ./storefront/.next/static
+# Icons, web app manifest and service worker (install as an app).
+COPY --from=build --chown=app:app /repo/storefront/public ./storefront/public
 USER app
 EXPOSE 3000
 # Heap capped for the 1 GB VPS.

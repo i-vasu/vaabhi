@@ -76,7 +76,7 @@ export const orderSettings: OrderSettings = {
   tailorChargeOnAddons: false,
 };
 
-export const calendar: CalendarSettings = { weeklyOff: [], holidays: [] };
+export const calendar: CalendarSettings = { weeklyOff: [], holidays: [], googleCalendarId: null };
 
 export const notifications: NotificationSettings = {
   newOrder: true,

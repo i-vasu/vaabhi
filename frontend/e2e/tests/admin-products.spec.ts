@@ -9,9 +9,12 @@ test.describe("Admin products", () => {
     await signIn(page);
   });
 
-  // Publishing needs a photo and a video, which CI cannot store (no R2 credentials): this covers everything up to
+  // Publishing needs a stored photo, which CI cannot store (no R2 credentials): this covers everything up to
   // that point. AdminCatalogueIT covers publish → visible in the store.
-  test("creates a draft with photos picked before saving; publishing waits for a video", async ({ page, request }) => {
+  test("creates a draft with photos picked before saving; publishing waits for a stored photo", async ({
+    page,
+    request,
+  }) => {
     const name = `E2E Ruby Silk Saree ${Date.now()}`;
     // Products lives under More in the sidebar.
     await page.goto(`${urls.admin}/products/`);
@@ -29,7 +32,7 @@ test.describe("Admin products", () => {
     // Each standard blouse add-on is its own "Quick add" button.
     for (const preset of ["+ Unstitched blouse piece", "+ Stitched blouse, standard size"])
       await page.getByRole("button", { name: preset }).click();
-    const publish = page.getByRole("button", { name: "Save & publish" });
+    const publish = page.getByRole("button", { name: "Publish", exact: true });
     await expect(publish).toBeDisabled();
     await expect(page.getByLabel("Add video")).toBeDisabled();
 
@@ -41,7 +44,8 @@ test.describe("Admin products", () => {
     await page.getByLabel("Add photos").setInputFiles({ name: "front.png", mimeType: "image/png", buffer: png });
     await expect(page.getByText("Uploads when you save", { exact: true })).toBeVisible();
     await expect(page.getByLabel("Add video")).toBeEnabled();
-    await expect(publish).toBeDisabled();
+    // A picked photo is enough to offer Publish (a failed upload keeps it a draft, below).
+    await expect(publish).toBeEnabled();
 
     // Saving creates the draft, then uploads the photo: the API answers 503 because CI has no R2 credentials.
     await page.getByRole("button", { name: "Save", exact: true }).click();
@@ -50,10 +54,10 @@ test.describe("Admin products", () => {
       /front.png: Photo storage is not configured/,
     );
     await expect(page.getByText("Draft", { exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Save & publish" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Publish", exact: true })).toBeDisabled();
 
     // The URL name sits under the collapsed "More details" section.
-    await page.getByText("More details: web address, care, parcel weight").click();
+    await page.getByText("More details: web address").click();
     const slug = await page.getByRole("textbox", { name: /URL name/ }).inputValue();
     expect((await request.get(`${urls.api}/api/v1/store/products/${slug}`)).status()).toBe(404);
   });

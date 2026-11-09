@@ -92,10 +92,10 @@ describe("bag", () => {
   });
 
   it("toggles the wishlist", () => {
-    addToWishlist("kurta");
-    addToWishlist("kurta");
-    expect(wishlistStore.read()).toEqual(["kurta"]);
-    toggleWishlist("kurta");
+    addToWishlist("kurti");
+    addToWishlist("kurti");
+    expect(wishlistStore.read()).toEqual(["kurti"]);
+    toggleWishlist("kurti");
     expect(toggleWishlist("saree")).toBe(true);
     expect(wishlistStore.read()).toEqual(["saree"]);
     expect(toggleWishlist("saree")).toBe(false);

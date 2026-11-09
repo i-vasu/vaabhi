@@ -110,7 +110,7 @@ export default async function HomePage() {
             id="hero-title"
             className={`max-w-xl font-serif text-[40px] font-semibold leading-[44px] md:text-[56px] md:leading-[64px] ${heroPhoto ? "text-text-on-brand" : "text-text-primary"}`}
           >
-            {hero?.title ?? "Handwoven sarees, lehengas & kurta sets"}
+            {hero?.title ?? "Handwoven sarees, lehengas & kurtis"}
           </h1>
           {hero?.subtitle && (
             <p className={`max-w-md text-base ${heroPhoto ? "text-text-on-brand" : "text-text-secondary"}`}>

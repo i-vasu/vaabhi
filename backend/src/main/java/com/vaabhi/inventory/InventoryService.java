@@ -2,7 +2,10 @@ package com.vaabhi.inventory;
 
 import com.vaabhi.shared.rupees.Rupees;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -17,7 +20,8 @@ public class InventoryService {
 
     private static final String ITEMS = """
             SELECT i.id, i.name, i.sku, i.category, i.unit, i.reorder_level, i.cost_rupees,
-                   COALESCE(SUM(m.quantity), 0) AS on_hand
+                   COALESCE(SUM(m.quantity), 0) AS on_hand, i.supplier_name, i.supplier_phone, i.material,
+                   i.colour, i.gsm, i.thread_count, i.width_in, i.notes
             FROM stock_item i LEFT JOIN stock_movement m ON m.item_id = i.id
             """;
 
@@ -35,9 +39,17 @@ public class InventoryService {
             StockItem.Unit unit,
             BigDecimal reorderLevel,
             BigDecimal costRupees,
-            BigDecimal onHand) {
+            BigDecimal onHand,
+            @Nullable String supplierName,
+            @Nullable String supplierPhone,
+            @Nullable String material,
+            @Nullable String colour,
+            @Nullable Integer gsm,
+            @Nullable Integer threadCount,
+            @Nullable BigDecimal widthIn,
+            @Nullable String notes) {
 
-        StockItem item() {
+        StockItem item(List<StockItem.StockPhoto> photos) {
             return new StockItem(
                     id,
                     name,
@@ -48,20 +60,56 @@ public class InventoryService {
                     costRupees,
                     onHand,
                     onHand.compareTo(reorderLevel) <= 0,
-                    onHand.signum() <= 0 ? Rupees.ZERO : Rupees.times(costRupees, onHand));
+                    onHand.signum() <= 0 ? Rupees.ZERO : Rupees.times(costRupees, onHand),
+                    supplierName,
+                    supplierPhone,
+                    material,
+                    colour,
+                    gsm,
+                    threadCount,
+                    widthIn,
+                    notes,
+                    photos);
         }
+    }
+
+    private record PhotoRow(long stockItemId, long id, String photoKey) {}
+
+    /** Reference photos of the given items, in order, by item id. One query for any number of items. */
+    private Map<Long, List<StockItem.StockPhoto>> photosOf(List<Long> itemIds) {
+        if (itemIds.isEmpty()) {
+            return Map.of();
+        }
+        return jdbc.sql("""
+                        SELECT stock_item_id, id, photo_key FROM stock_item_photo
+                        WHERE stock_item_id = ANY(:ids) ORDER BY position, id
+                        """).param("ids", itemIds.toArray(Long[]::new)).query(PhotoRow.class).list().stream()
+                .collect(Collectors.groupingBy(
+                        PhotoRow::stockItemId,
+                        Collectors.mapping(
+                                row -> new StockItem.StockPhoto(row.id(), row.photoKey()), Collectors.toList())));
+    }
+
+    /** An item's reference photos, in order. */
+    @Transactional(readOnly = true)
+    public List<StockItem.StockPhoto> photos(long itemId) {
+        return photosOf(List.of(itemId)).getOrDefault(itemId, List.of());
     }
 
     /** Active items, optionally only those running low or matching a search, by category and name. */
     @Transactional(readOnly = true)
     public List<StockItem> list(@Nullable String query, boolean lowOnly) {
-        var items = jdbc.sql(ITEMS + """
+        var rows = jdbc.sql(ITEMS + """
                         WHERE i.active
                           AND (CAST(:q AS varchar) IS NULL OR lower(i.name) LIKE :q OR lower(i.sku) LIKE :q
                                OR lower(i.category) LIKE :q)
                         GROUP BY i.id ORDER BY lower(coalesce(i.category, '')), lower(i.name)
-                        """).param("q", like(query)).query(ItemRow.class).list().stream()
-                .map(ItemRow::item);
+                        """)
+                .param("q", like(query))
+                .query(ItemRow.class)
+                .list();
+        var photos = photosOf(rows.stream().map(ItemRow::id).toList());
+        var items = rows.stream().map(row -> row.item(photos.getOrDefault(row.id(), List.of())));
         return (lowOnly ? items.filter(StockItem::low) : items).toList();
     }
 
@@ -71,7 +119,7 @@ public class InventoryService {
                 .param("id", id)
                 .query(ItemRow.class)
                 .optional()
-                .map(ItemRow::item)
+                .map(row -> row.item(photos(row.id())))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Stock item not found"));
     }
 
@@ -80,37 +128,44 @@ public class InventoryService {
         try {
             if (id == null) {
                 id = jdbc.sql("""
-                                INSERT INTO stock_item (name, sku, category, unit, reorder_level, cost_rupees)
-                                VALUES (:name, :sku, :category, :unit, :reorder, :cost) RETURNING id
-                                """)
-                        .param("name", form.name().trim())
-                        .param("sku", blankToNull(form.sku()))
-                        .param("category", blankToNull(form.category()))
-                        .param("unit", form.unit().name())
-                        .param("reorder", form.reorderLevel())
-                        .param("cost", form.costRupees())
-                        .query(Long.class)
-                        .single();
+                                INSERT INTO stock_item (name, sku, category, unit, reorder_level, cost_rupees,
+                                    supplier_name, supplier_phone, material, colour, gsm, thread_count, width_in, notes)
+                                VALUES (:name, :sku, :category, :unit, :reorder, :cost, :supplierName, :supplierPhone,
+                                    :material, :colour, :gsm, :threadCount, :widthIn, :notes) RETURNING id
+                                """).params(formParams(form)).query(Long.class).single();
             } else {
                 get(id);
                 jdbc.sql("""
                                 UPDATE stock_item SET name = :name, sku = :sku, category = :category, unit = :unit,
-                                    reorder_level = :reorder, cost_rupees = :cost
+                                    reorder_level = :reorder, cost_rupees = :cost, supplier_name = :supplierName,
+                                    supplier_phone = :supplierPhone, material = :material, colour = :colour,
+                                    gsm = :gsm, thread_count = :threadCount, width_in = :widthIn, notes = :notes
                                 WHERE id = :id
-                                """)
-                        .param("name", form.name().trim())
-                        .param("sku", blankToNull(form.sku()))
-                        .param("category", blankToNull(form.category()))
-                        .param("unit", form.unit().name())
-                        .param("reorder", form.reorderLevel())
-                        .param("cost", form.costRupees())
-                        .param("id", id)
-                        .update();
+                                """).params(formParams(form)).param("id", id).update();
             }
         } catch (DuplicateKeyException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "An item with this name or SKU already exists", e);
         }
         return get(id);
+    }
+
+    private static Map<String, @Nullable Object> formParams(StockItem.StockItemForm form) {
+        Map<String, @Nullable Object> params = new HashMap<>();
+        params.put("name", form.name().trim());
+        params.put("sku", blankToNull(form.sku()));
+        params.put("category", blankToNull(form.category()));
+        params.put("unit", form.unit().name());
+        params.put("reorder", form.reorderLevel());
+        params.put("cost", form.costRupees());
+        params.put("supplierName", blankToNull(form.supplierName()));
+        params.put("supplierPhone", blankToNull(form.supplierPhone()));
+        params.put("material", blankToNull(form.material()));
+        params.put("colour", blankToNull(form.colour()));
+        params.put("gsm", form.gsm());
+        params.put("threadCount", form.threadCount());
+        params.put("widthIn", form.widthIn());
+        params.put("notes", blankToNull(form.notes()));
+        return params;
     }
 
     /** Takes the item off the lists; its movements stay for the ledger. */

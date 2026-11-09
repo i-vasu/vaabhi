@@ -52,6 +52,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/workshop/pieces/{pieceId}/note": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["setWorkPieceNote"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/workshop/pieces/{pieceId}/assignee": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["assignWorkPiece"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/workshop/items/{itemId}/assignee": {
         parameters: {
             query?: never;
@@ -820,6 +852,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/workshop/pieces": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["makePieces"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/workshop/pieces/{pieceId}/photos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["addWorkPiecePhoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/workshop/pieces/{pieceId}/photos/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["startWorkPiecePhotoUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/workshop/items/move": {
         parameters: {
             query?: never;
@@ -910,6 +990,38 @@ export interface paths {
         get: operations["listStock"];
         put?: never;
         post: operations["createStockItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/stock/{id}/photos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["addStockPhoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/stock/{id}/photos/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["startStockPhotoUpload"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1134,6 +1246,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["startMediaUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{productId}/making/work": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["addProductWork"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{productId}/making/materials": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["addProductMaterial"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1924,6 +2068,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/workshop/pieces/by-product/{productId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getPieceByProduct"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/workshop/overview": {
         parameters: {
             query?: never;
@@ -1964,6 +2124,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["listStorefrontCategories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/stock/{id}/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getStockItemProducts"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2076,6 +2252,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getDashboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{productId}/making": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getProductMaking"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2324,6 +2516,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/workshop/pieces/{pieceId}/photos/{photoId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["removeWorkPiecePhoto"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/stock/{id}/photos/{photoId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["removeStockPhoto"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/staff/{id}/sign-in": {
         parameters: {
             query?: never;
@@ -2351,6 +2575,38 @@ export interface paths {
         put?: never;
         post?: never;
         delete: operations["deleteMedia"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{productId}/making/work/{workId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["removeProductWork"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{productId}/making/materials/{materialId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["removeProductMaterial"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2397,14 +2653,32 @@ export interface components {
             /** Format: int32 */
             workingOn: number;
         };
-        AssignForm: {
-            /** Format: int64 */
-            staffId: number | null;
+        PieceNote: {
+            note: string | null;
         };
         Assignee: {
             /** Format: int64 */
             id: number;
             name: string;
+        };
+        Dimension: {
+            label: string;
+            value: number;
+            unit: string;
+        };
+        Fabric: {
+            material: string | null;
+            colour: string | null;
+            widthIn: number | null;
+            /** Format: int32 */
+            gsm: number | null;
+            /** Format: int32 */
+            threadCount: number | null;
+        };
+        Photo: {
+            /** Format: int64 */
+            id: number;
+            key: string;
         };
         ProductionStage: {
             /** Format: int64 */
@@ -2412,6 +2686,35 @@ export interface components {
             name: string;
             /** @enum {string} */
             kind: "WORK" | "READY" | "DELIVERED";
+        };
+        WorkPiece: {
+            /** Format: int64 */
+            pieceId: number;
+            /** Format: int64 */
+            productId: number;
+            productName: string;
+            productSlug: string;
+            productStatus: string;
+            /** Format: int64 */
+            stockItemId: number;
+            stockItemName: string;
+            quantity: number;
+            /** @enum {string} */
+            unit: "PCS" | "M" | "CM" | "KG" | "G" | "L" | "ROLL" | "BOX" | "SET";
+            photoKey: string | null;
+            stage: components["schemas"]["ProductionStage"];
+            /** Format: date-time */
+            stageSince: string;
+            assignedTo: components["schemas"]["Assignee"] | null;
+            assignedPhone: string | null;
+            note: string | null;
+            photos: components["schemas"]["Photo"][];
+            fabric: components["schemas"]["Fabric"];
+            dimensions: components["schemas"]["Dimension"][];
+        };
+        AssignForm: {
+            /** Format: int64 */
+            staffId: number | null;
         };
         WorkItem: {
             /** Format: int64 */
@@ -2524,6 +2827,16 @@ export interface components {
             unit: "PCS" | "M" | "CM" | "KG" | "G" | "L" | "ROLL" | "BOX" | "SET";
             reorderLevel: number;
             costRupees: number;
+            supplierName: string | null;
+            supplierPhone: string | null;
+            material: string | null;
+            colour: string | null;
+            /** Format: int32 */
+            gsm: number | null;
+            /** Format: int32 */
+            threadCount: number | null;
+            widthIn: number | null;
+            notes: string | null;
         };
         StockItem: {
             /** Format: int64 */
@@ -2538,6 +2851,22 @@ export interface components {
             onHand: number;
             low: boolean;
             valueRupees: number;
+            supplierName: string | null;
+            supplierPhone: string | null;
+            material: string | null;
+            colour: string | null;
+            /** Format: int32 */
+            gsm: number | null;
+            /** Format: int32 */
+            threadCount: number | null;
+            widthIn: number | null;
+            notes: string | null;
+            photos: components["schemas"]["StockPhoto"][];
+        };
+        StockPhoto: {
+            /** Format: int64 */
+            id: number;
+            key: string;
         };
         StaffForm: {
             name: string;
@@ -2764,6 +3093,7 @@ export interface components {
         CalendarSettings: {
             weeklyOff: ("MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY")[];
             holidays: components["schemas"]["Holiday"][];
+            googleCalendarId: string | null;
         };
         Holiday: {
             /** Format: date */
@@ -2839,6 +3169,13 @@ export interface components {
             input: "NONE" | "SIZE" | "MEASUREMENTS";
             active: boolean;
         };
+        ProductDimension: {
+            code: string;
+            label: string;
+            /** @enum {string} */
+            unit: "IN" | "CM" | "M";
+            value: number;
+        };
         ProductForm: {
             name: string;
             slug: string | null;
@@ -2853,6 +3190,11 @@ export interface components {
             blouseLengthM: number | null;
             /** Format: int32 */
             shippingWeightGrams: number | null;
+            /** Format: int32 */
+            gsm: number | null;
+            /** Format: int32 */
+            threadCount: number | null;
+            dimensions: components["schemas"]["ProductDimension"][] | null;
             attributes: {
                 [key: string]: string[];
             };
@@ -2889,6 +3231,11 @@ export interface components {
             blouseLengthM: number | null;
             /** Format: int32 */
             shippingWeightGrams: number | null;
+            /** Format: int32 */
+            gsm: number | null;
+            /** Format: int32 */
+            threadCount: number | null;
+            dimensions: components["schemas"]["ProductDimension"][];
             attributes: {
                 [key: string]: string[];
             };
@@ -3474,25 +3821,56 @@ export interface components {
         GoogleSignIn: {
             credential: string;
         };
-        BulkMove: {
+        MakePieces: {
             /** Format: int64 */
-            stageId: number;
-            itemIds: number[];
+            stockItemId: number;
+            pieces: components["schemas"]["PieceForm"][];
         };
-        BoardColumn: {
-            stage: components["schemas"]["ProductionStage"];
-            removed: boolean;
-            items: components["schemas"]["WorkItem"][];
+        PieceForm: {
+            name: string;
+            categorySlug: string;
+            quantity: number;
+            note: string | null;
         };
-        TailoringImageRequest: {
-            /** @enum {string} */
-            purpose: "CLIENT" | "CLOTH" | "ALTERATION" | "PRODUCT";
+        Made: {
+            /** Format: int64 */
+            pieceId: number;
+            /** Format: int64 */
+            productId: number;
+            productName: string;
+            productSlug: string;
+        };
+        PhotoForm: {
+            key: string;
         };
         TailoringImageUpload: {
             key: string;
             uploadUrl: string;
             /** Format: date-time */
             expiresAt: string;
+        };
+        BulkMove: {
+            /** Format: int64 */
+            stageId: number;
+            itemIds: number[] | null;
+            pieceIds: number[] | null;
+            work: components["schemas"]["StageWork"] | null;
+        };
+        StageWork: {
+            /** Format: int64 */
+            staffId: number | null;
+            workerName: string;
+            costRupees: number;
+        };
+        BoardColumn: {
+            stage: components["schemas"]["ProductionStage"];
+            removed: boolean;
+            items: components["schemas"]["WorkItem"][];
+            pieces: components["schemas"]["WorkPiece"][];
+        };
+        TailoringImageRequest: {
+            /** @enum {string} */
+            purpose: "CLIENT" | "CLOTH" | "ALTERATION" | "PRODUCT" | "PIECE";
         };
         Rendition: {
             /** Format: int32 */
@@ -3502,6 +3880,12 @@ export interface components {
         SiteImageUpload: {
             key: string;
             renditions: components["schemas"]["Rendition"][];
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        Upload: {
+            key: string;
+            uploadUrl: string;
             /** Format: date-time */
             expiresAt: string;
         };
@@ -3614,6 +3998,59 @@ export interface components {
             renditions: components["schemas"]["Rendition"][];
             /** Format: date-time */
             expiresAt: string;
+        };
+        ProductWorkForm: {
+            /** Format: int64 */
+            staffId: number | null;
+            workerName: string;
+            workType: string;
+            costRupees: number;
+            /** Format: date */
+            doneOn: string | null;
+            note: string | null;
+        };
+        ProductMaking: {
+            materials: components["schemas"]["ProductMaterial"][];
+            work: components["schemas"]["ProductWork"][];
+            costRupees: number;
+        };
+        ProductMaterial: {
+            /** Format: int64 */
+            id: number;
+            /** Format: int64 */
+            stockItemId: number;
+            stockItemName: string;
+            /** @enum {string} */
+            unit: "PCS" | "M" | "CM" | "KG" | "G" | "L" | "ROLL" | "BOX" | "SET";
+            quantity: number;
+            costRupees: number;
+            supplierName: string | null;
+            material: string | null;
+            /** Format: int32 */
+            gsm: number | null;
+            /** Format: int32 */
+            threadCount: number | null;
+            note: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ProductWork: {
+            /** Format: int64 */
+            id: number;
+            /** Format: int64 */
+            staffId: number | null;
+            workerName: string;
+            workType: string;
+            costRupees: number;
+            /** Format: date */
+            doneOn: string | null;
+            note: string | null;
+        };
+        ProductMaterialForm: {
+            /** Format: int64 */
+            stockItemId: number;
+            quantity: number;
+            note: string | null;
         };
         PayForm: {
             /** @enum {string} */
@@ -4028,6 +4465,11 @@ export interface components {
             sareeLengthM: number | null;
             blouseIncluded: boolean;
             blouseLengthM: number | null;
+            /** Format: int32 */
+            gsm: number | null;
+            /** Format: int32 */
+            threadCount: number | null;
+            dimensions: components["schemas"]["ProductDimension"][];
             attributes: components["schemas"]["AttributeResponse"][];
             variants: components["schemas"]["VariantResponse"][];
             media: components["schemas"]["MediaResponse"][];
@@ -4119,6 +4561,16 @@ export interface components {
             trialsToday: number;
             stageLoad: components["schemas"]["StageLoad"][];
             staffLoad: components["schemas"]["WorkshopStaff"][];
+        };
+        StockUsedIn: {
+            /** Format: int64 */
+            productId: number;
+            productName: string;
+            productSlug: string;
+            productStatus: string;
+            quantity: number;
+            /** Format: date-time */
+            createdAt: string;
         };
         MonthAttendance: {
             /** Format: date */
@@ -4635,6 +5087,58 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["WorkshopStaff"];
+                };
+            };
+        };
+    };
+    setWorkPieceNote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pieceId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PieceNote"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WorkPiece"];
+                };
+            };
+        };
+    };
+    assignWorkPiece: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pieceId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WorkPiece"];
                 };
             };
         };
@@ -6361,6 +6865,78 @@ export interface operations {
             };
         };
     };
+    makePieces: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MakePieces"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Made"][];
+                };
+            };
+        };
+    };
+    addWorkPiecePhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pieceId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhotoForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WorkPiece"];
+                };
+            };
+        };
+    };
+    startWorkPiecePhotoUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pieceId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TailoringImageUpload"];
+                };
+            };
+        };
+    };
     moveWorkItems: {
         parameters: {
             query?: never;
@@ -6562,6 +7138,54 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["StockItem"];
+                };
+            };
+        };
+    };
+    addStockPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhotoForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StockItem"];
+                };
+            };
+        };
+    };
+    startStockPhotoUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Upload"];
                 };
             };
         };
@@ -7041,6 +7665,58 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["MediaUpload"];
+                };
+            };
+        };
+    };
+    addProductWork: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductWorkForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProductMaking"];
+                };
+            };
+        };
+    };
+    addProductMaterial: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductMaterialForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProductMaking"];
                 };
             };
         };
@@ -8494,6 +9170,28 @@ export interface operations {
             };
         };
     };
+    getPieceByProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WorkPiece"];
+                };
+            };
+        };
+    };
     getWorkshopOverview: {
         parameters: {
             query?: never;
@@ -8553,6 +9251,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CategoryResponse"][];
+                };
+            };
+        };
+    };
+    getStockItemProducts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StockUsedIn"][];
                 };
             };
         };
@@ -8702,6 +9422,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["Dashboard"];
+                };
+            };
+        };
+    };
+    getProductMaking: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProductMaking"];
                 };
             };
         };
@@ -9044,6 +9786,52 @@ export interface operations {
             };
         };
     };
+    removeWorkPiecePhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pieceId: number;
+                photoId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WorkPiece"];
+                };
+            };
+        };
+    };
+    removeStockPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                photoId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StockItem"];
+                };
+            };
+        };
+    };
     removeStaffSignIn: {
         parameters: {
             query?: never;
@@ -9085,6 +9873,52 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AdminMedia"][];
+                };
+            };
+        };
+    };
+    removeProductWork: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+                workId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProductMaking"];
+                };
+            };
+        };
+    };
+    removeProductMaterial: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+                materialId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProductMaking"];
                 };
             };
         };

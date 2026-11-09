@@ -9,12 +9,11 @@ import { appVersion } from "@vaabhi/observability";
 import { api } from "@/lib/api";
 import { clearSession, getStaff, getToken } from "@/lib/auth";
 import { canSee, isActive, moreNav, primaryNav, searchableNav } from "@/lib/nav";
+import { recordNavigation } from "@/lib/history";
 import { BellIcon, CalendarPlusIcon, LogoutIcon, SearchIcon } from "./icons";
 import { Sheet, inputClasses } from "./ui";
 
 const SHOP_NAME = "vaabhi";
-/** Opens a new event (or task, from the same screen) in the signed-in Google account's calendar. */
-const GOOGLE_CALENDAR_NEW_EVENT = "https://calendar.google.com/calendar/r/eventedit";
 
 const StaffContext = createContext<StaffProfile | undefined>(undefined);
 
@@ -40,6 +39,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { replace } = useRouter();
   const isLogin = pathname.startsWith("/login");
   const [staff, setStaff] = useState<StaffProfile | undefined>(undefined);
+
+  useEffect(() => recordNavigation(pathname), [pathname]);
 
   useEffect(() => {
     if (isLogin) return;
@@ -180,16 +181,9 @@ function Header({ staff, onSignOut }: { staff: StaffProfile; onSignOut: () => vo
         <button type="button" className={iconButton} aria-label="Search" onClick={() => setSearching(true)}>
           <SearchIcon />
         </button>
-        <a
-          href={GOOGLE_CALENDAR_NEW_EVENT}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={iconButton}
-          aria-label="Add to Google Calendar"
-          title="Add to Google Calendar"
-        >
+        <Link href="/calendar/" className={iconButton} aria-label="Calendar" title="Calendar">
           <CalendarPlusIcon />
-        </a>
+        </Link>
         <Link href="/notifications/" className={iconButton} aria-label="Notifications">
           <BellIcon />
         </Link>

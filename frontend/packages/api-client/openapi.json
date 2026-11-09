@@ -148,6 +148,88 @@
                 }
             }
         },
+        "/api/v1/admin/workshop/pieces/{pieceId}/note": {
+            "put": {
+                "tags": [
+                    "workshop-controller"
+                ],
+                "operationId": "setWorkPieceNote",
+                "parameters": [
+                    {
+                        "name": "pieceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PieceNote"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkPiece"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/workshop/pieces/{pieceId}/assignee": {
+            "put": {
+                "tags": [
+                    "workshop-controller"
+                ],
+                "operationId": "assignWorkPiece",
+                "parameters": [
+                    {
+                        "name": "pieceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AssignForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkPiece"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/workshop/items/{itemId}/assignee": {
             "put": {
                 "tags": [
@@ -2430,6 +2512,111 @@
                 }
             }
         },
+        "/api/v1/admin/workshop/pieces": {
+            "post": {
+                "tags": [
+                    "workshop-controller"
+                ],
+                "operationId": "makePieces",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MakePieces"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Made"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/workshop/pieces/{pieceId}/photos": {
+            "post": {
+                "tags": [
+                    "workshop-controller"
+                ],
+                "operationId": "addWorkPiecePhoto",
+                "parameters": [
+                    {
+                        "name": "pieceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PhotoForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkPiece"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/workshop/pieces/{pieceId}/photos/upload": {
+            "post": {
+                "tags": [
+                    "workshop-controller"
+                ],
+                "operationId": "startWorkPiecePhotoUpload",
+                "parameters": [
+                    {
+                        "name": "pieceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TailoringImageUpload"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/workshop/items/move": {
             "post": {
                 "tags": [
@@ -2699,6 +2886,78 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/StockItem"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/stock/{id}/photos": {
+            "post": {
+                "tags": [
+                    "inventory-controller"
+                ],
+                "operationId": "addStockPhoto",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PhotoForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StockItem"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/stock/{id}/photos/upload": {
+            "post": {
+                "tags": [
+                    "inventory-controller"
+                ],
+                "operationId": "startStockPhotoUpload",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Upload"
                                 }
                             }
                         }
@@ -3451,6 +3710,88 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/MediaUpload"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/products/{productId}/making/work": {
+            "post": {
+                "tags": [
+                    "product-making-controller"
+                ],
+                "operationId": "addProductWork",
+                "parameters": [
+                    {
+                        "name": "productId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductWorkForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductMaking"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/products/{productId}/making/materials": {
+            "post": {
+                "tags": [
+                    "product-making-controller"
+                ],
+                "operationId": "addProductMaterial",
+                "parameters": [
+                    {
+                        "name": "productId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductMaterialForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductMaking"
                                 }
                             }
                         }
@@ -5817,6 +6158,37 @@
                 }
             }
         },
+        "/api/v1/admin/workshop/pieces/by-product/{productId}": {
+            "get": {
+                "tags": [
+                    "workshop-controller"
+                ],
+                "operationId": "getPieceByProduct",
+                "parameters": [
+                    {
+                        "name": "productId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkPiece"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/workshop/overview": {
             "get": {
                 "tags": [
@@ -5900,6 +6272,40 @@
                                     "type": "array",
                                     "items": {
                                         "$ref": "#/components/schemas/CategoryResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/stock/{id}/products": {
+            "get": {
+                "tags": [
+                    "product-making-controller"
+                ],
+                "operationId": "getStockItemProducts",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/StockUsedIn"
                                     }
                                 }
                             }
@@ -6102,6 +6508,37 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/Dashboard"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/products/{productId}/making": {
+            "get": {
+                "tags": [
+                    "product-making-controller"
+                ],
+                "operationId": "getProductMaking",
+                "parameters": [
+                    {
+                        "name": "productId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductMaking"
                                 }
                             }
                         }
@@ -6721,6 +7158,86 @@
                 }
             }
         },
+        "/api/v1/admin/workshop/pieces/{pieceId}/photos/{photoId}": {
+            "delete": {
+                "tags": [
+                    "workshop-controller"
+                ],
+                "operationId": "removeWorkPiecePhoto",
+                "parameters": [
+                    {
+                        "name": "pieceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "photoId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkPiece"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/stock/{id}/photos/{photoId}": {
+            "delete": {
+                "tags": [
+                    "inventory-controller"
+                ],
+                "operationId": "removeStockPhoto",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "photoId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StockItem"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/staff/{id}/sign-in": {
             "delete": {
                 "tags": [
@@ -6788,6 +7305,86 @@
                                     "items": {
                                         "$ref": "#/components/schemas/AdminMedia"
                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/products/{productId}/making/work/{workId}": {
+            "delete": {
+                "tags": [
+                    "product-making-controller"
+                ],
+                "operationId": "removeProductWork",
+                "parameters": [
+                    {
+                        "name": "productId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "workId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductMaking"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/products/{productId}/making/materials/{materialId}": {
+            "delete": {
+                "tags": [
+                    "product-making-controller"
+                ],
+                "operationId": "removeProductMaterial",
+                "parameters": [
+                    {
+                        "name": "productId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "materialId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductMaking"
                                 }
                             }
                         }
@@ -6968,19 +7565,20 @@
                     "workingOn"
                 ]
             },
-            "AssignForm": {
+            "PieceNote": {
                 "type": "object",
                 "properties": {
-                    "staffId": {
+                    "note": {
                         "type": [
-                            "integer",
+                            "string",
                             "null"
                         ],
-                        "format": "int64"
+                        "maxLength": 200,
+                        "minLength": 0
                     }
                 },
                 "required": [
-                    "staffId"
+                    "note"
                 ]
             },
             "Assignee": {
@@ -6997,6 +7595,85 @@
                 "required": [
                     "id",
                     "name"
+                ]
+            },
+            "Dimension": {
+                "type": "object",
+                "properties": {
+                    "label": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number"
+                    },
+                    "unit": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "label",
+                    "unit",
+                    "value"
+                ]
+            },
+            "Fabric": {
+                "type": "object",
+                "properties": {
+                    "material": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "colour": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "widthIn": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "gsm": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "threadCount": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    }
+                },
+                "required": [
+                    "colour",
+                    "gsm",
+                    "material",
+                    "threadCount",
+                    "widthIn"
+                ]
+            },
+            "Photo": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "key": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "key"
                 ]
             },
             "ProductionStage": {
@@ -7027,6 +7704,137 @@
                     "id",
                     "kind",
                     "name"
+                ]
+            },
+            "WorkPiece": {
+                "type": "object",
+                "properties": {
+                    "pieceId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "productId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "productName": {
+                        "type": "string"
+                    },
+                    "productSlug": {
+                        "type": "string"
+                    },
+                    "productStatus": {
+                        "type": "string"
+                    },
+                    "stockItemId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "stockItemName": {
+                        "type": "string"
+                    },
+                    "quantity": {
+                        "type": "number"
+                    },
+                    "unit": {
+                        "type": "string",
+                        "enum": [
+                            "PCS",
+                            "M",
+                            "CM",
+                            "KG",
+                            "G",
+                            "L",
+                            "ROLL",
+                            "BOX",
+                            "SET"
+                        ]
+                    },
+                    "photoKey": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "stage": {
+                        "$ref": "#/components/schemas/ProductionStage"
+                    },
+                    "stageSince": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "assignedTo": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/Assignee"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "assignedPhone": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "note": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "photos": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Photo"
+                        }
+                    },
+                    "fabric": {
+                        "$ref": "#/components/schemas/Fabric"
+                    },
+                    "dimensions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Dimension"
+                        }
+                    }
+                },
+                "required": [
+                    "assignedPhone",
+                    "assignedTo",
+                    "dimensions",
+                    "fabric",
+                    "note",
+                    "photoKey",
+                    "photos",
+                    "pieceId",
+                    "productId",
+                    "productName",
+                    "productSlug",
+                    "productStatus",
+                    "quantity",
+                    "stage",
+                    "stageSince",
+                    "stockItemId",
+                    "stockItemName",
+                    "unit"
+                ]
+            },
+            "AssignForm": {
+                "type": "object",
+                "properties": {
+                    "staffId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "staffId"
                 ]
             },
             "WorkItem": {
@@ -7543,15 +8351,88 @@
                         "type": "number",
                         "maximum": 1000000,
                         "minimum": 0
+                    },
+                    "supplierName": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 120,
+                        "minLength": 0
+                    },
+                    "supplierPhone": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "pattern": "^\\+?[0-9 -]{6,20}$"
+                    },
+                    "material": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 60,
+                        "minLength": 0
+                    },
+                    "colour": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 60,
+                        "minLength": 0
+                    },
+                    "gsm": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32",
+                        "maximum": 2000,
+                        "minimum": 1
+                    },
+                    "threadCount": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32",
+                        "maximum": 5000,
+                        "minimum": 1
+                    },
+                    "widthIn": {
+                        "type": [
+                            "number",
+                            "null"
+                        ],
+                        "maximum": 999,
+                        "minimum": 1
+                    },
+                    "notes": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 500,
+                        "minLength": 0
                     }
                 },
                 "required": [
                     "category",
+                    "colour",
                     "costRupees",
+                    "gsm",
+                    "material",
                     "name",
+                    "notes",
                     "reorderLevel",
                     "sku",
-                    "unit"
+                    "supplierName",
+                    "supplierPhone",
+                    "threadCount",
+                    "unit",
+                    "widthIn"
                 ]
             },
             "StockItem": {
@@ -7604,19 +8485,100 @@
                     },
                     "valueRupees": {
                         "type": "number"
+                    },
+                    "supplierName": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "supplierPhone": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "material": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "colour": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "gsm": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "threadCount": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "widthIn": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "notes": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "photos": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/StockPhoto"
+                        }
                     }
                 },
                 "required": [
                     "category",
+                    "colour",
                     "costRupees",
+                    "gsm",
                     "id",
                     "low",
+                    "material",
                     "name",
+                    "notes",
                     "onHand",
+                    "photos",
                     "reorderLevel",
                     "sku",
+                    "supplierName",
+                    "supplierPhone",
+                    "threadCount",
                     "unit",
-                    "valueRupees"
+                    "valueRupees",
+                    "widthIn"
+                ]
+            },
+            "StockPhoto": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "key": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "key"
                 ]
             },
             "StaffForm": {
@@ -8790,9 +9752,18 @@
                         },
                         "maxItems": 200,
                         "minItems": 0
+                    },
+                    "googleCalendarId": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 200,
+                        "minLength": 0
                     }
                 },
                 "required": [
+                    "googleCalendarId",
                     "holidays",
                     "weeklyOff"
                 ]
@@ -9121,6 +10092,41 @@
                     "priceRupees"
                 ]
             },
+            "ProductDimension": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "maxLength": 40,
+                        "minLength": 0,
+                        "pattern": "^[a-z0-9]++(?:-[a-z0-9]++)*+$"
+                    },
+                    "label": {
+                        "type": "string",
+                        "maxLength": 60,
+                        "minLength": 0
+                    },
+                    "unit": {
+                        "type": "string",
+                        "enum": [
+                            "IN",
+                            "CM",
+                            "M"
+                        ]
+                    },
+                    "value": {
+                        "type": "number",
+                        "maximum": 99999,
+                        "minimum": 0.01
+                    }
+                },
+                "required": [
+                    "code",
+                    "label",
+                    "unit",
+                    "value"
+                ]
+            },
             "ProductForm": {
                 "type": "object",
                 "properties": {
@@ -9206,6 +10212,35 @@
                         "maximum": 30000,
                         "minimum": 10
                     },
+                    "gsm": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32",
+                        "maximum": 2000,
+                        "minimum": 1
+                    },
+                    "threadCount": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32",
+                        "maximum": 5000,
+                        "minimum": 1
+                    },
+                    "dimensions": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "$ref": "#/components/schemas/ProductDimension"
+                        },
+                        "maxItems": 12,
+                        "minItems": 0
+                    },
                     "attributes": {
                         "type": "object",
                         "additionalProperties": {
@@ -9241,11 +10276,14 @@
                     "careInstructions",
                     "categorySlug",
                     "description",
+                    "dimensions",
+                    "gsm",
                     "name",
                     "sareeLengthM",
                     "shippingWeightGrams",
                     "slug",
                     "subtitle",
+                    "threadCount",
                     "variants"
                 ]
             },
@@ -9387,6 +10425,26 @@
                         ],
                         "format": "int32"
                     },
+                    "gsm": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "threadCount": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "dimensions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ProductDimension"
+                        }
+                    },
                     "attributes": {
                         "type": "object",
                         "additionalProperties": {
@@ -9435,6 +10493,8 @@
                     "careInstructions",
                     "categorySlug",
                     "description",
+                    "dimensions",
+                    "gsm",
                     "id",
                     "media",
                     "name",
@@ -9444,6 +10504,7 @@
                     "slug",
                     "status",
                     "subtitle",
+                    "threadCount",
                     "updatedAt",
                     "variants"
                 ]
@@ -12084,65 +13145,97 @@
                     "credential"
                 ]
             },
-            "BulkMove": {
+            "MakePieces": {
                 "type": "object",
                 "properties": {
-                    "stageId": {
+                    "stockItemId": {
                         "type": "integer",
-                        "format": "int64"
+                        "format": "int64",
+                        "exclusiveMinimum": 0
                     },
-                    "itemIds": {
+                    "pieces": {
                         "type": "array",
                         "items": {
-                            "type": "integer",
-                            "format": "int64"
+                            "$ref": "#/components/schemas/PieceForm"
                         },
-                        "maxItems": 100,
+                        "maxItems": 20,
                         "minItems": 1
                     }
                 },
                 "required": [
-                    "itemIds",
-                    "stageId"
+                    "pieces",
+                    "stockItemId"
                 ]
             },
-            "BoardColumn": {
+            "PieceForm": {
                 "type": "object",
                 "properties": {
-                    "stage": {
-                        "$ref": "#/components/schemas/ProductionStage"
-                    },
-                    "removed": {
-                        "type": "boolean"
-                    },
-                    "items": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/WorkItem"
-                        }
-                    }
-                },
-                "required": [
-                    "items",
-                    "removed",
-                    "stage"
-                ]
-            },
-            "TailoringImageRequest": {
-                "type": "object",
-                "properties": {
-                    "purpose": {
+                    "name": {
                         "type": "string",
-                        "enum": [
-                            "CLIENT",
-                            "CLOTH",
-                            "ALTERATION",
-                            "PRODUCT"
-                        ]
+                        "maxLength": 160,
+                        "minLength": 0
+                    },
+                    "categorySlug": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "quantity": {
+                        "type": "number",
+                        "maximum": 100000,
+                        "minimum": 0.01
+                    },
+                    "note": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 200,
+                        "minLength": 0
                     }
                 },
                 "required": [
-                    "purpose"
+                    "categorySlug",
+                    "name",
+                    "note",
+                    "quantity"
+                ]
+            },
+            "Made": {
+                "type": "object",
+                "properties": {
+                    "pieceId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "productId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "productName": {
+                        "type": "string"
+                    },
+                    "productSlug": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "pieceId",
+                    "productId",
+                    "productName",
+                    "productSlug"
+                ]
+            },
+            "PhotoForm": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "maxLength": 120,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "key"
                 ]
             },
             "TailoringImageUpload": {
@@ -12163,6 +13256,129 @@
                     "expiresAt",
                     "key",
                     "uploadUrl"
+                ]
+            },
+            "BulkMove": {
+                "type": "object",
+                "properties": {
+                    "stageId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "itemIds": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "integer",
+                            "format": "int64"
+                        },
+                        "maxItems": 100,
+                        "minItems": 0
+                    },
+                    "pieceIds": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "integer",
+                            "format": "int64"
+                        },
+                        "maxItems": 100,
+                        "minItems": 0
+                    },
+                    "work": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/StageWork"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "itemIds",
+                    "pieceIds",
+                    "stageId",
+                    "work"
+                ]
+            },
+            "StageWork": {
+                "type": "object",
+                "properties": {
+                    "staffId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "workerName": {
+                        "type": "string",
+                        "maxLength": 120,
+                        "minLength": 0
+                    },
+                    "costRupees": {
+                        "type": "number",
+                        "maximum": 1000000,
+                        "minimum": 0
+                    }
+                },
+                "required": [
+                    "costRupees",
+                    "staffId",
+                    "workerName"
+                ]
+            },
+            "BoardColumn": {
+                "type": "object",
+                "properties": {
+                    "stage": {
+                        "$ref": "#/components/schemas/ProductionStage"
+                    },
+                    "removed": {
+                        "type": "boolean"
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/WorkItem"
+                        }
+                    },
+                    "pieces": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/WorkPiece"
+                        }
+                    }
+                },
+                "required": [
+                    "items",
+                    "pieces",
+                    "removed",
+                    "stage"
+                ]
+            },
+            "TailoringImageRequest": {
+                "type": "object",
+                "properties": {
+                    "purpose": {
+                        "type": "string",
+                        "enum": [
+                            "CLIENT",
+                            "CLOTH",
+                            "ALTERATION",
+                            "PRODUCT",
+                            "PIECE"
+                        ]
+                    }
+                },
+                "required": [
+                    "purpose"
                 ]
             },
             "Rendition": {
@@ -12202,6 +13418,26 @@
                     "expiresAt",
                     "key",
                     "renditions"
+                ]
+            },
+            "Upload": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "uploadUrl": {
+                        "type": "string"
+                    },
+                    "expiresAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "expiresAt",
+                    "key",
+                    "uploadUrl"
                 ]
             },
             "StockMovementForm": {
@@ -12685,6 +13921,242 @@
                     "expiresAt",
                     "media",
                     "renditions"
+                ]
+            },
+            "ProductWorkForm": {
+                "type": "object",
+                "properties": {
+                    "staffId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "workerName": {
+                        "type": "string",
+                        "maxLength": 120,
+                        "minLength": 0
+                    },
+                    "workType": {
+                        "type": "string",
+                        "maxLength": 60,
+                        "minLength": 0
+                    },
+                    "costRupees": {
+                        "type": "number",
+                        "maximum": 1000000,
+                        "minimum": 0
+                    },
+                    "doneOn": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "note": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 200,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "costRupees",
+                    "doneOn",
+                    "note",
+                    "staffId",
+                    "workType",
+                    "workerName"
+                ]
+            },
+            "ProductMaking": {
+                "type": "object",
+                "properties": {
+                    "materials": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ProductMaterial"
+                        }
+                    },
+                    "work": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ProductWork"
+                        }
+                    },
+                    "costRupees": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "costRupees",
+                    "materials",
+                    "work"
+                ]
+            },
+            "ProductMaterial": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "stockItemId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "stockItemName": {
+                        "type": "string"
+                    },
+                    "unit": {
+                        "type": "string",
+                        "enum": [
+                            "PCS",
+                            "M",
+                            "CM",
+                            "KG",
+                            "G",
+                            "L",
+                            "ROLL",
+                            "BOX",
+                            "SET"
+                        ]
+                    },
+                    "quantity": {
+                        "type": "number"
+                    },
+                    "costRupees": {
+                        "type": "number"
+                    },
+                    "supplierName": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "material": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "gsm": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "threadCount": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "note": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "costRupees",
+                    "createdAt",
+                    "gsm",
+                    "id",
+                    "material",
+                    "note",
+                    "quantity",
+                    "stockItemId",
+                    "stockItemName",
+                    "supplierName",
+                    "threadCount",
+                    "unit"
+                ]
+            },
+            "ProductWork": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "staffId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "workerName": {
+                        "type": "string"
+                    },
+                    "workType": {
+                        "type": "string"
+                    },
+                    "costRupees": {
+                        "type": "number"
+                    },
+                    "doneOn": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "note": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "costRupees",
+                    "doneOn",
+                    "id",
+                    "note",
+                    "staffId",
+                    "workType",
+                    "workerName"
+                ]
+            },
+            "ProductMaterialForm": {
+                "type": "object",
+                "properties": {
+                    "stockItemId": {
+                        "type": "integer",
+                        "format": "int64",
+                        "exclusiveMinimum": 0
+                    },
+                    "quantity": {
+                        "type": "number",
+                        "maximum": 100000,
+                        "minimum": 0.01
+                    },
+                    "note": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 200,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "note",
+                    "quantity",
+                    "stockItemId"
                 ]
             },
             "PayForm": {
@@ -14506,6 +15978,26 @@
                             "null"
                         ]
                     },
+                    "gsm": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "threadCount": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "dimensions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ProductDimension"
+                        }
+                    },
                     "attributes": {
                         "type": "array",
                         "items": {
@@ -14540,7 +16032,9 @@
                     "careInstructions",
                     "category",
                     "description",
+                    "dimensions",
                     "discountPercent",
+                    "gsm",
                     "media",
                     "mrpRupees",
                     "name",
@@ -14548,6 +16042,7 @@
                     "sareeLengthM",
                     "slug",
                     "subtitle",
+                    "threadCount",
                     "variants"
                 ]
             },
@@ -14888,6 +16383,39 @@
                     "stageLoad",
                     "trialsToday",
                     "unassigned"
+                ]
+            },
+            "StockUsedIn": {
+                "type": "object",
+                "properties": {
+                    "productId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "productName": {
+                        "type": "string"
+                    },
+                    "productSlug": {
+                        "type": "string"
+                    },
+                    "productStatus": {
+                        "type": "string"
+                    },
+                    "quantity": {
+                        "type": "number"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "createdAt",
+                    "productId",
+                    "productName",
+                    "productSlug",
+                    "productStatus",
+                    "quantity"
                 ]
             },
             "MonthAttendance": {

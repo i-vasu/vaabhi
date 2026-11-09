@@ -39,6 +39,9 @@ public record ProductForm(
         boolean blouseIncluded,
         @Nullable @DecimalMin("0.1") @DecimalMax("2.0") BigDecimal blouseLengthM,
         @Nullable @Min(10) @Max(30000) Integer shippingWeightGrams,
+        @Nullable @Min(1) @Max(2000) Integer gsm,
+        @Nullable @Min(1) @Max(5000) Integer threadCount,
+        @Nullable @Size(max = 12) List<@Valid @NotNull ProductDimension> dimensions,
         @NotNull Map<String, List<String>> attributes,
         @NotNull @Size(max = 200) List<@Valid @NotNull VariantForm> variants,
         @NotNull @Size(max = 10) List<@Valid @NotNull AddonForm> addons) {}

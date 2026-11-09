@@ -26,6 +26,15 @@ export const lining: StockItem = {
   onHand: 3.5,
   low: true,
   valueRupees: 420,
+  supplierName: "Sri Lakshmi Silks",
+  supplierPhone: "98450 12345",
+  material: "Silk",
+  colour: null,
+  gsm: 60,
+  threadCount: null,
+  widthIn: 44,
+  notes: null,
+  photos: [],
 };
 
 export const movement: StockMovement = {

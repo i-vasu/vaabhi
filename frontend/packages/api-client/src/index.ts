@@ -138,6 +138,12 @@ export type WorkshopOverview = Schemas["WorkshopOverview"];
 export type WorkshopStaff = Schemas["WorkshopStaff"];
 export type StageLoad = Schemas["StageLoad"];
 export type BulkMove = Schemas["BulkMove"];
+export type WorkPiece = Schemas["WorkPiece"];
+export type MakePieces = Schemas["MakePieces"];
+export type MadePiece = Schemas["Made"];
+export type StageWork = Schemas["StageWork"];
+export type StockPhoto = Schemas["StockPhoto"];
+export type PhotoUpload = Schemas["Upload"];
 export type Invoice = Schemas["Invoice"];
 export type InvoiceLine = Schemas["InvoiceLine"];
 export type InvoiceSummary = Schemas["InvoiceSummary"];
@@ -157,6 +163,13 @@ export type StockItemForm = Schemas["StockItemForm"];
 export type StockUnit = StockItem["unit"];
 export type StockMovement = Schemas["StockMovement"];
 export type StockMovementForm = Schemas["StockMovementForm"];
+export type ProductDimension = Schemas["ProductDimension"];
+export type ProductMaking = Schemas["ProductMaking"];
+export type ProductMaterial = Schemas["ProductMaterial"];
+export type ProductWork = Schemas["ProductWork"];
+export type MaterialForm = Schemas["ProductMaterialForm"];
+export type WorkForm = Schemas["ProductWorkForm"];
+export type StockUsedIn = Schemas["StockUsedIn"];
 export type Coupon = Schemas["Coupon"];
 export type CouponForm = Schemas["CouponForm"];
 export type CouponCheck = Schemas["CouponCheck"];
@@ -479,6 +492,13 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         movements: (id: number) => request<StockMovement[]>(`/api/v1/admin/stock/${id}/movements`),
         move: (id: number, form: StockMovementForm) =>
           send<StockMovement>("POST", `/api/v1/admin/stock/${id}/movements`, form),
+        /** Products made from this item, newest first. */
+        products: (id: number) => request<StockUsedIn[]>(`/api/v1/admin/stock/${id}/products`),
+        /** Reference photos: start an upload (PUT the WebP to uploadUrl), then save its key. */
+        startPhotoUpload: (id: number) => send<PhotoUpload>("POST", `/api/v1/admin/stock/${id}/photos/upload`),
+        addPhoto: (id: number, key: string) => send<StockItem>("POST", `/api/v1/admin/stock/${id}/photos`, { key }),
+        removePhoto: (id: number, photoId: number) =>
+          send<StockItem>("DELETE", `/api/v1/admin/stock/${id}/photos/${photoId}`),
       },
       engage: {
         coupons: () => request<Coupon[]>("/api/v1/admin/engage/coupons"),
@@ -632,6 +652,24 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         staff: () => request<WorkshopStaff[]>("/api/v1/admin/workshop/staff"),
         saveStages: (staffId: number, stageIds: number[]) =>
           send<WorkshopStaff>("PUT", `/api/v1/admin/workshop/staff/${staffId}/stages`, { stageIds }),
+        /** "Make products": cuts a stock item into pieces, each a draft product on the board. */
+        makePieces: (form: MakePieces) => send<MadePiece[]>("POST", "/api/v1/admin/workshop/pieces", form),
+        /** The product's piece while it is on the board; null when it is not (404). */
+        pieceByProduct: (productId: number) =>
+          request<WorkPiece>(`/api/v1/admin/workshop/pieces/by-product/${productId}`).catch((error: unknown) => {
+            if (error instanceof ApiError && error.status === 404) return null;
+            throw error;
+          }),
+        assignPiece: (pieceId: number, staffId: number | null) =>
+          send<WorkPiece>("PUT", `/api/v1/admin/workshop/pieces/${pieceId}/assignee`, { staffId }),
+        setPieceNote: (pieceId: number, note: string | null) =>
+          send<WorkPiece>("PUT", `/api/v1/admin/workshop/pieces/${pieceId}/note`, { note }),
+        startPiecePhotoUpload: (pieceId: number) =>
+          send<TailoringImageUpload>("POST", `/api/v1/admin/workshop/pieces/${pieceId}/photos/upload`),
+        addPiecePhoto: (pieceId: number, key: string) =>
+          send<WorkPiece>("POST", `/api/v1/admin/workshop/pieces/${pieceId}/photos`, { key }),
+        removePiecePhoto: (pieceId: number, photoId: number) =>
+          send<WorkPiece>("DELETE", `/api/v1/admin/workshop/pieces/${pieceId}/photos/${photoId}`),
       },
       money: {
         invoices: (params: { q?: string; from?: string; to?: string; page?: number; pageSize?: number } = {}) =>
@@ -659,6 +697,16 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
       listProducts: (params: AdminListParams = {}) =>
         request<AdminProductPage>(`/api/v1/admin/products${listingQueryString(params)}`),
       getProduct: (id: number) => request<AdminProduct>(`/api/v1/admin/products/${id}`),
+      /** What a product was made from (stock lots) and who worked on it. */
+      productMaking: (id: number) => request<ProductMaking>(`/api/v1/admin/products/${id}/making`),
+      addProductMaterial: (id: number, form: MaterialForm) =>
+        send<ProductMaking>("POST", `/api/v1/admin/products/${id}/making/materials`, form),
+      removeProductMaterial: (id: number, materialId: number) =>
+        send<ProductMaking>("DELETE", `/api/v1/admin/products/${id}/making/materials/${materialId}`),
+      addProductWork: (id: number, form: WorkForm) =>
+        send<ProductMaking>("POST", `/api/v1/admin/products/${id}/making/work`, form),
+      removeProductWork: (id: number, workId: number) =>
+        send<ProductMaking>("DELETE", `/api/v1/admin/products/${id}/making/work/${workId}`),
       createProduct: (form: ProductForm) => send<AdminProduct>("POST", "/api/v1/admin/products", form),
       updateProduct: (id: number, form: ProductForm) => send<AdminProduct>("PUT", `/api/v1/admin/products/${id}`, form),
       setStatus: (id: number, action: "publish" | "unpublish" | "archive") =>

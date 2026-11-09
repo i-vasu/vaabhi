@@ -31,6 +31,8 @@ class ProductDetailQueries {
             @Nullable BigDecimal sareeLengthM,
             boolean blouseIncluded,
             @Nullable BigDecimal blouseLengthM,
+            @Nullable Integer gsm,
+            @Nullable Integer threadCount,
             String categorySlug,
             String categoryName) {}
 
@@ -46,7 +48,7 @@ class ProductDetailQueries {
     Optional<ProductDetailResponse> find(String slug) {
         var product = jdbc.sql("""
                         SELECT p.id, p.slug, p.name, p.subtitle, p.description, p.badge, p.care_instructions,
-                               p.saree_length_m, p.blouse_included, p.blouse_length_m,
+                               p.saree_length_m, p.blouse_included, p.blouse_length_m, p.gsm, p.thread_count,
                                c.slug AS category_slug, c.name AS category_name
                         FROM product p
                         JOIN category c ON c.id = p.category_id
@@ -96,6 +98,9 @@ class ProductDetailQueries {
                 row.sareeLengthM(),
                 row.blouseIncluded(),
                 row.blouseLengthM(),
+                row.gsm(),
+                row.threadCount(),
+                AdminProductStore.dimensions(jdbc, row.id()),
                 attributes(row.id()),
                 variants,
                 media(row.id()),

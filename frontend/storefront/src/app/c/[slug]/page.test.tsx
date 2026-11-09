@@ -128,9 +128,9 @@ describe("CategoryPage", () => {
   });
 
   it("has a title and canonical URL", async () => {
-    await expect(generateMetadata(props({}, "kurta-sets"))).resolves.toEqual({
-      title: "Kurta sets",
-      alternates: { canonical: "/c/kurta-sets" },
+    await expect(generateMetadata(props({}, "kurtis"))).resolves.toEqual({
+      title: "Kurtis",
+      alternates: { canonical: "/c/kurtis" },
     });
   });
 });

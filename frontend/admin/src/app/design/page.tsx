@@ -53,7 +53,7 @@ export default function GalleryPage() {
   return (
     <section className="mx-auto max-w-5xl">
       <PageHeader
-        title="Gallery"
+        title="Design"
         actions={
           <button type="button" className={buttonPrimary} onClick={() => setAdding(true)}>
             <PlusIcon size={18} /> Add photo
@@ -141,7 +141,7 @@ function AddPhotoSheet({
   const action = useAction();
 
   return (
-    <Sheet open title="Add to gallery" onClose={onClose}>
+    <Sheet open title="Add to Design" onClose={onClose}>
       <div className="flex flex-col gap-4">
         <SelectField
           label="Gallery"

@@ -74,7 +74,7 @@ describe("ProductPhotos", () => {
     Object.defineProperty(huge, "size", { value: 31 * 1024 * 1024 });
     fireEvent.change(screen.getByLabelText("Add photos"), { target: { files: [front, huge] } });
     expect(onQueue).toHaveBeenLastCalledWith([expect.objectContaining({ kind: "IMAGE", file: front })]);
-    expect(screen.getByText(/huge.jpg: failed. Larger than 30 MB/)).toBeInTheDocument();
+    expect(screen.getByText(/huge.jpg: failed. Too large/)).toBeInTheDocument();
     expect(uploadCalls).toHaveLength(0);
 
     const queuedPhoto = onQueue.mock.lastCall![0][0];
@@ -85,7 +85,9 @@ describe("ProductPhotos", () => {
     expect(add).toBeEnabled();
 
     fireEvent.change(add, { target: { files: [new File(["x"], "clip.avi", { type: "video/x-msvideo" })] } });
-    expect(screen.getByText(/clip.avi: failed. Use an MP4, MOV or WebM video/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/clip.avi: failed. Not a supported video \(video\/x-msvideo\). Use MP4, MOV or WebM/),
+    ).toBeInTheDocument();
     const clip = new File(["x"], "clip.mp4", { type: "video/mp4" });
     fireEvent.change(add, { target: { files: [clip] } });
     expect(onQueue).toHaveBeenLastCalledWith([queuedPhoto, expect.objectContaining({ kind: "VIDEO", file: clip })]);
@@ -109,7 +111,7 @@ describe("ProductPhotos", () => {
     Object.defineProperty(big, "size", { value: 201 * 1024 * 1024 });
 
     fireEvent.change(screen.getByLabelText("Add video"), { target: { files: [big] } });
-    expect(screen.getByText(/big.mp4: failed. Larger than 200 MB/)).toBeInTheDocument();
+    expect(screen.getByText(/big.mp4: failed. Too large/)).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Add video"), { target: { files: [clip] } });
     await waitFor(() => expect(onChange).toHaveBeenCalledWith([photo(1), video(9)]));
     expect(uploadCalls).toEqual([["video", 7, clip, { alt: "Silk saree, Ruby", colourName: null }]]);
@@ -181,7 +183,7 @@ describe("ProductPhotos", () => {
     await waitFor(() =>
       expect(within(list).getByText(/a.jpg: failed. createImageBitmap is not defined/)).toBeInTheDocument(),
     );
-    expect(within(list).getByText(/huge.jpg: failed. Larger than 30 MB/)).toBeInTheDocument();
+    expect(within(list).getByText(/huge.jpg: failed. Too large/)).toBeInTheDocument();
     expect(uploadCalls).toEqual([[7, expect.anything(), { alt: "Silk saree", colourName: null }]]);
   });
 
@@ -212,12 +214,9 @@ describe("ProductPhotos", () => {
     );
   });
 
-  it("shows the upload guidelines and the photo count", () => {
+  it("shows the photo count", () => {
     setup([photo(1), photo(2)]);
     expect(screen.getByText(/2 of 12 photos · no video yet/)).toBeInTheDocument();
-    const guidelines = within(screen.getByRole("list", { name: "Photo guidelines" })).getAllByRole("listitem");
-    expect(guidelines.map((li) => li.textContent?.split(":")[0])).toEqual(expect.arrayContaining(["Formats", "Size"]));
-    expect(guidelines.some((li) => li.textContent?.includes("Up to 12 photos per product"))).toBe(true);
   });
 
   it("stops at 12 photos", async () => {

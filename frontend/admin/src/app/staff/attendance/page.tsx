@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import type { AttendanceEntry, AttendanceStatus, DayAttendance } from "@vaabhi/api-client";
+import { cn } from "@vaabhi/ui";
+import { AttendanceMonth } from "@/components/attendance-month";
 import { ErrorNote, Pill } from "@/components/tailoring";
 import { EmptyState, LoadState, PageHeader, TextField, buttonPrimary, buttonSecondary } from "@/components/ui";
 import { CalendarIcon } from "@/components/icons";
@@ -10,8 +11,46 @@ import { api } from "@/lib/api";
 import { ATTENDANCE, attendanceLabel, hhmm, minutes, worked } from "@/lib/staff";
 import { addDays, formatDate, today, useAction, useLoad } from "@/lib/tailoring";
 
-/** Mark who came in on a day; late and overtime come from each person's shift. */
+type View = "day" | "month";
+
+/** Attendance in one place: mark a day (late and overtime come from each person's shift) or see the month. */
 export default function AttendancePage() {
+  const [view, setView] = useState<View>(() =>
+    typeof window !== "undefined" && new URLSearchParams(window.location.search).get("view") === "month"
+      ? "month"
+      : "day",
+  );
+  const tab = (value: View, label: string) => (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={view === value}
+      onClick={() => setView(value)}
+      className={cn(
+        "rounded-lg px-4 py-2 text-sm font-medium",
+        view === value ? "bg-accent text-white" : "text-ink-soft hover:text-ink",
+      )}
+    >
+      {label}
+    </button>
+  );
+  return (
+    <section className={cn("mx-auto", view === "month" ? "max-w-6xl" : "max-w-3xl")}>
+      <PageHeader title="Attendance" backHref="/staff/" />
+      <div
+        role="tablist"
+        aria-label="Attendance view"
+        className="mb-4 inline-flex rounded-xl border border-line bg-panel p-1"
+      >
+        {tab("day", "Day")}
+        {tab("month", "Month")}
+      </div>
+      {view === "month" ? <AttendanceMonth /> : <DayView />}
+    </section>
+  );
+}
+
+function DayView() {
   const [day, setDay] = useState(today());
   const attendance = useLoad(() => api.admin.staff.day(day), [day]);
   const action = useAction();
@@ -24,16 +63,7 @@ export default function AttendancePage() {
   };
 
   return (
-    <section className="mx-auto max-w-3xl">
-      <PageHeader
-        title="Attendance"
-        backHref="/staff/"
-        actions={
-          <Link href="/staff/attendance/month/" className={buttonSecondary}>
-            Month
-          </Link>
-        }
-      />
+    <div>
       <div className="mb-4 flex flex-wrap items-end gap-2">
         <button type="button" className={buttonSecondary} onClick={() => setDay(addDays(day, -1))}>
           ‹ Day before
@@ -88,7 +118,7 @@ export default function AttendancePage() {
           </ul>
         </>
       )}
-    </section>
+    </div>
   );
 }
 

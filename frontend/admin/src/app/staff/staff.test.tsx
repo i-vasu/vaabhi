@@ -7,7 +7,7 @@ import { minutes } from "@/lib/staff";
 import { serveStaff } from "@/test/staff-fixtures";
 import { lastSent, serveTailoring, type Sent } from "@/test/tailoring-fixtures";
 import MyRequestsPage from "../requests/page";
-import AttendanceMonthPage from "./attendance/month/page";
+import { AttendanceMonth as AttendanceMonthPage } from "@/components/attendance-month";
 import AttendancePage from "./attendance/page";
 import NewStaffPage from "./new/page";
 import StaffPage from "./page";

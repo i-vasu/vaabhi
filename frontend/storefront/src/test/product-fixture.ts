@@ -26,6 +26,9 @@ export const saree = (o: Partial<ProductDetail> = {}): ProductDetail => ({
   sareeLengthM: 5.5,
   blouseIncluded: true,
   blouseLengthM: 0.8,
+  gsm: null,
+  threadCount: null,
+  dimensions: [],
   attributes: [{ code: "fabric", name: "Fabric", values: [{ code: "silk", name: "Silk" }] }],
   variants: [
     variant({ stockLeft: 2 }),
@@ -79,6 +82,9 @@ export const lehenga = (): ProductDetail =>
     sareeLengthM: null,
     blouseIncluded: false,
     blouseLengthM: null,
+    gsm: null,
+    threadCount: null,
+    dimensions: [],
     media: [],
     variants: [
       variant({

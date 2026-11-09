@@ -46,7 +46,7 @@ export function WishlistView() {
       <div className="flex flex-col items-center gap-4 py-16 text-center">
         <p className="font-serif text-2xl text-text-primary">Your wishlist is empty</p>
         <p className="max-w-[40ch] text-sm text-text-muted">
-          Tap the heart on any saree, lehenga or kurta set to save it here. Saved pieces stay on this device.
+          Tap the heart on any saree, lehenga or kurti to save it here. Saved pieces stay on this device.
         </p>
         <Link href="/new" className={buttonClasses("secondary")}>
           Browse new arrivals

@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Collections",
-  description: "Shop Vaabhi by category and by occasion: sarees, lehengas, kurta sets and more.",
+  description: "Shop Vaabhi by category and by occasion: sarees, lehengas, kurtis and more.",
   alternates: { canonical: "/collections" },
 };
 

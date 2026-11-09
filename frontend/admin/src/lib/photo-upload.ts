@@ -8,8 +8,29 @@ export const RENDITIONS = [400, 800, 1600] as const;
 export const VIDEO_TYPES = ["video/mp4", "video/quicktime", "video/webm"] as const;
 export const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
 
+/**
+ * The upload type of a video, from what the browser reports or, when that is blank or odd (common for videos
+ * from phones), from the file name. Null when it is not a video the store can play.
+ */
+export function videoType(file: File): (typeof VIDEO_TYPES)[number] | null {
+  if ((VIDEO_TYPES as readonly string[]).includes(file.type)) return file.type as (typeof VIDEO_TYPES)[number];
+  if (file.type === "video/x-m4v") return "video/mp4";
+  const extension = file.name.split(".").pop()?.toLowerCase();
+  if (extension === "mp4" || extension === "m4v") return "video/mp4";
+  if (extension === "mov" || extension === "qt") return "video/quicktime";
+  if (extension === "webm") return "video/webm";
+  return null;
+}
+
 function mediaBase(): string {
   return (process.env.NEXT_PUBLIC_MEDIA_URL || "https://media.vaabhi.com").replace(/\/$/, "");
+}
+
+/** Why photo storage (R2) refused an upload, in words that say what to do. */
+function storageProblem(status: number, what: string): string {
+  if (status === 403) return `Storage refused ${what} (the upload link expired or is not allowed). Try again.`;
+  if (status === 413) return `${what} is too large for storage.`;
+  return `Storage could not save ${what} (error ${status}). Try again.`;
 }
 
 /** R2 serves photos from the public media domain; keys never change, so they can be cached for a year. */
@@ -51,7 +72,8 @@ export async function uploadPhoto(
       body: rendition.blob,
       headers: { "Content-Type": "image/webp", "Cache-Control": "public, max-age=31536000, immutable" },
     });
-    if (!response.ok) throw new ApiError(response.status, `Uploading the ${target.width} px version failed`);
+    if (!response.ok)
+      throw new ApiError(response.status, storageProblem(response.status, `the ${target.width} px version`));
   }
   return api.admin.completeMediaUpload(productId, upload.media.id);
 }
@@ -61,8 +83,8 @@ export async function uploadPhoto(
  * product's media after the upload.
  */
 export async function uploadVideo(productId: number, file: File, details: PhotoDetails): Promise<AdminMedia[]> {
-  const contentType = file.type as (typeof VIDEO_TYPES)[number];
-  if (!VIDEO_TYPES.includes(contentType)) throw new Error("Use an MP4, MOV or WebM video");
+  const contentType = videoType(file);
+  if (!contentType) throw new Error("Use an MP4, MOV or WebM video");
   const upload = await api.admin.startVideoUpload(productId, {
     alt: details.alt,
     colourName: details.colourName,
@@ -73,6 +95,6 @@ export async function uploadVideo(productId: number, file: File, details: PhotoD
     body: file,
     headers: { "Content-Type": contentType, "Cache-Control": "public, max-age=31536000, immutable" },
   });
-  if (!response.ok) throw new ApiError(response.status, "Uploading the video failed");
+  if (!response.ok) throw new ApiError(response.status, storageProblem(response.status, "the video"));
   return api.admin.completeMediaUpload(productId, upload.media.id);
 }

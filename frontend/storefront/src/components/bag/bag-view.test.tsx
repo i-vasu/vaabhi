@@ -39,7 +39,14 @@ describe("BagView", () => {
   afterEach(() => localStorage.clear());
 
   it("shows the empty bag with category links", () => {
-    render(<BagView />);
+    render(
+      <BagView
+        categories={[
+          { label: "Sarees", href: "/c/sarees" },
+          { label: "Kurtis", href: "/c/kurtis" },
+        ]}
+      />,
+    );
     expect(screen.getByRole("heading", { name: "Your bag is empty" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Sarees" })).toHaveAttribute("href", expect.stringMatching(/^\/c\/sarees/));
     expect(screen.getByRole("link", { name: "Continue shopping" })).toBeInTheDocument();
@@ -49,9 +56,9 @@ describe("BagView", () => {
     bagStore.write([
       saved(),
       saved({
-        sku: "VB-KURTA",
-        slug: "kurta",
-        name: "Kurta set",
+        sku: "VB-KURTI",
+        slug: "kurti",
+        name: "Kurti",
         size: "M",
         addonCode: null,
         addonName: null,
@@ -80,8 +87,8 @@ describe("BagView", () => {
                 maxQuantity: 2,
               }),
               quoteLine({
-                sku: "VB-KURTA",
-                name: "Kurta set",
+                sku: "VB-KURTI",
+                name: "Kurti",
                 priceRupees: 4500,
                 mrpRupees: 6200,
                 quantity: body.lines[1]?.quantity ?? 2,
@@ -104,20 +111,20 @@ describe("BagView", () => {
     expect(screen.getByText("₹4,500 each")).toBeInTheDocument();
     expect(screen.getByText(/size 36/)).toBeInTheDocument();
 
-    const kurta = within(screen.getByRole("group", { name: "Quantity of Kurta set" }));
-    expect(kurta.getByRole("button", { name: "Increase quantity" })).toBeEnabled();
-    fireEvent.click(kurta.getByRole("button", { name: "Decrease quantity" }));
+    const kurti = within(screen.getByRole("group", { name: "Quantity of Kurti" }));
+    expect(kurti.getByRole("button", { name: "Increase quantity" })).toBeEnabled();
+    fireEvent.click(kurti.getByRole("button", { name: "Decrease quantity" }));
     expect(bagStore.read()[1]!.quantity).toBe(1);
     await waitFor(() => expect(requests.length).toBeGreaterThan(1));
 
     fireEvent.click(screen.getAllByRole("button", { name: "Remove" })[0]!);
-    expect(bagStore.read().map((l) => l.sku)).toEqual(["VB-KURTA"]);
+    expect(bagStore.read().map((l) => l.sku)).toEqual(["VB-KURTI"]);
     fireEvent.click(screen.getByRole("button", { name: "Undo" }));
-    expect(bagStore.read().map((l) => l.sku)).toEqual(["VB-RANI", "VB-KURTA"]);
+    expect(bagStore.read().map((l) => l.sku)).toEqual(["VB-RANI", "VB-KURTI"]);
 
     fireEvent.click(screen.getAllByRole("button", { name: "Move to wishlist" })[1]!);
-    expect(wishlistStore.read()).toEqual(["kurta"]);
-    expect(screen.getByText("Moved Kurta set to your wishlist")).toBeInTheDocument();
+    expect(wishlistStore.read()).toEqual(["kurti"]);
+    expect(screen.getByText("Moved Kurti to your wishlist")).toBeInTheDocument();
 
     await waitFor(() =>
       expect(screen.getByRole("link", { name: "Checkout securely" })).toHaveAttribute("href", "/checkout"),

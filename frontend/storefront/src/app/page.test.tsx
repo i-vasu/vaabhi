@@ -108,7 +108,7 @@ describe("HomePage", () => {
 
     render(await HomePage());
 
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Handwoven sarees, lehengas & kurta sets");
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Handwoven sarees, lehengas & kurtis");
     // Occasions come from product tags, not banners, so only the craft section goes.
     expect(screen.queryByRole("heading", { name: "Woven by hand, worn for generations" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Explore the edit" })).not.toBeInTheDocument();

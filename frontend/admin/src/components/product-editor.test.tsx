@@ -62,7 +62,14 @@ describe("ProductEditor", () => {
   beforeEach(() => {
     replace.mockClear();
     uploaded.length = 0;
-    server.use(http.get(OPTIONS, () => HttpResponse.json(options)));
+    server.use(
+      http.get(OPTIONS, () => HttpResponse.json(options)),
+      // The making and workshop panels of a saved product: nothing recorded yet.
+      http.get(`${PRODUCTS}/:id/making`, () => HttpResponse.json({ materials: [], work: [], costRupees: 0 })),
+      http.get(`${API}/api/v1/admin/workshop/pieces/by-product/:id`, () => new HttpResponse(null, { status: 404 })),
+      http.get(`${API}/api/v1/admin/staff`, () => HttpResponse.json([])),
+      http.get(`${API}/api/v1/admin/stock`, () => HttpResponse.json([])),
+    );
   });
 
   it("creates a draft from scratch and opens its edit page", async () => {
@@ -99,19 +106,16 @@ describe("ProductEditor", () => {
     expect(sent?.addons.map((a) => a.code)).toEqual(["blouse-unstitched", "blouse-standard", "blouse-custom"]);
   });
 
-  it("keeps Save on but Publish off until there are photos and a video, all at the bottom", async () => {
+  it("keeps Save on but Publish off until there is a photo (a video is optional), all at the bottom", async () => {
     render(<ProductEditor />);
     await fillNewProduct();
     const actions = screen.getByRole("group", { name: "Product actions" });
     expect(within(actions).getByRole("button", { name: "Save" })).toBeEnabled();
-    expect(within(actions).getByRole("button", { name: "Save & publish" })).toBeDisabled();
-    expect(actions).toHaveTextContent("Add photos and a video to publish.");
+    expect(within(actions).getByRole("button", { name: "Publish" })).toBeDisabled();
+    expect(actions).toHaveTextContent("Add a photo to publish.");
 
     pick("Add photos", new File(["x"], "front.jpg", { type: "image/jpeg" }));
-    expect(actions).toHaveTextContent("Add a video to publish.");
-    expect(within(actions).getByRole("button", { name: "Save & publish" })).toBeDisabled();
-    pick("Add video", new File(["x"], "drape.mp4", { type: "video/mp4" }));
-    expect(within(actions).getByRole("button", { name: "Save & publish" })).toBeEnabled();
+    expect(within(actions).getByRole("button", { name: "Publish" })).toBeEnabled();
   });
 
   it("publishes a new product: creates it, uploads the waiting photo and video, then publishes", async () => {
@@ -131,7 +135,7 @@ describe("ProductEditor", () => {
     // Picked in the "wrong" order: the photo still uploads first.
     pick("Add photos", new File(["x"], "front.jpg", { type: "image/jpeg" }));
     pick("Add video", new File(["x"], "drape.mp4", { type: "video/mp4" }));
-    fireEvent.click(screen.getByRole("button", { name: "Save & publish" }));
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
 
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/products/edit/?id=42&notice=Published."));
     expect(calls).toEqual(["create", "publish after front.jpg, drape.mp4"]);
@@ -150,7 +154,7 @@ describe("ProductEditor", () => {
     await fillNewProduct();
     pick("Add photos", new File(["x"], "front.jpg", { type: "image/jpeg" }));
     pick("Add video", new File(["x"], "fail.mp4", { type: "video/mp4" }));
-    fireEvent.click(screen.getByRole("button", { name: "Save & publish" }));
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
 
     await waitFor(() => expect(replace).toHaveBeenCalled());
     const url = new URL(replace.mock.lastCall![0], "https://admin.test");
@@ -225,7 +229,7 @@ describe("ProductEditor", () => {
     expect(within(alert).getAllByRole("listitem")[1]).toHaveTextContent("name: Name is too long");
 
     fireEvent.change(screen.getByRole("textbox", { name: "MRP for Ruby" }), { target: { value: "17800" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save & publish" }));
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
     expect(await screen.findByText("Published.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "View in store" })).toHaveAttribute(
       "href",
@@ -266,7 +270,7 @@ describe("ProductEditor", () => {
     );
     render(<ProductEditor id={7} />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Save & publish" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Publish" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Add at least one active variant before publishing");
     expect(screen.getAllByText("Add at least one active variant before publishing")).toHaveLength(2);
 
@@ -293,7 +297,6 @@ describe("ProductEditor", () => {
     text("URL name Leave empty to generate it from the name", "ruby-saree");
     text("Care instructions", "Dry clean only");
     text("Description", "Handwoven");
-    fireEvent.change(screen.getByRole("combobox", { name: "Badge" }), { target: { value: "" } });
     text("Saree length (m)", "6.3");
     text("Blouse length (m)", "1");
     text("Price for Ruby", "15000");
@@ -317,7 +320,8 @@ describe("ProductEditor", () => {
       slug: "ruby-saree",
       careInstructions: "Dry clean only",
       description: "Handwoven",
-      badge: null,
+      // No badge picker any more: the saved badge is kept.
+      badge: "NEW",
       sareeLengthM: 6.3,
       blouseIncluded: false,
       blouseLengthM: null,

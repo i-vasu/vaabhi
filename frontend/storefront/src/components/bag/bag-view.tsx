@@ -23,19 +23,14 @@ import { mediaUrl } from "@/lib/listing";
 import { SHIPPING_AND_RETURNS } from "@/lib/policies";
 
 const rupees = (amount: number) => formatPrice(amount);
-const CATEGORIES = [
-  ["sarees", "Sarees"],
-  ["lehengas", "Lehengas"],
-  ["kurta-sets", "Kurta sets"],
-  ["salwar-suits", "Salwar suits"],
-  ["dupattas", "Dupattas"],
-] as const;
+/** A category to suggest when the bag is empty (from the shop's catalogue, not a fixed list). */
+export type BagCategory = { label: string; href: string };
 
 type Load = { state: "loading" } | { state: "ready"; quote: BagQuote } | { state: "error" };
 type Undo = { text: string; restore: ReturnType<typeof removeLine> };
 
 /** The bag: lines kept in this browser, priced and checked against the shop on every visit. */
-export function BagView() {
+export function BagView({ categories = [] }: Readonly<{ categories?: BagCategory[] }>) {
   const lines = useSyncExternalStore(bagStore.subscribe, bagStore.read, bagStore.serverValue);
   const mediaBase = useMediaBase();
   const [load, setLoad] = useState<Load>({ state: "loading" });
@@ -72,7 +67,7 @@ export function BagView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [load]);
 
-  if (!lines.length) return <EmptyBag />;
+  if (!lines.length) return <EmptyBag categories={categories} />;
 
   const quote = load.state === "ready" && load.quote.lines.length === lines.length ? load.quote : null;
   const count = bagCount(lines);
@@ -358,22 +353,24 @@ function CheckoutButton({ disabled, compact }: Readonly<{ disabled: boolean; com
   );
 }
 
-function EmptyBag() {
+function EmptyBag({ categories }: Readonly<{ categories: BagCategory[] }>) {
   return (
     <section className="mx-auto max-w-6xl px-4 pb-20 pt-12 text-center">
       <h1 className="font-serif text-[32px] font-semibold">Your bag is empty</h1>
       <p className="mx-auto mb-5 mt-2 max-w-[40ch] text-text-muted">
-        Handwoven sarees, lehengas and kurta sets are waiting. Anything you add stays here on this device.
+        Handwoven sarees, lehengas and kurtis are waiting. Anything you add stays here on this device.
       </p>
-      <ul className="mb-6 flex flex-wrap justify-center gap-2">
-        {CATEGORIES.map(([slug, name]) => (
-          <li key={slug}>
-            <Link href={`/c/${slug}`} className={chipClasses("default")}>
-              {name}
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {categories.length > 0 && (
+        <ul className="mb-6 flex flex-wrap justify-center gap-2">
+          {categories.map((c) => (
+            <li key={c.href}>
+              <Link href={c.href} className={chipClasses("default")}>
+                {c.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
       <Link href="/" className={buttonClasses("primary")}>
         Continue shopping
       </Link>

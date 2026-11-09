@@ -21,8 +21,8 @@ export async function SiteFooter() {
           <div className="flex flex-col gap-3">
             <p className="font-serif text-[22px] font-semibold tracking-[0.14em] text-brand-primary">VAABHI</p>
             <p className="max-w-[38ch] text-sm leading-relaxed text-text-secondary">
-              Handwoven sarees, lehengas and kurta sets, made with weaver families across India. Every piece is checked
-              by hand, packed with care and easy to return.
+              Handwoven sarees, lehengas and kurtis, made with weaver families across India. Every piece is checked by
+              hand, packed with care and easy to return.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4 md:contents">

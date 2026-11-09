@@ -60,25 +60,25 @@ INSERT INTO demo_product VALUES
  'Green:#3F7D4E:green', ARRAY['fabric:cotton', 'work:block-print', 'occasion:festive']),
 ('chanderi-lehenga-gota', 'lehengas', 'Chanderi lehenga', 'Gota patti work', 'HANDLOOM', 500, 100, 'PUBLISHED', TRUE, 11500, 13500, 'normal',
  'Peach:#F2B49B:orange|Ivory:#F2ECE3:white', ARRAY['fabric:silk', 'weave:chanderi', 'work:embroidery', 'occasion:festive']),
--- Kurta sets (sized)
-('chikankari-kurta-set', 'kurta-sets', 'Chikankari kurta set', 'Kurta, palazzo and dupatta', 'BESTSELLER', 880, 35, 'PUBLISHED', FALSE, 4800, 6200, 'normal',
+-- Kurtis (sized)
+('chikankari-kurti', 'kurtis', 'Chikankari kurti', 'Straight cut, hand embroidered', 'BESTSELLER', 880, 35, 'PUBLISHED', FALSE, 4800, 6200, 'normal',
  'White:#F7F4EE:white|Powder blue:#A9C6E8:blue|Mint:#BFE3D0:green', ARRAY['fabric:cotton', 'work:embroidery', 'occasion:casual']),
-('anarkali-kurta-set-georgette', 'kurta-sets', 'Anarkali kurta set', 'Flared, with zari dupatta', 'NEW', 700, 6, 'PUBLISHED', FALSE, 6400, 7900, 'normal',
+('anarkali-kurti-georgette', 'kurtis', 'Anarkali kurti', 'Flared, with zari dupatta', 'NEW', 700, 6, 'PUBLISHED', FALSE, 6400, 7900, 'normal',
  'Maroon:#6E2A35:maroon|Bottle green:#1F4D3A:green', ARRAY['fabric:georgette', 'work:zari', 'occasion:festive']),
-('cotton-kurta-set-block-print', 'kurta-sets', 'Cotton kurta set', 'Jaipur block print', NULL, 560, 75, 'PUBLISHED', FALSE, 2400, 3200, 'normal',
+('cotton-kurti-block-print', 'kurtis', 'Cotton kurti', 'Jaipur block print', NULL, 560, 75, 'PUBLISHED', FALSE, 2400, 3200, 'normal',
  'Indigo:#2F3E7A:blue|Mustard:#D4A017:yellow', ARRAY['fabric:cotton', 'work:block-print', 'occasion:office']),
-('linen-kurta-set-office', 'kurta-sets', 'Linen kurta set', 'Straight kurta and pants', NULL, 410, 110, 'PUBLISHED', FALSE, 3600, 3600, 'normal',
+('linen-kurti-office', 'kurtis', 'Linen kurti', 'Straight cut, side slits', NULL, 410, 110, 'PUBLISHED', FALSE, 3600, 3600, 'normal',
  'Beige:#E4D3B5:beige|Olive:#5E6B3A:green', ARRAY['fabric:linen', 'occasion:office']),
-('silk-kurta-set-festive', 'kurta-sets', 'Silk kurta set', 'Brocade yoke, organza dupatta', NULL, 590, 20, 'PUBLISHED', FALSE, 7900, 9900, 'low',
+('silk-kurti-festive', 'kurtis', 'Silk kurti', 'Brocade yoke, organza dupatta', NULL, 590, 20, 'PUBLISHED', FALSE, 7900, 9900, 'low',
  'Rani pink:#C2185B:pink', ARRAY['fabric:silk', 'work:zari', 'occasion:festive']),
-('sharara-set-mirror', 'kurta-sets', 'Sharara set', 'Mirror work, short kurta', 'NEW', 630, 2, 'PUBLISHED', FALSE, 5600, 6900, 'normal',
+('mirror-work-kurti', 'kurtis', 'Mirror work kurti', 'A-line, mirror work', 'NEW', 630, 2, 'PUBLISHED', FALSE, 5600, 6900, 'normal',
  'Yellow:#E3B23C:yellow|Orange:#D9772B:orange', ARRAY['fabric:georgette', 'work:mirror', 'occasion:festive']),
--- Salwar suits (sized)
-('patiala-suit-cotton', 'salwar-suits', 'Patiala salwar suit', 'Phulkari dupatta', NULL, 480, 65, 'PUBLISHED', FALSE, 3200, 4200, 'normal',
+-- Short tops (sized)
+('chikankari-short-top', 'short-tops', 'Chikankari short top', 'Hand embroidered yoke', NULL, 480, 65, 'PUBLISHED', FALSE, 1200, 1600, 'normal',
  'Red:#B3261E:red|Green:#3F7D4E:green', ARRAY['fabric:cotton', 'work:embroidery', 'occasion:festive']),
-('chanderi-salwar-suit', 'salwar-suits', 'Chanderi salwar suit', 'Straight cut, zari butis', 'HANDLOOM', 430, 95, 'PUBLISHED', FALSE, 5200, 6000, 'normal',
+('chanderi-crop-top', 'short-tops', 'Chanderi crop top', 'Zari butis', 'HANDLOOM', 430, 95, 'PUBLISHED', FALSE, 1800, 2200, 'normal',
  'Peach:#F2B49B:orange|Grey:#8C8680:grey', ARRAY['fabric:silk', 'weave:chanderi', 'work:zari', 'occasion:office']),
-('georgette-salwar-suit-party', 'salwar-suits', 'Georgette salwar suit', 'Sequin yoke', NULL, 350, 140, 'PUBLISHED', FALSE, 4600, 5800, 'normal',
+('georgette-peplum-top', 'short-tops', 'Georgette peplum top', 'Sequin yoke', NULL, 350, 140, 'PUBLISHED', FALSE, 1500, 1900, 'normal',
  'Black:#2B2622:black|Navy:#1F2A44:blue', ARRAY['fabric:georgette', 'work:sequin', 'occasion:party']),
 -- Dupattas (one size)
 ('banarasi-silk-dupatta', 'dupattas', 'Banarasi silk dupatta', 'Zari jaal', 'BESTSELLER', 670, 50, 'PUBLISHED', FALSE, 3900, 4800, 'normal',
@@ -90,6 +90,10 @@ INSERT INTO demo_product VALUES
 
 -- Start clean (cascades to variants, facets, media, add-ons, collection links).
 DELETE FROM product WHERE slug IN (SELECT slug FROM demo_product);
+-- Demo products from before the Kurtis / Short tops categories (V23).
+DELETE FROM product WHERE slug IN ('chikankari-kurta-set', 'anarkali-kurta-set-georgette',
+    'cotton-kurta-set-block-print', 'linen-kurta-set-office', 'silk-kurta-set-festive', 'sharara-set-mirror',
+    'patiala-suit-cotton', 'chanderi-salwar-suit', 'georgette-salwar-suit-party');
 
 INSERT INTO product (slug, name, subtitle, description, category_id, status, badge, care_instructions,
                      saree_length_m, blouse_included, blouse_length_m, popularity, published_at, created_at, updated_at)
@@ -130,7 +134,7 @@ CROSS JOIN LATERAL unnest(string_to_array(d.colours, '|')) WITH ORDINALITY AS co
 LEFT JOIN LATERAL (
     SELECT s.size, s.ord
     FROM unnest(ARRAY['XS', 'S', 'M', 'L', 'XL', 'XXL']) WITH ORDINALITY AS s (size, ord)
-    WHERE d.category IN ('lehengas', 'kurta-sets', 'salwar-suits')
+    WHERE d.category IN ('lehengas', 'kurtis', 'short-tops')
 ) sz ON TRUE;
 
 INSERT INTO product_facet_value (product_id, facet_value_id)

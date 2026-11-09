@@ -6,9 +6,18 @@ import { useEffect, useState } from "react";
 import { ApiError, type AdminProduct, type CatalogOptions, type FieldError } from "@vaabhi/api-client";
 import { Button, cn } from "@vaabhi/ui";
 import { api } from "@/lib/api";
-import { mediaReady, ProductPhotos, releasePreview, uploadQueued, type QueuedMedia } from "./product-photos";
+import { ProductMakingSection } from "./product-making";
 import {
-  BADGES,
+  mediaReady,
+  ProductPhotos,
+  releasePreview,
+  uploadProblem,
+  uploadQueued,
+  type QueuedMedia,
+} from "./product-photos";
+import {
+  dimensionFields,
+  UNIT_LABELS,
   emptyState,
   errorsFor,
   formFromState,
@@ -43,7 +52,7 @@ function describe(error: unknown): string {
 
 /**
  * Create (no id) or edit a product. Saving always keeps the current status; publishing is a separate step and
- * needs at least one photo and a video. Photos and the video picked before the first save upload right after it.
+ * needs at least one photo (a video is optional). Photos and videos picked before the first save upload right after it.
  */
 export function ProductEditor({ id, notice, problem }: Readonly<{ id?: number; notice?: string; problem?: string }>) {
   const router = useRouter();
@@ -119,9 +128,7 @@ export function ProductEditor({ id, notice, problem }: Readonly<{ id?: number; n
         media = await uploadQueued(saved.id, item, saved.name, colours);
         releasePreview(item);
       } catch (error) {
-        failed.push(
-          `${item.file.name}: ${error instanceof ApiError || !(error instanceof Error) ? describe(error) : error.message}`,
-        );
+        failed.push(`${item.file.name}: ${uploadProblem(error)}`);
         left.push(item);
       }
     }
@@ -159,8 +166,8 @@ export function ProductEditor({ id, notice, problem }: Readonly<{ id?: number; n
         return;
       }
       const ready = mediaReady(media, []);
-      if (!ready.hasPhoto || !ready.hasVideo) {
-        done(saved, "Saved as a draft.", ["Add at least one photo and a video before publishing."]);
+      if (!ready.hasPhoto) {
+        done(saved, "Saved as a draft.", ["Add at least one photo before publishing."]);
         return;
       }
     }
@@ -192,10 +199,8 @@ export function ProductEditor({ id, notice, problem }: Readonly<{ id?: number; n
   const status = product?.status ?? "DRAFT";
   const fieldError = (field: string) => errorsFor(errors, field)[0];
   const ready = mediaReady(product?.media ?? [], queued);
-  const canPublish = ready.hasPhoto && ready.hasVideo;
-  let publishHint = "";
-  if (!ready.hasPhoto) publishHint = "Add photos and a video to publish.";
-  else if (!ready.hasVideo) publishHint = "Add a video to publish.";
+  const canPublish = ready.hasPhoto;
+  const publishHint = ready.hasPhoto ? "" : "Add a photo to publish.";
 
   return (
     <form
@@ -265,19 +270,14 @@ export function ProductEditor({ id, notice, problem }: Readonly<{ id?: number; n
           <Field label="Subtitle (shown on the card)" error={fieldError("subtitle")}>
             <input className={input} value={state.subtitle} onChange={(e) => update({ subtitle: e.target.value })} />
           </Field>
-          <Field label="Badge" error={fieldError("badge")}>
-            <select
+          <Field label="Parcel weight per piece (grams)" error={fieldError("shippingWeightGrams")}>
+            <input
               className={input}
-              value={state.badge}
-              onChange={(e) => update({ badge: e.target.value as EditorState["badge"] })}
-            >
-              <option value="">None</option>
-              {BADGES.map((b) => (
-                <option key={b} value={b}>
-                  {b.charAt(0) + b.slice(1).toLowerCase()}
-                </option>
-              ))}
-            </select>
+              inputMode="numeric"
+              placeholder="Shop default"
+              value={state.shippingWeightGrams}
+              onChange={(e) => update({ shippingWeightGrams: e.target.value })}
+            />
           </Field>
           <Field label="Description" error={fieldError("description")} className="md:col-span-2">
             <textarea
@@ -286,14 +286,19 @@ export function ProductEditor({ id, notice, problem }: Readonly<{ id?: number; n
               onChange={(e) => update({ description: e.target.value })}
             />
           </Field>
+          <Field label="Care instructions" error={fieldError("careInstructions")} className="md:col-span-2">
+            <input
+              className={input}
+              placeholder="e.g. Dry clean only"
+              value={state.careInstructions}
+              onChange={(e) => update({ careInstructions: e.target.value })}
+            />
+          </Field>
         </div>
-        {/* Rarely changed: open by default only when one of them has a problem to fix. */}
-        <details
-          className="mt-4 border-t border-line pt-4"
-          open={Boolean(fieldError("slug") || fieldError("careInstructions") || fieldError("shippingWeightGrams"))}
-        >
+        {/* Rarely changed: open by default only when it has a problem to fix. */}
+        <details className="mt-4 border-t border-line pt-4" open={Boolean(fieldError("slug"))}>
           <summary className="cursor-pointer text-sm font-medium text-ink-soft hover:text-ink">
-            More details: web address, care, parcel weight
+            More details: web address
           </summary>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
             <Field label="URL name" hint="Leave empty to generate it from the name" error={fieldError("slug")}>
@@ -304,24 +309,49 @@ export function ProductEditor({ id, notice, problem }: Readonly<{ id?: number; n
                 onChange={(e) => update({ slug: e.target.value })}
               />
             </Field>
-            <Field label="Care instructions" error={fieldError("careInstructions")}>
-              <input
-                className={input}
-                value={state.careInstructions}
-                onChange={(e) => update({ careInstructions: e.target.value })}
-              />
-            </Field>
-            <Field label="Parcel weight per piece (grams)" error={fieldError("shippingWeightGrams")}>
-              <input
-                className={input}
-                inputMode="numeric"
-                placeholder="Shop default"
-                value={state.shippingWeightGrams}
-                onChange={(e) => update({ shippingWeightGrams: e.target.value })}
-              />
-            </Field>
           </div>
         </details>
+      </section>
+
+      <section className={card} aria-labelledby="measurements">
+        <h2 id="measurements" className="mb-1 font-semibold">
+          Fabric &amp; measurements
+        </h2>
+        <p className="mb-4 text-sm text-ink-soft">
+          Shown on the product page. GSM and thread count fill in from the fabric you pick under &quot;Made from&quot;.
+        </p>
+        <div className="grid gap-4 md:grid-cols-3">
+          <Field label="Fabric weight (GSM)" error={fieldError("gsm")}>
+            <input
+              className={input}
+              inputMode="numeric"
+              value={state.gsm}
+              onChange={(e) => update({ gsm: e.target.value })}
+            />
+          </Field>
+          <Field label="Thread count" error={fieldError("threadCount")}>
+            <input
+              className={input}
+              inputMode="numeric"
+              value={state.threadCount}
+              onChange={(e) => update({ threadCount: e.target.value })}
+            />
+          </Field>
+          {dimensionFields(state.categorySlug).map((field, i) => (
+            <Field
+              key={field.code}
+              label={`${field.label} (${UNIT_LABELS[field.unit]})`}
+              error={fieldError(`dimensions[${i}].value`)}
+            >
+              <input
+                className={input}
+                inputMode="decimal"
+                value={state.dimensions[field.code] ?? ""}
+                onChange={(e) => update({ dimensions: { ...state.dimensions, [field.code]: e.target.value } })}
+              />
+            </Field>
+          ))}
+        </div>
       </section>
 
       {state.categorySlug === "sarees" && (
@@ -427,6 +457,17 @@ export function ProductEditor({ id, notice, problem }: Readonly<{ id?: number; n
         onQueue={setQueued}
       />
 
+      <ProductMakingSection
+        productId={product?.id}
+        onFabric={(fabric) =>
+          setState((s) => ({
+            ...s,
+            gsm: s.gsm || (fabric.gsm == null ? "" : String(fabric.gsm)),
+            threadCount: s.threadCount || (fabric.threadCount == null ? "" : String(fabric.threadCount)),
+          }))
+        }
+      />
+
       {/* Kept in reach at the bottom of the screen; on phones it sits above the app's tab bar. */}
       <div
         role="group"
@@ -445,7 +486,7 @@ export function ProductEditor({ id, notice, problem }: Readonly<{ id?: number; n
           </Button>
         ) : (
           <Button variant="secondary" disabled={busy || !canPublish} onClick={() => void changeStatus("publish")}>
-            Save &amp; publish
+            Publish
           </Button>
         )}
         <Button type="submit" disabled={busy}>

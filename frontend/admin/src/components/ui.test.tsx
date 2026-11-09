@@ -16,6 +16,8 @@ import {
   Toggle,
 } from "./ui";
 
+vi.mock("next/navigation", () => ({ useRouter: () => ({ back: vi.fn(), push: vi.fn(), replace: vi.fn() }) }));
+
 const ranges = [
   { value: "today", label: "Today" },
   { value: "week", label: "This week" },

@@ -6,7 +6,7 @@ import { lastSent, serveTailoring, type Sent } from "@/test/tailoring-fixtures";
 import ActivityPage from "./activity/page";
 import CouponsPage from "./coupons/page";
 import CustomerPage from "./customers/view/page";
-import GalleryPage from "./gallery/page";
+import GalleryPage from "./design/page";
 import HelpPage from "./help/page";
 import MessagesPage from "./messages/page";
 import NotificationsPage from "./notifications/page";
@@ -77,6 +77,14 @@ describe("stock", () => {
         unit: "PCS",
         reorderLevel: 10,
         costRupees: 25,
+        material: null,
+        colour: null,
+        widthIn: null,
+        gsm: null,
+        threadCount: null,
+        supplierName: null,
+        supplierPhone: null,
+        notes: null,
       }),
     );
   });

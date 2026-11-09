@@ -107,6 +107,8 @@ class AdminProductStore {
             boolean blouseIncluded,
             @Nullable BigDecimal blouseLengthM,
             @Nullable Integer shippingWeightGrams,
+            @Nullable Integer gsm,
+            @Nullable Integer threadCount,
             @Nullable OffsetDateTime publishedAt,
             OffsetDateTime updatedAt) {}
 
@@ -114,7 +116,7 @@ class AdminProductStore {
         return jdbc.sql("""
                         SELECT p.id, p.slug, p.name, p.subtitle, p.description, c.slug AS category_slug, p.status,
                                p.badge, p.care_instructions, p.saree_length_m, p.blouse_included, p.blouse_length_m,
-                               p.shipping_weight_grams, p.published_at, p.updated_at
+                               p.shipping_weight_grams, p.gsm, p.thread_count, p.published_at, p.updated_at
                         FROM product p JOIN category c ON c.id = p.category_id
                         WHERE p.id = :id
                         """)
@@ -135,6 +137,9 @@ class AdminProductStore {
                         r.blouseIncluded(),
                         r.blouseLengthM(),
                         r.shippingWeightGrams(),
+                        r.gsm(),
+                        r.threadCount(),
+                        dimensions(id),
                         attributes(id),
                         variants(id),
                         addons(id),
@@ -176,6 +181,42 @@ class AdminProductStore {
                         SELECT code, kind, name, description, price_rupees, input, active
                         FROM product_addon WHERE product_id = :id ORDER BY position, id
                         """).param("id", productId).query(AddonForm.class).list();
+    }
+
+    static List<ProductDimension> dimensions(JdbcClient jdbc, long productId) {
+        return jdbc.sql("""
+                        SELECT code, label, unit, value FROM product_dimension
+                        WHERE product_id = :id ORDER BY position, code
+                        """)
+                .param("id", productId)
+                .query(ProductDimension.class)
+                .list();
+    }
+
+    private List<ProductDimension> dimensions(long productId) {
+        return dimensions(jdbc, productId);
+    }
+
+    /** Replaces the product's measurements with these, in this order. */
+    void replaceDimensions(long productId, List<ProductDimension> dimensions) {
+        jdbc.sql("DELETE FROM product_dimension WHERE product_id = :id")
+                .param("id", productId)
+                .update();
+        for (var i = 0; i < dimensions.size(); i++) {
+            var d = dimensions.get(i);
+            jdbc.sql("""
+                            INSERT INTO product_dimension (product_id, code, label, unit, value, position)
+                            VALUES (:productId, :code, :label, :unit, :value, :position)
+                            ON CONFLICT (product_id, code) DO NOTHING
+                            """)
+                    .param(PRODUCT_ID, productId)
+                    .param("code", d.code())
+                    .param("label", d.label().trim())
+                    .param("unit", d.unit().name())
+                    .param("value", d.value())
+                    .param("position", i)
+                    .update();
+        }
     }
 
     private List<AdminMedia> media(long productId) {
@@ -220,9 +261,9 @@ class AdminProductStore {
         return jdbc.sql("""
                         INSERT INTO product (slug, name, subtitle, description, category_id, status, badge,
                                              care_instructions, saree_length_m, blouse_included, blouse_length_m,
-                                             shipping_weight_grams)
+                                             shipping_weight_grams, gsm, thread_count)
                         VALUES (:slug, :name, :subtitle, :description, :categoryId, 'DRAFT', :badge,
-                                :care, :sareeLength, :blouseIncluded, :blouseLength, :weight)
+                                :care, :sareeLength, :blouseIncluded, :blouseLength, :weight, :gsm, :threadCount)
                         RETURNING id
                         """)
                 .params(productParams(form, slug, categoryId))
@@ -237,7 +278,8 @@ class AdminProductStore {
                         UPDATE product SET slug = :slug, name = :name, subtitle = :subtitle, description = :description,
                                category_id = :categoryId, badge = :badge, care_instructions = :care,
                                saree_length_m = :sareeLength, blouse_included = :blouseIncluded,
-                               blouse_length_m = :blouseLength, shipping_weight_grams = :weight, updated_at = now()
+                               blouse_length_m = :blouseLength, shipping_weight_grams = :weight, gsm = :gsm,
+                               thread_count = :threadCount, updated_at = now()
                         WHERE id = :id
                         """).params(params).update() > 0;
     }
@@ -255,6 +297,8 @@ class AdminProductStore {
         params.put("blouseIncluded", form.blouseIncluded());
         params.put("blouseLength", form.blouseLengthM());
         params.put("weight", form.shippingWeightGrams());
+        params.put("gsm", form.gsm());
+        params.put("threadCount", form.threadCount());
         return params;
     }
 

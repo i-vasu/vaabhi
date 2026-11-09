@@ -30,6 +30,9 @@ describe("product editor state", () => {
       blouseIncluded: true,
       blouseLengthM: 0.8,
       shippingWeightGrams: null,
+      gsm: null,
+      threadCount: null,
+      dimensions: [],
       attributes: { fabric: ["silk"] },
       variants: [
         {
