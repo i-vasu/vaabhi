@@ -8,11 +8,13 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
+import org.jspecify.annotations.Nullable;
 
 /** Days the shop is closed: attendance, payroll and due dates skip them. */
 public record CalendarSettings(
         @NotNull Set<DayOfWeek> weeklyOff,
-        @NotNull @Size(max = 200) List<@Valid Holiday> holidays) {
+        @NotNull @Size(max = 200) List<@Valid Holiday> holidays,
+        @Nullable @Size(max = 200) String googleCalendarId) {
 
     public record Holiday(
             @NotNull LocalDate date,
@@ -24,6 +26,6 @@ public record CalendarSettings(
     }
 
     static CalendarSettings defaults() {
-        return new CalendarSettings(Set.of(), List.of());
+        return new CalendarSettings(Set.of(), List.of(), null);
     }
 }

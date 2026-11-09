@@ -36,6 +36,9 @@ export const product = (overrides: Partial<AdminProduct> = {}): AdminProduct => 
   blouseIncluded: true,
   blouseLengthM: 0.8,
   shippingWeightGrams: null,
+  gsm: null,
+  threadCount: null,
+  dimensions: [],
   attributes: { fabric: ["silk"] },
   variants: [
     {

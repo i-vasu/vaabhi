@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Inter } from "next/font/google";
 import { Faro, appVersion } from "@vaabhi/observability";
+import { InstallableApp } from "@vaabhi/ui";
 import { MediaBaseProvider } from "@/components/media-base";
 import { ShopWhatsApp } from "@/components/shop-whatsapp";
 import { SiteFooter } from "@/components/site-footer";
@@ -22,10 +23,13 @@ export function generateMetadata(): Metadata {
   return {
     // Makes the pages' relative canonical and share-image URLs absolute.
     metadataBase: new URL(siteUrl()),
-    title: { default: "Vaabhi · Handwoven sarees, lehengas & kurta sets", template: "%s · Vaabhi" },
+    title: { default: "Vaabhi · Handwoven sarees, lehengas & kurtis", template: "%s · Vaabhi" },
     description:
-      "Handwoven Banarasi, Kanjeevaram and Chanderi sarees, lehengas, kurta sets, salwar suits and dupattas. " +
+      "Handwoven Banarasi, Kanjeevaram and Chanderi sarees, lehengas, kurtis, short tops and dupattas. " +
       "Free shipping above ₹1,999, cash on delivery and 7-day easy returns across India.",
+    manifest: "/manifest.webmanifest",
+    icons: { icon: "/icons/icon-192.png", apple: "/icons/apple-touch-icon.png" },
+    appleWebApp: { capable: true, title: "Vaabhi", statusBarStyle: "default" },
     // Which release is live: view source → <meta name="app-version">.
     other: { "app-version": appVersion().label },
   };
@@ -36,6 +40,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" className={`${cormorant.variable} ${inter.variable}`}>
       <body className="min-h-screen">
         <Faro appName="vaabhi-storefront" />
+        <InstallableApp />
         <MediaBaseProvider base={serverMediaBase()}>
           <SiteHeader />
           <main>{children}</main>

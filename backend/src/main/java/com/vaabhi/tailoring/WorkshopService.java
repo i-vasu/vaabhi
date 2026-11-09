@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
@@ -35,13 +36,21 @@ public class WorkshopService {
     private final ShopListService lists;
     private final StaffDirectory directory;
     private final OrderService orders;
+    private final PieceService pieces;
     private final Clock clock;
 
-    WorkshopService(JdbcClient jdbc, ShopListService lists, StaffDirectory staff, OrderService orders, Clock clock) {
+    WorkshopService(
+            JdbcClient jdbc,
+            ShopListService lists,
+            StaffDirectory staff,
+            OrderService orders,
+            PieceService pieces,
+            Clock clock) {
         this.jdbc = jdbc;
         this.lists = lists;
         this.directory = staff;
         this.orders = orders;
+        this.pieces = pieces;
         this.clock = clock;
     }
 
@@ -130,6 +139,7 @@ public class WorkshopService {
     public List<BoardColumn> board(@Nullable Long staffId, @Nullable String query) {
         var today = LocalDate.now(clock);
         Map<Long, List<WorkItem>> byStage = new LinkedHashMap<>();
+        Map<Long, List<WorkPiece>> piecesByStage = new LinkedHashMap<>();
         Map<Long, ProductionStage> removed = new LinkedHashMap<>();
         for (var row : openItems(staffId, query)) {
             byStage.computeIfAbsent(row.stageId(), id -> new ArrayList<>()).add(toItem(row, today));
@@ -138,13 +148,26 @@ public class WorkshopService {
                         row.stageId(), new ProductionStage(row.stageId(), row.stageName(), row.stageKind()));
             }
         }
+        var open = pieces.openPieces(staffId, query);
+        for (var piece : open.pieces()) {
+            var stageId = Objects.requireNonNull(piece.stage().id());
+            piecesByStage.computeIfAbsent(stageId, id -> new ArrayList<>()).add(piece);
+            if (!open.stageActive().getOrDefault(stageId, true)) {
+                removed.putIfAbsent(stageId, piece.stage());
+            }
+        }
         var columns = new ArrayList<BoardColumn>();
         for (var stage : lists.stages()) {
             if (stage.kind() != ProductionStage.Kind.DELIVERED) {
-                columns.add(new BoardColumn(stage, false, byStage.getOrDefault(stage.id(), List.of())));
+                columns.add(new BoardColumn(
+                        stage,
+                        false,
+                        byStage.getOrDefault(stage.id(), List.of()),
+                        piecesByStage.getOrDefault(stage.id(), List.of())));
             }
         }
-        removed.forEach((id, stage) -> columns.add(new BoardColumn(stage, true, byStage.get(id))));
+        removed.forEach((id, stage) -> columns.add(new BoardColumn(
+                stage, true, byStage.getOrDefault(id, List.of()), piecesByStage.getOrDefault(id, List.of()))));
         return columns;
     }
 
@@ -172,6 +195,17 @@ public class WorkshopService {
             if (row.deliveryDate().isBefore(today)) {
                 load[1] += row.quantity();
             }
+        }
+        for (var piece : pieces.openPieces(null, null).pieces()) {
+            if (piece.stage().kind() == ProductionStage.Kind.WORK) {
+                inProduction++;
+                if (piece.assignedTo() == null) {
+                    unassigned++;
+                }
+            } else {
+                ready++;
+            }
+            perStage.computeIfAbsent(piece.stage().id(), id -> new int[2])[0]++;
         }
         var stageLoad = new ArrayList<StageLoad>();
         for (var stage : lists.stages()) {
@@ -231,20 +265,28 @@ public class WorkshopService {
     /** Moves items from any number of orders to one stage, order by order. */
     @Transactional
     public List<BoardColumn> move(BulkMove move, @Nullable String actor) {
-        var ids = new HashSet<>(move.itemIds());
-        Map<Long, List<Long>> byOrder = jdbc
-                .sql("SELECT id, order_id FROM order_item WHERE id = ANY(:ids)")
-                .param("ids", ids.toArray(Long[]::new))
-                .query((rs, n) -> new long[] {rs.getLong("id"), rs.getLong("order_id")})
-                .list()
-                .stream()
-                .collect(Collectors.groupingBy(
-                        pair -> pair[1], LinkedHashMap::new, Collectors.mapping(pair -> pair[0], Collectors.toList())));
-        int found = byOrder.values().stream().mapToInt(List::size).sum();
-        if (found != ids.size()) {
-            throw OrderService.bad("Some of those items no longer exist");
+        if (move.work() != null && !move.itemIds().isEmpty()) {
+            throw OrderService.bad("Work can only be logged for one piece leaving a work stage");
         }
-        byOrder.forEach((orderId, itemIds) -> orders.moveItems(orderId, move.stageId(), itemIds, actor));
+        var ids = new HashSet<>(move.itemIds());
+        if (!ids.isEmpty()) {
+            Map<Long, List<Long>> byOrder = jdbc
+                    .sql("SELECT id, order_id FROM order_item WHERE id = ANY(:ids)")
+                    .param("ids", ids.toArray(Long[]::new))
+                    .query((rs, n) -> new long[] {rs.getLong("id"), rs.getLong("order_id")})
+                    .list()
+                    .stream()
+                    .collect(Collectors.groupingBy(
+                            pair -> pair[1],
+                            LinkedHashMap::new,
+                            Collectors.mapping(pair -> pair[0], Collectors.toList())));
+            int found = byOrder.values().stream().mapToInt(List::size).sum();
+            if (found != ids.size()) {
+                throw OrderService.bad("Some of those items no longer exist");
+            }
+            byOrder.forEach((orderId, itemIds) -> orders.moveItems(orderId, move.stageId(), itemIds, actor));
+        }
+        pieces.move(move.pieceIds(), move.stageId(), move.work(), actor);
         return board(null, null);
     }
 

@@ -27,9 +27,27 @@ class InventoryController {
     private static final Logger logger = LoggerFactory.getLogger(InventoryController.class);
 
     private final InventoryService inventory;
+    private final StockPhotos photos;
 
-    InventoryController(InventoryService inventory) {
+    InventoryController(InventoryService inventory, StockPhotos photos) {
         this.inventory = inventory;
+        this.photos = photos;
+    }
+
+    @PostMapping("/{id}/photos/upload")
+    StockPhotos.Upload startStockPhotoUpload(@PathVariable long id) {
+        return photos.startUpload(id);
+    }
+
+    @PostMapping("/{id}/photos")
+    @ResponseStatus(HttpStatus.CREATED)
+    StockItem addStockPhoto(@PathVariable long id, @Valid @RequestBody StockPhotos.PhotoForm form) {
+        return photos.add(id, form);
+    }
+
+    @DeleteMapping("/{id}/photos/{photoId}")
+    StockItem removeStockPhoto(@PathVariable long id, @PathVariable long photoId) {
+        return photos.remove(id, photoId);
     }
 
     @GetMapping

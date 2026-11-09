@@ -99,6 +99,9 @@ function Section({ title, open, children }: Readonly<{ title: string; open?: boo
   );
 }
 
+/** How each measurement unit reads on the page. */
+const UNIT_LABEL = { IN: "in", CM: "cm", M: "m" } as const;
+
 export default async function ProductPage({ params, searchParams }: Readonly<Props>) {
   const { slug } = await params;
   const product = await loadProduct(slug);
@@ -117,6 +120,9 @@ export default async function ProductPage({ params, searchParams }: Readonly<Pro
     ...(product.blouseIncluded && product.blouseLengthM !== null
       ? [["Blouse piece", `${product.blouseLengthM} m, included`] as [string, string]]
       : []),
+    ...product.dimensions.map((d): [string, string] => [d.label, `${d.value} ${UNIT_LABEL[d.unit]}`]),
+    ...(product.gsm == null ? [] : [["Fabric weight", `${product.gsm} GSM`] as [string, string]]),
+    ...(product.threadCount == null ? [] : [["Thread count", String(product.threadCount)] as [string, string]]),
     ...(product.variants.every((v) => v.size === null) && product.sareeLengthM === null
       ? [["Size", oneSizeLine(product)] as [string, string]]
       : []),

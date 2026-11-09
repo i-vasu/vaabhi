@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useId, useRef, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from "react";
+import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import { cn } from "@vaabhi/ui";
+import { canGoBack } from "@/lib/history";
 import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, type Icon } from "./icons";
 
 /*
@@ -25,11 +27,19 @@ export function PageHeader({
   badge?: ReactNode;
   actions?: ReactNode;
 }) {
+  const router = useRouter();
   return (
     <div className="mb-6 flex flex-wrap items-center gap-3">
       {backHref && (
         <Link
           href={backHref}
+          onClick={(event) => {
+            // Return to the page the person came from; open on its own (a shared link), go to the parent.
+            if (canGoBack() && !event.metaKey && !event.ctrlKey) {
+              event.preventDefault();
+              router.back();
+            }
+          }}
           aria-label="Back"
           className="grid size-10 place-items-center rounded-lg border border-line bg-panel text-ink-soft hover:text-ink"
         >
@@ -294,6 +304,14 @@ export function ListRow({
     </>
   );
   const classes = "flex items-center gap-4 px-4 py-4";
+  // Other sites (dashboards) open in a new tab so the app stays where it was.
+  if (href && /^https?:\/\//.test(href)) {
+    return (
+      <a href={href} target="_blank" rel="noreferrer" className={cn(classes, "hover:bg-panel-2")}>
+        {body}
+      </a>
+    );
+  }
   return href ? (
     <Link href={href} className={cn(classes, "hover:bg-panel-2")}>
       {body}

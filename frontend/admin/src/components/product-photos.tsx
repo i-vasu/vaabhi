@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ApiError, type AdminMedia, type MediaUpdate } from "@vaabhi/api-client";
 import { Button, cn } from "@vaabhi/ui";
 import { api } from "@/lib/api";
-import { MAX_VIDEO_BYTES, mediaUrl, uploadPhoto, uploadVideo, VIDEO_TYPES, videoUrl } from "@/lib/photo-upload";
+import { MAX_VIDEO_BYTES, mediaUrl, uploadPhoto, uploadVideo, videoType, videoUrl } from "@/lib/photo-upload";
 
 type Upload = { id: string; name: string; state: "working" | "failed"; message?: string };
 
@@ -30,32 +30,40 @@ export const MAX_PHOTOS = 12;
 /** Same limit as the API (ProductMediaService.MAX_VIDEOS). */
 export const MAX_VIDEOS = 3;
 
-const GUIDELINES = [
-  "Formats: JPEG, PNG or WebP. iPhone (HEIC) photos: upload from the iPhone itself, or export as JPEG first.",
-  "Size: up to 30 MB per photo, at least 1600 px wide so zoom stays sharp.",
-  `Up to ${MAX_PHOTOS} photos per product. The main photo is shown in listings; use Set as main to pick it and ← → to order the rest.`,
-  "Colour: leave on All colours, or tag a photo with a colour to show it only when shoppers pick that colour.",
-  "Portrait 3:4 works best (e.g. 1200 × 1600 px), product centred on a plain background.",
-  "Write a short description of each photo (alt text); it helps search engines and screen readers.",
-  "Photos are resized in your browser to 400, 800 and 1600 px. Keep this tab open until uploads finish.",
-];
-
-const VIDEO_GUIDELINE = `Up to ${MAX_VIDEOS} videos per product: MP4, MOV or WebM, up to 200 MB each. Portrait and under a minute works best; tag a video with a colour to show it only for that colour.`;
-
-function problem(error: unknown): string {
-  if (error instanceof ApiError) return error.detail ?? error.message;
+/** Why an upload failed, in words that say what to do next. */
+export function uploadProblem(error: unknown): string {
+  if (error instanceof ApiError) {
+    if (error.status === 401) return "Your sign-in has expired. Sign in again and retry.";
+    if (error.status === 403 && error.detail) return error.detail;
+    return error.detail ?? error.message;
+  }
+  // fetch() rejects with a TypeError when the network or storage cannot be reached at all.
+  if (error instanceof TypeError && /fetch|network/i.test(error.message)) {
+    return "Could not reach photo storage. Check the internet connection and try again.";
+  }
+  // createImageBitmap() cannot decode the file.
+  if (error instanceof DOMException && (error.name === "InvalidStateError" || error.name === "EncodingError")) {
+    return "This photo could not be opened. Save it again as JPEG or PNG and retry.";
+  }
   if (error instanceof Error) return error.message;
   return "Something went wrong";
 }
 
+const problem = uploadProblem;
+
 /** Why a picked file cannot be used, or null when it can. */
+const megabytes = (bytes: number) => `${Math.round(bytes / 1024 / 1024)} MB`;
+
 function photoProblem(file: File): string | null {
-  return file.size > MAX_INPUT_BYTES ? "Larger than 30 MB" : null;
+  if (file.type.startsWith("video/")) return "This is a video. Add it with Add video.";
+  if (file.type && !file.type.startsWith("image/")) return `Not a photo (${file.type}). Use JPEG, PNG or WebP.`;
+  if (file.size > MAX_INPUT_BYTES) return `Too large (${megabytes(file.size)}); photos can be up to 30 MB.`;
+  return null;
 }
 
 function videoProblem(file: File): string | null {
-  if (!(VIDEO_TYPES as readonly string[]).includes(file.type)) return "Use an MP4, MOV or WebM video";
-  return file.size > MAX_VIDEO_BYTES ? "Larger than 200 MB" : null;
+  if (!videoType(file)) return `Not a supported video (${file.type || file.name}). Use MP4, MOV or WebM.`;
+  return file.size > MAX_VIDEO_BYTES ? `Too large (${megabytes(file.size)}); videos can be up to 200 MB.` : null;
 }
 
 let uploadCounter = 0;
@@ -238,14 +246,6 @@ export function ProductPhotos({
         {videoCount === 0 ? "no video yet" : `${videoCount} of ${MAX_VIDEOS} videos`}
         {!saved && queued.length > 0 && " · uploads when you save"}
       </p>
-      <details className="mb-4 rounded-md bg-panel p-4 text-sm">
-        <summary className="cursor-pointer font-medium">Before you upload</summary>
-        <ul aria-label="Photo guidelines" className="mt-2 list-disc space-y-1 pl-5 text-ink-soft">
-          {[...GUIDELINES, VIDEO_GUIDELINE].map((line) => (
-            <li key={line}>{line}</li>
-          ))}
-        </ul>
-      </details>
       {error && (
         <p role="alert" className="mb-3 text-sm text-bad">
           {error}

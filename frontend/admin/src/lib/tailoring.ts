@@ -134,8 +134,20 @@ export async function uploadTailoringPhoto(
   file: Blob,
   resize: Resize = resizeToWebp,
 ): Promise<string> {
+  return uploadKeyedPhoto(file, () => api.admin.startTailoringImageUpload(purpose), resize);
+}
+
+/**
+ * Resizes a photo to a 400 px WebP and PUTs it to the URL `start` hands out (stock and piece photos use their own
+ * endpoints); returns the key to save.
+ */
+export async function uploadKeyedPhoto(
+  file: Blob,
+  start: () => Promise<{ key: string; uploadUrl: string }>,
+  resize: Resize = resizeToWebp,
+): Promise<string> {
   const [rendition] = await resize(file, [400]);
-  const upload = await api.admin.startTailoringImageUpload(purpose);
+  const upload = await start();
   const response = await fetch(upload.uploadUrl, {
     method: "PUT",
     body: rendition!.blob,

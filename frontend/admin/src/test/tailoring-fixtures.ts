@@ -245,10 +245,10 @@ export const workItem: WorkItem = {
 };
 
 export const board: BoardColumn[] = [
-  { stage: stages[0]!, removed: false, items: [workItem] },
-  { stage: stages[1]!, removed: false, items: [] },
-  { stage: stages[2]!, removed: false, items: [] },
-  { stage: stages[3]!, removed: false, items: [] },
+  { stage: stages[0]!, removed: false, items: [workItem], pieces: [] },
+  { stage: stages[1]!, removed: false, items: [], pieces: [] },
+  { stage: stages[2]!, removed: false, items: [], pieces: [] },
+  { stage: stages[3]!, removed: false, items: [], pieces: [] },
 ];
 
 export const workshopStaff: WorkshopStaff[] = [

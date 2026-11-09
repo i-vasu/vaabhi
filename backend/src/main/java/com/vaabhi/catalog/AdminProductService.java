@@ -74,6 +74,7 @@ public class AdminProductService {
         var prepared = prepare(form, null);
         var id = store.insert(form, prepared.slug(), prepared.categoryId());
         store.replaceChildren(id, prepared.variants(), prepared.facetValues(), form.addons());
+        store.replaceDimensions(id, form.dimensions() == null ? List.of() : form.dimensions());
         return load(id);
     }
 
@@ -85,6 +86,7 @@ public class AdminProductService {
             throw notFound(id);
         }
         store.replaceChildren(id, prepared.variants(), prepared.facetValues(), form.addons());
+        store.replaceDimensions(id, form.dimensions() == null ? List.of() : form.dimensions());
         if (store.find(id).map(AdminProduct::status).orElseThrow() == ProductStatus.PUBLISHED) {
             requirePublishable(id);
         }

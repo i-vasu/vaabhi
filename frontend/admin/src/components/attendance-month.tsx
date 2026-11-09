@@ -3,26 +3,24 @@
 import { useState } from "react";
 import { MonthPicker } from "@/components/money";
 import { ErrorNote } from "@/components/tailoring";
-import { LoadState, PageHeader } from "@/components/ui";
+import { LoadState } from "@/components/ui";
 import { api } from "@/lib/api";
 import { monthOf } from "@/lib/money";
 import { ATTENDANCE, minutes } from "@/lib/staff";
 import { today, useLoad } from "@/lib/tailoring";
 
-/** Everyone's month: one letter per day, with totals. */
-export default function AttendanceMonthPage() {
+/** Everyone's month: one letter per day, with totals. Shown on the Attendance page's Month tab. */
+export function AttendanceMonth() {
   const [month, setMonth] = useState(() => monthOf(today()));
   const key = month.from.slice(0, 7);
   const data = useLoad(() => api.admin.staff.month(key), [key]);
   const m = data.value;
 
   return (
-    <section className="mx-auto max-w-6xl">
-      <PageHeader
-        title="Attendance by month"
-        backHref="/staff/attendance/"
-        actions={<MonthPicker value={month} onChange={setMonth} />}
-      />
+    <div>
+      <div className="mb-3 flex justify-end">
+        <MonthPicker value={month} onChange={setMonth} />
+      </div>
       <p className="mb-3 text-sm text-ink-soft">
         {ATTENDANCE.map((s) => `${s.short} ${s.label.toLowerCase()}`).join(" · ")} · blank not marked
       </p>
@@ -78,6 +76,6 @@ export default function AttendanceMonthPage() {
           </table>
         </div>
       )}
-    </section>
+    </div>
   );
 }

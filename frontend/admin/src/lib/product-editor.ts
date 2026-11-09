@@ -1,4 +1,12 @@
-import type { AddonForm, AdminProduct, FieldError, ProductForm, ProductStatus, VariantForm } from "@vaabhi/api-client";
+import type {
+  AddonForm,
+  AdminProduct,
+  FieldError,
+  ProductDimension,
+  ProductForm,
+  ProductStatus,
+  VariantForm,
+} from "@vaabhi/api-client";
 
 /**
  * The product editor works in rupees and strings (what people type); the API takes rupees as numbers.
@@ -34,13 +42,17 @@ export type EditorState = {
   subtitle: string;
   description: string;
   categorySlug: string;
-  badge: "" | NonNullable<ProductForm["badge"]>;
   careInstructions: string;
   sareeLengthM: string;
   blouseIncluded: boolean;
   blouseLengthM: string;
   /** Packed weight of one piece in grams, for the courier; empty uses the shop default. */
   shippingWeightGrams: string;
+  /** Fabric weight (grams per square metre) and thread count, usually filled from the stock it is made from. */
+  gsm: string;
+  threadCount: string;
+  /** Measurement values by dimension code (see dimensionFields). */
+  dimensions: Record<string, string>;
   attributes: Record<string, string[]>;
   variants: VariantRow[];
   addons: AddonRow[];
@@ -55,7 +67,41 @@ export const STATUS_LABELS: Record<ProductStatus, string> = {
   ARCHIVED: "Archived",
 };
 
-export const BADGES = ["NEW", "BESTSELLER", "BRIDAL", "HANDLOOM"] as const;
+export type DimensionField = { code: string; label: string; unit: ProductDimension["unit"] };
+
+/** The measurements a product of each category has (saree length and blouse piece have their own fields). */
+const DIMENSIONS: Record<string, DimensionField[]> = {
+  sarees: [{ code: "width", label: "Saree width", unit: "IN" }],
+  lehengas: [
+    { code: "skirt-length", label: "Skirt length", unit: "IN" },
+    { code: "skirt-flare", label: "Skirt flare", unit: "M" },
+    { code: "dupatta-length", label: "Dupatta length", unit: "M" },
+  ],
+  kurtis: [
+    { code: "length", label: "Kurti length", unit: "IN" },
+    { code: "sleeve-length", label: "Sleeve length", unit: "IN" },
+  ],
+  "short-tops": [
+    { code: "length", label: "Top length", unit: "IN" },
+    { code: "sleeve-length", label: "Sleeve length", unit: "IN" },
+  ],
+  dupattas: [
+    { code: "length", label: "Dupatta length", unit: "M" },
+    { code: "width", label: "Dupatta width", unit: "IN" },
+  ],
+};
+
+const OTHER_DIMENSIONS: DimensionField[] = [
+  { code: "length", label: "Length", unit: "IN" },
+  { code: "width", label: "Width", unit: "IN" },
+];
+
+/** Measurement fields for a category; categories added later get length and width. */
+export function dimensionFields(categorySlug: string): DimensionField[] {
+  return DIMENSIONS[categorySlug] ?? OTHER_DIMENSIONS;
+}
+
+export const UNIT_LABELS: Record<ProductDimension["unit"], string> = { IN: "inches", CM: "cm", M: "metres" };
 
 export function emptyState(categorySlug = ""): EditorState {
   return {
@@ -64,12 +110,14 @@ export function emptyState(categorySlug = ""): EditorState {
     subtitle: "",
     description: "",
     categorySlug,
-    badge: "",
     careInstructions: "",
     sareeLengthM: categorySlug === "sarees" ? "5.5" : "",
     blouseIncluded: categorySlug === "sarees",
     blouseLengthM: categorySlug === "sarees" ? "0.8" : "",
     shippingWeightGrams: "",
+    gsm: "",
+    threadCount: "",
+    dimensions: {},
     attributes: {},
     variants: [],
     addons: [],
@@ -86,12 +134,14 @@ export function stateFromProduct(product: AdminProduct): EditorState {
     subtitle: text(product.subtitle),
     description: text(product.description),
     categorySlug: product.categorySlug,
-    badge: product.badge ?? "",
     careInstructions: text(product.careInstructions),
     sareeLengthM: product.sareeLengthM == null ? "" : String(product.sareeLengthM),
     blouseIncluded: product.blouseIncluded,
     blouseLengthM: product.blouseLengthM == null ? "" : String(product.blouseLengthM),
     shippingWeightGrams: product.shippingWeightGrams == null ? "" : String(product.shippingWeightGrams),
+    gsm: product.gsm == null ? "" : String(product.gsm),
+    threadCount: product.threadCount == null ? "" : String(product.threadCount),
+    dimensions: Object.fromEntries(product.dimensions.map((d) => [d.code, String(d.value)])),
     attributes: product.attributes,
     variants: product.variants.map((v) => ({
       key: newKey(),
@@ -144,12 +194,18 @@ export function formFromState(state: EditorState): ProductForm {
     subtitle: orNull(state.subtitle),
     description: orNull(state.description),
     categorySlug: state.categorySlug,
-    badge: state.badge === "" ? null : state.badge,
+    badge: null,
     careInstructions: orNull(state.careInstructions),
     sareeLengthM: isSaree ? toDecimal(state.sareeLengthM) : null,
     blouseIncluded: isSaree && state.blouseIncluded,
     blouseLengthM: isSaree && state.blouseIncluded ? toDecimal(state.blouseLengthM) : null,
     shippingWeightGrams: state.shippingWeightGrams.trim() === "" ? null : toInt(state.shippingWeightGrams),
+    gsm: state.gsm.trim() === "" ? null : toInt(state.gsm),
+    threadCount: state.threadCount.trim() === "" ? null : toInt(state.threadCount),
+    dimensions: dimensionFields(state.categorySlug).flatMap((field): ProductDimension[] => {
+      const value = toDecimal(state.dimensions[field.code] ?? "");
+      return value === null ? [] : [{ ...field, value }];
+    }),
     attributes,
     variants: state.variants.map((v): VariantForm => ({
       sku: orNull(v.sku.toUpperCase()),

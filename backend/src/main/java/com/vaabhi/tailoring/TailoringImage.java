@@ -23,7 +23,8 @@ class TailoringImage {
         CLIENT("tailoring/clients/"),
         CLOTH("tailoring/cloth/"),
         ALTERATION("tailoring/alterations/"),
-        PRODUCT("tailoring/products/");
+        PRODUCT("tailoring/products/"),
+        PIECE("workshop/pieces/");
 
         final String prefix;
 

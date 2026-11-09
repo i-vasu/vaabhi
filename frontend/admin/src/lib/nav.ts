@@ -145,13 +145,6 @@ export const moreSections: { title: string; items: NavItem[] }[] = [
         description: "Give out and move work by stage",
         permission: "WORKSHOP",
       },
-      {
-        href: "/workshop/staff/",
-        label: "Who works which stage",
-        icon: UsersIcon,
-        description: "Stages each person may be given",
-        permission: "WORKSHOP",
-      },
       byHref("/customers/"),
       {
         href: "/alterations/",
@@ -223,14 +216,7 @@ export const moreSections: { title: string; items: NavItem[] }[] = [
         href: "/staff/attendance/",
         label: "Attendance",
         icon: CalendarIcon,
-        description: "Mark today, late and overtime",
-        permission: "STAFF",
-      },
-      {
-        href: "/staff/attendance/month/",
-        label: "Attendance by month",
-        icon: CalendarIcon,
-        description: "Everyone's month at a glance",
+        description: "Mark a day, or see everyone's month",
         permission: "STAFF",
       },
       {
@@ -289,8 +275,8 @@ export const moreSections: { title: string; items: NavItem[] }[] = [
         permission: "MARKETING",
       },
       {
-        href: "/gallery/",
-        label: "Gallery",
+        href: "/design/",
+        label: "Design",
         icon: ImageIcon,
         description: "Design ideas and finished garments",
         permission: "MARKETING",
@@ -350,8 +336,40 @@ export const moreSections: { title: string; items: NavItem[] }[] = [
     ],
   },
   {
+    title: "Dashboards",
+    items: [
+      {
+        href: "https://dashboard.razorpay.com/",
+        label: "Razorpay",
+        icon: BankIcon,
+        description: "Payments, refunds and settlements",
+        permission: "MONEY",
+      },
+      {
+        href: "https://app.shiprocket.in/",
+        label: "Shiprocket",
+        icon: TruckIcon,
+        description: "Shipments, pickups and courier tracking",
+        permission: "ORDERS",
+      },
+      {
+        href: "https://dash.cloudflare.com/",
+        label: "Cloudflare",
+        icon: LayoutIcon,
+        description: "Website domain, photo storage (R2) and hosting",
+        permission: "OWNER",
+      },
+    ],
+  },
+  {
     title: "Shop",
     items: [
+      {
+        href: "/calendar/",
+        label: "Calendar",
+        icon: CalendarIcon,
+        description: "Your Google Calendar, inside the app",
+      },
       { href: "/settings/", label: "Settings", icon: SettingsIcon, description: "Shop, billing, printing, account" },
       { href: "/help/", label: "Help & support", icon: HelpIcon, description: "How things work, getting help" },
     ],
@@ -392,6 +410,13 @@ export function isActive(item: NavItem, pathname: string): boolean {
 const allPages = (): NavItem[] => [...primaryNav, products, ...moreSections.flatMap((section) => section.items)];
 
 /** Shortcuts on the home page, in this order; each still needs its own permission. */
-export const quickActions: NavItem[] = ["/stock/", "/storefront/", "/activity/", "/workshop/"]
+export const quickActions: NavItem[] = [
+  "/stock/",
+  "/money/expenses/",
+  "/design/",
+  "/storefront/",
+  "/activity/",
+  "/workshop/",
+]
   .map((href) => allPages().find((item) => item.href === href))
   .filter((item): item is NavItem => item !== undefined);

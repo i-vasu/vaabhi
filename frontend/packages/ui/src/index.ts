@@ -14,3 +14,4 @@ export * from "./icons";
 export { ProductCard, WishlistHeart } from "./product-card";
 export type { ProductCardProps } from "./product-card";
 export { SectionHeader } from "./section-header";
+export { InstallableApp } from "./install-app";

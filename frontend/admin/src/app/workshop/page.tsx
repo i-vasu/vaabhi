@@ -60,15 +60,7 @@ export default function WorkshopPage() {
           <SectionLabel>Stage load</SectionLabel>
           <StageBars load={o.stageLoad} />
 
-          <SectionLabel
-            action={
-              <Link href="/workshop/staff/" className="text-sm text-accent-ink underline">
-                Who works which stage
-              </Link>
-            }
-          >
-            Staff
-          </SectionLabel>
+          <SectionLabel>Staff</SectionLabel>
           {o.staffLoad.length === 0 ? (
             <p className="text-ink-soft">No staff yet.</p>
           ) : (
@@ -79,7 +71,6 @@ export default function WorkshopPage() {
                   icon={UsersIcon}
                   href={`/workshop/board/?staffId=${person.id}`}
                   title={person.name}
-                  subtitle={person.stageIds.length === 0 ? "All stages" : `${person.stageIds.length} stages`}
                   trailing={`${person.workingOn} ${person.workingOn === 1 ? "item" : "items"}`}
                 />
               ))}

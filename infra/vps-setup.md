@@ -39,12 +39,15 @@ straight to R2 with short-lived signed URLs from the API; the storefront loads t
    [
      {
        "AllowedOrigins": ["https://admin.vaabhi.com", "http://localhost:3001"],
-       "AllowedMethods": ["PUT"],
+       "AllowedMethods": ["PUT", "GET"],
        "AllowedHeaders": ["content-type", "cache-control"],
        "MaxAgeSeconds": 3600
      }
    ]
    ```
+
+   `PUT` is the admin uploading photos; `GET` lets the admin fetch design and fabric photos as files to share them
+   on WhatsApp from a phone (without it, sharing falls back to photo links).
 
 4. **R2 → Manage API tokens** → Object Read & Write, limited to `vaabhi-media`.
 5. Add the three values as **GitHub secrets** (repo → Settings → Environments → `production` → Add secret):
