@@ -29,12 +29,12 @@ describe("createApiClient", () => {
     vi.stubGlobal("fetch", fetchMock);
     const api = createApiClient({ baseUrl: "https://api.example.com" });
 
-    await api.store.listProducts("kurta sets", { fabric: "silk,cotton", sort: "price_asc", inStock: true, page: 2 });
+    await api.store.listProducts("kurtis", { fabric: "silk,cotton", sort: "price_asc", inStock: true, page: 2 });
     await api.store.getProduct("banarasi/saree");
     await api.store.quoteBag({ lines: [{ sku: "A", addonCode: null, quantity: 1 }] });
 
     expect(fetchMock.mock.calls[0]![0]).toBe(
-      "https://api.example.com/api/v1/store/categories/kurta%20sets/products?fabric=silk%2Ccotton&inStock=true&page=2&sort=price_asc",
+      "https://api.example.com/api/v1/store/categories/kurtis/products?fabric=silk%2Ccotton&inStock=true&page=2&sort=price_asc",
     );
     expect(fetchMock.mock.calls[1]![0]).toBe("https://api.example.com/api/v1/store/products/banarasi%2Fsaree");
     expect(fetchMock.mock.calls[2]![0]).toBe("https://api.example.com/api/v1/store/bag/quote");
