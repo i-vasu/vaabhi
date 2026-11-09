@@ -1,14 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type {
-  MaterialForm,
-  ProductMaking,
-  StaffMember,
-  StockItem,
-  WorkForm,
-  WorkPiece,
-} from "@vaabhi/api-client";
+import type { MaterialForm, ProductMaking, StaffMember, StockItem, WorkForm, WorkPiece } from "@vaabhi/api-client";
 import { API, server } from "@/test/server";
 import { ProductMakingSection } from "./product-making";
 
@@ -183,7 +176,10 @@ describe("ProductMakingSection", () => {
         ),
       ),
       http.get(STOCK, () =>
-        HttpResponse.json([stockItem({ photos: [{ id: 9, key: "stock/5/p9" }] }), stockItem({ id: 6, name: "Cotton lot" })]),
+        HttpResponse.json([
+          stockItem({ photos: [{ id: 9, key: "stock/5/p9" }] }),
+          stockItem({ id: 6, name: "Cotton lot" }),
+        ]),
       ),
     );
     renderSection();
@@ -263,7 +259,10 @@ describe("ProductMakingSection", () => {
     let sent: MaterialForm | undefined;
     server.use(
       http.get(STOCK, () =>
-        HttpResponse.json([stockItem(), stockItem({ id: 6, name: "Cotton lot", supplierName: null, unit: "KG", onHand: 4 })]),
+        HttpResponse.json([
+          stockItem(),
+          stockItem({ id: 6, name: "Cotton lot", supplierName: null, unit: "KG", onHand: 4 }),
+        ]),
       ),
       http.post(`${MAKING}/materials`, async ({ request }) => {
         sent = (await request.json()) as MaterialForm;
@@ -351,7 +350,9 @@ describe("ProductMakingSection", () => {
     server.use(
       http.post(`${MAKING}/work`, async ({ request }) => {
         sent = (await request.json()) as WorkForm;
-        return HttpResponse.json(making({ work: [work({ id: 4, costRupees: 1250, doneOn: "2026-11-02" })], costRupees: 1250 }));
+        return HttpResponse.json(
+          making({ work: [work({ id: 4, costRupees: 1250, doneOn: "2026-11-02" })], costRupees: 1250 }),
+        );
       }),
     );
     renderSection();
@@ -381,7 +382,19 @@ describe("ProductMakingSection", () => {
     server.use(
       http.post(`${MAKING}/work`, async ({ request }) => {
         sent = (await request.json()) as WorkForm;
-        return HttpResponse.json(making({ work: [work({ staffId: null, workerName: "Outside tailor Meena", workType: "Embroidery", costRupees: 0, doneOn: null })] }));
+        return HttpResponse.json(
+          making({
+            work: [
+              work({
+                staffId: null,
+                workerName: "Outside tailor Meena",
+                workType: "Embroidery",
+                costRupees: 0,
+                doneOn: null,
+              }),
+            ],
+          }),
+        );
       }),
     );
     renderSection();
@@ -429,9 +442,7 @@ describe("ProductMakingSection", () => {
   });
 
   it("shows the server's reason when work cannot be added", async () => {
-    server.use(
-      http.post(`${MAKING}/work`, () => HttpResponse.json({ detail: "Worker is inactive" }, { status: 400 })),
-    );
+    server.use(http.post(`${MAKING}/work`, () => HttpResponse.json({ detail: "Worker is inactive" }, { status: 400 })));
     renderSection();
     await screen.findByRole("option", { name: "Silk lot (Surat Mills) · 10 m left" });
 

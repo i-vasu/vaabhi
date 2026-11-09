@@ -181,10 +181,7 @@ describe("work board", () => {
       "href",
       "/stock/view/?id=12",
     );
-    expect(within(dialog).getByRole("link", { name: "Open product" })).toHaveAttribute(
-      "href",
-      "/products/edit/?id=70",
-    );
+    expect(within(dialog).getByRole("link", { name: "Open product" })).toHaveAttribute("href", "/products/edit/?id=70");
     fireEvent.change(within(dialog).getByLabelText("Note for the tailor"), { target: { value: "Gold piping" } });
     fireEvent.click(within(dialog).getByRole("button", { name: "Save note" }));
 

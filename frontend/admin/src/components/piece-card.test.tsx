@@ -70,7 +70,10 @@ describe("PieceCard", () => {
         ],
       }),
     });
-    expect(screen.getByAltText("Fabric for Kalamkari kurti – peacock")).toHaveAttribute("src", mediaUrl("stock/fabric"));
+    expect(screen.getByAltText("Fabric for Kalamkari kurti – peacock")).toHaveAttribute(
+      "src",
+      mediaUrl("stock/fabric"),
+    );
     expect(screen.getByText(/2 design photos/)).toBeInTheDocument();
   });
 
@@ -140,10 +143,7 @@ describe("PieceCard", () => {
 
   it("links a ready piece to the product to add photos and publish", () => {
     setup({ piece: piece({ stage: { id: 3, name: "Ready", kind: "READY" } }) });
-    expect(screen.getByRole("link", { name: "Add photos & publish" })).toHaveAttribute(
-      "href",
-      "/products/edit/?id=70",
-    );
+    expect(screen.getByRole("link", { name: "Add photos & publish" })).toHaveAttribute("href", "/products/edit/?id=70");
     expect(screen.queryByRole("button", { name: /→/ })).not.toBeInTheDocument();
     expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
   });

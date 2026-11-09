@@ -41,9 +41,7 @@ describe("PhotoStrip", () => {
   });
 
   it("offers the add tile until the limit of 6 photos, then hides it", () => {
-    const { unmount } = render(
-      <PhotoStrip label="Design photo" photos={many(5)} onAdd={vi.fn()} onRemove={vi.fn()} />,
-    );
+    const { unmount } = render(<PhotoStrip label="Design photo" photos={many(5)} onAdd={vi.fn()} onRemove={vi.fn()} />);
     expect(screen.getByLabelText("Add design photo")).toBeInTheDocument();
     unmount();
 

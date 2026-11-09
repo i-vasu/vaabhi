@@ -150,9 +150,7 @@ describe("PieceSheet", () => {
   });
 
   it("shows the server's message when the note cannot be saved", async () => {
-    server.use(
-      http.put(`${PIECE}/note`, () => HttpResponse.json({ detail: "The note is too long" }, { status: 400 })),
-    );
+    server.use(http.put(`${PIECE}/note`, () => HttpResponse.json({ detail: "The note is too long" }, { status: 400 })));
     render(<PieceSheet piece={piece({ note: null })} onChange={vi.fn()} onClose={vi.fn()} />);
 
     fireEvent.change(screen.getByLabelText("Note for the tailor"), { target: { value: "Pipe" } });
@@ -258,14 +256,10 @@ describe("ShareButton", () => {
 
 describe("StageWorkPrompt", () => {
   it("asks who did the stage, prefilled with the piece's assignee", () => {
-    render(
-      <StageWorkPrompt piece={piece()} busy={false} onSave={vi.fn()} onSkip={vi.fn()} onClose={vi.fn()} />,
-    );
+    render(<StageWorkPrompt piece={piece()} busy={false} onSave={vi.fn()} onSkip={vi.fn()} onClose={vi.fn()} />);
 
     expect(screen.getByRole("dialog", { name: "Who did stitching?" })).toBeInTheDocument();
-    expect(
-      screen.getByText("Logged on Kalamkari kurti – peacock as part of its making cost."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Logged on Kalamkari kurti – peacock as part of its making cost.")).toBeInTheDocument();
     expect(screen.getByLabelText("Done by")).toHaveValue("Lakshmi");
   });
 

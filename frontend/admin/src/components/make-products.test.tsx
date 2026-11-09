@@ -83,7 +83,9 @@ describe("MakeProducts", () => {
   it("opens with one piece and says how much fabric is in stock", async () => {
     const { dialog } = await openSheet();
 
-    expect(dialog).toHaveTextContent("Each piece becomes a draft product and goes to the first work stage. 10 metres in stock.");
+    expect(dialog).toHaveTextContent(
+      "Each piece becomes a draft product and goes to the first work stage. 10 metres in stock.",
+    );
     expect(piece(1).getByRole("textbox", { name: "Product name" })).toHaveValue("");
     expect(piece(1).getByRole("combobox", { name: "Category" })).toHaveValue("sarees");
     expect(piece(1).getByRole("textbox", { name: "Quantity (metres)" })).toHaveValue("");
@@ -227,9 +229,7 @@ describe("MakeProducts", () => {
   });
 
   it("keeps the form and shows the reason when the pieces are refused", async () => {
-    server.use(
-      http.post(PIECES, () => HttpResponse.json({ detail: "Stock changed, try again" }, { status: 400 })),
-    );
+    server.use(http.post(PIECES, () => HttpResponse.json({ detail: "Stock changed, try again" }, { status: 400 })));
     const { dialog, onMade } = await openSheet();
     fireEvent.change(piece(1).getByRole("textbox", { name: "Product name" }), { target: { value: "Kurta" } });
     fireEvent.change(piece(1).getByRole("textbox", { name: "Quantity (metres)" }), { target: { value: "3" } });

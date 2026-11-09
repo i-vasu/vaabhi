@@ -135,7 +135,9 @@ describe("add photo sheet", () => {
     render(<DesignPage />);
 
     fireEvent.click(await screen.findByRole("button", { name: "Add photo" }));
-    fireEvent.click(within(screen.getByRole("dialog", { name: "Add to Design" })).getByRole("button", { name: "Close" }));
+    fireEvent.click(
+      within(screen.getByRole("dialog", { name: "Add to Design" })).getByRole("button", { name: "Close" }),
+    );
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(created).toBeUndefined();
