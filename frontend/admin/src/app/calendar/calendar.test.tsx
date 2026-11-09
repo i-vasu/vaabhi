@@ -80,6 +80,18 @@ describe("choosing the calendar", () => {
     expect(shownParams().get("src")).toBe(SHOP_CALENDAR);
   });
 
+  it("keeps the form open while typing and saves a cleared ID as none", async () => {
+    render(<CalendarPage />);
+
+    const field = await screen.findByLabelText("Google Calendar ID");
+    fireEvent.change(field, { target: { value: "s" } });
+    expect(screen.getByLabelText("Google Calendar ID")).toHaveValue("s");
+    fireEvent.change(screen.getByLabelText("Google Calendar ID"), { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => expect(saved.calendar).toEqual({ weeklyOff: [], holidays: [], googleCalendarId: null }));
+  });
+
   it("shows why a calendar ID was refused", async () => {
     server.use(
       http.put(`${API}/api/v1/admin/settings/calendar`, () =>
