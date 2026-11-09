@@ -29,7 +29,7 @@ describe("createApiClient", () => {
     vi.stubGlobal("fetch", fetchMock);
     const api = createApiClient({ baseUrl: "https://api.example.com" });
 
-    await api.store.listProducts("kurtis", { fabric: "silk,cotton", sort: "price_asc", inStock: true, page: 2 });
+    await api.store.listProducts("kurta sets", { fabric: "silk,cotton", sort: "price_asc", inStock: true, page: 2 });
     await api.store.getProduct("banarasi/saree");
     await api.store.quoteBag({ lines: [{ sku: "A", addonCode: null, quantity: 1 }] });
 
