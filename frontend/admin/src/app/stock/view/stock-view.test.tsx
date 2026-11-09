@@ -106,7 +106,7 @@ describe("stock item page", () => {
       "href",
       "/products/edit/?id=70",
     );
-    expect(screen.getByText("In workshop: Stitching")).toBeInTheDocument();
+    expect(await screen.findByText("In workshop: Stitching")).toBeInTheDocument();
     expect(screen.getByText("Draft")).toBeInTheDocument();
     expect(screen.getByText("Published")).toBeInTheDocument();
     expect(screen.getByText("2 metres")).toBeInTheDocument();

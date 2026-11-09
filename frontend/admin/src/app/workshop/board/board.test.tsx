@@ -200,6 +200,7 @@ describe("work board", () => {
     );
     render(<WorkBoardPage />);
     fireEvent.click(await screen.findByLabelText("Select Kalamkari kurti – peacock"));
+    fireEvent.change(screen.getByLabelText("Move to"), { target: { value: String(stages[1]!.id) } });
     fireEvent.click(screen.getByRole("button", { name: "Move" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("That piece is no longer on the board");
