@@ -62,7 +62,14 @@ describe("ProductEditor", () => {
   beforeEach(() => {
     replace.mockClear();
     uploaded.length = 0;
-    server.use(http.get(OPTIONS, () => HttpResponse.json(options)));
+    server.use(
+      http.get(OPTIONS, () => HttpResponse.json(options)),
+      // The making and workshop panels of a saved product: nothing recorded yet.
+      http.get(`${PRODUCTS}/:id/making`, () => HttpResponse.json({ materials: [], work: [], costRupees: 0 })),
+      http.get(`${API}/api/v1/admin/workshop/pieces/by-product/:id`, () => new HttpResponse(null, { status: 404 })),
+      http.get(`${API}/api/v1/admin/staff`, () => HttpResponse.json([])),
+      http.get(`${API}/api/v1/admin/stock`, () => HttpResponse.json([])),
+    );
   });
 
   it("creates a draft from scratch and opens its edit page", async () => {
@@ -290,7 +297,6 @@ describe("ProductEditor", () => {
     text("URL name Leave empty to generate it from the name", "ruby-saree");
     text("Care instructions", "Dry clean only");
     text("Description", "Handwoven");
-    fireEvent.change(screen.getByRole("combobox", { name: "Badge" }), { target: { value: "" } });
     text("Saree length (m)", "6.3");
     text("Blouse length (m)", "1");
     text("Price for Ruby", "15000");
@@ -314,7 +320,8 @@ describe("ProductEditor", () => {
       slug: "ruby-saree",
       careInstructions: "Dry clean only",
       description: "Handwoven",
-      badge: null,
+      // No badge picker any more: the saved badge is kept.
+      badge: "NEW",
       sareeLengthM: 6.3,
       blouseIncluded: false,
       blouseLengthM: null,

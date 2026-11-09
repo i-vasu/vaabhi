@@ -1,7 +1,9 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { lastSent, serveTailoring, type Sent } from "@/test/tailoring-fixtures";
 import PriceListPage from "./page";
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({ back: vi.fn(), push: vi.fn(), replace: vi.fn() }) }));
 
 let sent: Sent[];
 beforeEach(() => {

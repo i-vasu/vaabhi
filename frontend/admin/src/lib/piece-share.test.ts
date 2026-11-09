@@ -29,7 +29,12 @@ const piece: WorkPiece = {
   ],
 };
 
-const ok = () => Promise.resolve(new Response(new Blob(["x"], { type: "image/webp" })));
+// A downloaded photo. Not a real Response: on Node 22 its blob() is Node's Blob, which jsdom's File will not take.
+const ok = () =>
+  Promise.resolve({
+    ok: true,
+    blob: () => Promise.resolve(new Blob(["x"], { type: "image/webp" })),
+  } as unknown as Response);
 
 describe("pieceMessage", () => {
   it("reads like the spec example", () => {

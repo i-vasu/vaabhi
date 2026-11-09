@@ -77,7 +77,7 @@ describe("uploadPhoto", () => {
       http.put("https://r2.test/k/:file", () => new HttpResponse(null, { status: 403 })),
     );
     await expect(uploadPhoto(7, new Blob(["x"]), { alt: "a", colourName: null }, resize)).rejects.toThrow(
-      "Uploading the 400 px version failed",
+      "Storage refused the 400 px version",
     );
 
     server.use(
@@ -146,6 +146,6 @@ describe("uploadVideo", () => {
     );
     await expect(
       uploadVideo(7, new File(["x"], "a.mp4", { type: "video/mp4" }), { alt: "a", colourName: null }),
-    ).rejects.toThrow("Uploading the video failed");
+    ).rejects.toThrow("Storage refused the video");
   });
 });

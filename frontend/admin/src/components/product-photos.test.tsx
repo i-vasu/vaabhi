@@ -85,7 +85,9 @@ describe("ProductPhotos", () => {
     expect(add).toBeEnabled();
 
     fireEvent.change(add, { target: { files: [new File(["x"], "clip.avi", { type: "video/x-msvideo" })] } });
-    expect(screen.getByText(/clip.avi: failed. Use an MP4, MOV or WebM video/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/clip.avi: failed. Not a supported video \(video\/x-msvideo\). Use MP4, MOV or WebM/),
+    ).toBeInTheDocument();
     const clip = new File(["x"], "clip.mp4", { type: "video/mp4" });
     fireEvent.change(add, { target: { files: [clip] } });
     expect(onQueue).toHaveBeenLastCalledWith([queuedPhoto, expect.objectContaining({ kind: "VIDEO", file: clip })]);

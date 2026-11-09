@@ -42,6 +42,8 @@ export type EditorState = {
   subtitle: string;
   description: string;
   categorySlug: string;
+  /** Not edited here any more, but kept so a save does not clear the shop's badge. */
+  badge: ProductForm["badge"];
   careInstructions: string;
   sareeLengthM: string;
   blouseIncluded: boolean;
@@ -110,6 +112,7 @@ export function emptyState(categorySlug = ""): EditorState {
     subtitle: "",
     description: "",
     categorySlug,
+    badge: null,
     careInstructions: "",
     sareeLengthM: categorySlug === "sarees" ? "5.5" : "",
     blouseIncluded: categorySlug === "sarees",
@@ -134,6 +137,7 @@ export function stateFromProduct(product: AdminProduct): EditorState {
     subtitle: text(product.subtitle),
     description: text(product.description),
     categorySlug: product.categorySlug,
+    badge: product.badge ?? null,
     careInstructions: text(product.careInstructions),
     sareeLengthM: product.sareeLengthM == null ? "" : String(product.sareeLengthM),
     blouseIncluded: product.blouseIncluded,
@@ -194,7 +198,7 @@ export function formFromState(state: EditorState): ProductForm {
     subtitle: orNull(state.subtitle),
     description: orNull(state.description),
     categorySlug: state.categorySlug,
-    badge: null,
+    badge: state.badge,
     careInstructions: orNull(state.careInstructions),
     sareeLengthM: isSaree ? toDecimal(state.sareeLengthM) : null,
     blouseIncluded: isSaree && state.blouseIncluded,

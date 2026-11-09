@@ -77,6 +77,14 @@ describe("stock", () => {
         unit: "PCS",
         reorderLevel: 10,
         costRupees: 25,
+        material: null,
+        colour: null,
+        widthIn: null,
+        gsm: null,
+        threadCount: null,
+        supplierName: null,
+        supplierPhone: null,
+        notes: null,
       }),
     );
   });

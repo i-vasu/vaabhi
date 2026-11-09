@@ -344,7 +344,11 @@ describe("holidays, notifications and account", () => {
     click("Save");
 
     await waitFor(() =>
-      expect(saved.calendar).toEqual({ weeklyOff: ["SUNDAY"], holidays: [{ date: "2026-11-08", name: "Diwali" }] }),
+      expect(saved.calendar).toEqual({
+        weeklyOff: ["SUNDAY"],
+        holidays: [{ date: "2026-11-08", name: "Diwali" }],
+        googleCalendarId: null,
+      }),
     );
     click("Remove Diwali");
     expect(screen.getByText("No holidays added yet.")).toBeInTheDocument();
