@@ -8,7 +8,10 @@ import { serveTailoring, workItem } from "@/test/tailoring-fixtures";
 import WorkBoardPage from "./page";
 
 let search = new URLSearchParams();
-vi.mock("next/navigation", () => ({ useSearchParams: () => search }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
+  useSearchParams: () => search,
+}));
 
 beforeEach(() => {
   serveTailoring();

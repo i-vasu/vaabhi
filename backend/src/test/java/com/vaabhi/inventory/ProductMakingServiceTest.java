@@ -194,10 +194,7 @@ class ProductMakingServiceTest {
         productExists();
         when(mapped(Long.class).single()).thenReturn(0L);
         var form = new ProductMaking.ProductWorkForm(9L, "Meera", "Stitching", new BigDecimal("150"), null, null);
-        assertRejected(
-                () -> service.addWork(7L, form),
-                HttpStatus.BAD_REQUEST,
-                "That staff member does not exist");
+        assertRejected(() -> service.addWork(7L, form), HttpStatus.BAD_REQUEST, "That staff member does not exist");
         verify(spec, never()).update();
     }
 

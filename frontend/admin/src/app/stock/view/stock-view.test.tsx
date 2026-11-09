@@ -10,7 +10,10 @@ import { serveTailoring } from "@/test/tailoring-fixtures";
 import StockItemPage from "./page";
 
 let search = new URLSearchParams();
-vi.mock("next/navigation", () => ({ useSearchParams: () => search }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
+  useSearchParams: () => search,
+}));
 
 const base = `${API}/api/v1/admin`;
 

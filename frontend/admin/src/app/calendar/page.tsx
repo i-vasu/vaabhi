@@ -73,7 +73,10 @@ export default function CalendarPage() {
               placeholder="shop@gmail.com"
               value={c.googleCalendarId ?? ""}
               error={section.fieldError("googleCalendarId")}
-              onChange={(e) => section.update({ googleCalendarId: e.target.value || null })}
+              onChange={(e) => {
+                setEditing(true);
+                section.update({ googleCalendarId: e.target.value || null });
+              }}
             />
             {section.error && <p className="text-sm text-bad">{section.error}</p>}
             <div className="flex gap-2">
