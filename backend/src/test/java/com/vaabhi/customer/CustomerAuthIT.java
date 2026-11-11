@@ -307,7 +307,8 @@ class CustomerAuthIT {
     void phoneSignInIsOffWithoutTheWhatsAppSignInTemplate() throws Exception {
         whatsApp.codeTemplate = false;
         try {
-            mockMvc.perform(get("/api/v1/auth/options")).andExpect(jsonPath("$.phoneSignIn").value(false));
+            mockMvc.perform(get("/api/v1/auth/options"))
+                    .andExpect(jsonPath("$.phoneSignIn").value(false));
             postJson("/api/v1/auth/otp/request", "{\"phone\":\"9800011122\"}")
                     .andExpect(status().isServiceUnavailable());
             assertThat(whatsApp.codes).doesNotContainKey("+919800011122");

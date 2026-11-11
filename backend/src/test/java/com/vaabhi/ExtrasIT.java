@@ -271,8 +271,7 @@ class ExtrasIT {
                 .andExpect(status().isBadRequest());
         send(
                         post("/api/v1/admin/engage/messages"),
-                        "{\"purpose\":\"CUSTOM\",\"clientId\":%d,\"body\":\"See you Monday\"}"
-                                .formatted(clientId))
+                        "{\"purpose\":\"CUSTOM\",\"clientId\":%d,\"body\":\"See you Monday\"}".formatted(clientId))
                 .andExpect(jsonPath("$.link").value(org.hamcrest.Matchers.startsWith("https://wa.me/9198763")));
         send(post("/api/v1/admin/engage/messages"), "{\"purpose\":\"REWARD\",\"clientId\":" + clientId + "}")
                 .andExpect(status().isBadRequest());
