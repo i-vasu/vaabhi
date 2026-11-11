@@ -99,38 +99,78 @@ public class InvoiceService {
         if (liveInvoiceId(orderId).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "This order already has an invoice");
         }
+        var client = clients.get(order.client().id());
+        var buyer = new InvoiceParties.Buyer(
+                buyerName(client.firstName(), client.lastName()),
+                client.phone(),
+                buyerAddress(client.address(), client.city(), client.pinCode()),
+                client.state());
+        long id = insertInvoice(new NewInvoice(
+                orderId,
+                null,
+                client.id(),
+                null,
+                buyer,
+                client.gstin(),
+                order.totalRupees(),
+                lines(order),
+                actor));
+        return get(id);
+    }
+
+    /**
+     * What a new invoice needs besides the shop settings. The party comes from the client when {@code partyId} is
+     * null; {@code orderTotalRupees} is what the order charged, which GST is worked out on.
+     */
+    record NewInvoice(
+            @Nullable Long orderId,
+            @Nullable Long webOrderId,
+            @Nullable Long clientId,
+            @Nullable Long partyId,
+            InvoiceParties.Buyer buyer,
+            @Nullable String clientGstin,
+            BigDecimal orderTotalRupees,
+            List<InvoiceLine> lines,
+            @Nullable String actor) {}
+
+    /** Works out the GST, takes the next number and inserts the invoice with its lines; returns the new id. */
+    long insertInvoice(NewInvoice invoice) {
         var billing = settings.billing();
         var rate = billing.gstApplies() ? billing.defaultGstRate() : BigDecimal.ZERO;
-        var tax = tax(order.totalRupees(), rate, billing.pricesIncludeTax());
+        var tax = tax(invoice.orderTotalRupees(), rate, billing.pricesIncludeTax());
         var number = numbering.next(NumberSequence.Kind.INVOICE);
-        var client = clients.get(order.client().id());
         var seller = InvoiceParties.seller(settings.shopProfile(), billing);
+        var buyer = invoice.buyer();
         long id = jdbc.sql("""
-                        INSERT INTO invoice (number, order_id, client_id, party_id, issued_on, order_total_rupees,
-                            gst_rate, prices_include_tax, taxable_rupees, cgst_rupees, sgst_rupees, total_rupees,
-                            shop_gstin, client_gstin, created_by, title, buyer_name, buyer_phone, buyer_address,
-                            buyer_state, seller_name, seller_address, seller_cin, seller_state, seller_state_code)
-                        VALUES (:number, :order, :client, (SELECT party_id FROM client WHERE id = :client), :issuedOn,
-                            :orderTotal, :rate, :inclusive, :taxable, :cgst, :sgst, :total, :shopGstin, :clientGstin,
-                            :by, :title, :buyerName, :buyerPhone, :buyerAddress, :buyerState, :sellerName,
-                            :sellerAddress, :sellerCin, :sellerState, :sellerStateCode)
+                        INSERT INTO invoice (number, order_id, web_order_id, client_id, party_id, issued_on,
+                            order_total_rupees, gst_rate, prices_include_tax, taxable_rupees, cgst_rupees, sgst_rupees,
+                            total_rupees, shop_gstin, client_gstin, created_by, title, buyer_name, buyer_phone,
+                            buyer_address, buyer_state, seller_name, seller_address, seller_cin, seller_state,
+                            seller_state_code)
+                        VALUES (:number, :order, :webOrder, :client,
+                            COALESCE(CAST(:party AS bigint), (SELECT party_id FROM client WHERE id = :client)),
+                            :issuedOn, :orderTotal, :rate, :inclusive, :taxable, :cgst, :sgst, :total, :shopGstin,
+                            :clientGstin, :by, :title, :buyerName, :buyerPhone, :buyerAddress, :buyerState,
+                            :sellerName, :sellerAddress, :sellerCin, :sellerState, :sellerStateCode)
                         RETURNING id
                         """)
                 .param("number", number)
-                .param("order", orderId)
-                .param("client", client.id())
+                .param("order", invoice.orderId())
+                .param("webOrder", invoice.webOrderId())
+                .param("client", invoice.clientId())
+                .param("party", invoice.partyId())
                 .param("issuedOn", InvoiceParties.today(clock))
                 .param("title", InvoiceParties.title(billing))
-                .param("buyerName", buyerName(client.firstName(), client.lastName()))
-                .param("buyerPhone", client.phone())
-                .param("buyerAddress", buyerAddress(client.address(), client.city(), client.pinCode()))
-                .param("buyerState", client.state())
+                .param("buyerName", buyer.name())
+                .param("buyerPhone", buyer.phone())
+                .param("buyerAddress", buyer.address())
+                .param("buyerState", buyer.state())
                 .param("sellerName", seller.name())
                 .param("sellerAddress", seller.address())
                 .param("sellerCin", seller.cin())
                 .param("sellerState", seller.state())
                 .param("sellerStateCode", seller.stateCode())
-                .param("orderTotal", order.totalRupees())
+                .param("orderTotal", invoice.orderTotalRupees())
                 .param("rate", rate)
                 .param("inclusive", billing.pricesIncludeTax())
                 .param("taxable", tax.taxableRupees())
@@ -138,12 +178,12 @@ public class InvoiceService {
                 .param("sgst", tax.sgstRupees())
                 .param("total", tax.totalRupees())
                 .param("shopGstin", billing.gstApplies() ? billing.gstin() : null)
-                .param("clientGstin", client.gstin())
-                .param("by", actor)
+                .param("clientGstin", invoice.clientGstin())
+                .param("by", invoice.actor())
                 .query(Long.class)
                 .single();
         int position = 0;
-        for (var line : lines(order)) {
+        for (var line : invoice.lines()) {
             jdbc.sql("""
                             INSERT INTO invoice_line (invoice_id, position, description, quantity, unit_rupees,
                                 amount_rupees)
@@ -157,7 +197,7 @@ public class InvoiceService {
                     .param("amount", line.amountRupees())
                     .update();
         }
-        return get(id);
+        return id;
     }
 
     private static String buyerName(String firstName, @Nullable String lastName) {

@@ -9,7 +9,7 @@ import java.time.ZoneId;
 import org.jspecify.annotations.Nullable;
 
 /** Builds the frozen seller, buyer and heading an invoice carries, so later settings changes never rewrite it. */
-final class InvoiceParties {
+public final class InvoiceParties {
 
     private static final ZoneId INDIA = ZoneId.of("Asia/Kolkata");
 
