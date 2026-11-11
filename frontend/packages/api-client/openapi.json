@@ -9494,13 +9494,6 @@
             "MessageTemplates": {
                 "type": "object",
                 "properties": {
-                    "channel": {
-                        "type": "string",
-                        "enum": [
-                            "WHATSAPP",
-                            "SMS"
-                        ]
-                    },
                     "orderPlaced": {
                         "type": "string",
                         "maxLength": 1000,
@@ -9533,7 +9526,6 @@
                     }
                 },
                 "required": [
-                    "channel",
                     "orderDelivered",
                     "orderPlaced",
                     "orderReady",
@@ -13116,17 +13108,9 @@
                     "resendAfterSeconds": {
                         "type": "integer",
                         "format": "int64"
-                    },
-                    "channel": {
-                        "type": "string",
-                        "enum": [
-                            "WHATSAPP",
-                            "SMS"
-                        ]
                     }
                 },
                 "required": [
-                    "channel",
                     "expiresInSeconds",
                     "phone",
                     "resendAfterSeconds"
@@ -15020,21 +15004,10 @@
                         ],
                         "maxLength": 2000,
                         "minLength": 0
-                    },
-                    "channel": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "enum": [
-                            "WHATSAPP",
-                            "SMS"
-                        ]
                     }
                 },
                 "required": [
                     "body",
-                    "channel",
                     "clientId",
                     "code",
                     "orderId",
@@ -15047,13 +15020,6 @@
                     "id": {
                         "type": "integer",
                         "format": "int64"
-                    },
-                    "channel": {
-                        "type": "string",
-                        "enum": [
-                            "WHATSAPP",
-                            "SMS"
-                        ]
                     },
                     "purpose": {
                         "type": "string",
@@ -15132,7 +15098,6 @@
                 },
                 "required": [
                     "body",
-                    "channel",
                     "clientId",
                     "clientName",
                     "createdAt",
@@ -16295,21 +16260,10 @@
                     },
                     "googleSignIn": {
                         "type": "boolean"
-                    },
-                    "otpChannel": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "enum": [
-                            "WHATSAPP",
-                            "SMS"
-                        ]
                     }
                 },
                 "required": [
                     "googleSignIn",
-                    "otpChannel",
                     "phoneSignIn"
                 ]
             },
