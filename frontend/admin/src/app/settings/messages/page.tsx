@@ -48,8 +48,7 @@ export default function MessageTemplatesPage() {
     <section className="mx-auto max-w-3xl">
       <PageHeader title="Message templates" backHref="/settings/printing/" />
       <p className="mt-3 text-sm text-ink-faint">
-        Sent on WhatsApp.{" "}
-        Placeholders: {"{customer} {shop} {order} {amount} {balance} {date} {link} {code}"}
+        Sent on WhatsApp. Placeholders: {"{customer} {shop} {order} {amount} {balance} {date} {link} {code}"}
       </p>
       {templates.map((template) => (
         <div key={template.key}>

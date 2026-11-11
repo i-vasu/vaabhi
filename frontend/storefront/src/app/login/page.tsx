@@ -23,11 +23,7 @@ export default async function LoginPage({ searchParams }: Readonly<{ searchParam
       <p className="mb-8 mt-2 text-center text-text-muted">
         Track orders, keep your wishlist and check out faster. New here? Your account is created as you log in.
       </p>
-      <SignInForm
-        googleClientId={googleClientId}
-        phoneSignIn={phoneSignIn}
-        next={safeNext(next)}
-      />
+      <SignInForm googleClientId={googleClientId} phoneSignIn={phoneSignIn} next={safeNext(next)} />
       <p className="mt-8 text-center text-xs text-text-muted">
         By continuing you agree to our terms and privacy policy. We never post or share anything without asking.
       </p>

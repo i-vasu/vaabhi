@@ -20,12 +20,7 @@ export default function PrintingPage() {
           subtitle="Which sections each form shows"
           href="/settings/print/#layout"
         />
-        <ListRow
-          icon={ChatIcon}
-          title="Message templates"
-          subtitle="WhatsApp wording"
-          href="/settings/messages/"
-        />
+        <ListRow icon={ChatIcon} title="Message templates" subtitle="WhatsApp wording" href="/settings/messages/" />
         <ListRow
           icon={ImageIcon}
           title="Gallery watermark"
