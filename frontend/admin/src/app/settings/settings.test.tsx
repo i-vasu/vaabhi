@@ -254,7 +254,7 @@ describe("billing & tax", () => {
   });
 
   it("previews padded numbers", () => {
-    expect(preview({ kind: "ITEM", prefix: "IT", nextValue: 7, suffix: "/26", pad: 3, preview: "" })).toBe("IT007/26");
+    expect(preview({ kind: "ITEM", prefix: "IT", nextValue: 7, suffix: "/26", pad: 3, reset: "NEVER", preview: "" })).toBe("IT007/26");
   });
 
   it("saves bank and document details", async () => {

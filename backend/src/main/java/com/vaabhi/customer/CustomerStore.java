@@ -1,5 +1,6 @@
 package com.vaabhi.customer;
 
+import com.vaabhi.party.PartyService;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.Optional;
@@ -14,13 +15,59 @@ class CustomerStore {
     private static final String PROFILE = "SELECT id, name, email, phone FROM customer ";
 
     private final JdbcClient jdbc;
+    private final PartyService parties;
 
-    CustomerStore(JdbcClient jdbc) {
+    CustomerStore(JdbcClient jdbc, PartyService parties) {
         this.jdbc = jdbc;
+        this.parties = parties;
     }
 
     /** Row id and whether this call created it. */
     record SignIn(long id, boolean created) {}
+
+    private record PartyRow(
+            @Nullable Long partyId,
+            @Nullable String name,
+            @Nullable String email,
+            @Nullable String phone,
+            @Nullable String addressLine1,
+            @Nullable String addressLine2,
+            @Nullable String city,
+            @Nullable String state,
+            @Nullable String pincode) {}
+
+    /**
+     * Keeps the customer's party in step: the same party as the shop client with this phone, else its own. Called
+     * after every write that changes who the customer is.
+     */
+    void linkParty(long id) {
+        var row = jdbc.sql("""
+                        SELECT party_id, name, email, phone, address_line1, address_line2, city, state, pincode
+                        FROM customer WHERE id = :id
+                        """)
+                .param("id", id)
+                .query(PartyRow.class)
+                .optional()
+                .orElse(null);
+        if (row == null) {
+            return;
+        }
+        var name = row.name() != null && !row.name().isBlank()
+                ? row.name()
+                : row.email() != null ? row.email() : row.phone() != null ? row.phone() : "Customer " + id;
+        var address = row.addressLine1() == null
+                ? null
+                : row.addressLine2() == null ? row.addressLine1() : row.addressLine1() + ", " + row.addressLine2();
+        long partyId = parties.save(
+                row.partyId(),
+                new PartyService.Details(
+                        name, row.phone(), row.email(), null, address, row.city(), row.state(), row.pincode()),
+                PartyService.Role.CUSTOMER);
+        jdbc.sql("UPDATE customer SET party_id = :party WHERE id = :id")
+                .param("party", partyId)
+                .param("id", id)
+                .update();
+    }
 
     Optional<CustomerProfile> find(long id) {
         return jdbc.sql(PROFILE + "WHERE id = :id")
@@ -32,7 +79,7 @@ class CustomerStore {
     /** Finds or creates the customer for a verified phone number. */
     SignIn signInByPhone(String phone, OffsetDateTime now) {
         // xmax = 0 only for a freshly inserted row.
-        return jdbc.sql("""
+        var signIn = jdbc.sql("""
                         INSERT INTO customer (phone, created_at, last_login_at) VALUES (:phone, :now, :now)
                         ON CONFLICT (phone) DO UPDATE SET last_login_at = EXCLUDED.last_login_at
                         RETURNING id, (xmax = 0) AS created
@@ -41,6 +88,10 @@ class CustomerStore {
                 .param("now", now)
                 .query(SignIn.class)
                 .single();
+        if (signIn.created()) {
+            linkParty(signIn.id());
+        }
+        return signIn;
     }
 
     Optional<Long> idByGoogleSub(String sub) {
@@ -75,10 +126,11 @@ class CustomerStore {
                 .param("name", name)
                 .param("now", now)
                 .update();
+        linkParty(id);
     }
 
     long insertGoogle(String sub, @Nullable String email, @Nullable String name, OffsetDateTime now) {
-        return jdbc.sql("""
+        long id = jdbc.sql("""
                         INSERT INTO customer (google_sub, email, name, created_at, last_login_at)
                         VALUES (:sub, :email, :name, :now, :now)
                         RETURNING id
@@ -89,6 +141,8 @@ class CustomerStore {
                 .param("now", now)
                 .query(Long.class)
                 .single();
+        linkParty(id);
+        return id;
     }
 
     void updateName(long id, String name) {
@@ -96,6 +150,7 @@ class CustomerStore {
                 .param("id", id)
                 .param("name", name)
                 .update();
+        linkParty(id);
     }
 
     private record DetailsRow(
@@ -147,6 +202,7 @@ class CustomerStore {
                 .param("pincode", blank(details.pincode()))
                 .param("measurements", JSON.writeValueAsString(withoutBlanks(details.measurements())))
                 .update();
+        linkParty(id);
     }
 
     /** Drops empty values and garments with nothing filled in, so the stored document holds only answers. */

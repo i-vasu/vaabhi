@@ -5,6 +5,8 @@ import com.vaabhi.catalog.BagQuoteRequest;
 import com.vaabhi.catalog.BagQuoteService;
 import com.vaabhi.catalog.CatalogStock;
 import com.vaabhi.customer.CustomerService;
+import com.vaabhi.settings.NumberSequence;
+import com.vaabhi.settings.NumberingService;
 import com.vaabhi.shared.rupees.Rupees;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -51,6 +53,7 @@ public class CheckoutService {
     private final CheckoutProperties properties;
     private final ApplicationEventPublisher events;
     private final TransactionTemplate transactions;
+    private final NumberingService numbering;
 
     CheckoutService(
             JdbcClient jdbc,
@@ -61,8 +64,10 @@ public class CheckoutService {
             ShiprocketClient shiprocket,
             CheckoutProperties properties,
             ApplicationEventPublisher events,
-            PlatformTransactionManager transactionManager) {
+            PlatformTransactionManager transactionManager,
+            NumberingService numbering) {
         this.transactions = new TransactionTemplate(transactionManager);
+        this.numbering = numbering;
         this.jdbc = jdbc;
         this.quotes = quotes;
         this.stock = stock;
@@ -108,10 +113,7 @@ public class CheckoutService {
                 ? Rupees.ZERO
                 : Rupees.of(properties.shippingRupees());
         var total = items.add(shipping);
-        var number = "WEB-"
-                + jdbc.sql("SELECT nextval('web_order_number_seq')")
-                        .query(Long.class)
-                        .single();
+        var number = numbering.next(NumberSequence.Kind.WEB_ORDER);
         var address = request.address();
         var phone = "+91" + address.phone();
         var status = method == WebOrder.PaymentMethod.COD ? WebOrder.Status.PLACED : WebOrder.Status.PENDING_PAYMENT;

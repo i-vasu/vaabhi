@@ -26,12 +26,28 @@ const sequenceTitles: Record<NumberSequence["kind"], string> = {
   INVOICE: "Invoice numbering",
   ALTERATION: "Alteration numbering",
   ITEM: "Item codes",
+  WEB_ORDER: "Website order numbering",
+  CREDIT_NOTE: "Credit note numbering",
+  STOCK_ITEM: "Stock codes",
+  PRODUCT: "Product style codes",
 };
 
+const RESETS: { value: NonNullable<NumberSequence["reset"]>; label: string }[] = [
+  { value: "NEVER", label: "One running series" },
+  { value: "FY", label: "Start again every April" },
+];
+
+/** The financial year (April–March) a date falls in, as {FY} prints it: "26-27". Mirrors the server. */
+export function financialYear(date: Date): string {
+  const start = date.getMonth() >= 3 ? date.getFullYear() : date.getFullYear() - 1;
+  const two = (year: number) => String(year % 100).padStart(2, "0");
+  return `${two(start)}-${two(start + 1)}`;
+}
+
 /** Mirrors NumberSequence.format on the server, so the preview updates while typing. */
-export function preview(sequence: NumberSequence): string {
+export function preview(sequence: NumberSequence, today: Date = new Date()): string {
   const number = sequence.pad > 0 ? String(sequence.nextValue).padStart(sequence.pad, "0") : String(sequence.nextValue);
-  return `${sequence.prefix}${number}${sequence.suffix}`;
+  return `${sequence.prefix}${number}${sequence.suffix}`.replaceAll("{FY}", financialYear(today));
 }
 
 export default function BillingPage() {
@@ -130,10 +146,10 @@ export default function BillingPage() {
                     Next: {preview(sequence)}
                   </span>
                 </div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <TextField
                     label="Prefix"
-                    maxLength={12}
+                    maxLength={20}
                     value={sequence.prefix}
                     onChange={(event) => replaceSequence(index, { ...sequence, prefix: event.target.value })}
                   />
@@ -148,16 +164,23 @@ export default function BillingPage() {
                   />
                   <TextField
                     label="Suffix"
-                    maxLength={12}
+                    maxLength={20}
                     value={sequence.suffix}
                     onChange={(event) => replaceSequence(index, { ...sequence, suffix: event.target.value })}
+                  />
+                  <SelectField
+                    label="Restart"
+                    options={RESETS}
+                    value={sequence.reset ?? "NEVER"}
+                    onChange={(reset) => replaceSequence(index, { ...sequence, reset })}
                   />
                 </div>
               </div>
             ))}
           </div>
           <p className="mt-2 text-sm text-ink-faint">
-            Lowering a next number can repeat numbers already used, so only do it for a fresh start.
+            Lowering a next number can repeat numbers already used, so only do it for a fresh start. Put {"{FY}"} in a
+            prefix to print the financial year; invoices and credit notes start again every April, as GST requires.
           </p>
           <SaveBar
             label="Save numbering"

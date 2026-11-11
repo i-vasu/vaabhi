@@ -6,7 +6,7 @@
     },
     "servers": [
         {
-            "url": "http://localhost:8081",
+            "url": "http://localhost:8080",
             "description": "Generated server url"
         }
     ],
@@ -9469,14 +9469,18 @@
                             "ORDER",
                             "INVOICE",
                             "ALTERATION",
-                            "ITEM"
+                            "ITEM",
+                            "WEB_ORDER",
+                            "CREDIT_NOTE",
+                            "STOCK_ITEM",
+                            "PRODUCT"
                         ]
                     },
                     "prefix": {
                         "type": "string",
-                        "maxLength": 12,
+                        "maxLength": 20,
                         "minLength": 0,
-                        "pattern": "^[A-Za-z0-9/_\\-]*$"
+                        "pattern": "^([A-Za-z0-9/_\\-]|\\{FY\\})*$"
                     },
                     "nextValue": {
                         "type": "integer",
@@ -9486,15 +9490,25 @@
                     },
                     "suffix": {
                         "type": "string",
-                        "maxLength": 12,
+                        "maxLength": 20,
                         "minLength": 0,
-                        "pattern": "^[A-Za-z0-9/_\\-]*$"
+                        "pattern": "^([A-Za-z0-9/_\\-]|\\{FY\\})*$"
                     },
                     "pad": {
                         "type": "integer",
                         "format": "int32",
                         "maximum": 10,
                         "minimum": 0
+                    },
+                    "reset": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "NEVER",
+                            "FY"
+                        ]
                     },
                     "preview": {
                         "type": "string"
@@ -9506,6 +9520,7 @@
                     "pad",
                     "prefix",
                     "preview",
+                    "reset",
                     "suffix"
                 ]
             },

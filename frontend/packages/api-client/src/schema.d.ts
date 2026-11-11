@@ -3062,13 +3062,15 @@ export interface components {
         };
         NumberSequence: {
             /** @enum {string} */
-            kind: "ORDER" | "INVOICE" | "ALTERATION" | "ITEM";
+            kind: "ORDER" | "INVOICE" | "ALTERATION" | "ITEM" | "WEB_ORDER" | "CREDIT_NOTE" | "STOCK_ITEM" | "PRODUCT";
             prefix: string;
             /** Format: int64 */
             nextValue: number;
             suffix: string;
             /** Format: int32 */
             pad: number;
+            /** @enum {string|null} */
+            reset: "NEVER" | "FY" | null;
             preview: string;
         };
         NotificationSettings: {

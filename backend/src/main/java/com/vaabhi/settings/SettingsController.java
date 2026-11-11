@@ -156,7 +156,7 @@ class SettingsController {
     }
 
     @PutMapping("/numbering")
-    List<NumberSequence> saveNumbering(@RequestBody @NotNull @Size(max = 4) List<@Valid NumberSequence> sequences) {
+    List<NumberSequence> saveNumbering(@RequestBody @NotNull @Size(max = 20) List<@Valid NumberSequence> sequences) {
         return numbering.update(sequences);
     }
 

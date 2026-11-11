@@ -118,10 +118,10 @@ export const watermark: WatermarkSettings = {
 };
 
 export const numbering: NumberSequence[] = [
-  { kind: "ALTERATION", prefix: "ALT-", nextValue: 1001, suffix: "", pad: 0, preview: "ALT-1001" },
-  { kind: "INVOICE", prefix: "INV-", nextValue: 2042, suffix: "", pad: 0, preview: "INV-2042" },
-  { kind: "ITEM", prefix: "", nextValue: 1, suffix: "", pad: 3, preview: "001" },
-  { kind: "ORDER", prefix: "ORD-", nextValue: 2042, suffix: "", pad: 0, preview: "ORD-2042" },
+  { kind: "ALTERATION", prefix: "ALT-", nextValue: 1001, suffix: "", pad: 0, reset: "NEVER", preview: "ALT-1001" },
+  { kind: "INVOICE", prefix: "INV-", nextValue: 2042, suffix: "", pad: 0, reset: "NEVER", preview: "INV-2042" },
+  { kind: "ITEM", prefix: "", nextValue: 1, suffix: "", pad: 3, reset: "NEVER", preview: "001" },
+  { kind: "ORDER", prefix: "ORD-", nextValue: 2042, suffix: "", pad: 0, reset: "NEVER", preview: "ORD-2042" },
 ];
 
 export const stages: ProductionStage[] = [

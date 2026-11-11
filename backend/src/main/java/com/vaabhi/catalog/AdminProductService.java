@@ -1,7 +1,8 @@
 package com.vaabhi.catalog;
 
 import com.vaabhi.catalog.CatalogValidationException.FieldError;
-import java.security.SecureRandom;
+import com.vaabhi.settings.NumberSequence;
+import com.vaabhi.settings.NumberingService;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,17 +21,21 @@ import org.springframework.transaction.annotation.Transactional;
 public class AdminProductService {
 
     static final List<String> SIZES = List.of("XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "Free size");
-    private static final String SKU_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    private static final SecureRandom RANDOM = new SecureRandom();
 
     private final AdminProductStore store;
     private final FacetCatalog facetCatalog;
     private final CategoryService categoryService;
+    private final NumberingService numbering;
 
-    AdminProductService(AdminProductStore store, FacetCatalog facetCatalog, CategoryService categoryService) {
+    AdminProductService(
+            AdminProductStore store,
+            FacetCatalog facetCatalog,
+            CategoryService categoryService,
+            NumberingService numbering) {
         this.store = store;
         this.facetCatalog = facetCatalog;
         this.categoryService = categoryService;
+        this.numbering = numbering;
     }
 
     @Transactional(readOnly = true)
@@ -71,8 +76,10 @@ public class AdminProductService {
     /** Creates a draft. */
     @Transactional
     public AdminProduct create(ProductForm form) {
-        var prepared = prepare(form, null);
+        var code = numbering.next(NumberSequence.Kind.PRODUCT);
+        var prepared = prepare(form, null, code);
         var id = store.insert(form, prepared.slug(), prepared.categoryId());
+        store.setCode(id, code);
         store.replaceChildren(id, prepared.variants(), prepared.facetValues(), form.addons());
         store.replaceDimensions(id, form.dimensions() == null ? List.of() : form.dimensions());
         return load(id);
@@ -81,10 +88,14 @@ public class AdminProductService {
     /** Replaces everything but the status; a published product stays published with the new details. */
     @Transactional
     public AdminProduct update(long id, ProductForm form) {
-        var prepared = prepare(form, id);
+        load(id);
+        // Products made before style codes get theirs on the next save.
+        var code = store.code(id).orElseGet(() -> numbering.next(NumberSequence.Kind.PRODUCT));
+        var prepared = prepare(form, id, code);
         if (!store.update(id, form, prepared.slug(), prepared.categoryId())) {
             throw notFound(id);
         }
+        store.setCode(id, code);
         store.replaceChildren(id, prepared.variants(), prepared.facetValues(), form.addons());
         store.replaceDimensions(id, form.dimensions() == null ? List.of() : form.dimensions());
         if (store.find(id).map(AdminProduct::status).orElseThrow() == ProductStatus.PUBLISHED) {
@@ -121,14 +132,14 @@ public class AdminProductService {
     private record Prepared(
             String slug, long categoryId, List<VariantForm> variants, Map<Long, List<String>> facetValues) {}
 
-    private Prepared prepare(ProductForm form, @Nullable Long productId) {
+    private Prepared prepare(ProductForm form, @Nullable Long productId, String code) {
         var errors = new ArrayList<FieldError>();
         var categoryId = store.categoryId(form.categorySlug()).orElse(null);
         if (categoryId == null) {
             errors.add(new FieldError("categorySlug", "Unknown category"));
         }
         var facetValues = facetValues(form.attributes(), errors);
-        var variants = variants(form.variants(), errors);
+        var variants = variants(form.variants(), errors, code);
         addonCodes(form.addons(), errors);
         if (!errors.isEmpty()) {
             throw new CatalogValidationException(errors);
@@ -174,7 +185,7 @@ public class AdminProductService {
     }
 
     /** Fills in missing SKUs and checks prices, colour families and duplicates. */
-    private List<VariantForm> variants(List<VariantForm> variants, List<FieldError> errors) {
+    private List<VariantForm> variants(List<VariantForm> variants, List<FieldError> errors, String code) {
         var colourFamilies = new HashSet<String>();
         facetCatalog.definitions().colours().forEach(c -> colourFamilies.add(c.code()));
         var combinations = new HashSet<String>();
@@ -193,7 +204,7 @@ public class AdminProductService {
             if (!combinations.add(v.colourName().trim().toLowerCase(Locale.ROOT) + "|" + size)) {
                 errors.add(new FieldError(field, "Two variants have the same colour and size"));
             }
-            var sku = v.sku() == null || v.sku().isBlank() ? newSku(size) : v.sku();
+            var sku = v.sku() == null || v.sku().isBlank() ? newSku(code, v.colourName(), size, skus) : v.sku();
             if (!skus.add(sku)) {
                 errors.add(new FieldError(field + ".sku", "Duplicate SKU " + sku));
             }
@@ -251,15 +262,26 @@ public class AdminProductService {
         return value.substring(start, end);
     }
 
-    /** e.g. VB-K7M2QX-M; random, so it never collides with a deleted variant's SKU in practice. */
-    static String newSku(@Nullable String size) {
-        var code = new StringBuilder("VB-");
-        for (var i = 0; i < 6; i++) {
-            code.append(SKU_ALPHABET.charAt(RANDOM.nextInt(SKU_ALPHABET.length())));
-        }
+    /**
+     * A readable SKU from the product's style code, colour and size, e.g. VB0142-RED-M; printed on tags and read
+     * aloud. Two colours that start alike within one product (Red, Redwood) get -2, -3….
+     */
+    static String newSku(String code, String colourName, @Nullable String size, java.util.Set<String> taken) {
+        var colour = colourName.toUpperCase(Locale.ROOT).replaceAll("[^A-Z]", "");
+        var sku = new StringBuilder(code)
+                .append('-')
+                .append(colour.isEmpty() ? "X" : colour.substring(0, Math.min(3, colour.length())));
         if (size != null) {
-            code.append('-').append(size.toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9]", ""));
+            var sizeCode = size.toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9]", "");
+            if (!sizeCode.isEmpty()) {
+                sku.append('-').append(sizeCode);
+            }
         }
-        return code.toString();
+        var base = sku.toString();
+        var candidate = base;
+        for (var n = 2; taken.contains(candidate); n++) {
+            candidate = base + "-" + n;
+        }
+        return candidate;
     }
 }
