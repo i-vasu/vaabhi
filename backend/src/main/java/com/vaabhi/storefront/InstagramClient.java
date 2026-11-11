@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-/** The Instagram API calls the reels sync needs: the account's recent media, a token refresh, and a cover download. */
+/** The Instagram API calls the reels sync needs: the account's recent media and a cover download. */
 @Component
 class InstagramClient {
 
@@ -45,9 +45,10 @@ class InstagramClient {
             @Nullable String caption,
             Instant postedAt) {}
 
-    /** The account's latest posts, newest first. */
-    List<Media> recentMedia(String token) {
-        var body = get("/me/media?fields=id,media_type,media_product_type,thumbnail_url,permalink,caption,timestamp"
+    /** The account's latest posts, newest first (Graph API {@code GET /{ig-account-id}/media}). */
+    List<Media> recentMedia(String accountId, String token) {
+        var body = get("/" + encode(accountId)
+                + "/media?fields=id,media_type,media_product_type,thumbnail_url,permalink,caption,timestamp"
                 + "&limit=50&access_token=" + encode(token));
         List<Media> media = new ArrayList<>();
         for (JsonNode node : JSON.readTree(body).path("data")) {
@@ -66,16 +67,6 @@ class InstagramClient {
                     OffsetDateTime.parse(timestamp, TIMESTAMP).toInstant()));
         }
         return media;
-    }
-
-    /** A new long-lived token (valid 60 days) for one that is at least a day old and not yet expired. */
-    String refresh(String token) {
-        var body = get("/refresh_access_token?grant_type=ig_refresh_token&access_token=" + encode(token));
-        var fresh = text(JSON.readTree(body).path("access_token"));
-        if (fresh == null) {
-            throw new IllegalStateException("Instagram did not return a refreshed token");
-        }
-        return fresh;
     }
 
     /** A reel's cover image (a JPEG on Instagram's CDN; those links expire, which is why covers are copied to R2). */

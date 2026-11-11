@@ -1,13 +1,10 @@
 package com.vaabhi.storefront;
 
 import com.vaabhi.shared.storage.ObjectStorage;
-import java.time.Clock;
-import java.time.Duration;
+import java.sql.Timestamp;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,34 +16,25 @@ import org.springframework.stereotype.Service;
 /**
  * The home page's Instagram reels. Every hour the latest reels are read from the shop's account and each new
  * cover is copied once to R2, so the home page loads small images from our own media domain and never waits on
- * Instagram. Reels that drop out of the latest few are removed with their covers. The access token is refreshed
- * weekly (long-lived tokens last 60 days) and the fresh one is kept in the database.
+ * Instagram. Reels that drop out of the latest few are removed with their covers.
  */
 @Service
 @EnableConfigurationProperties(InstagramProperties.class)
 class InstagramReels {
 
     private static final Logger log = LoggerFactory.getLogger(InstagramReels.class);
-    private static final Duration REFRESH_EVERY = Duration.ofDays(7);
     private static final int CAPTION_MAX = 300;
 
     private final InstagramProperties properties;
     private final InstagramClient instagram;
     private final ObjectStorage storage;
     private final JdbcClient jdbc;
-    private final Clock clock;
 
-    InstagramReels(
-            InstagramProperties properties,
-            InstagramClient instagram,
-            ObjectStorage storage,
-            JdbcClient jdbc,
-            Clock clock) {
+    InstagramReels(InstagramProperties properties, InstagramClient instagram, ObjectStorage storage, JdbcClient jdbc) {
         this.properties = properties;
         this.instagram = instagram;
         this.storage = storage;
         this.jdbc = jdbc;
-        this.clock = clock;
     }
 
     /** The synced reels, newest first. */
@@ -72,37 +60,20 @@ class InstagramReels {
     }
 
     void sync() {
-        var stored = storedToken();
-        // The stored (refreshed) token first; the configured one in case the stored one has stopped working.
-        var tokens = new LinkedHashSet<String>();
-        Stream.of(stored, properties.token()).filter(Objects::nonNull).forEach(tokens::add);
-        if (tokens.isEmpty() || !storage.configured()) {
+        if (!properties.configured() || !storage.configured()) {
             return;
         }
-
-        List<InstagramClient.Media> media = null;
-        String working = null;
-        for (var token : tokens) {
-            try {
-                media = instagram.recentMedia(token);
-                working = token;
-                break;
-            } catch (RuntimeException e) {
-                log.warn("Instagram token did not work: {}", e.getMessage());
-            }
-        }
-        if (media == null || working == null) {
-            return;
-        }
-        refreshIfDue(working, stored);
-
-        var reels = media.stream()
+        var reels = instagram
+                .recentMedia(
+                        Objects.requireNonNull(properties.accountId()),
+                        Objects.requireNonNull(properties.accessToken()))
+                .stream()
                 .filter(m -> m.reel() && m.thumbnailUrl() != null)
                 .limit(properties.limit())
                 .toList();
-        var have = new HashSet<>(jdbc.sql("SELECT media_id FROM instagram_reel")
-                .query(String.class)
-                .list());
+
+        var have = new HashSet<>(
+                jdbc.sql("SELECT media_id FROM instagram_reel").query(String.class).list());
         for (var reel : reels) {
             if (have.contains(reel.id())) {
                 continue;
@@ -118,7 +89,7 @@ class InstagramReels {
                     .param("permalink", reel.permalink())
                     .param("caption", caption(reel.caption()))
                     .param("key", key)
-                    .param("postedAt", java.sql.Timestamp.from(reel.postedAt()))
+                    .param("postedAt", Timestamp.from(reel.postedAt()))
                     .update();
         }
 
@@ -131,38 +102,6 @@ class InstagramReels {
                         .optional()
                         .ifPresent(storage::delete);
             }
-        }
-    }
-
-    private @Nullable String storedToken() {
-        return jdbc.sql("SELECT access_token FROM instagram_token WHERE id = 1")
-                .query(String.class)
-                .optional()
-                .orElse(null);
-    }
-
-    private void refreshIfDue(String token, @Nullable String stored) {
-        var due = !token.equals(stored)
-                || jdbc.sql("SELECT refreshed_at < :before FROM instagram_token WHERE id = 1")
-                        .param("before", java.sql.Timestamp.from(clock.instant().minus(REFRESH_EVERY)))
-                        .query(Boolean.class)
-                        .optional()
-                        .orElse(true);
-        if (!due) {
-            return;
-        }
-        try {
-            var fresh = instagram.refresh(token);
-            jdbc.sql("""
-                            INSERT INTO instagram_token (id, access_token, refreshed_at) VALUES (1, :token, :now)
-                            ON CONFLICT (id) DO UPDATE SET access_token = :token, refreshed_at = :now
-                            """)
-                    .param("token", fresh)
-                    .param("now", java.sql.Timestamp.from(clock.instant()))
-                    .update();
-        } catch (RuntimeException e) {
-            // A token less than a day old cannot be refreshed yet; the next run tries again.
-            log.info("Instagram token not refreshed: {}", e.getMessage());
         }
     }
 

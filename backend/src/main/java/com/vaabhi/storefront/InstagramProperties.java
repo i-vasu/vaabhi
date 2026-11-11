@@ -4,24 +4,26 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * The shop's Instagram account for the home page's reels section (Instagram API with Instagram Login). Without a
- * token the sync does nothing and the section stays hidden.
+ * The shop's Instagram account for the home page's reels section (Instagram API with Unified login). Without both
+ * values the sync does nothing and the section stays hidden.
  *
- * @param accessToken a long-lived Instagram user token (Meta app → Instagram → API setup with Instagram login →
- *     Generate token). The sync refreshes it weekly and keeps the new one in the database, so this value is only
- *     the starting point; paste a fresh one here if the stored one ever stops working.
+ * @param accessToken the system-user token from the Meta app (Use cases → Instagram API → API setup with Unified
+ *     login → Generate token); it does not expire
+ * @param accountId the Instagram account's id as shown next to it on that page
  * @param limit how many of the latest reels the home page shows
  */
 @ConfigurationProperties("vaabhi.instagram")
-record InstagramProperties(@Nullable String accessToken, @Nullable String baseUrl, @Nullable Integer limit) {
+record InstagramProperties(
+        @Nullable String accessToken, @Nullable String accountId, @Nullable String baseUrl, @Nullable Integer limit) {
 
     InstagramProperties {
-        baseUrl = baseUrl == null || baseUrl.isBlank() ? "https://graph.instagram.com" : baseUrl;
+        accessToken = accessToken == null || accessToken.isBlank() ? null : accessToken.trim();
+        accountId = accountId == null || accountId.isBlank() ? null : accountId.trim();
+        baseUrl = baseUrl == null || baseUrl.isBlank() ? "https://graph.facebook.com/v23.0" : baseUrl;
         limit = limit == null || limit < 1 ? 8 : limit;
     }
 
-    @Nullable
-    String token() {
-        return accessToken == null || accessToken.isBlank() ? null : accessToken.trim();
+    boolean configured() {
+        return accessToken != null && accountId != null;
     }
 }
