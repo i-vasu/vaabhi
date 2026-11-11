@@ -2068,6 +2068,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/customer/orders/{number}/invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMyInvoice"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/options": {
         parameters: {
             query?: never;
@@ -2220,6 +2236,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getMonthAttendance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/states": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getStates"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3141,6 +3173,13 @@ export interface components {
             /** @enum {string} */
             discountAppliesTo: "ORDER_TOTAL" | "ITEMS_BEFORE_TAX";
             autoInvoice: boolean;
+            company: components["schemas"]["Company"] | null;
+        };
+        Company: {
+            legalName: string | null;
+            cin: string | null;
+            registeredOffice: string | null;
+            state: string | null;
         };
         ServiceProductForm: {
             /** Format: int64 */
@@ -3392,7 +3431,7 @@ export interface components {
             id: number;
             amountRupees: number;
             /** @enum {string} */
-            mode: "CASH" | "UPI" | "CARD" | "BANK";
+            mode: "CASH" | "UPI" | "CARD" | "BANK" | "RAZORPAY" | "COD";
             /** @enum {string} */
             kind: "ADVANCE" | "PAYMENT" | "REFUND";
             note: string | null;
@@ -3417,7 +3456,7 @@ export interface components {
             description: string;
             amountRupees: number;
             /** @enum {string} */
-            mode: "CASH" | "UPI" | "CARD" | "BANK";
+            mode: "CASH" | "UPI" | "CARD" | "BANK" | "RAZORPAY" | "COD";
             paidTo: string | null;
         };
         Expense: {
@@ -3430,7 +3469,7 @@ export interface components {
             description: string;
             amountRupees: number;
             /** @enum {string} */
-            mode: "CASH" | "UPI" | "CARD" | "BANK";
+            mode: "CASH" | "UPI" | "CARD" | "BANK" | "RAZORPAY" | "COD";
             paidTo: string | null;
             createdBy: string | null;
             /** Format: date-time */
@@ -3762,6 +3801,7 @@ export interface components {
             createdAt: string;
             lines: components["schemas"]["Line"][];
             returns: components["schemas"]["OrderReturn"][];
+            invoiceNumber: string | null;
         };
         PaymentConfirmation: {
             razorpayOrderId: string;
@@ -4086,7 +4126,7 @@ export interface components {
         };
         PayForm: {
             /** @enum {string} */
-            mode: "CASH" | "UPI" | "CARD" | "BANK";
+            mode: "CASH" | "UPI" | "CARD" | "BANK" | "RAZORPAY" | "COD";
         };
         Payslip: {
             /** Format: int64 */
@@ -4117,7 +4157,7 @@ export interface components {
             /** Format: date-time */
             paidAt: string | null;
             /** @enum {string|null} */
-            paidMode: "CASH" | "UPI" | "CARD" | "BANK" | null;
+            paidMode: "CASH" | "UPI" | "CARD" | "BANK" | "RAZORPAY" | "COD" | null;
         };
         PayrollMonth: {
             /** Format: date */
@@ -4150,7 +4190,7 @@ export interface components {
             redeemPoints: number;
             advanceRupees: number;
             /** @enum {string} */
-            advanceMode: "CASH" | "UPI" | "CARD" | "BANK";
+            advanceMode: "CASH" | "UPI" | "CARD" | "BANK" | "RAZORPAY" | "COD";
             notes: string | null;
         };
         OrderItemForm: {
@@ -4177,7 +4217,7 @@ export interface components {
         PaymentForm: {
             amountRupees: number;
             /** @enum {string} */
-            mode: "CASH" | "UPI" | "CARD" | "BANK";
+            mode: "CASH" | "UPI" | "CARD" | "BANK" | "RAZORPAY" | "COD";
             refund: boolean;
             note: string | null;
         };
@@ -4185,7 +4225,7 @@ export interface components {
             /** @enum {string|null} */
             settlement: "REFUND" | "KEEP" | null;
             /** @enum {string|null} */
-            refundMode: "CASH" | "UPI" | "CARD" | "BANK" | null;
+            refundMode: "CASH" | "UPI" | "CARD" | "BANK" | "RAZORPAY" | "COD" | null;
             reason: string | null;
         };
         ShipmentForm: {
@@ -4199,14 +4239,25 @@ export interface components {
             amountRupees: number;
             reference: string | null;
         };
+        Buyer: {
+            name: string;
+            phone: string | null;
+            address: string | null;
+            state: string | null;
+        };
         Invoice: {
             /** Format: int64 */
             id: number;
             number: string;
+            /** @enum {string} */
+            source: "SHOP" | "WEB";
             /** Format: int64 */
-            orderId: number;
+            orderId: number | null;
             orderNumber: string;
-            client: components["schemas"]["ClientSummary"];
+            client: components["schemas"]["ClientSummary"] | null;
+            title: string;
+            seller: components["schemas"]["Seller"];
+            buyer: components["schemas"]["Buyer"];
             /** Format: date */
             issuedOn: string;
             lines: components["schemas"]["InvoiceLine"][];
@@ -4235,6 +4286,13 @@ export interface components {
             quantity: number;
             unitRupees: number;
             amountRupees: number;
+        };
+        Seller: {
+            name: string;
+            address: string | null;
+            cin: string | null;
+            state: string | null;
+            stateCode: string | null;
         };
         GalleryUpload: {
             key: string;
@@ -4373,7 +4431,7 @@ export interface components {
             status: "BOOKED" | "IN_PROGRESS" | "READY" | "DELIVERED" | "CANCELLED";
             collectRupees: number;
             /** @enum {string|null} */
-            mode: "CASH" | "UPI" | "CARD" | "BANK" | null;
+            mode: "CASH" | "UPI" | "CARD" | "BANK" | "RAZORPAY" | "COD" | null;
             /** @enum {string|null} */
             settlement: "REFUND" | "KEEP" | null;
         };
@@ -4571,6 +4629,22 @@ export interface components {
             filters: components["schemas"]["FilterGroup"][];
             priceRange: components["schemas"]["PriceRange"] | null;
         };
+        StoreInvoice: {
+            number: string;
+            title: string;
+            /** Format: date */
+            issuedOn: string;
+            seller: components["schemas"]["Seller"];
+            buyer: components["schemas"]["Buyer"];
+            orderNumber: string;
+            lines: components["schemas"]["InvoiceLine"][];
+            taxableRupees: number;
+            cgstRupees: number;
+            sgstRupees: number;
+            totalRupees: number;
+            shopGstin: string | null;
+            cancelled: boolean;
+        };
         AuthOptions: {
             phoneSignIn: boolean;
             googleSignIn: boolean;
@@ -4636,6 +4710,10 @@ export interface components {
             lateMinutes: number;
             /** Format: int32 */
             overtimeMinutes: number;
+        };
+        State: {
+            name: string;
+            code: string;
         };
         ReportInfo: {
             name: string;
@@ -4852,19 +4930,19 @@ export interface components {
             /** Format: date-time */
             at: string;
             /** @enum {string} */
-            kind: "ORDER_PAYMENT" | "REFUND" | "ALTERATION_PAYMENT" | "EXPENSE";
+            kind: "ORDER_PAYMENT" | "REFUND" | "ALTERATION_PAYMENT" | "EXPENSE" | "WEB_PAYMENT" | "WEB_REFUND";
             /** Format: int64 */
             sourceId: number;
             reference: string;
             party: string | null;
             /** @enum {string} */
-            mode: "CASH" | "UPI" | "CARD" | "BANK";
+            mode: "CASH" | "UPI" | "CARD" | "BANK" | "RAZORPAY" | "COD";
             amountRupees: number;
             balanceRupees: number;
         };
         ModeTotal: {
             /** @enum {string} */
-            mode: "CASH" | "UPI" | "CARD" | "BANK";
+            mode: "CASH" | "UPI" | "CARD" | "BANK" | "RAZORPAY" | "COD";
             inRupees: number;
             outRupees: number;
         };
@@ -4883,11 +4961,13 @@ export interface components {
             /** Format: int64 */
             id: number;
             number: string;
+            /** @enum {string} */
+            source: "SHOP" | "WEB";
             /** Format: int64 */
-            orderId: number;
+            orderId: number | null;
             orderNumber: string;
             /** Format: int64 */
-            clientId: number;
+            clientId: number | null;
             clientName: string;
             /** Format: date */
             issuedOn: string;
@@ -9208,6 +9288,28 @@ export interface operations {
             };
         };
     };
+    getMyInvoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StoreInvoice"];
+                };
+            };
+        };
+    };
     signInOptions: {
         parameters: {
             query?: never;
@@ -9415,6 +9517,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["MonthAttendance"];
+                };
+            };
+        };
+    };
+    getStates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["State"][];
                 };
             };
         };
@@ -9666,7 +9788,7 @@ export interface operations {
             query?: {
                 from?: string | null;
                 to?: string | null;
-                kind?: "ORDER_PAYMENT" | "REFUND" | "ALTERATION_PAYMENT" | "EXPENSE" | null;
+                kind?: "ORDER_PAYMENT" | "REFUND" | "ALTERATION_PAYMENT" | "EXPENSE" | "WEB_PAYMENT" | "WEB_REFUND" | null;
             };
             header?: never;
             path?: never;

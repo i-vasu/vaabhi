@@ -6168,6 +6168,36 @@
                 }
             }
         },
+        "/api/v1/customer/orders/{number}/invoice": {
+            "get": {
+                "tags": [
+                    "checkout-controller"
+                ],
+                "operationId": "getMyInvoice",
+                "parameters": [
+                    {
+                        "name": "number",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StoreInvoice"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/options": {
             "get": {
                 "tags": [
@@ -6444,6 +6474,29 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/MonthAttendance"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/settings/states": {
+            "get": {
+                "tags": [
+                    "settings-controller"
+                ],
+                "operationId": "getStates",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/State"
+                                    }
                                 }
                             }
                         }
@@ -6879,7 +6932,9 @@
                                 "ORDER_PAYMENT",
                                 "REFUND",
                                 "ALTERATION_PAYMENT",
-                                "EXPENSE"
+                                "EXPENSE",
+                                "WEB_PAYMENT",
+                                "WEB_REFUND"
                             ]
                         }
                     }
@@ -9879,16 +9934,67 @@
                     },
                     "autoInvoice": {
                         "type": "boolean"
+                    },
+                    "company": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/Company"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
                     }
                 },
                 "required": [
                     "autoInvoice",
                     "chargeGst",
+                    "company",
                     "defaultGstRate",
                     "discountAppliesTo",
                     "gstin",
                     "pricesIncludeTax",
                     "showHsnCodes"
+                ]
+            },
+            "Company": {
+                "type": "object",
+                "properties": {
+                    "legalName": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 160,
+                        "minLength": 0
+                    },
+                    "cin": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "pattern": "^[LU][0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$"
+                    },
+                    "registeredOffice": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 300,
+                        "minLength": 0
+                    },
+                    "state": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "cin",
+                    "legalName",
+                    "registeredOffice",
+                    "state"
                 ]
             },
             "ServiceProductForm": {
@@ -11060,7 +11166,9 @@
                             "CASH",
                             "UPI",
                             "CARD",
-                            "BANK"
+                            "BANK",
+                            "RAZORPAY",
+                            "COD"
                         ]
                     },
                     "kind": {
@@ -11171,7 +11279,9 @@
                             "CASH",
                             "UPI",
                             "CARD",
-                            "BANK"
+                            "BANK",
+                            "RAZORPAY",
+                            "COD"
                         ]
                     },
                     "paidTo": {
@@ -11228,7 +11338,9 @@
                             "CASH",
                             "UPI",
                             "CARD",
-                            "BANK"
+                            "BANK",
+                            "RAZORPAY",
+                            "COD"
                         ]
                     },
                     "paidTo": {
@@ -12768,6 +12880,12 @@
                         "items": {
                             "$ref": "#/components/schemas/OrderReturn"
                         }
+                    },
+                    "invoiceNumber": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     }
                 },
                 "required": [
@@ -12782,6 +12900,7 @@
                     "courier",
                     "createdAt",
                     "deliveredAt",
+                    "invoiceNumber",
                     "itemsRupees",
                     "lines",
                     "number",
@@ -14231,7 +14350,9 @@
                             "CASH",
                             "UPI",
                             "CARD",
-                            "BANK"
+                            "BANK",
+                            "RAZORPAY",
+                            "COD"
                         ]
                     }
                 },
@@ -14329,7 +14450,9 @@
                             "CASH",
                             "UPI",
                             "CARD",
-                            "BANK"
+                            "BANK",
+                            "RAZORPAY",
+                            "COD"
                         ]
                     }
                 },
@@ -14475,7 +14598,9 @@
                             "CASH",
                             "UPI",
                             "CARD",
-                            "BANK"
+                            "BANK",
+                            "RAZORPAY",
+                            "COD"
                         ]
                     },
                     "notes": {
@@ -14619,7 +14744,9 @@
                             "CASH",
                             "UPI",
                             "CARD",
-                            "BANK"
+                            "BANK",
+                            "RAZORPAY",
+                            "COD"
                         ]
                     },
                     "refund": {
@@ -14663,7 +14790,9 @@
                             "CASH",
                             "UPI",
                             "CARD",
-                            "BANK"
+                            "BANK",
+                            "RAZORPAY",
+                            "COD"
                         ]
                     },
                     "reason": {
@@ -14743,6 +14872,38 @@
                     "reference"
                 ]
             },
+            "Buyer": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "address": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "state": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "address",
+                    "name",
+                    "phone",
+                    "state"
+                ]
+            },
             "Invoice": {
                 "type": "object",
                 "properties": {
@@ -14753,15 +14914,41 @@
                     "number": {
                         "type": "string"
                     },
+                    "source": {
+                        "type": "string",
+                        "enum": [
+                            "SHOP",
+                            "WEB"
+                        ]
+                    },
                     "orderId": {
-                        "type": "integer",
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
                         "format": "int64"
                     },
                     "orderNumber": {
                         "type": "string"
                     },
                     "client": {
-                        "$ref": "#/components/schemas/ClientSummary"
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/ClientSummary"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "seller": {
+                        "$ref": "#/components/schemas/Seller"
+                    },
+                    "buyer": {
+                        "$ref": "#/components/schemas/Buyer"
                     },
                     "issuedOn": {
                         "type": "string",
@@ -14841,6 +15028,7 @@
                 },
                 "required": [
                     "balanceRupees",
+                    "buyer",
                     "cancelledAt",
                     "cancelledBy",
                     "cgstRupees",
@@ -14859,9 +15047,12 @@
                     "orderTotalRupees",
                     "paidRupees",
                     "pricesIncludeTax",
+                    "seller",
                     "sgstRupees",
                     "shopGstin",
+                    "source",
                     "taxableRupees",
+                    "title",
                     "totalRupees"
                 ]
             },
@@ -14887,6 +15078,45 @@
                     "description",
                     "quantity",
                     "unitRupees"
+                ]
+            },
+            "Seller": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "address": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "cin": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "state": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "stateCode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "address",
+                    "cin",
+                    "name",
+                    "state",
+                    "stateCode"
                 ]
             },
             "GalleryUpload": {
@@ -15493,7 +15723,9 @@
                             "CASH",
                             "UPI",
                             "CARD",
-                            "BANK"
+                            "BANK",
+                            "RAZORPAY",
+                            "COD"
                         ]
                     },
                     "settlement": {
@@ -16373,6 +16605,72 @@
                     "total"
                 ]
             },
+            "StoreInvoice": {
+                "type": "object",
+                "properties": {
+                    "number": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "issuedOn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "seller": {
+                        "$ref": "#/components/schemas/Seller"
+                    },
+                    "buyer": {
+                        "$ref": "#/components/schemas/Buyer"
+                    },
+                    "orderNumber": {
+                        "type": "string"
+                    },
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/InvoiceLine"
+                        }
+                    },
+                    "taxableRupees": {
+                        "type": "number"
+                    },
+                    "cgstRupees": {
+                        "type": "number"
+                    },
+                    "sgstRupees": {
+                        "type": "number"
+                    },
+                    "totalRupees": {
+                        "type": "number"
+                    },
+                    "shopGstin": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "cancelled": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "buyer",
+                    "cancelled",
+                    "cgstRupees",
+                    "issuedOn",
+                    "lines",
+                    "number",
+                    "orderNumber",
+                    "seller",
+                    "sgstRupees",
+                    "shopGstin",
+                    "taxableRupees",
+                    "title",
+                    "totalRupees"
+                ]
+            },
             "AuthOptions": {
                 "type": "object",
                 "properties": {
@@ -16587,6 +16885,21 @@
                     "present",
                     "staffId",
                     "unmarked"
+                ]
+            },
+            "State": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "code": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "code",
+                    "name"
                 ]
             },
             "ReportInfo": {
@@ -17355,7 +17668,9 @@
                             "ORDER_PAYMENT",
                             "REFUND",
                             "ALTERATION_PAYMENT",
-                            "EXPENSE"
+                            "EXPENSE",
+                            "WEB_PAYMENT",
+                            "WEB_REFUND"
                         ]
                     },
                     "sourceId": {
@@ -17377,7 +17692,9 @@
                             "CASH",
                             "UPI",
                             "CARD",
-                            "BANK"
+                            "BANK",
+                            "RAZORPAY",
+                            "COD"
                         ]
                     },
                     "amountRupees": {
@@ -17407,7 +17724,9 @@
                             "CASH",
                             "UPI",
                             "CARD",
-                            "BANK"
+                            "BANK",
+                            "RAZORPAY",
+                            "COD"
                         ]
                     },
                     "inRupees": {
@@ -17470,15 +17789,28 @@
                     "number": {
                         "type": "string"
                     },
+                    "source": {
+                        "type": "string",
+                        "enum": [
+                            "SHOP",
+                            "WEB"
+                        ]
+                    },
                     "orderId": {
-                        "type": "integer",
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
                         "format": "int64"
                     },
                     "orderNumber": {
                         "type": "string"
                     },
                     "clientId": {
-                        "type": "integer",
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
                         "format": "int64"
                     },
                     "clientName": {
@@ -17514,6 +17846,7 @@
                     "number",
                     "orderId",
                     "orderNumber",
+                    "source",
                     "taxRupees",
                     "taxableRupees",
                     "totalRupees"
