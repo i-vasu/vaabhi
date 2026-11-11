@@ -30,7 +30,7 @@ function InvoiceView({ id }: { id: number }) {
   return (
     <section className="mx-auto max-w-3xl">
       <PageHeader
-        title={v.number}
+        title={v.title}
         backHref="/money/invoices/"
         badge={v.cancelledAt ? <Pill tone="bad">Cancelled</Pill> : undefined}
         actions={
@@ -39,19 +39,45 @@ function InvoiceView({ id }: { id: number }) {
           </button>
         }
       />
-      <dl className="grid grid-cols-2 gap-4 rounded-2xl border border-line bg-panel p-4 sm:grid-cols-4">
+      <div className="grid gap-4 rounded-2xl border border-line bg-panel p-4 sm:grid-cols-2">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-faint">Sold by</p>
+          <p className="mt-1 font-medium">{v.seller.name}</p>
+          {v.seller.address && <p className="text-sm text-ink-soft">{v.seller.address}</p>}
+          {v.seller.cin && <p className="text-sm text-ink-soft">CIN: {v.seller.cin}</p>}
+          {v.seller.state && (
+            <p className="text-sm text-ink-soft">
+              State: {v.seller.state}
+              {v.seller.stateCode && ` (${v.seller.stateCode})`}
+            </p>
+          )}
+          {v.shopGstin && <p className="text-sm text-ink-soft">GSTIN: {v.shopGstin}</p>}
+        </div>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-faint">Billed to</p>
+          <p className="mt-1 font-medium">{v.buyer.name}</p>
+          {v.buyer.phone && <p className="text-sm text-ink-soft">{formatPhone(v.buyer.phone)}</p>}
+          {v.buyer.address && <p className="text-sm text-ink-soft">{v.buyer.address}</p>}
+          {v.buyer.state && <p className="text-sm text-ink-soft">State: {v.buyer.state}</p>}
+          {v.clientGstin && <p className="text-sm text-ink-soft">GSTIN: {v.clientGstin}</p>}
+        </div>
+      </div>
+      <dl className="mt-4 grid grid-cols-2 gap-4 rounded-2xl border border-line bg-panel p-4 sm:grid-cols-3">
+        <Fact label="Invoice no.">{v.number}</Fact>
         <Fact label="Date">{formatDate(v.issuedOn)}</Fact>
         <Fact label="Order">
-          <Link href={`/orders/view/?id=${v.orderId}`} className="text-accent-ink underline">
-            {v.orderNumber}
-          </Link>
+          {v.source === "WEB" ? (
+            <Link href={`/online-orders/view/?number=${encodeURIComponent(v.orderNumber)}`} className="text-accent-ink underline">
+              {v.orderNumber}
+            </Link>
+          ) : v.orderId ? (
+            <Link href={`/orders/view/?id=${v.orderId}`} className="text-accent-ink underline">
+              {v.orderNumber}
+            </Link>
+          ) : (
+            v.orderNumber
+          )}
         </Fact>
-        <Fact label="Customer">
-          {v.client.name}
-          <span className="block text-sm text-ink-soft">{formatPhone(v.client.phone)}</span>
-        </Fact>
-        {v.clientGstin && <Fact label="Customer GSTIN">{v.clientGstin}</Fact>}
-        {v.shopGstin && <Fact label="Our GSTIN">{v.shopGstin}</Fact>}
       </dl>
 
       <div className="mt-4 overflow-x-auto rounded-2xl border border-line bg-panel">
@@ -99,7 +125,7 @@ function InvoiceView({ id }: { id: number }) {
 
       {!v.cancelledAt && (
         <div className="mt-6 flex flex-wrap gap-2 print:hidden">
-          {v.balanceRupees > 0 && (
+          {v.balanceRupees > 0 && v.source === "SHOP" && v.orderId && (
             <Link href={`/orders/view/?id=${v.orderId}`} className={buttonPrimary}>
               Take payment
             </Link>

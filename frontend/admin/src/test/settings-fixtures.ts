@@ -54,7 +54,13 @@ export const billing: BillingSettings = {
   showHsnCodes: false,
   discountAppliesTo: "ORDER_TOTAL",
   autoInvoice: true,
+  company: { legalName: null, cin: null, registeredOffice: null, state: null },
 };
+
+export const states = [
+  { name: "Andhra Pradesh", code: "37" },
+  { name: "Telangana", code: "36" },
+];
 
 export const documents: DocumentSettings = {
   slogan: null,
@@ -175,6 +181,7 @@ export function serveSettings(): { saved: Record<string, unknown> } {
       http.get(`${API}/api/v1/admin/settings/${path}`, () => HttpResponse.json(value as never)),
       echo(path),
     ]),
+    http.get(`${API}/api/v1/admin/settings/states`, () => HttpResponse.json(states)),
     http.get(`${API}/api/v1/admin/settings/numbering`, () => HttpResponse.json(numbering)),
     http.put(`${API}/api/v1/admin/settings/numbering`, async ({ request }) => {
       const body = (await request.json()) as NumberSequence[];

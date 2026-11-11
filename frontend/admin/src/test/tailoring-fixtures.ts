@@ -274,9 +274,19 @@ export const overview: WorkshopOverview = {
 export const invoice: Invoice = {
   id: 5,
   number: "INV-305",
+  source: "SHOP",
   orderId: 42,
   orderNumber: "ORD-2042",
   client: clientSummary,
+  title: "Tax invoice",
+  seller: {
+    name: "Vaabhi Fashions Private Limited",
+    address: "Road No. 1, Hyderabad",
+    cin: "U14100TS2026PTC123456",
+    state: "Telangana",
+    stateCode: "36",
+  },
+  buyer: { name: "Meera Iyer", phone: "+919876500001", address: null, state: null },
   issuedOn: "2026-11-02",
   lines: [
     { description: "3 dart blouse (Maroon)", quantity: 2, unitRupees: 500, amountRupees: 1000 },
@@ -305,6 +315,7 @@ export const invoicePage: InvoicePage = {
     {
       id: 5,
       number: "INV-305",
+      source: "SHOP",
       orderId: 42,
       orderNumber: "ORD-2042",
       clientId: 7,

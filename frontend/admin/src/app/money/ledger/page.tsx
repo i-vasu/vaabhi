@@ -9,7 +9,7 @@ import { ChipGroup, LoadState, PageHeader } from "@/components/ui";
 import { api } from "@/lib/api";
 import { LEDGER_KINDS, kindLabel, monthOf } from "@/lib/money";
 import { rupees } from "@/lib/settings";
-import { PAYMENT_MODES, today, useLoad } from "@/lib/tailoring";
+import { paymentModeLabel, today, useLoad } from "@/lib/tailoring";
 
 const when = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
 
@@ -92,7 +92,7 @@ export default function LedgerPage() {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-ink-soft">
-                          {PAYMENT_MODES.find((m) => m.value === entry.mode)?.label}
+                          {paymentModeLabel(entry.mode)}
                         </td>
                         <td
                           className={`whitespace-nowrap px-4 py-3 text-right tabular-nums ${entry.amountRupees < 0 ? "text-warn" : "text-ok"}`}

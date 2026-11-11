@@ -7,7 +7,7 @@ import { ErrorNote } from "@/components/tailoring";
 import { ListCard, ListRow, LoadState, PageHeader, SectionLabel, StatTile } from "@/components/ui";
 import { api } from "@/lib/api";
 import { monthOf } from "@/lib/money";
-import { PAYMENT_MODES, today, useLoad } from "@/lib/tailoring";
+import { paymentModeLabel, today, useLoad } from "@/lib/tailoring";
 import { rupees } from "@/lib/settings";
 
 /** Money at a glance: what came in and went out this month, and what customers still owe. */
@@ -51,7 +51,7 @@ export default function MoneyPage() {
                 {l.byMode.map((m) => (
                   <div key={m.mode} className="rounded-2xl border border-line bg-panel p-3">
                     <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-faint">
-                      {PAYMENT_MODES.find((p) => p.value === m.mode)?.label}
+                      {paymentModeLabel(m.mode)}
                     </dt>
                     <dd className="mt-1 tabular-nums">
                       <span className="text-ok">+{rupees(m.inRupees)}</span>

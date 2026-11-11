@@ -119,7 +119,7 @@ describe("invoices", () => {
   it("shows the invoice with its GST split and can cancel it", async () => {
     search = new URLSearchParams("id=5");
     render(<InvoicePage />);
-    expect(await screen.findByRole("heading", { name: "INV-305" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Tax invoice" })).toBeInTheDocument();
     expect(screen.getByText("3 dart blouse (Maroon)")).toBeInTheDocument();
     expect(screen.getByText("CGST 2.5%")).toBeInTheDocument();
     expect(screen.getByText("Prices include GST.")).toBeInTheDocument();
@@ -128,5 +128,14 @@ describe("invoices", () => {
     fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Cancel invoice" }));
     await waitFor(() => expect(lastSent(sent, "POST", "/money/invoices/5/cancel")).toBeDefined());
     expect(await screen.findByText("Cancelled")).toBeInTheDocument();
+  });
+
+  it("prints seller CIN and state code", async () => {
+    search = new URLSearchParams("id=5");
+    render(<InvoicePage />);
+    expect(await screen.findByText("Vaabhi Fashions Private Limited")).toBeInTheDocument();
+    expect(screen.getByText("CIN: U14100TS2026PTC123456")).toBeInTheDocument();
+    expect(screen.getByText("State: Telangana (36)")).toBeInTheDocument();
+    expect(screen.getByText("Road No. 1, Hyderabad")).toBeInTheDocument();
   });
 });

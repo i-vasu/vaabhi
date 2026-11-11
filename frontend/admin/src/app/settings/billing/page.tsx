@@ -15,6 +15,7 @@ import {
 } from "@/components/ui";
 import { api } from "@/lib/api";
 import { orNull, useSaveable, useSection } from "@/lib/settings";
+import { useLoad } from "@/lib/tailoring";
 
 const discountBases: { value: BillingSettings["discountAppliesTo"]; label: string }[] = [
   { value: "ORDER_TOTAL", label: "Order total" },
@@ -53,7 +54,9 @@ export function preview(sequence: NumberSequence, today: Date = new Date()): str
 export default function BillingPage() {
   const billing = useSection("billing");
   const numbering = useSaveable(api.admin.settings.numbering, api.admin.settings.saveNumbering);
+  const states = useLoad(() => api.admin.settings.states(), []);
   const b = billing.value;
+  const company = b?.company ?? { legalName: null, cin: null, registeredOffice: null, state: null };
 
   return (
     <section className="mx-auto max-w-3xl">
@@ -124,6 +127,53 @@ export default function BillingPage() {
           </div>
           <SaveBar
             label="Save GST settings"
+            saving={billing.saving}
+            saved={billing.saved}
+            error={billing.error}
+            onSave={() => void billing.save()}
+          />
+        </>
+      )}
+
+      {b && (
+        <>
+          <SectionLabel>Company</SectionLabel>
+          <div className="rounded-2xl border border-line bg-panel p-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <TextField
+                label="Legal name"
+                value={company.legalName ?? ""}
+                onChange={(event) => updateCompany({ legalName: orNull(event.target.value) })}
+                error={billing.fieldError("company.legalName")}
+              />
+              <TextField
+                label="CIN"
+                maxLength={21}
+                value={company.cin ?? ""}
+                onChange={(event) => updateCompany({ cin: orNull(event.target.value.toUpperCase()) })}
+                error={billing.fieldError("company.cin")}
+              />
+              <TextField
+                label="Registered office"
+                className="sm:col-span-2"
+                value={company.registeredOffice ?? ""}
+                onChange={(event) => updateCompany({ registeredOffice: orNull(event.target.value) })}
+                error={billing.fieldError("company.registeredOffice")}
+              />
+              <SelectField
+                label="State"
+                hint="Printed on invoices with its GST state code"
+                options={[
+                  { value: "", label: "Not set" },
+                  ...(states.value ?? []).map((s) => ({ value: s.name, label: `${s.name} (${s.code})` })),
+                ]}
+                value={company.state ?? ""}
+                onChange={(state) => updateCompany({ state: orNull(state) })}
+              />
+            </div>
+          </div>
+          <SaveBar
+            label="Save company details"
             saving={billing.saving}
             saved={billing.saved}
             error={billing.error}
@@ -209,6 +259,10 @@ export default function BillingPage() {
       </ListCard>
     </section>
   );
+
+  function updateCompany(change: Partial<NonNullable<BillingSettings["company"]>>) {
+    billing.update({ company: { ...company, ...change } });
+  }
 
   function replaceSequence(index: number, sequence: NumberSequence) {
     numbering.setValue(numbering.value!.map((s, i) => (i === index ? sequence : s)));

@@ -43,6 +43,12 @@ export const PAYMENT_MODES: { value: PaymentMode; label: string }[] = [
   { value: "BANK", label: "Bank" },
 ];
 
+/** Every mode a payment can carry; the website adds Razorpay and COD, which the till never offers. */
+export const paymentModeLabel = (mode: PaymentMode) =>
+  [...PAYMENT_MODES, { value: "RAZORPAY", label: "Razorpay" }, { value: "COD", label: "COD" }].find(
+    (m) => m.value === mode,
+  )?.label ?? mode;
+
 export const CLIENT_TYPES: { value: ClientType; label: string }[] = [
   { value: "RETAIL", label: "Retail" },
   { value: "WHOLESALE", label: "Wholesale" },

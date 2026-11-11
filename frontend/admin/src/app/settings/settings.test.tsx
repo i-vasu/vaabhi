@@ -253,6 +253,28 @@ describe("billing & tax", () => {
     );
   });
 
+  it("saves company details", async () => {
+    render(<BillingPage />);
+
+    type(await screen.findByLabelText("Legal name"), "Vaabhi Fashions Private Limited");
+    type("CIN", "u14100ts2026ptc123456");
+    type("Registered office", "Road No. 1, Hyderabad");
+    await screen.findByRole("option", { name: "Telangana (36)" });
+    fireEvent.change(screen.getByLabelText("State"), { target: { value: "Telangana" } });
+    click("Save company details");
+
+    await waitFor(() =>
+      expect(saved.billing).toMatchObject({
+        company: {
+          legalName: "Vaabhi Fashions Private Limited",
+          cin: "U14100TS2026PTC123456",
+          registeredOffice: "Road No. 1, Hyderabad",
+          state: "Telangana",
+        },
+      }),
+    );
+  });
+
   it("previews padded numbers", () => {
     expect(preview({ kind: "ITEM", prefix: "IT", nextValue: 7, suffix: "/26", pad: 3, reset: "NEVER", preview: "" })).toBe("IT007/26");
   });

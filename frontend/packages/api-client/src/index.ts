@@ -89,6 +89,7 @@ export type PaperFormat = PrintSettings["defaultFormat"];
 export type MessageTemplates = Schemas["MessageTemplates"];
 export type WatermarkSettings = Schemas["WatermarkSettings"];
 export type NumberSequence = Schemas["NumberSequence"];
+export type State = Schemas["State"];
 export type ProductionStage = Schemas["ProductionStage"];
 export type DeliveryPackage = Schemas["DeliveryPackage"];
 export type GarmentTemplate = Schemas["GarmentTemplate"];
@@ -598,6 +599,7 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         numbering: () => request<NumberSequence[]>("/api/v1/admin/settings/numbering"),
         saveNumbering: (sequences: NumberSequence[]) =>
           send<NumberSequence[]>("PUT", "/api/v1/admin/settings/numbering", sequences),
+        states: () => request<State[]>("/api/v1/admin/settings/states"),
         stages: () => request<ProductionStage[]>("/api/v1/admin/settings/stages"),
         saveStages: (stages: ProductionStage[]) =>
           send<ProductionStage[]>("PUT", "/api/v1/admin/settings/stages", stages),
