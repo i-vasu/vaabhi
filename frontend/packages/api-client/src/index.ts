@@ -24,18 +24,8 @@ export type ContentPageForm = Schemas["ContentPageForm"];
 export type ContentPageLink = Schemas["ContentPageLink"];
 export type PageSection = ContentPage["section"];
 export type ShopContact = Schemas["ShopContact"];
-/**
- * A reel from the shop's Instagram (GET /api/v1/store/instagram). Written by hand until the next
- * `pnpm generate:api`; then switch to `Schemas["InstagramReel"]`.
- */
-export type InstagramReel = {
-  id: string;
-  permalink: string;
-  caption?: string | null;
-  /** R2 key of the cover JPEG, served as `<media domain>/<imageKey>`. */
-  imageKey: string;
-  postedAt: string;
-};
+/** A reel from the shop's Instagram (GET /api/v1/store/instagram); `imageKey` is the cover's R2 key. */
+export type InstagramReel = Schemas["InstagramReel"];
 export type CustomerDetails = Schemas["CustomerDetails"];
 export type ShopMeasurementForm = Schemas["ShopMeasurementForm"];
 

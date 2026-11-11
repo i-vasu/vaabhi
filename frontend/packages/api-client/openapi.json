@@ -5816,6 +5816,29 @@
                 }
             }
         },
+        "/api/v1/store/instagram": {
+            "get": {
+                "tags": [
+                    "storefront-controller"
+                ],
+                "operationId": "listInstagramReels",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/InstagramReel"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/store/home": {
             "get": {
                 "tags": [
@@ -16163,6 +16186,37 @@
                     "fields",
                     "id",
                     "name"
+                ]
+            },
+            "InstagramReel": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "permalink": {
+                        "type": "string"
+                    },
+                    "caption": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "imageKey": {
+                        "type": "string"
+                    },
+                    "postedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "caption",
+                    "id",
+                    "imageKey",
+                    "permalink",
+                    "postedAt"
                 ]
             },
             "HomeContent": {
