@@ -6,7 +6,7 @@
     },
     "servers": [
         {
-            "url": "http://localhost:8080",
+            "url": "http://localhost:8081",
             "description": "Generated server url"
         }
     ],
@@ -11231,6 +11231,9 @@
                     "createdAt": {
                         "type": "string",
                         "format": "date-time"
+                    },
+                    "fromPayroll": {
+                        "type": "boolean"
                     }
                 },
                 "required": [
@@ -11239,6 +11242,7 @@
                     "createdAt",
                     "createdBy",
                     "description",
+                    "fromPayroll",
                     "id",
                     "mode",
                     "paidTo",
@@ -15476,11 +15480,22 @@
                             "CARD",
                             "BANK"
                         ]
+                    },
+                    "settlement": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "REFUND",
+                            "KEEP"
+                        ]
                     }
                 },
                 "required": [
                     "collectRupees",
                     "mode",
+                    "settlement",
                     "status"
                 ]
             },

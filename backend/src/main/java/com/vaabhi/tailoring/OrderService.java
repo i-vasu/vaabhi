@@ -916,6 +916,21 @@ public class OrderService {
         if (form.refund() && form.amountRupees().compareTo(order.paidRupees()) > 0) {
             throw bad("A refund cannot be more than what was paid");
         }
+        if (!form.refund()) {
+            // What is owed: the live invoice's total (GST may be added on top) or else the order total.
+            var due = jdbc.sql("""
+                            SELECT COALESCE((SELECT v.total_rupees FROM invoice v
+                                             WHERE v.order_id = o.id AND v.cancelled_at IS NULL), o.total_rupees)
+                                   - o.paid_rupees
+                            FROM shop_order o WHERE o.id = :id
+                            """).param(ID, orderId).query(BigDecimal.class).single();
+            if (form.amountRupees().compareTo(due) > 0) {
+                throw bad(
+                        due.signum() <= 0
+                                ? "Nothing is due on this order"
+                                : "That is more than what is due (₹" + rupees(due) + ")");
+            }
+        }
         insertPayment(
                 orderId,
                 amount,
