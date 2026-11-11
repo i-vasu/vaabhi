@@ -1508,6 +1508,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/online-orders/{number}/refund": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["retryOnlineOrderRefund"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/online-orders/{number}/deliver": {
         parameters: {
             query?: never;
@@ -3733,6 +3749,7 @@ export interface components {
             refundId: string | null;
             /** @enum {string|null} */
             refundStatus: "PENDING" | "PROCESSED" | "FAILED" | null;
+            refundError: string | null;
             trackingStatus: string | null;
             trackingUrl: string | null;
             shippingLabelUrl: string | null;
@@ -8083,6 +8100,28 @@ export interface operations {
                 "application/json": components["schemas"]["ShipmentForm"];
             };
         };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebOrder"];
+                };
+            };
+        };
+    };
+    retryOnlineOrderRefund: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {

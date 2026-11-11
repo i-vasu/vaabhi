@@ -4407,6 +4407,36 @@
                 }
             }
         },
+        "/api/v1/admin/online-orders/{number}/refund": {
+            "post": {
+                "tags": [
+                    "admin-web-order-controller"
+                ],
+                "operationId": "retryOnlineOrderRefund",
+                "parameters": [
+                    {
+                        "name": "number",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/online-orders/{number}/deliver": {
             "post": {
                 "tags": [
@@ -12673,6 +12703,12 @@
                             "FAILED"
                         ]
                     },
+                    "refundError": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
                     "trackingStatus": {
                         "type": [
                             "string",
@@ -12734,6 +12770,7 @@
                     "paymentMethod",
                     "pincode",
                     "razorpayPaymentId",
+                    "refundError",
                     "refundId",
                     "refundStatus",
                     "refundedRupees",

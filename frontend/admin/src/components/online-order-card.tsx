@@ -143,12 +143,31 @@ export function OnlineOrderCard({
         </p>
       )}
       {order.status === "CANCELLED" && (
-        <p className="mt-1 text-sm text-ink-soft">
-          Cancelled{order.cancelReason ? `: ${order.cancelReason}` : ""}
-          {order.refundedRupees != null &&
-            ` · refund ${rupees(order.refundedRupees)} ${REFUND[order.refundStatus ?? "PENDING"]} (${order.refundId})`}
-          {order.trackingStatus && ` · ${order.trackingStatus}`}
-        </p>
+        <div className="mt-1 text-sm text-ink-soft">
+          <p>
+            Cancelled{order.cancelReason ? `: ${order.cancelReason}` : ""}
+            {order.refundedRupees != null &&
+              ` · refund ${rupees(order.refundedRupees)} ${
+                order.refundId == null && order.refundStatus !== "FAILED"
+                  ? "not sent to Razorpay yet"
+                  : REFUND[order.refundStatus ?? "PENDING"]
+              }${order.refundId ? ` (${order.refundId})` : ""}`}
+            {order.trackingStatus && ` · ${order.trackingStatus}`}
+          </p>
+          {order.refundStatus === "FAILED" && order.refundError && (
+            <p className="mt-1 text-bad">Razorpay: {order.refundError}</p>
+          )}
+          {canRefund && order.refundedRupees != null && (order.refundStatus === "FAILED" || order.refundId == null) && (
+            <Button
+              className="mt-2"
+              variant="secondary"
+              disabled={busy}
+              onClick={() => void act(() => api.admin.retryOnlineOrderRefund(order.number))}
+            >
+              {busy ? "Sending…" : "Retry refund"}
+            </Button>
+          )}
+        </div>
       )}
 
       {order.returns.map((r) => (
