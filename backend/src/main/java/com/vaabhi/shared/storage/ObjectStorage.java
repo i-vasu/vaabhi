@@ -14,6 +14,11 @@ public interface ObjectStorage {
 
     boolean exists(String key);
 
+    /** Uploads a small object from the server (e.g. a copied Instagram cover); throws when storage refuses it. */
+    default void put(String key, byte[] bytes, String contentType) {
+        throw new UnsupportedOperationException("Server uploads are not supported here");
+    }
+
     /** Best effort: a failure is logged, not thrown, because the database row is already gone. */
     void delete(String key);
 }
