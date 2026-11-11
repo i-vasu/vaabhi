@@ -71,7 +71,8 @@ class OrderEmailTemplatesTest {
                 status == WebOrder.Status.DELIVERED ? NOW.plusDays(7) : null,
                 NOW,
                 List.of(line()),
-                returns);
+                returns,
+                null);
     }
 
     private static WebOrder.OrderReturn returned(

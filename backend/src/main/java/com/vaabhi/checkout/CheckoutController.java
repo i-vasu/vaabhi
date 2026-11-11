@@ -1,5 +1,7 @@
 package com.vaabhi.checkout;
 
+import com.vaabhi.money.StoreInvoice;
+import com.vaabhi.money.WebInvoiceService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -21,10 +23,12 @@ class CheckoutController {
 
     private final CheckoutService service;
     private final WebOrderReturns returns;
+    private final WebInvoiceService webInvoices;
 
-    CheckoutController(CheckoutService service, WebOrderReturns returns) {
+    CheckoutController(CheckoutService service, WebOrderReturns returns, WebInvoiceService webInvoices) {
         this.service = service;
         this.returns = returns;
+        this.webInvoices = webInvoices;
     }
 
     /** Places the order and returns what Razorpay Checkout needs to take the payment. */
@@ -76,6 +80,14 @@ class CheckoutController {
     @GetMapping("/orders/{number}")
     WebOrder getMyOrder(@AuthenticationPrincipal Jwt jwt, @PathVariable("number") String number) {
         return service.order(customerId(jwt), number);
+    }
+
+    /** The tax invoice of one of the customer's orders, once it has shipped. */
+    @GetMapping("/orders/{number}/invoice")
+    StoreInvoice getMyInvoice(@AuthenticationPrincipal Jwt jwt, @PathVariable("number") String number) {
+        return webInvoices
+                .forCustomer(number, customerId(jwt))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No invoice for this order"));
     }
 
     private static long customerId(Jwt jwt) {
