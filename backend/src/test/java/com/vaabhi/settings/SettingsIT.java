@@ -169,7 +169,7 @@ class SettingsIT {
                         {"enabled":true,"text":"VAABHI","position":"CENTER","opacityPercent":40}
                         """).andExpect(status().isOk());
         mockMvc.perform(get("/api/v1/admin/settings/messages").with(OWNER))
-                .andExpect(jsonPath("$.channel").value("WHATSAPP"));
+                .andExpect(jsonPath("$.orderReady").isNotEmpty());
         mockMvc.perform(get("/api/v1/admin/settings/printing").with(OWNER))
                 .andExpect(jsonPath("$.defaultFormat").value("A4"));
         for (var section : List.of("orders", "notifications", "watermark", "calendar", "documents")) {

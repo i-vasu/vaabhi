@@ -261,7 +261,6 @@ class ExtrasIT {
                         .content("{\"purpose\":\"ORDER_READY\",\"orderId\":" + orderId + "}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("LINK"))
-                .andExpect(jsonPath("$.channel").value("WHATSAPP"))
                 .andExpect(jsonPath("$.createdBy").value("Counter"));
         String text = JsonPath.read(body(message), "$.body");
         assertThat(text).contains("Hi Neha").contains("is ready").contains("₹600");
@@ -272,9 +271,8 @@ class ExtrasIT {
                 .andExpect(status().isBadRequest());
         send(
                         post("/api/v1/admin/engage/messages"),
-                        "{\"purpose\":\"CUSTOM\",\"clientId\":%d,\"body\":\"See you Monday\",\"channel\":\"SMS\"}"
-                                .formatted(clientId))
-                .andExpect(jsonPath("$.link").value(org.hamcrest.Matchers.startsWith("sms:+9198763")));
+                        "{\"purpose\":\"CUSTOM\",\"clientId\":%d,\"body\":\"See you Monday\"}".formatted(clientId))
+                .andExpect(jsonPath("$.link").value(org.hamcrest.Matchers.startsWith("https://wa.me/9198763")));
         send(post("/api/v1/admin/engage/messages"), "{\"purpose\":\"REWARD\",\"clientId\":" + clientId + "}")
                 .andExpect(status().isBadRequest());
         mockMvc.perform(get("/api/v1/admin/engage/messages")

@@ -12,7 +12,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 /**
  * Emails the customer when an online order is placed, shipped, delivered or cancelled, and at each step of a return
  * (approved, pickup booked, rejected, refunded). Only orders with an email address get one. Sent after the change
- * is saved; a failed email is logged and never undoes the order change (like the order SMS).
+ * is saved; a failed email is logged and never undoes the order change (like the order WhatsApp).
  */
 @Component
 class OrderEmails {

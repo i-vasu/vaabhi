@@ -3049,8 +3049,6 @@ export interface components {
             dailySummary: boolean;
         };
         MessageTemplates: {
-            /** @enum {string} */
-            channel: "WHATSAPP" | "SMS";
             orderPlaced: string;
             orderReady: string;
             orderDelivered: string;
@@ -3815,8 +3813,6 @@ export interface components {
             expiresInSeconds: number;
             /** Format: int64 */
             resendAfterSeconds: number;
-            /** @enum {string} */
-            channel: "WHATSAPP" | "SMS";
         };
         GoogleSignIn: {
             credential: string;
@@ -4251,14 +4247,10 @@ export interface components {
             clientId: number | null;
             code: string | null;
             body: string | null;
-            /** @enum {string|null} */
-            channel: "WHATSAPP" | "SMS" | null;
         };
         Message: {
             /** Format: int64 */
             id: number;
-            /** @enum {string} */
-            channel: "WHATSAPP" | "SMS";
             /** @enum {string} */
             purpose: "ORDER_PLACED" | "ORDER_READY" | "ORDER_DELIVERED" | "PAYMENT" | "REVIEW" | "REWARD" | "CUSTOM";
             /** Format: int64 */
@@ -4536,8 +4528,6 @@ export interface components {
         AuthOptions: {
             phoneSignIn: boolean;
             googleSignIn: boolean;
-            /** @enum {string|null} */
-            otpChannel: "WHATSAPP" | "SMS" | null;
         };
         StageLoad: {
             stage: components["schemas"]["ProductionStage"];

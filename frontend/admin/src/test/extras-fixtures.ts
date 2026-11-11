@@ -85,7 +85,6 @@ export const rewards: RewardAccount = {
 
 export const message: Message = {
   id: 8,
-  channel: "WHATSAPP",
   purpose: "ORDER_READY",
   clientId: 7,
   clientName: "Meera Iyer",

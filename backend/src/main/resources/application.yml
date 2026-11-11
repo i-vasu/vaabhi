@@ -93,23 +93,10 @@ vaabhi:
     from: ${MAIL_FROM:}
     reply-to: ${MAIL_REPLY_TO:}
 
-  # SMS for sign-in codes: "log" prints them to the backend log (dev), "msg91" sends them (prod default).
-  # MSG91 needs a DLT-approved template whose code variable is ##otp##; see docs/AUTH.md.
-  sms:
-    provider: ${SMS_PROVIDER:log}
-    msg91:
-      auth-key: ${MSG91_AUTH_KEY:}
-      templates:
-        otp: ${MSG91_OTP_TEMPLATE_ID:}
-        # Online order updates (variables: order, amount, payment, courier, tracking, refund). Unset: not sent.
-        web_order_placed: ${MSG91_ORDER_PLACED_TEMPLATE_ID:}
-        web_order_shipped: ${MSG91_ORDER_SHIPPED_TEMPLATE_ID:}
-        web_order_delivered: ${MSG91_ORDER_DELIVERED_TEMPLATE_ID:}
-        web_order_cancelled: ${MSG91_ORDER_CANCELLED_TEMPLATE_ID:}
-
-  # WhatsApp through MSG91 (no DLT): "log" prints messages (dev), "msg91" sends them (prod default). Each message
-  # needs a template approved by Meta in MSG91; a message whose template name is empty is not sent on WhatsApp.
-  # A sign-in template (WHATSAPP_LOGIN_TEMPLATE, Authentication category) also turns on phone sign-in by WhatsApp.
+  # WhatsApp through MSG91 is the only customer messaging channel (no SMS). "log" prints messages (dev), "msg91"
+  # sends them (prod default). Each message needs a template approved by Meta in MSG91; a message whose template
+  # name is empty is not sent. Phone sign-in needs the sign-in template (WHATSAPP_LOGIN_TEMPLATE, Authentication
+  # category); without it the storefront offers Google only.
   # params: which values fill {{1}}, {{2}}, … of each template, in order (comma-separated).
   whatsapp:
     provider: ${WHATSAPP_PROVIDER:log}
@@ -120,9 +107,9 @@ vaabhi:
     templates:
       otp: ${WHATSAPP_LOGIN_TEMPLATE:}
       web_order_placed: ${WHATSAPP_ORDER_PLACED_TEMPLATE:vaabhi_order_placed}
-      web_order_shipped: ${WHATSAPP_ORDER_SHIPPED_TEMPLATE:}
+      web_order_shipped: ${WHATSAPP_ORDER_SHIPPED_TEMPLATE:vaabhi_order_shipped}
       web_order_delivered: ${WHATSAPP_ORDER_DELIVERED_TEMPLATE:vaabhi_order_delivered}
-      web_order_cancelled: ${WHATSAPP_ORDER_CANCELLED_TEMPLATE:}
+      web_order_cancelled: ${WHATSAPP_ORDER_CANCELLED_TEMPLATE:vaabhi_order_cancelled}
     params:
       otp: ${WHATSAPP_LOGIN_PARAMS:otp}
       web_order_placed: ${WHATSAPP_ORDER_PLACED_PARAMS:order,amount,payment}

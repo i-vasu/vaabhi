@@ -1,7 +1,6 @@
 package com.vaabhi.checkout;
 
-import com.vaabhi.shared.sms.SmsSender;
-import com.vaabhi.shared.sms.WhatsAppSender;
+import com.vaabhi.shared.whatsapp.WhatsAppSender;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.LinkedHashMap;
@@ -15,22 +14,19 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
- * SMS and WhatsApp to the customer when an online order is placed, shipped, delivered or cancelled. Sent after the
- * change is saved; a failed message is logged and never undoes the order change. Templates are named
- * web_order_placed, web_order_shipped, web_order_delivered and web_order_cancelled (MSG91 SMS needs DLT-approved
- * ones, WhatsApp needs Meta-approved ones; each channel sends only the messages it has a template for). Their
- * variables are order, amount, payment, courier, tracking and refund.
+ * WhatsApp to the customer when an online order is placed, shipped, delivered or cancelled. Sent after the change is
+ * saved; a failed message is logged and never undoes the order change. Templates are named web_order_placed,
+ * web_order_shipped, web_order_delivered and web_order_cancelled (each needs a Meta-approved template; a message
+ * without one is not sent). Their variables are order, amount, payment, courier, tracking and refund.
  */
 @Component
 class WebOrderMessages {
 
     private static final Logger log = LoggerFactory.getLogger(WebOrderMessages.class);
 
-    private final SmsSender sms;
     private final WhatsAppSender whatsApp;
 
-    WebOrderMessages(SmsSender sms, WhatsAppSender whatsApp) {
-        this.sms = sms;
+    WebOrderMessages(WhatsAppSender whatsApp) {
         this.whatsApp = whatsApp;
     }
 
@@ -38,11 +34,6 @@ class WebOrderMessages {
     void on(WebOrderEvent event) {
         var variables = variables(event);
         var template = "web_order_" + event.type().name().toLowerCase(Locale.ROOT);
-        try {
-            sms.send(event.phone(), template, variables);
-        } catch (RuntimeException e) {
-            log.warn("Order SMS {} for {} was not sent: {}", template, LogSafe.clean(event.number()), e.getMessage());
-        }
         if (whatsApp.configured(template)) {
             try {
                 whatsApp.send(event.phone(), template, variables);

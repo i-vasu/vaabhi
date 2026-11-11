@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Customer messages from the shop's templates: order updates, payment receipts, review requests and reward codes.
  * Every message is logged. With a {@link MessageProvider} set up it is sent; without one the message becomes a
- * wa.me / sms: link for staff to send from the shop's phone.
+ * wa.me link for staff to send from the shop's phone.
  */
 @Service
 public class MessageService {
@@ -60,19 +60,16 @@ public class MessageService {
         return "₹" + format.format(rupees);
     }
 
-    /** wa.me wants digits only (with country code); sms: takes the number as stored. */
-    static String link(MessageTemplates.Channel channel, String phone, String body) {
+    /** wa.me wants digits only, with the country code. */
+    static String link(String phone, String body) {
         var text = URLEncoder.encode(body, StandardCharsets.UTF_8).replace("+", "%20");
-        return channel == MessageTemplates.Channel.WHATSAPP
-                ? "https://wa.me/" + phone.replaceAll("[^0-9]", "") + "?text=" + text
-                : "sms:" + phone + "?body=" + text;
+        return "https://wa.me/" + phone.replaceAll("[^0-9]", "") + "?text=" + text;
     }
 
     @Transactional
     public Message prepare(Message.MessageForm form, @Nullable String actor) {
         var templates = settings.messages();
         var profile = settings.shopProfile();
-        var channel = form.channel() != null ? form.channel() : templates.channel();
         Order order = form.orderId() == null ? null : orders.get(form.orderId());
         Long clientId = order != null ? Long.valueOf(order.client().id()) : form.clientId();
         if (clientId == null) {
@@ -131,9 +128,7 @@ public class MessageService {
             }
         };
         var body = MessageTemplates.fill(template, values);
-        var phone = channel == MessageTemplates.Channel.WHATSAPP && client.whatsapp() != null
-                ? client.whatsapp()
-                : client.phone();
+        var phone = client.whatsapp() != null ? client.whatsapp() : client.phone();
 
         var status = Message.Status.LINK;
         String providerRef = null;
@@ -141,7 +136,7 @@ public class MessageService {
         var sender = provider.getIfAvailable();
         if (sender != null && sender.configured()) {
             try {
-                providerRef = sender.send(channel, phone, body);
+                providerRef = sender.send(phone, body);
                 status = Message.Status.SENT;
             } catch (RuntimeException e) {
                 status = Message.Status.FAILED;
@@ -149,12 +144,11 @@ public class MessageService {
             }
         }
         long id = jdbc.sql("""
-                        INSERT INTO message_log (channel, purpose, client_id, order_id, to_phone, body, status,
+                        INSERT INTO message_log (purpose, client_id, order_id, to_phone, body, status,
                             provider_ref, error, created_by)
-                        VALUES (:channel, :purpose, :client, :order, :phone, :body, :status, :ref, :error, :by)
+                        VALUES (:purpose, :client, :order, :phone, :body, :status, :ref, :error, :by)
                         RETURNING id
                         """)
-                .param("channel", channel.name())
                 .param("purpose", form.purpose().name())
                 .param("client", clientId)
                 .param("order", order == null ? null : order.id())
@@ -178,7 +172,6 @@ public class MessageService {
 
     private record Row(
             long id,
-            MessageTemplates.Channel channel,
             Message.Purpose purpose,
             @Nullable Long clientId,
             @Nullable String firstName,
@@ -197,7 +190,7 @@ public class MessageService {
     public List<Message> list(@Nullable Long clientId, @Nullable Long orderId, @Nullable Long id) {
         return jdbc
                 .sql("""
-                        SELECT m.id, m.channel, m.purpose, m.client_id, c.first_name, c.last_name, m.order_id,
+                        SELECT m.id, m.purpose, m.client_id, c.first_name, c.last_name, m.order_id,
                                o.number AS order_number, m.to_phone, m.body, m.status, m.error, m.created_by,
                                m.created_at
                         FROM message_log m LEFT JOIN client c ON c.id = m.client_id
@@ -215,7 +208,6 @@ public class MessageService {
                 .stream()
                 .map(r -> new Message(
                         r.id(),
-                        r.channel(),
                         r.purpose(),
                         r.clientId(),
                         r.firstName() == null
@@ -226,7 +218,7 @@ public class MessageService {
                         r.toPhone(),
                         r.body(),
                         r.status(),
-                        r.status() == Message.Status.LINK ? link(r.channel(), r.toPhone(), r.body()) : null,
+                        r.status() == Message.Status.LINK ? link(r.toPhone(), r.body()) : null,
                         r.error(),
                         r.createdBy(),
                         r.createdAt()))

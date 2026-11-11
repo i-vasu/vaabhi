@@ -11,7 +11,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.vaabhi.TestcontainersConfiguration;
 import com.vaabhi.shared.email.EmailMessage;
 import com.vaabhi.shared.email.EmailSender;
-import com.vaabhi.shared.sms.WhatsAppSender;
+import com.vaabhi.shared.whatsapp.WhatsAppSender;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;

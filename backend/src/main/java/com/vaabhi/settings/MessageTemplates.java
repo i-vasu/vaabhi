@@ -1,18 +1,16 @@
 package com.vaabhi.settings;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * WhatsApp / SMS wording sent to customers. Placeholders in braces are filled in when sending: {customer}, {shop},
+ * WhatsApp wording sent to customers. Placeholders in braces are filled in when sending: {customer}, {shop},
  * {order}, {amount}, {balance}, {date}, {link}, {code}.
  */
 public record MessageTemplates(
-        @NotNull Channel channel,
         @NotBlank @Size(max = 1000) String orderPlaced,
         @NotBlank @Size(max = 1000) String orderReady,
         @NotBlank @Size(max = 1000) String orderDelivered,
@@ -21,11 +19,6 @@ public record MessageTemplates(
         @NotBlank @Size(max = 1000) String reward) {
 
     private static final Pattern PLACEHOLDER = Pattern.compile("\\{([a-z]+)}");
-
-    public enum Channel {
-        WHATSAPP,
-        SMS
-    }
 
     /** Replaces known placeholders; unknown ones are left as typed so mistakes stay visible. */
     public static String fill(String template, Map<String, String> values) {
@@ -41,7 +34,6 @@ public record MessageTemplates(
 
     static MessageTemplates defaults() {
         return new MessageTemplates(
-                Channel.WHATSAPP,
                 "Hi {customer}, thank you for your order {order} at {shop}. Total {amount}, balance {balance}."
                         + " It will be ready by {date}.",
                 "Hi {customer}, your order {order} is ready for pickup at {shop}. Balance due: {balance}.",

@@ -16,9 +16,18 @@ vaabhi:
     # Dev-only secret; the e2e tests sign admin tokens with it unless JWT_SECRET is set.
     jwt-secret: ${JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
     cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3001}
+  # Sign-in codes go to the backend log (log provider), so phone sign-in works locally without MSG91.
+  whatsapp:
+    templates:
+      otp: ${WHATSAPP_LOGIN_TEMPLATE:vaabhi_login}
   # Demo owner for the admin dashboard (sign in with these on localhost and in CI e2e).
   staff:
     owner:
       name: ${STAFF_OWNER_NAME:Demo Owner}
       email: ${STAFF_OWNER_EMAIL:owner@vaabhi.local}
       password: ${STAFF_OWNER_PASSWORD:vaabhi-demo-owner}
+
+# Local runs also write the log to a file (outside the repo), so it can be read without the IDE console.
+logging:
+  file:
+    name: ${LOG_FILE:${java.io.tmpdir}/vaabhi-dev.log}

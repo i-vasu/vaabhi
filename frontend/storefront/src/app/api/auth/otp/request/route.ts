@@ -1,7 +1,7 @@
 import { api } from "@/lib/api";
 import { crossSite, forbidden, jsonBody, problemResponse } from "@/lib/auth-server";
 
-/** Sends a sign-in code by SMS. */
+/** Sends a sign-in code on WhatsApp. */
 export async function POST(request: Request): Promise<Response> {
   if (crossSite(request)) return forbidden();
   const body = await jsonBody<{ phone?: unknown }>(request);

@@ -1,4 +1,4 @@
-package com.vaabhi.shared.sms;
+package com.vaabhi.shared.whatsapp;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -49,7 +49,7 @@ class Msg91WhatsAppSenderTest {
 
     private Msg91WhatsAppSender sender(String namespace, String authKey) {
         var properties = new WhatsAppProperties(
-                SmsProperties.Provider.MSG91,
+                WhatsAppProperties.Provider.MSG91,
                 authKey,
                 "917569189366",
                 "http://127.0.0.1:" + server.getAddress().getPort() + "/bulk/",
@@ -104,12 +104,12 @@ class Msg91WhatsAppSenderTest {
         var whatsApp = sender("", "key-1");
         answer = "{\"status\":\"fail\",\"hasError\":true,\"errors\":\"Template not approved\"}";
         assertThatThrownBy(() -> whatsApp.send("+919876501234", "web_order_placed", Map.of("order", "WEB-1")))
-                .isInstanceOf(SmsException.class)
+                .isInstanceOf(WhatsAppException.class)
                 .hasMessageContaining("refused");
         status = 401;
         answer = "{\"message\":\"Unauthorized\"}";
         assertThatThrownBy(() -> whatsApp.send("+919876501234", "web_order_placed", Map.of("order", "WEB-1")))
-                .isInstanceOf(SmsException.class);
+                .isInstanceOf(WhatsAppException.class);
     }
 
     @Test
@@ -122,7 +122,7 @@ class Msg91WhatsAppSenderTest {
                 .as("no auth key")
                 .isFalse();
         assertThatThrownBy(() -> whatsApp.send("+919876501234", "web_order_cancelled", Map.of()))
-                .isInstanceOf(SmsException.class);
+                .isInstanceOf(WhatsAppException.class);
         assertThat(body.get()).isNull();
     }
 

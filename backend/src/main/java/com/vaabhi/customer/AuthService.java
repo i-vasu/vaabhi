@@ -1,22 +1,20 @@
 package com.vaabhi.customer;
 
 import com.vaabhi.shared.security.SecurityProperties;
-import com.vaabhi.shared.sms.SmsException;
-import com.vaabhi.shared.sms.SmsSender;
-import com.vaabhi.shared.sms.WhatsAppSender;
+import com.vaabhi.shared.whatsapp.WhatsAppException;
+import com.vaabhi.shared.whatsapp.WhatsAppSender;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
-import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Customer sign-in. Codes are generated and checked here; the SMS provider only delivers them, so switching
- * providers needs a new {@link SmsSender}, nothing else.
+ * Customer sign-in. Codes are generated and checked here; WhatsApp only delivers them, so switching
+ * providers needs a new {@link WhatsAppSender}, nothing else.
  */
 @Service
 class AuthService {
@@ -32,7 +30,6 @@ class AuthService {
     private final CustomerStore customers;
     private final SessionTokens sessions;
     private final GoogleIdTokens google;
-    private final SmsSender sms;
     private final WhatsAppSender whatsApp;
     private final Clock clock;
 
@@ -44,7 +41,6 @@ class AuthService {
             CustomerStore customers,
             SessionTokens sessions,
             GoogleIdTokens google,
-            SmsSender sms,
             WhatsAppSender whatsApp,
             Clock clock) {
         this.properties = properties;
@@ -54,29 +50,21 @@ class AuthService {
         this.customers = customers;
         this.sessions = sessions;
         this.google = google;
-        this.sms = sms;
         this.whatsApp = whatsApp;
         this.clock = clock;
     }
 
-    /** How a sign-in code would go out: by WhatsApp when its sign-in template is set up, else SMS; null: neither. */
-    private AuthOptions.@Nullable OtpChannel otpChannel() {
-        if (whatsApp.configured(SmsSender.OTP_TEMPLATE)) {
-            return AuthOptions.OtpChannel.WHATSAPP;
-        }
-        return sms.configured() ? AuthOptions.OtpChannel.SMS : null;
-    }
-
+    /** Codes go out on WhatsApp only, so phone sign-in needs its approved sign-in template. */
     private boolean codesCanBeSent() {
-        return otpChannel() != null;
+        return whatsApp.configured(WhatsAppSender.OTP_TEMPLATE);
     }
 
     /** Which sign-in methods the storefront should offer. */
     public AuthOptions options() {
-        return new AuthOptions(codesCanBeSent(), google.configured(), otpChannel());
+        return new AuthOptions(codesCanBeSent(), google.configured());
     }
 
-    /** Sends a 6-digit code. Rolls back (so it does not count) if the SMS cannot be sent. */
+    /** Sends a 6-digit code. Rolls back (so it does not count) if the WhatsApp message cannot be sent. */
     @Transactional
     public OtpSent requestOtp(String rawPhone) {
         var phone = phone(rawPhone);
@@ -99,20 +87,13 @@ class AuthService {
         }
         var code = Secrets.otpCode();
         otps.replace(phone, hash(phone, code), now, now.plus(otp.ttl()));
-        var channel = whatsApp.configured(SmsSender.OTP_TEMPLATE)
-                ? AuthOptions.OtpChannel.WHATSAPP
-                : AuthOptions.OtpChannel.SMS;
         try {
-            if (channel == AuthOptions.OtpChannel.WHATSAPP) {
-                whatsApp.send(phone, SmsSender.OTP_TEMPLATE, Map.of("otp", code));
-            } else {
-                sms.send(phone, SmsSender.OTP_TEMPLATE, Map.of("otp", code));
-            }
-        } catch (SmsException e) {
+            whatsApp.send(phone, WhatsAppSender.OTP_TEMPLATE, Map.of("otp", code));
+        } catch (WhatsAppException e) {
             log.warn("Could not send OTP to {}: {}", PhoneNumbers.masked(phone), e.getMessage());
             throw AuthException.badGateway("We could not send the code. Please try again.");
         }
-        return new OtpSent(phone, otp.ttl().toSeconds(), otp.resendAfter().toSeconds(), channel);
+        return new OtpSent(phone, otp.ttl().toSeconds(), otp.resendAfter().toSeconds());
     }
 
     /** Wrong guesses are counted even though the call fails, hence no rollback for {@link AuthException}. */

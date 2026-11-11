@@ -29,7 +29,7 @@ import tools.jackson.databind.json.JsonMapper;
  * cancelled by the shop. Stock is taken when an order is PLACED and put back when it is cancelled; a cancelled
  * order that was paid online is refunded through Razorpay (the refund webhooks report when the money arrives).
  * Shipping is by hand or through Shiprocket ({@link ShiprocketShipping}), whose tracking updates mark the order
- * delivered. The customer gets an SMS at each step.
+ * delivered. The customer gets a WhatsApp and an email at each step.
  */
 @Service
 public class CheckoutService {
@@ -72,7 +72,7 @@ public class CheckoutService {
 
     /**
      * Prices the bag again on the server and saves the order. ONLINE: waits for payment and gets a Razorpay order.
-     * COD: placed straight away (stock taken, SMS sent). Fails with 409 when an item is no longer available in the
+     * COD: placed straight away (stock taken, WhatsApp sent). Fails with 409 when an item is no longer available in the
      * quantity asked for.
      */
     @Transactional

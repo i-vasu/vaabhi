@@ -1,4 +1,4 @@
-package com.vaabhi.shared.sms;
+package com.vaabhi.shared.whatsapp;
 
 import java.io.IOException;
 import java.net.URI;
@@ -43,7 +43,7 @@ class Msg91WhatsAppSender implements WhatsAppSender {
     public void send(String phone, String template, Map<String, String> variables) {
         var name = properties.templateName(template);
         if (!configured(template) || name == null) {
-            throw new SmsException("WhatsApp is not set up for '" + template + "'");
+            throw new WhatsAppException("WhatsApp is not set up for '" + template + "'");
         }
         var request = HttpRequest.newBuilder(URI.create(properties.url()))
                 .timeout(Duration.ofSeconds(10))
@@ -57,10 +57,10 @@ class Msg91WhatsAppSender implements WhatsAppSender {
         try {
             response = http.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException e) {
-            throw new SmsException("MSG91 could not be reached", e);
+            throw new WhatsAppException("MSG91 could not be reached", e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new SmsException("Interrupted while sending WhatsApp", e);
+            throw new WhatsAppException("Interrupted while sending WhatsApp", e);
         }
         if (response.statusCode() / 100 != 2 || failed(response.body())) {
             // The body names the problem (e.g. template not approved) and holds no secrets.
@@ -69,7 +69,7 @@ class Msg91WhatsAppSender implements WhatsAppSender {
                     template,
                     response.statusCode(),
                     response.body().replaceAll("[\n\r]", "_"));
-            throw new SmsException("MSG91 refused the WhatsApp message (HTTP " + response.statusCode() + ")");
+            throw new WhatsAppException("MSG91 refused the WhatsApp message (HTTP " + response.statusCode() + ")");
         }
     }
 
@@ -81,7 +81,7 @@ class Msg91WhatsAppSender implements WhatsAppSender {
             components.put(
                     "body_" + (i + 1), Map.of("type", "text", "value", variables.getOrDefault(order.get(i), "-")));
         }
-        if (SmsSender.OTP_TEMPLATE.equals(template) && variables.containsKey("otp")) {
+        if (WhatsAppSender.OTP_TEMPLATE.equals(template) && variables.containsKey("otp")) {
             components.put("button_1", Map.of("subtype", "url", "type", "text", "value", variables.get("otp")));
         }
         Map<String, Object> templateBody = new LinkedHashMap<>();

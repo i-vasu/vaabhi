@@ -538,9 +538,7 @@ public class ReportService {
                         UNION ALL SELECT 'Invoices issued', COUNT(*) FROM invoice
                             WHERE created_at >= :start AND created_at < :end
                         UNION ALL SELECT 'WhatsApp messages', COUNT(*) FROM message_log
-                            WHERE channel = 'WHATSAPP' AND created_at >= :start AND created_at < :end
-                        UNION ALL SELECT 'SMS messages', COUNT(*) FROM message_log
-                            WHERE channel = 'SMS' AND created_at >= :start AND created_at < :end
+                            WHERE created_at >= :start AND created_at < :end
                         UNION ALL SELECT 'Messages sent by a provider', COUNT(*) FROM message_log
                             WHERE status = 'SENT' AND created_at >= :start AND created_at < :end
                         UNION ALL SELECT 'Gallery photos added', COUNT(*) FROM gallery_photo

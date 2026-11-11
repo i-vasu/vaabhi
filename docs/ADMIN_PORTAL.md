@@ -12,7 +12,7 @@ brings its backend module, Flyway migrations, API types and tests.
 | 3 Workshop | Work board by stage, assigning staff, who may work which stage, workshop overview (in production, due today, overdue, stage load) | done |
 | 4 Money | Invoices (auto on delivery), payments (outstanding, collections), expenses, financial ledger | done |
 | 5 Staff | Staff, roles & permissions, attendance (day / month), requests (leave, permission, off day, comp-off, advance), payroll (late, overtime, advances, salary), piece rates, production & work ledgers | done |
-| 6 Stock & extras | Inventory (items, units, movements, stock ledger), design & customer galleries, rewards & coupons, Google review requests, activity log, notifications feed, help & support, print formats and form layouts, WhatsApp/SMS sending | done (paid sending needs a provider; see below) |
+| 6 Stock & extras | Inventory (items, units, movements, stock ledger), design & customer galleries, rewards & coupons, Google review requests, activity log, notifications feed, help & support, print formats and form layouts, WhatsApp sending | done (paid sending needs a provider; see below) |
 | 7 Reports | Reports hub (KPIs, 6-month revenue, dues ageing), sales, GST register, sales orders, financial ledger, product profitability, orders, deliveries, customers, alterations, workshop, production, work, stock, rewards, AI usage; CSV export | done |
 
 ## Sign-in
@@ -168,8 +168,8 @@ activity log); managers get all three by default.
   points; give their value as the discount on the next booking.
 - **Messages and review requests** (`/engage/messages`) — fill the Settings → Messages templates for an order or
   customer (order booked / ready / delivered, payment, review request with the shop's Google review link, reward
-  code, or your own text) and log them. **No paid WhatsApp/SMS provider is set up:** each message comes back as a
-  wa.me / sms: link that opens on the shop's phone ready to send. A provider is added by implementing
+  code, or your own text) and log them. **No paid WhatsApp provider is set up:** each message comes back as a
+  wa.me link that opens on the shop's phone ready to send. A provider is added by implementing
   `engage.MessageProvider` as a bean; messages are then sent and logged as SENT or FAILED.
 - **Gallery** (`/api/v1/admin/gallery`) — design ideas and customers' finished garments with tags and garment;
   photos upload as 800 px WebP to R2 like product photos (needs R2; locally the upload says storage is not set up).

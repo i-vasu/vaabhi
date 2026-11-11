@@ -1,10 +1,10 @@
 "use client";
 
 import type { MessageTemplates } from "@vaabhi/api-client";
-import { LoadState, PageHeader, SaveBar, SectionLabel, SegmentedControl, TextAreaField } from "@/components/ui";
+import { LoadState, PageHeader, SaveBar, SectionLabel, TextAreaField } from "@/components/ui";
 import { useSection } from "@/lib/settings";
 
-type TemplateKey = Exclude<keyof MessageTemplates, "channel">;
+type TemplateKey = keyof MessageTemplates;
 
 const templates: { key: TemplateKey; title: string }[] = [
   { key: "orderPlaced", title: "Order placed" },
@@ -47,17 +47,8 @@ export default function MessageTemplatesPage() {
   return (
     <section className="mx-auto max-w-3xl">
       <PageHeader title="Message templates" backHref="/settings/printing/" />
-      <SegmentedControl
-        label="Send by"
-        options={[
-          { value: "WHATSAPP", label: "WhatsApp" },
-          { value: "SMS", label: "SMS" },
-        ]}
-        value={m.channel}
-        onChange={(channel) => section.update({ channel })}
-      />
       <p className="mt-3 text-sm text-ink-faint">
-        Placeholders: {"{customer} {shop} {order} {amount} {balance} {date} {link} {code}"}
+        Sent on WhatsApp. Placeholders: {"{customer} {shop} {order} {amount} {balance} {date} {link} {code}"}
       </p>
       {templates.map((template) => (
         <div key={template.key}>

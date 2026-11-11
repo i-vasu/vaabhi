@@ -11,8 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import com.vaabhi.TestcontainersConfiguration;
-import com.vaabhi.shared.sms.SmsSender;
-import com.vaabhi.shared.sms.WhatsAppSender;
+import com.vaabhi.shared.whatsapp.WhatsAppSender;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -51,37 +50,22 @@ class CustomerAuthIT {
     private MockMvc mockMvc;
 
     @Autowired
-    private Fakes.CapturingSms sms;
-
-    @Autowired
     private Fakes.MovableClock clock;
 
     @TestConfiguration(proxyBeanMethods = false)
     static class Fakes {
 
-        /** Remembers the last code sent to each number instead of sending it. */
-        static class CapturingSms implements SmsSender {
-            final Map<String, String> codes = new ConcurrentHashMap<>();
-
-            @Override
-            public boolean configured() {
-                return true;
-            }
-
-            @Override
-            public void send(String phone, String template, Map<String, String> variables) {
-                codes.put(phone, variables.get("otp"));
-            }
-        }
-
-        /** Sign-in codes by WhatsApp, switched on per test (as if its sign-in template were approved). */
+        /**
+         * Remembers the last code sent to each number instead of sending it. The sign-in template counts as approved
+         * unless a test switches it off.
+         */
         static class CapturingWhatsApp implements WhatsAppSender {
             final Map<String, String> codes = new ConcurrentHashMap<>();
-            volatile boolean codeTemplate;
+            volatile boolean codeTemplate = true;
 
             @Override
             public boolean configured(String template) {
-                return codeTemplate && template.equals(SmsSender.OTP_TEMPLATE);
+                return codeTemplate && template.equals(WhatsAppSender.OTP_TEMPLATE);
             }
 
             @Override
@@ -112,12 +96,6 @@ class CustomerAuthIT {
             public Instant instant() {
                 return Instant.now().plusMillis(offsetMillis.get());
             }
-        }
-
-        @Bean
-        @Primary
-        CapturingSms capturingSms() {
-            return new CapturingSms();
         }
 
         @Bean
@@ -164,7 +142,7 @@ class CustomerAuthIT {
 
     private String requestCode(String phone) throws Exception {
         postJson("/api/v1/auth/otp/request", "{\"phone\":\"" + phone + "\"}").andExpect(status().isAccepted());
-        return sms.codes.get(PhoneNumbers.normalize(phone).orElseThrow());
+        return whatsApp.codes.get(PhoneNumbers.normalize(phone).orElseThrow());
     }
 
     private String verify(String phone, String code) throws Exception {
@@ -326,16 +304,16 @@ class CustomerAuthIT {
     }
 
     @Test
-    void sendsCodesByWhatsAppOnceItsSignInTemplateIsApproved() throws Exception {
-        whatsApp.codeTemplate = true;
+    void phoneSignInIsOffWithoutTheWhatsAppSignInTemplate() throws Exception {
+        whatsApp.codeTemplate = false;
         try {
-            var phone = "+919800011122";
-            postJson("/api/v1/auth/otp/request", "{\"phone\":\"9800011122\"}").andExpect(status().isAccepted());
-            assertThat(whatsApp.codes.get(phone)).matches("\\d{6}");
-            assertThat(sms.codes).doesNotContainKey(phone);
-            verify(phone, whatsApp.codes.get(phone));
+            mockMvc.perform(get("/api/v1/auth/options"))
+                    .andExpect(jsonPath("$.phoneSignIn").value(false));
+            postJson("/api/v1/auth/otp/request", "{\"phone\":\"9800011122\"}")
+                    .andExpect(status().isServiceUnavailable());
+            assertThat(whatsApp.codes).doesNotContainKey("+919800011122");
         } finally {
-            whatsApp.codeTemplate = false;
+            whatsApp.codeTemplate = true;
         }
     }
 
