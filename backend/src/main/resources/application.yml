@@ -70,6 +70,11 @@ vaabhi:
     breadth-cm: ${SHIPROCKET_BREADTH_CM:25}
     height-cm: ${SHIPROCKET_HEIGHT_CM:5}
 
+  # Home-page reels from the shop's Instagram (Meta app → Instagram → API setup with Instagram login → Generate
+  # token: a long-lived token). Synced hourly; covers are copied to R2. Without a token the section stays hidden.
+  instagram:
+    access-token: ${INSTAGRAM_ACCESS_TOKEN:}
+
   # Storefront shipping: free from this order value (items, in rupees), otherwise the flat fee.
   checkout:
     free-shipping-from-rupees: ${FREE_SHIPPING_FROM_RUPEES:1999}

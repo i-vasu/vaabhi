@@ -70,6 +70,28 @@ class R2ObjectStorage implements ObjectStorage {
     }
 
     @Override
+    public void put(String key, byte[] bytes, String contentType) {
+        var request = HttpRequest.newBuilder(presign("PUT", key, SERVER_CALL_VALIDITY))
+                .PUT(HttpRequest.BodyPublishers.ofByteArray(bytes))
+                .header("Content-Type", contentType)
+                .header("Cache-Control", "public, max-age=31536000, immutable")
+                .timeout(Duration.ofSeconds(30))
+                .build();
+        try {
+            var status =
+                    http.send(request, HttpResponse.BodyHandlers.discarding()).statusCode();
+            if (status >= 300) {
+                throw new IllegalStateException("Photo storage refused " + key + " (" + status + ")");
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not reach photo storage", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while uploading to photo storage", e);
+        }
+    }
+
+    @Override
     public void delete(String key) {
         var request = HttpRequest.newBuilder(presign("DELETE", key, SERVER_CALL_VALIDITY))
                 .DELETE()

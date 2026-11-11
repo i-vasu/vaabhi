@@ -203,6 +203,11 @@ export function mediaUrl(
   return base ? `${base.replace(/\/$/, "")}/${key}/${width}.webp` : undefined;
 }
 
+/** A single file on the R2 media domain (e.g. an Instagram reel cover); undefined without a media domain. */
+export function mediaFileUrl(key: string, base: string | undefined = serverMediaBase()): string | undefined {
+  return base ? `${base.replace(/\/$/, "")}/${key}` : undefined;
+}
+
 /** `srcset` for a photo key's 400/800/1600 px WebPs (product photos, banners, category photos). */
 export function photoSrcSet(key: string, base: string | undefined = serverMediaBase()): string {
   return RENDITIONS.map((width) => `${mediaUrl(key, width, base)} ${width}w`).join(", ");

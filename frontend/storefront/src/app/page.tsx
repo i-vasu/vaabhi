@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Banner, HomeContent, ProductSummary } from "@vaabhi/api-client";
+import type { Banner, HomeContent, InstagramReel, ProductSummary, ShopContact } from "@vaabhi/api-client";
 import {
   buttonClasses,
   CashIcon,
@@ -10,6 +10,7 @@ import {
   SectionHeader,
   TruckIcon,
 } from "@vaabhi/ui";
+import { InstagramReels } from "@/components/instagram-reels";
 import { api } from "@/lib/api";
 import { whatsappLink } from "@/lib/whatsapp";
 import { mediaUrl, photoSrcSet, productCardProps } from "@/lib/listing";
@@ -44,33 +45,48 @@ function bannerPhoto(banner: Banner, sizes: string) {
   return src ? { src, srcSet: photoSrcSet(banner.imageKey), sizes, alt: banner.altText ?? "" } : undefined;
 }
 
-/**
- * Where "Join on WhatsApp" goes, from Settings → Shop profile: the shop's WhatsApp channel (or community) when it
- * has one, else a chat with the shop's number, else the contact page (no number, or the API is down).
- */
-async function loadJoinLink(): Promise<{ href: string; external: boolean }> {
+/** The shop profile (WhatsApp, Instagram…); null when the API is down. */
+async function loadShop(): Promise<ShopContact | null> {
   try {
-    const shop = await api.store.getShop({ next: { revalidate: 60 } });
-    if (shop.whatsappChannel) return { href: shop.whatsappChannel, external: true };
-    if (shop.whatsapp) {
-      return { href: whatsappLink(shop.whatsapp, "Hi Vaabhi, I'd like festive drop updates"), external: true };
-    }
+    return await api.store.getShop({ next: { revalidate: 60 } });
   } catch {
-    // Falls through to the contact page.
+    return null;
   }
+}
+
+/** The latest Instagram reels; an empty list hides the section. */
+async function loadReels(): Promise<InstagramReel[]> {
+  try {
+    return await api.store.listInstagramReels({ next: { revalidate: 300 } });
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Where "Join on WhatsApp" goes, from Settings → Shop profile: a chat with the shop's number asking to be added to
+ * the group, else the shop's WhatsApp channel (or community) link, else the contact page.
+ */
+function joinLink(shop: ShopContact | null): { href: string; external: boolean } {
+  if (shop?.whatsapp) {
+    return { href: whatsappLink(shop.whatsapp, "Hi Vaabhi, please add me to the group"), external: true };
+  }
+  if (shop?.whatsappChannel) return { href: shop.whatsappChannel, external: true };
   return { href: "/contact", external: false };
 }
 
 const container = "mx-auto w-full max-w-6xl px-4";
 
 export default async function HomePage() {
-  const [categories, occasions, bestsellers, home, join] = await Promise.all([
+  const [categories, occasions, bestsellers, home, shop, reels] = await Promise.all([
     loadCategoryTiles(),
     loadOccasionTiles(),
     loadBestsellers(),
     loadHome(),
-    loadJoinLink(),
+    loadShop(),
+    loadReels(),
   ]);
+  const join = joinLink(shop);
   const hero = home.hero[0];
   const heroPhoto = hero && bannerPhoto(hero, "100vw");
   const craftPhoto = home.craft && bannerPhoto(home.craft, "(min-width: 768px) 50vw, 100vw");
@@ -197,6 +213,9 @@ export default async function HomePage() {
           </ul>
         </section>
       )}
+
+      {/* On Instagram: the latest reels, covers served from our media domain */}
+      <InstagramReels reels={reels} profileUrl={shop?.instagram} />
 
       {/* Bestsellers */}
       {bestsellers.length > 0 && (

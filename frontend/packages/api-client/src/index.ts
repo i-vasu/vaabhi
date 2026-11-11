@@ -24,6 +24,18 @@ export type ContentPageForm = Schemas["ContentPageForm"];
 export type ContentPageLink = Schemas["ContentPageLink"];
 export type PageSection = ContentPage["section"];
 export type ShopContact = Schemas["ShopContact"];
+/**
+ * A reel from the shop's Instagram (GET /api/v1/store/instagram). Written by hand until the next
+ * `pnpm generate:api`; then switch to `Schemas["InstagramReel"]`.
+ */
+export type InstagramReel = {
+  id: string;
+  permalink: string;
+  caption?: string | null;
+  /** R2 key of the cover JPEG, served as `<media domain>/<imageKey>`. */
+  imageKey: string;
+  postedAt: string;
+};
 export type CustomerDetails = Schemas["CustomerDetails"];
 export type ShopMeasurementForm = Schemas["ShopMeasurementForm"];
 
@@ -342,6 +354,8 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         request<NewArrivalsPage>(`/api/v1/store/new-arrivals${queryString(params)}`, init),
       /** Live home-page banners (hero slides, occasion tiles, craft photo), in order. */
       getHome: (init?: RequestOptions) => request<HomeContent>("/api/v1/store/home", init),
+      /** The latest reels from the shop's Instagram, newest first (empty until Instagram is connected). */
+      listInstagramReels: (init?: RequestOptions) => request<InstagramReel[]>("/api/v1/store/instagram", init),
       /** Products from every category matching `q` (all of them without it), with the category filters. */
       search: (params?: ListingParams & { q?: string }, init?: RequestOptions) =>
         request<SearchResults>(`/api/v1/store/products${listingQueryString(params)}`, init),

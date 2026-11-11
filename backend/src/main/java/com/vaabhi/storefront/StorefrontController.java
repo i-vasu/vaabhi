@@ -25,15 +25,23 @@ class StorefrontController {
 
     private final StorefrontService storefront;
     private final CategoryService categories;
+    private final InstagramReels instagram;
 
-    StorefrontController(StorefrontService storefront, CategoryService categories) {
+    StorefrontController(StorefrontService storefront, CategoryService categories, InstagramReels instagram) {
         this.storefront = storefront;
         this.categories = categories;
+        this.instagram = instagram;
     }
 
     @GetMapping("/api/v1/store/home")
     Banner.HomeContent getHomeContent() {
         return storefront.home();
+    }
+
+    /** The latest reels from the shop's Instagram, newest first; empty until the Instagram token is set. */
+    @GetMapping("/api/v1/store/instagram")
+    List<InstagramReel> listInstagramReels() {
+        return instagram.latest();
     }
 
     @GetMapping("/api/v1/admin/storefront/banners")
