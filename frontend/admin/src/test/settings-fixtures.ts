@@ -102,7 +102,6 @@ export const printing: PrintSettings = {
 };
 
 export const messages: MessageTemplates = {
-  channel: "WHATSAPP",
   orderPlaced: "Hi {customer}, order {order} booked at {shop}.",
   orderReady: "Hi {customer}, {order} is ready.",
   orderDelivered: "Delivered {order}.",

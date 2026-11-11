@@ -39,7 +39,7 @@ record AuthProperties(
      * @param maxAttempts wrong guesses allowed per code
      * @param resendAfter minimum gap between codes to one number
      * @param maxPerPhonePerHour codes per number per hour
-     * @param maxPerHour codes per hour across all numbers: caps the SMS bill if someone abuses the form
+     * @param maxPerHour codes per hour across all numbers: caps the WhatsApp bill if someone abuses the form
      */
     record Otp(Duration ttl, int maxAttempts, Duration resendAfter, int maxPerPhonePerHour, int maxPerHour) {
 

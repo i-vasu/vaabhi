@@ -16,7 +16,7 @@ searches and directory listings; they are build output and very large.
   ledger, expenses, dues), `payroll`, `inventory`, `engage` (coupons, rewards, messages), `settings`,
   `storefront` (banners, home content), `gallery`, `reports`, `activity`.
 - `shared/`: `rupees` (money type), `security` (`SecurityConfig`), `web` (`ApiExceptionHandler`,
-  `OpenApiConfig`), `storage` (R2), `sms` (MSG91 SMS/WhatsApp), `email`, `cache`, `database`,
+  `OpenApiConfig`), `storage` (R2), `whatsapp` (MSG91 WhatsApp; no SMS), `email`, `cache`, `database`,
   `observability`.
 - Config: `backend/src/main/resources/application.yml`, `-dev.yml`, `-prod.yml`. Migrations:
   `resources/db/migration/V<n>__*.sql`, numbered upwards with no gaps, so new = next number. Demo data:

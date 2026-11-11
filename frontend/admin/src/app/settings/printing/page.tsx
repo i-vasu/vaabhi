@@ -23,7 +23,7 @@ export default function PrintingPage() {
         <ListRow
           icon={ChatIcon}
           title="Message templates"
-          subtitle="WhatsApp & SMS wording"
+          subtitle="WhatsApp wording"
           href="/settings/messages/"
         />
         <ListRow

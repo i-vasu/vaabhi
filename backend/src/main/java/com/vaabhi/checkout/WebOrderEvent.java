@@ -3,7 +3,7 @@ package com.vaabhi.checkout;
 import java.math.BigDecimal;
 import org.jspecify.annotations.Nullable;
 
-/** Something happened to an online order that the customer hears about by SMS, WhatsApp and email (after commit). */
+/** Something happened to an online order that the customer hears about by WhatsApp and email (after commit). */
 record WebOrderEvent(
         Type type,
         String number,

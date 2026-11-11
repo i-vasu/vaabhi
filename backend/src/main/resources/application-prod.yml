@@ -11,10 +11,8 @@ vaabhi:
   security:
     jwt-secret: ${JWT_SECRET}
     cors-allowed-origins: ${CORS_ALLOWED_ORIGINS}
-  # Until MSG91_AUTH_KEY and MSG91_OTP_TEMPLATE_ID are set, phone sign-in answers 503 (Google still works).
-  sms:
-    provider: ${SMS_PROVIDER:msg91}
-  # WhatsApp sends once MSG91_AUTH_KEY is set (number and template names come from application.yml).
+  # WhatsApp sends once MSG91_AUTH_KEY is set (number and template names come from application.yml). Until
+  # WHATSAPP_LOGIN_TEMPLATE is set too, phone sign-in answers 503 (Google still works).
   whatsapp:
     provider: ${WHATSAPP_PROVIDER:msg91}
 

@@ -285,7 +285,7 @@ export const moreSections: { title: string; items: NavItem[] }[] = [
         href: "/messages/",
         label: "Messages",
         icon: ChatIcon,
-        description: "WhatsApp and SMS sent to customers",
+        description: "WhatsApp messages sent to customers",
         permission: "ORDERS",
       },
     ],

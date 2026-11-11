@@ -1,4 +1,4 @@
-package com.vaabhi.shared.sms;
+package com.vaabhi.shared.whatsapp;
 
 import java.util.Map;
 import org.slf4j.Logger;

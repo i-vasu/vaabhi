@@ -15,7 +15,6 @@ export default async function LoginPage({ searchParams }: Readonly<{ searchParam
   const options = await api.auth.signInOptions().catch(() => null);
   const googleClientId = (options?.googleSignIn ?? true) ? process.env.GOOGLE_CLIENT_ID || null : null;
   const phoneSignIn = options?.phoneSignIn ?? true;
-  const otpChannel = options?.otpChannel ?? null;
   const { next } = await searchParams;
 
   return (
@@ -27,7 +26,6 @@ export default async function LoginPage({ searchParams }: Readonly<{ searchParam
       <SignInForm
         googleClientId={googleClientId}
         phoneSignIn={phoneSignIn}
-        otpChannel={otpChannel}
         next={safeNext(next)}
       />
       <p className="mt-8 text-center text-xs text-text-muted">

@@ -3,7 +3,7 @@ package com.vaabhi.customer;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-/** Indian mobile numbers only (the shop ships within India; this also blocks premium-rate SMS abuse abroad). */
+/** Indian mobile numbers only (the shop ships within India; this also blocks message-cost abuse abroad). */
 final class PhoneNumbers {
 
     private static final Pattern MOBILE = Pattern.compile("[6-9]\\d{9}");

@@ -296,15 +296,14 @@ describe("printing & messages", () => {
     );
   });
 
-  it("previews message templates and switches channel", async () => {
+  it("previews and saves message templates", async () => {
     render(<MessageTemplatesPage />);
 
     expect(await screen.findByText(/Preview: Hi Priya, order ORD-2042 booked at vaabhi\./)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("radio", { name: "SMS" }));
     type("Order ready message", "Ready, {customer}!");
     click("Save");
 
-    await waitFor(() => expect(saved.messages).toMatchObject({ channel: "SMS", orderReady: "Ready, {customer}!" }));
+    await waitFor(() => expect(saved.messages).toMatchObject({ orderReady: "Ready, {customer}!" }));
     expect(fillTemplate("Use {code} {unknown}")).toBe("Use RWD-7F3K {unknown}");
   });
 

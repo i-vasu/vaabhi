@@ -18,7 +18,7 @@ const TOPICS: { q: string; a: string }[] = [
   },
   {
     q: "How do I message a customer?",
-    a: "On an order or a customer's page, choose Message. The text comes from Settings → Printing & messages; it opens in WhatsApp (or SMS) on this phone ready to send.",
+    a: "On an order or a customer's page, choose Message. The text comes from Settings → Printing & messages; it opens in WhatsApp on this phone ready to send.",
   },
   {
     q: "How is salary worked out?",

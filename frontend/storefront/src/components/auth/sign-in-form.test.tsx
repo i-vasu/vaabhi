@@ -23,7 +23,7 @@ function sendsCode(resendAfterSeconds = 30) {
 
 async function enterPhone() {
   fireEvent.change(screen.getByLabelText("Mobile number"), { target: { value: "98765 43210" } });
-  fireEvent.click(screen.getByRole("button", { name: "Get OTP" }));
+  fireEvent.click(screen.getByRole("button", { name: "Get OTP on WhatsApp" }));
   expect(await screen.findByText("+91 98765 43210")).toBeInTheDocument();
 }
 
@@ -75,11 +75,11 @@ describe("SignInForm", () => {
       ),
     );
     render(<SignInForm googleClientId={null} next="/account" />);
-    fireEvent.click(screen.getByRole("button", { name: "Get OTP" }));
+    fireEvent.click(screen.getByRole("button", { name: "Get OTP on WhatsApp" }));
     expect(screen.getByRole("alert")).toHaveTextContent("Enter a valid 10-digit Indian mobile number");
 
     fireEvent.change(screen.getByLabelText("Mobile number"), { target: { value: "58765 43210" } });
-    fireEvent.click(screen.getByRole("button", { name: "Get OTP" }));
+    fireEvent.click(screen.getByRole("button", { name: "Get OTP on WhatsApp" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Enter a valid 10-digit Indian mobile number");
 
     sendsCode();

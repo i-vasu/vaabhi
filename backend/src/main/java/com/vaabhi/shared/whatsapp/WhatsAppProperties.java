@@ -1,4 +1,4 @@
-package com.vaabhi.shared.sms;
+package com.vaabhi.shared.whatsapp;
 
 import java.util.List;
 import java.util.Map;
@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * WhatsApp settings under {@code vaabhi.whatsapp}.
  *
  * @param provider {@code log} (development: prints messages to the backend log) or {@code msg91}
- * @param authKey MSG91 auth key (the same key as for SMS)
+ * @param authKey MSG91 auth key (dashboard → API)
  * @param integratedNumber the WhatsApp Business number connected in MSG91, with country code and no plus, e.g.
  *     {@code 917569189366}
  * @param url MSG91's WhatsApp template endpoint
@@ -21,7 +21,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties("vaabhi.whatsapp")
 public record WhatsAppProperties(
-        SmsProperties.Provider provider,
+        Provider provider,
         @Nullable String authKey,
         @Nullable String integratedNumber,
         @Nullable String url,
@@ -30,8 +30,13 @@ public record WhatsAppProperties(
         @Nullable Map<String, String> templates,
         @Nullable Map<String, List<String>> params) {
 
+    public enum Provider {
+        LOG,
+        MSG91
+    }
+
     public WhatsAppProperties {
-        provider = provider == null ? SmsProperties.Provider.LOG : provider;
+        provider = provider == null ? Provider.LOG : provider;
         url = url == null || url.isBlank()
                 ? "https://api.msg91.com/api/v5/whatsapp/whatsapp-outbound-message/bulk/"
                 : url;

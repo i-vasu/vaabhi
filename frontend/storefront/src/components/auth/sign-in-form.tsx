@@ -7,7 +7,7 @@ import { Button } from "@vaabhi/ui";
 import { AuthError, auth, sessionStore, toSession } from "@/lib/session";
 import { GoogleButton } from "./google-button";
 
-type Step = { kind: "phone" } | { kind: "code"; phone: string; channel: "WHATSAPP" | "SMS" } | { kind: "name" };
+type Step = { kind: "phone" } | { kind: "code"; phone: string } | { kind: "name" };
 
 type Problem = { field?: "phone" | "code" | "name"; message: string };
 
@@ -38,23 +38,16 @@ function useCountdown(): [number, (seconds: number) => void] {
   return [left, setLeft];
 }
 
-type OtpChannel = "WHATSAPP" | "SMS";
-
-/** "on WhatsApp" / "by SMS", for the button and the "we sent a code" line. */
-const via = (channel: OtpChannel | null) =>
-  channel === "WHATSAPP" ? " on WhatsApp" : channel === "SMS" ? " by SMS" : "";
-
 /**
- * Login in one flow: Google first, then mobile number + 6-digit code (sent on WhatsApp when the shop has set that
- * up, else by SMS). New phone customers are asked for a name (optional). Afterwards the customer goes back to where
- * they came from. `phoneSignIn` is false while the shop cannot send codes: the phone form is then hidden.
+ * Login in one flow: Google first, then mobile number + 6-digit code (sent on WhatsApp). New phone customers are
+ * asked for a name (optional). Afterwards the customer goes back to where they came from. `phoneSignIn` is false
+ * while the shop cannot send codes: the phone form is then hidden.
  */
 export function SignInForm({
   googleClientId,
   next,
   phoneSignIn = true,
-  otpChannel = null,
-}: Readonly<{ googleClientId: string | null; next: string; phoneSignIn?: boolean; otpChannel?: OtpChannel | null }>) {
+}: Readonly<{ googleClientId: string | null; next: string; phoneSignIn?: boolean }>) {
   const router = useRouter();
   const ids = { phone: useId(), code: useId(), name: useId() };
   const [step, setStep] = useState<Step>({ kind: "phone" });
@@ -97,7 +90,7 @@ export function SignInForm({
     run(async () => {
       const sent = await auth.requestOtp(step.kind === "code" ? step.phone : phone);
       setCode("");
-      setStep({ kind: "code", phone: sent.phone, channel: sent.channel });
+      setStep({ kind: "code", phone: sent.phone });
       startResendTimer(sent.resendAfterSeconds);
     }, "phone");
 
@@ -219,7 +212,7 @@ export function SignInForm({
           </div>
           {message()}
           <Button type="submit" disabled={busy} className="w-full">
-            {busy ? "Sending…" : `Get OTP${via(otpChannel)}`}
+            {busy ? "Sending…" : "Get OTP on WhatsApp"}
           </Button>
         </form>
       ) : (
@@ -238,7 +231,7 @@ export function SignInForm({
           }}
         >
           <p className="text-sm text-text-secondary">
-            We sent a 6-digit code{via(step.channel)} to{" "}
+            We sent a 6-digit code on WhatsApp to{" "}
             <span className="font-medium text-text-primary">{pretty(step.phone)}</span>.{" "}
             <button
               type="button"

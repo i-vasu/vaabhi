@@ -19,7 +19,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Ships a placed order through Shiprocket in one go: create the order there, assign a courier (AWB), mark the order
- * shipped (the customer gets the tracking SMS), schedule the pickup and make the label. Each step is saved as it
+ * shipped (the customer gets the tracking WhatsApp), schedule the pickup and make the label. Each step is saved as it
  * succeeds, so pressing the button again after a failure carries on where it stopped. Not transactional on purpose:
  * the Shiprocket ids must stay saved even when a later step fails.
  */

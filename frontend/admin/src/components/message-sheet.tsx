@@ -6,11 +6,11 @@ import { api } from "@/lib/api";
 import { PURPOSES } from "@/lib/extras";
 import { useAction } from "@/lib/tailoring";
 import { ErrorNote } from "./tailoring";
-import { SegmentedControl, SelectField, Sheet, TextAreaField, TextField, buttonPrimary, buttonSecondary } from "./ui";
+import { SelectField, Sheet, TextAreaField, TextField, buttonPrimary, buttonSecondary } from "./ui";
 
 /**
- * Prepare a WhatsApp / SMS for a customer from the shop's templates. Without a messaging provider it opens the
- * message in WhatsApp (or the SMS app) ready to send.
+ * Prepare a WhatsApp for a customer from the shop's templates. Without a messaging provider it opens the message in
+ * WhatsApp ready to send.
  */
 export function MessageSheet({
   orderId,
@@ -25,7 +25,6 @@ export function MessageSheet({
 }) {
   const purposes = PURPOSES.filter((p) => orderId || (!p.value.startsWith("ORDER") && p.value !== "PAYMENT"));
   const [purpose, setPurpose] = useState<MessagePurpose>(purposes[0]!.value);
-  const [channel, setChannel] = useState<"WHATSAPP" | "SMS">("WHATSAPP");
   const [code, setCode] = useState("");
   const [body, setBody] = useState("");
   const [sent, setSent] = useState<Message | null>(null);
@@ -38,7 +37,7 @@ export function MessageSheet({
           <p className="whitespace-pre-line rounded-xl bg-panel-2 p-3 text-sm">{sent.body}</p>
           {sent.link ? (
             <a href={sent.link} target="_blank" rel="noopener noreferrer" className={buttonPrimary}>
-              Open in {sent.channel === "WHATSAPP" ? "WhatsApp" : "Messages"}
+              Open in WhatsApp
             </a>
           ) : (
             <p className={sent.status === "FAILED" ? "text-bad" : "text-ok"}>
@@ -52,15 +51,6 @@ export function MessageSheet({
       ) : (
         <div className="flex flex-col gap-4">
           <SelectField label="Message" options={purposes} value={purpose} onChange={setPurpose} />
-          <SegmentedControl
-            label="Send by"
-            options={[
-              { value: "WHATSAPP", label: "WhatsApp" },
-              { value: "SMS", label: "SMS" },
-            ]}
-            value={channel}
-            onChange={setChannel}
-          />
           {purpose === "REWARD" && (
             <TextField label="Coupon code" maxLength={40} value={code} onChange={(e) => setCode(e.target.value)} />
           )}
@@ -85,7 +75,6 @@ export function MessageSheet({
                   clientId,
                   code: code.trim() || null,
                   body: body.trim() || null,
-                  channel,
                 }),
               );
               if (message) {

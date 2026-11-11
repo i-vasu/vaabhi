@@ -180,7 +180,6 @@ describe("messages", () => {
         purpose: "ORDER_READY",
         orderId: 42,
         clientId: 7,
-        channel: "WHATSAPP",
       }),
     );
     await waitFor(() =>

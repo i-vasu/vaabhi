@@ -10,15 +10,15 @@ import { formatPhone, useLoad } from "@/lib/tailoring";
 
 const when = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
 
-/** Every WhatsApp / SMS prepared or sent to customers, newest first. */
+/** Every WhatsApp prepared or sent to customers, newest first. */
 export default function MessagesPage() {
   const messages = useLoad(() => api.admin.engage.messages(), []);
   return (
     <section className="mx-auto max-w-3xl">
       <PageHeader title="Messages" backHref="/more/" />
       <p className="mb-4 text-sm text-ink-soft">
-        Send one from an order or a customer&apos;s page. Without a WhatsApp / SMS provider set up, each message opens
-        on the shop&apos;s phone ready to send.
+        Send one from an order or a customer&apos;s page. Without a WhatsApp provider set up, each message opens in
+        WhatsApp on the shop&apos;s phone ready to send.
       </p>
       {!messages.value ? (
         <LoadState loading={messages.loading} error={messages.error} />
@@ -31,7 +31,6 @@ export default function MessagesPage() {
               <div className="flex flex-wrap items-center gap-2 text-sm">
                 <span className="font-medium">{m.clientName ?? formatPhone(m.toPhone)}</span>
                 <Pill>{purposeLabel(m.purpose)}</Pill>
-                <span className="text-ink-soft">{m.channel === "WHATSAPP" ? "WhatsApp" : "SMS"}</span>
                 {m.orderId && (
                   <Link href={`/orders/view/?id=${m.orderId}`} className="text-accent-ink underline">
                     {m.orderNumber}
