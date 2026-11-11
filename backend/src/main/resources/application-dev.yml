@@ -26,3 +26,8 @@ vaabhi:
       name: ${STAFF_OWNER_NAME:Demo Owner}
       email: ${STAFF_OWNER_EMAIL:owner@vaabhi.local}
       password: ${STAFF_OWNER_PASSWORD:vaabhi-demo-owner}
+
+# Local runs also write the log to a file (outside the repo), so it can be read without the IDE console.
+logging:
+  file:
+    name: ${LOG_FILE:${java.io.tmpdir}/vaabhi-dev.log}

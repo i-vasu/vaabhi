@@ -106,10 +106,10 @@ vaabhi:
     namespace: ${WHATSAPP_NAMESPACE:}
     templates:
       otp: ${WHATSAPP_LOGIN_TEMPLATE:}
-      web_order_placed: ${WHATSAPP_ORDER_PLACED_TEMPLATE:vaabhi_web_order_placed}
-      web_order_shipped: ${WHATSAPP_ORDER_SHIPPED_TEMPLATE:vaabhi_web_order_shipped}
-      web_order_delivered: ${WHATSAPP_ORDER_DELIVERED_TEMPLATE:vaabhi_web_order_delivered}
-      web_order_cancelled: ${WHATSAPP_ORDER_CANCELLED_TEMPLATE:vaabhi_web_order_cancelled}
+      web_order_placed: ${WHATSAPP_ORDER_PLACED_TEMPLATE:vaabhi_order_placed}
+      web_order_shipped: ${WHATSAPP_ORDER_SHIPPED_TEMPLATE:vaabhi_order_shipped}
+      web_order_delivered: ${WHATSAPP_ORDER_DELIVERED_TEMPLATE:vaabhi_order_delivered}
+      web_order_cancelled: ${WHATSAPP_ORDER_CANCELLED_TEMPLATE:vaabhi_order_cancelled}
     params:
       otp: ${WHATSAPP_LOGIN_PARAMS:otp}
       web_order_placed: ${WHATSAPP_ORDER_PLACED_PARAMS:order,amount,payment}
