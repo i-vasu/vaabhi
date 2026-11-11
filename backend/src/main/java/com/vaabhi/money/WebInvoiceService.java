@@ -31,12 +31,12 @@ public class WebInvoiceService {
     @Transactional
     public Invoice issueFor(WebInvoiceRequest request) {
         // Locking the order row serialises concurrent issues, so the one-live-invoice index is never hit.
-        jdbc.sql("SELECT id FROM web_order WHERE id = :id FOR UPDATE")
+        long webOrderId = jdbc.sql("SELECT id FROM web_order WHERE id = :id FOR UPDATE")
                 .param(ID, request.webOrderId())
                 .query(Long.class)
                 .optional()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
-        var live = liveId(request.webOrderId());
+        var live = liveId(webOrderId);
         if (live.isPresent()) {
             return invoices.get(live.get());
         }
@@ -54,7 +54,7 @@ public class WebInvoiceService {
         }
         long id = invoices.insertInvoice(new InvoiceService.NewInvoice(
                 null,
-                request.webOrderId(),
+                webOrderId,
                 null,
                 request.partyId(),
                 request.buyer(),
