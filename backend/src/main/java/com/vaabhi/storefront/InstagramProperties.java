@@ -14,7 +14,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties("vaabhi.instagram")
 record InstagramProperties(
-        @Nullable String accessToken, @Nullable String accountId, @Nullable String baseUrl, @Nullable Integer limit) {
+        @Nullable String accessToken,
+        @Nullable String accountId,
+        @Nullable String baseUrl,
+        @Nullable Integer limit) {
 
     InstagramProperties {
         accessToken = accessToken == null || accessToken.isBlank() ? null : accessToken.trim();

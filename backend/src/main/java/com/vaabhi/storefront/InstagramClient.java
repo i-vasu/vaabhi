@@ -79,12 +79,16 @@ class InstagramClient {
     }
 
     private <T> T send(URI uri, HttpResponse.BodyHandler<T> handler) {
-        var request = HttpRequest.newBuilder(uri).GET().timeout(Duration.ofSeconds(20)).build();
+        var request = HttpRequest.newBuilder(uri)
+                .GET()
+                .timeout(Duration.ofSeconds(20))
+                .build();
         try {
             var response = http.send(request, handler);
             if (response.statusCode() != 200) {
                 // Never log the URI: it carries the access token.
-                throw new IllegalStateException("Instagram answered " + response.statusCode() + " for " + uri.getPath());
+                throw new IllegalStateException(
+                        "Instagram answered " + response.statusCode() + " for " + uri.getPath());
             }
             return response.body();
         } catch (IOException e) {

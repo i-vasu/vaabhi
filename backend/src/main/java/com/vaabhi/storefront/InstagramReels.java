@@ -72,8 +72,9 @@ class InstagramReels {
                 .limit(properties.limit())
                 .toList();
 
-        var have = new HashSet<>(
-                jdbc.sql("SELECT media_id FROM instagram_reel").query(String.class).list());
+        var have = new HashSet<>(jdbc.sql("SELECT media_id FROM instagram_reel")
+                .query(String.class)
+                .list());
         for (var reel : reels) {
             if (have.contains(reel.id())) {
                 continue;
