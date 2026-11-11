@@ -104,7 +104,7 @@ public class InvoiceService {
         var tax = tax(order.totalRupees(), rate, billing.pricesIncludeTax());
         var number = numbering.next(NumberSequence.Kind.INVOICE);
         var client = clients.get(order.client().id());
-        var seller = InvoiceParties.seller(settings.profile(), billing);
+        var seller = InvoiceParties.seller(settings.shopProfile(), billing);
         long id = jdbc.sql("""
                         INSERT INTO invoice (number, order_id, client_id, party_id, issued_on, order_total_rupees,
                             gst_rate, prices_include_tax, taxable_rupees, cgst_rupees, sgst_rupees, total_rupees,
@@ -161,7 +161,7 @@ public class InvoiceService {
     }
 
     private static String buyerName(String firstName, @Nullable String lastName) {
-        return lastName == null || lastName.isBlank() ? firstName : firstName + " " + lastName;
+        return lastName == null || lastName.isBlank() ? firstName.trim() : (firstName + " " + lastName).trim();
     }
 
     private static @Nullable String buyerAddress(@Nullable String address, @Nullable String city, @Nullable String pin) {
