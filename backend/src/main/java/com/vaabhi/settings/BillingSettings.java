@@ -1,10 +1,12 @@
 package com.vaabhi.settings;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import org.jspecify.annotations.Nullable;
 
@@ -33,7 +35,36 @@ public record BillingSettings(
         boolean pricesIncludeTax,
         boolean showHsnCodes,
         @NotNull DiscountBase discountAppliesTo,
-        boolean autoInvoice) {
+        boolean autoInvoice,
+
+        @Valid @Nullable Company company) {
+
+    /** Compact constructor: settings saved before company details existed load with an empty company. */
+    public BillingSettings {
+        if (company == null) {
+            company = new Company(null, null, null, null);
+        }
+    }
+
+    /**
+     * The legal entity printed as the seller on invoices.
+     *
+     * @param legalName registered company name, e.g. "Vaabhi Boutique Private Limited"
+     * @param cin 21-character corporate identity number
+     * @param registeredOffice registered office address
+     * @param state one of {@link IndianStates}; decides the seller's GST state code
+     */
+    public record Company(
+            @Nullable @Size(max = 160) String legalName,
+
+            @Nullable
+            @Pattern(
+                    regexp = "^[LU][0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$",
+                    message = "must be a 21-character CIN, e.g. U74999TG2026OPC123456")
+            String cin,
+
+            @Nullable @Size(max = 300) String registeredOffice,
+            @Nullable String state) {}
 
     public enum DiscountBase {
         ORDER_TOTAL,
@@ -46,6 +77,6 @@ public record BillingSettings(
     }
 
     static BillingSettings defaults() {
-        return new BillingSettings(false, null, new BigDecimal("5"), true, false, DiscountBase.ORDER_TOTAL, true);
+        return new BillingSettings(false, null, new BigDecimal("5"), true, false, DiscountBase.ORDER_TOTAL, true, null);
     }
 }
