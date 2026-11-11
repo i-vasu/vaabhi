@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
@@ -102,18 +103,33 @@ public class InvoiceService {
         var rate = billing.gstApplies() ? billing.defaultGstRate() : BigDecimal.ZERO;
         var tax = tax(order.totalRupees(), rate, billing.pricesIncludeTax());
         var number = numbering.next(NumberSequence.Kind.INVOICE);
+        var client = clients.get(order.client().id());
+        var seller = InvoiceParties.seller(settings.profile(), billing);
         long id = jdbc.sql("""
-                        INSERT INTO invoice (number, order_id, client_id, issued_on, order_total_rupees, gst_rate,
-                            prices_include_tax, taxable_rupees, cgst_rupees, sgst_rupees, total_rupees, shop_gstin,
-                            client_gstin, created_by)
-                        VALUES (:number, :order, :client, :issuedOn, :orderTotal, :rate, :inclusive, :taxable, :cgst,
-                            :sgst, :total, :shopGstin, :clientGstin, :by)
+                        INSERT INTO invoice (number, order_id, client_id, party_id, issued_on, order_total_rupees,
+                            gst_rate, prices_include_tax, taxable_rupees, cgst_rupees, sgst_rupees, total_rupees,
+                            shop_gstin, client_gstin, created_by, title, buyer_name, buyer_phone, buyer_address,
+                            buyer_state, seller_name, seller_address, seller_cin, seller_state, seller_state_code)
+                        VALUES (:number, :order, :client, (SELECT party_id FROM client WHERE id = :client), :issuedOn,
+                            :orderTotal, :rate, :inclusive, :taxable, :cgst, :sgst, :total, :shopGstin, :clientGstin,
+                            :by, :title, :buyerName, :buyerPhone, :buyerAddress, :buyerState, :sellerName,
+                            :sellerAddress, :sellerCin, :sellerState, :sellerStateCode)
                         RETURNING id
                         """)
                 .param("number", number)
                 .param("order", orderId)
-                .param("client", order.client().id())
-                .param("issuedOn", LocalDate.now(clock))
+                .param("client", client.id())
+                .param("issuedOn", InvoiceParties.today(clock))
+                .param("title", InvoiceParties.title(billing))
+                .param("buyerName", buyerName(client.firstName(), client.lastName()))
+                .param("buyerPhone", client.phone())
+                .param("buyerAddress", buyerAddress(client.address(), client.city(), client.pinCode()))
+                .param("buyerState", client.state())
+                .param("sellerName", seller.name())
+                .param("sellerAddress", seller.address())
+                .param("sellerCin", seller.cin())
+                .param("sellerState", seller.state())
+                .param("sellerStateCode", seller.stateCode())
                 .param("orderTotal", order.totalRupees())
                 .param("rate", rate)
                 .param("inclusive", billing.pricesIncludeTax())
@@ -122,7 +138,7 @@ public class InvoiceService {
                 .param("sgst", tax.sgstRupees())
                 .param("total", tax.totalRupees())
                 .param("shopGstin", billing.gstApplies() ? billing.gstin() : null)
-                .param("clientGstin", clients.get(order.client().id()).gstin())
+                .param("clientGstin", client.gstin())
                 .param("by", actor)
                 .query(Long.class)
                 .single();
@@ -142,6 +158,18 @@ public class InvoiceService {
                     .update();
         }
         return get(id);
+    }
+
+    private static String buyerName(String firstName, @Nullable String lastName) {
+        return lastName == null || lastName.isBlank() ? firstName : firstName + " " + lastName;
+    }
+
+    private static @Nullable String buyerAddress(@Nullable String address, @Nullable String city, @Nullable String pin) {
+        var parts = Stream.of(address, city, pin)
+                .filter(part -> part != null && !part.isBlank())
+                .map(String::trim)
+                .toList();
+        return parts.isEmpty() ? null : String.join(", ", parts);
     }
 
     private static List<InvoiceLine> lines(Order order) {
@@ -209,9 +237,20 @@ public class InvoiceService {
     private record Row(
             long id,
             String number,
-            long orderId,
+            @Nullable Long orderId,
+            @Nullable Long webOrderId,
             String orderNumber,
-            long clientId,
+            @Nullable Long clientId,
+            String title,
+            String buyerName,
+            @Nullable String buyerPhone,
+            @Nullable String buyerAddress,
+            @Nullable String buyerState,
+            String sellerName,
+            @Nullable String sellerAddress,
+            @Nullable String sellerCin,
+            @Nullable String sellerState,
+            @Nullable String sellerStateCode,
             LocalDate issuedOn,
             BigDecimal orderTotalRupees,
             BigDecimal gstRate,
@@ -231,11 +270,17 @@ public class InvoiceService {
     @Transactional(readOnly = true)
     public Invoice get(long id) {
         var row = jdbc.sql("""
-                        SELECT v.id, v.number, v.order_id, o.number AS order_number, v.client_id, v.issued_on,
-                               v.order_total_rupees, v.gst_rate, v.prices_include_tax, v.taxable_rupees, v.cgst_rupees,
-                               v.sgst_rupees, v.total_rupees, o.paid_rupees, v.shop_gstin, v.client_gstin, v.created_by,
-                               v.created_at, v.cancelled_at, v.cancelled_by
-                        FROM invoice v JOIN shop_order o ON o.id = v.order_id
+                        SELECT v.id, v.number, v.order_id, v.web_order_id, COALESCE(o.number, w.number) AS order_number,
+                               v.client_id, v.title, v.buyer_name, v.buyer_phone, v.buyer_address, v.buyer_state,
+                               v.seller_name, v.seller_address, v.seller_cin, v.seller_state, v.seller_state_code,
+                               v.issued_on, v.order_total_rupees, v.gst_rate, v.prices_include_tax, v.taxable_rupees,
+                               v.cgst_rupees, v.sgst_rupees, v.total_rupees,
+                               CASE WHEN v.web_order_id IS NULL THEN o.paid_rupees
+                                    WHEN w.paid_at IS NOT NULL THEN v.total_rupees ELSE 0 END AS paid_rupees,
+                               v.shop_gstin, v.client_gstin, v.created_by, v.created_at, v.cancelled_at, v.cancelled_by
+                        FROM invoice v
+                        LEFT JOIN shop_order o ON o.id = v.order_id
+                        LEFT JOIN web_order w ON w.id = v.web_order_id
                         WHERE v.id = :id
                         """)
                 .param(ID, id)
@@ -250,9 +295,18 @@ public class InvoiceService {
         return new Invoice(
                 row.id(),
                 row.number(),
+                row.webOrderId() == null ? Invoice.Source.SHOP : Invoice.Source.WEB,
                 row.orderId(),
                 row.orderNumber(),
-                clients.summary(row.clientId()),
+                row.clientId() == null ? null : clients.summary(row.clientId()),
+                row.title(),
+                new InvoiceParties.Seller(
+                        row.sellerName(),
+                        row.sellerAddress(),
+                        row.sellerCin(),
+                        row.sellerState(),
+                        row.sellerStateCode()),
+                new InvoiceParties.Buyer(row.buyerName(), row.buyerPhone(), row.buyerAddress(), row.buyerState()),
                 row.issuedOn(),
                 lines,
                 linesRupees.subtract(row.orderTotalRupees()),
@@ -276,11 +330,11 @@ public class InvoiceService {
     private record SummaryRow(
             long id,
             String number,
-            long orderId,
+            @Nullable Long orderId,
+            @Nullable Long webOrderId,
             String orderNumber,
-            long clientId,
-            String firstName,
-            @Nullable String lastName,
+            @Nullable Long clientId,
+            String buyerName,
             LocalDate issuedOn,
             BigDecimal taxableRupees,
             BigDecimal taxRupees,
@@ -301,11 +355,13 @@ public class InvoiceService {
         params.put("from", from);
         params.put("to", to);
         var where = """
-                FROM invoice v JOIN shop_order o ON o.id = v.order_id JOIN client c ON c.id = v.client_id
+                FROM invoice v
+                LEFT JOIN shop_order o ON o.id = v.order_id
+                LEFT JOIN web_order w ON w.id = v.web_order_id
                 WHERE (CAST(:from AS date) IS NULL OR v.issued_on >= :from)
                   AND (CAST(:to AS date) IS NULL OR v.issued_on <= :to)
-                  AND (CAST(:q AS varchar) IS NULL OR lower(v.number) LIKE :q OR lower(o.number) LIKE :q
-                       OR lower(c.first_name || ' ' || coalesce(c.last_name, '')) LIKE :q)
+                  AND (CAST(:q AS varchar) IS NULL OR lower(v.number) LIKE :q
+                       OR lower(COALESCE(o.number, w.number)) LIKE :q OR lower(v.buyer_name) LIKE :q)
                 """;
         var totals = jdbc.sql("""
                         SELECT COUNT(*) AS n,
@@ -320,9 +376,12 @@ public class InvoiceService {
         params.put("offset", (page - 1) * pageSize);
         var items = jdbc
                 .sql("""
-                        SELECT v.id, v.number, v.order_id, o.number AS order_number, v.client_id, c.first_name,
-                               c.last_name, v.issued_on, v.taxable_rupees, v.cgst_rupees + v.sgst_rupees AS tax_rupees,
-                               v.total_rupees, o.paid_rupees, v.cancelled_at IS NOT NULL AS cancelled
+                        SELECT v.id, v.number, v.order_id, v.web_order_id, COALESCE(o.number, w.number) AS order_number,
+                               v.client_id, v.buyer_name, v.issued_on, v.taxable_rupees,
+                               v.cgst_rupees + v.sgst_rupees AS tax_rupees, v.total_rupees,
+                               CASE WHEN v.web_order_id IS NULL THEN o.paid_rupees
+                                    WHEN w.paid_at IS NOT NULL THEN v.total_rupees ELSE 0 END AS paid_rupees,
+                               v.cancelled_at IS NOT NULL AS cancelled
                         """ + where + " ORDER BY v.issued_on DESC, v.id DESC LIMIT :limit OFFSET :offset")
                 .params(params)
                 .query(SummaryRow.class)
@@ -331,12 +390,11 @@ public class InvoiceService {
                 .map(row -> new InvoiceSummary(
                         row.id(),
                         row.number(),
+                        row.webOrderId() == null ? Invoice.Source.SHOP : Invoice.Source.WEB,
                         row.orderId(),
                         row.orderNumber(),
                         row.clientId(),
-                        row.lastName() == null || row.lastName().isBlank()
-                                ? row.firstName()
-                                : row.firstName() + " " + row.lastName(),
+                        row.buyerName(),
                         row.issuedOn(),
                         row.taxableRupees(),
                         row.taxRupees(),
