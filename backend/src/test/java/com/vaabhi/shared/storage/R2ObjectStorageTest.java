@@ -82,6 +82,60 @@ class R2ObjectStorageTest {
     }
 
     @Test
+    void uploadsFromTheServerWithASignedPut() throws Exception {
+        respond(200);
+        storage.put("instagram/1.jpg", new byte[] {1, 2, 3}, "image/jpeg");
+
+        var request = ArgumentCaptor.forClass(HttpRequest.class);
+        verify(http).send(request.capture(), any());
+        assertThat(request.getValue().method()).isEqualTo("PUT");
+        assertThat(request.getValue().uri().getPath()).isEqualTo("/vaabhi-media/instagram/1.jpg");
+        assertThat(request.getValue().headers().firstValue("Content-Type")).hasValue("image/jpeg");
+        assertThat(request.getValue().headers().firstValue("Cache-Control"))
+                .hasValue("public, max-age=31536000, immutable");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void reportsAFailedServerUpload() throws Exception {
+        respond(403);
+        assertThatThrownBy(() -> storage.put("k", new byte[] {1}, "image/jpeg"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("refused k (403)");
+
+        given(http.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .willThrow(new IOException("down"));
+        assertThatThrownBy(() -> storage.put("k", new byte[] {1}, "image/jpeg"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Could not reach photo storage");
+    }
+
+    @Test
+    void otherStoragesRefuseServerUploads() {
+        ObjectStorage readOnly = new ObjectStorage() {
+            @Override
+            public boolean configured() {
+                return true;
+            }
+
+            @Override
+            public java.net.URI presignPut(String key, Duration validFor) {
+                return java.net.URI.create("https://r2.test/" + key);
+            }
+
+            @Override
+            public boolean exists(String key) {
+                return false;
+            }
+
+            @Override
+            public void delete(String key) {}
+        };
+        assertThatThrownBy(() -> readOnly.put("k", new byte[0], "image/jpeg"))
+                .isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    @Test
     void refusesToSignWithoutCredentials() {
         var unconfigured = new R2ObjectStorage(new MediaStorageProperties(null, "", null, null));
         assertThat(unconfigured.configured()).isFalse();
