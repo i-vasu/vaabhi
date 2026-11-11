@@ -15,7 +15,7 @@ async function categoryLinks(): Promise<NavLink[]> {
 export async function SiteFooter() {
   const columns = [{ title: "Shop", links: [...(await categoryLinks()), ...footerShopListings] }, ...footerColumns];
   return (
-    <footer className="bg-bg-muted">
+    <footer className="bg-bg-muted print:hidden">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10">
         <div className="grid gap-8 md:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,1fr))]">
           <div className="flex flex-col gap-3">

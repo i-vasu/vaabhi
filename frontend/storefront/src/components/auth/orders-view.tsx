@@ -195,6 +195,14 @@ function OrderItem({
         ))}
       </ul>
 
+      {order.invoiceNumber && (
+        <p className="mt-2 text-sm">
+          <Link href={`/account/orders/${encodeURIComponent(order.number)}/invoice`} className="underline">
+            View invoice
+          </Link>
+        </p>
+      )}
+
       {order.returns.map((r) => (
         <div key={r.number} className="mt-3 rounded-sm bg-bg-muted p-3 text-sm">
           <p>

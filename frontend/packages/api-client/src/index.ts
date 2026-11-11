@@ -216,6 +216,7 @@ export type CheckoutRequest = Schemas["CheckoutRequest"];
 export type CheckoutStart = Schemas["CheckoutStart"];
 export type PaymentConfirmation = Schemas["PaymentConfirmation"];
 export type WebOrder = Schemas["WebOrder"];
+export type StoreInvoice = Schemas["StoreInvoice"];
 export type RefundStatus = NonNullable<WebOrder["refundStatus"]>;
 export type ShipmentForm = Schemas["ShipmentForm"];
 export type CancelWebOrderForm = Schemas["CancelWebOrderForm"];
@@ -416,6 +417,12 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         request<WebOrder[]>("/api/v1/customer/orders", { headers: bearer(accessToken), cache: "no-store" }),
       getOrder: (accessToken: string, number: string) =>
         request<WebOrder>(`/api/v1/customer/orders/${encodeURIComponent(number)}`, {
+          headers: bearer(accessToken),
+          cache: "no-store",
+        }),
+      /** The customer's tax invoice for an order they own; 404 when it has none. */
+      myInvoice: (accessToken: string, number: string) =>
+        request<StoreInvoice>(`/api/v1/customer/orders/${encodeURIComponent(number)}/invoice`, {
           headers: bearer(accessToken),
           cache: "no-store",
         }),

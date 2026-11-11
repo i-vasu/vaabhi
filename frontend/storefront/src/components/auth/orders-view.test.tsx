@@ -58,6 +58,7 @@ const order = (patch: Partial<WebOrder> = {}): WebOrder => ({
     },
   ],
   returns: [],
+  invoiceNumber: null,
   ...patch,
 });
 
