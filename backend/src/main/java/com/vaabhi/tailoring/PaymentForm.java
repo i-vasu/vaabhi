@@ -13,6 +13,6 @@ public record PaymentForm(
         @DecimalMin("0.01") @DecimalMax("1000000") @Digits(integer = 7, fraction = 2)
         BigDecimal amountRupees,
 
-        @NotNull PaymentMode mode,
+        @NotNull @CounterMode PaymentMode mode,
         boolean refund,
         @Nullable @Size(max = 200) String note) {}

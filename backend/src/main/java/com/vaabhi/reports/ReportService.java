@@ -155,13 +155,13 @@ public class ReportService {
             }
             case "gst" -> {
                 var rows = rows("""
-                        SELECT v.number, to_char(v.issued_on, 'YYYY-MM-DD') AS date, %s AS customer,
+                        SELECT v.number, to_char(v.issued_on, 'YYYY-MM-DD') AS date, v.buyer_name AS customer,
                                v.client_gstin AS gstin, v.gst_rate AS rate, v.taxable_rupees AS taxable,
                                v.cgst_rupees AS cgst, v.sgst_rupees AS sgst, v.total_rupees AS total
-                        FROM invoice v JOIN client c ON c.id = v.client_id
+                        FROM invoice v
                         WHERE v.cancelled_at IS NULL AND v.issued_on BETWEEN :from AND :to
                         ORDER BY v.issued_on, v.number
-                        """.formatted(CUSTOMER), p);
+                        """, p);
                 yield new Report(
                         name,
                         info.title(),
