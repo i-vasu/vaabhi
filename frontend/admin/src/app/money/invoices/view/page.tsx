@@ -138,7 +138,10 @@ function InvoiceView({ id }: { id: number }) {
       {confirming && (
         <Sheet open title={`Cancel ${v.number}?`} onClose={() => setConfirming(false)}>
           <p className="text-ink-soft">
-            The number stays in the register as cancelled. You can then issue a new invoice from the order.
+            The number stays in the register as cancelled.{" "}
+            {v.source === "WEB"
+              ? "Cancel this invoice only if the order was never sent; a cancelled web invoice is not reissued."
+              : "You can then issue a new invoice from the order."}
           </p>
           <ErrorNote>{action.error}</ErrorNote>
           <div className="mt-4 flex gap-2">

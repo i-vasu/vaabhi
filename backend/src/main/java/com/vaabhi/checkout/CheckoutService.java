@@ -439,7 +439,7 @@ public class CheckoutService {
                 .query((rs, n) -> new OrderParty(rs.getLong("id"), rs.getObject("party_id", Long.class)))
                 .single();
         var address = jdbc.sql("""
-                        SELECT concat_ws(', ', address_line1, address_line2, city, pincode)
+                        SELECT left(concat_ws(', ', address_line1, address_line2, city, pincode), 400)
                         FROM web_order WHERE id = :id
                         """)
                 .param(ID, row.id())
@@ -476,6 +476,9 @@ public class CheckoutService {
         if (order.status() != WebOrder.Status.PLACED && order.status() != WebOrder.Status.SHIPPED) {
             throw conflict(
                     "Only a placed or shipped order can be delivered (this one is " + label(order.status()) + ")");
+        }
+        if (order.status() == WebOrder.Status.PLACED) {
+            invoiceFor(number);
         }
         jdbc.sql("""
                         UPDATE web_order SET status = 'DELIVERED', delivered_at = now(),

@@ -114,7 +114,8 @@ public class InvoiceService {
                 client.gstin(),
                 order.totalRupees(),
                 lines(order),
-                actor));
+                actor,
+                false));
         return get(id);
     }
 
@@ -131,13 +132,15 @@ public class InvoiceService {
             @Nullable String clientGstin,
             BigDecimal orderTotalRupees,
             List<InvoiceLine> lines,
-            @Nullable String actor) {}
+            @Nullable String actor,
+            boolean alwaysInclusive) {}
 
     /** Works out the GST, takes the next number and inserts the invoice with its lines; returns the new id. */
     long insertInvoice(NewInvoice invoice) {
         var billing = settings.billing();
         var rate = billing.gstApplies() ? billing.defaultGstRate() : BigDecimal.ZERO;
-        var tax = tax(invoice.orderTotalRupees(), rate, billing.pricesIncludeTax());
+        boolean inclusive = invoice.alwaysInclusive() || billing.pricesIncludeTax();
+        var tax = tax(invoice.orderTotalRupees(), rate, inclusive);
         var number = numbering.next(NumberSequence.Kind.INVOICE);
         var seller = InvoiceParties.seller(settings.shopProfile(), billing);
         var buyer = invoice.buyer();
@@ -172,7 +175,7 @@ public class InvoiceService {
                 .param("sellerStateCode", seller.stateCode())
                 .param("orderTotal", invoice.orderTotalRupees())
                 .param("rate", rate)
-                .param("inclusive", billing.pricesIncludeTax())
+                .param("inclusive", inclusive)
                 .param("taxable", tax.taxableRupees())
                 .param("cgst", tax.cgstRupees())
                 .param("sgst", tax.sgstRupees())

@@ -31,11 +31,20 @@ public class WebInvoiceService {
     @Transactional
     public Invoice issueFor(WebInvoiceRequest request) {
         // Locking the order row serialises concurrent issues, so the one-live-invoice index is never hit.
-        long webOrderId = jdbc.sql("SELECT id FROM web_order WHERE id = :id FOR UPDATE")
+        var locked = jdbc.sql("SELECT id FROM web_order WHERE id = :id AND status IN ('PLACED','SHIPPED') FOR UPDATE")
                 .param(ID, request.webOrderId())
                 .query(Long.class)
-                .optional()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+                .optional();
+        if (locked.isEmpty()) {
+            boolean exists = jdbc.sql("SELECT EXISTS (SELECT 1 FROM web_order WHERE id = :id)")
+                    .param(ID, request.webOrderId())
+                    .query(Boolean.class)
+                    .single();
+            throw exists
+                    ? new ResponseStatusException(HttpStatus.CONFLICT, "Only a placed or shipped order can be invoiced")
+                    : new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found");
+        }
+        long webOrderId = locked.get();
         var live = liveId(webOrderId);
         if (live.isPresent()) {
             return invoices.get(live.get());
@@ -61,7 +70,8 @@ public class WebInvoiceService {
                 null,
                 Rupees.sum(lines, InvoiceLine::amountRupees),
                 lines,
-                null));
+                null,
+                true));
         return invoices.get(id);
     }
 
