@@ -16,6 +16,7 @@ const checkout = await import("./checkout/route");
 const payment = await import("./checkout/[number]/payment/route");
 const orders = await import("./orders/route");
 const pay = await import("./orders/[number]/pay/route");
+const invoice = await import("./orders/[number]/invoice/route");
 const cancel = await import("./orders/[number]/cancel/route");
 const returns = await import("./orders/[number]/returns/route");
 
@@ -67,6 +68,9 @@ describe("/api/auth order routes", () => {
   it("asks a signed-out shopper to sign in", async () => {
     expect((await checkout.POST(req("checkout", '{"lines":[],"address":{}}'))).status).toBe(401);
     expect((await orders.GET()).status).toBe(401);
+    expect((await invoice.GET(new Request("http://localhost/api/auth/orders/WEB-1001/invoice"), params)).status).toBe(
+      401,
+    );
     expect((await pay.POST(req("orders/WEB-1001/pay"), params)).status).toBe(401);
     expect((await cancel.POST(req("orders/WEB-1001/cancel", "{}"), params)).status).toBe(401);
     expect(
@@ -120,6 +124,21 @@ describe("/api/auth order routes", () => {
       reason: "Too long",
       items: [{ position: 0, quantity: 1 }],
     });
+  });
+
+  it("serves the customer's invoice with their token, and passes on a 404", async () => {
+    jar.set("vb_at", "access-1");
+    server.use(
+      http.get(`${CUSTOMER}/orders/WEB-1001/invoice`, answer({ number: "WINV-1" })),
+      http.get(`${CUSTOMER}/orders/WEB-9/invoice`, () => HttpResponse.json({ detail: "Not found" }, { status: 404 })),
+    );
+    const found = await invoice.GET(new Request("http://localhost/api/auth/orders/WEB-1001/invoice"), params);
+    expect(await found.json()).toEqual({ number: "WINV-1" });
+    expect(seen[0]?.auth).toBe("Bearer access-1");
+    const missing = await invoice.GET(new Request("http://localhost/api/auth/orders/WEB-9/invoice"), {
+      params: Promise.resolve({ number: "WEB-9" }),
+    });
+    expect(missing.status).toBe(404);
   });
 
   it("passes on the API's problems", async () => {

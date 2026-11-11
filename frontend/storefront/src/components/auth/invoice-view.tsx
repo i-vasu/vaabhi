@@ -1,7 +1,12 @@
 import type { StoreInvoice } from "@vaabhi/api-client";
 import { formatPrice } from "@/lib/format";
 
-const day = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" });
+const day = new Intl.DateTimeFormat("en-IN", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
 
 /** A customer's tax invoice, laid out to read on screen and print on paper. */
 export function InvoiceView({ invoice }: Readonly<{ invoice: StoreInvoice }>) {
@@ -33,8 +38,8 @@ export function InvoiceView({ invoice }: Readonly<{ invoice: StoreInvoice }>) {
         <section>
           <h2 className="mb-1 font-medium">Sold by</h2>
           <p>{seller.name}</p>
-          {sellerLines.map((line) => (
-            <p key={line} className="text-text-secondary">
+          {sellerLines.map((line, i) => (
+            <p key={`${i}-${line}`} className="text-text-secondary">
               {line}
             </p>
           ))}
@@ -42,8 +47,8 @@ export function InvoiceView({ invoice }: Readonly<{ invoice: StoreInvoice }>) {
         <section>
           <h2 className="mb-1 font-medium">Billed to</h2>
           <p>{buyer.name}</p>
-          {buyerLines.map((line) => (
-            <p key={line} className="text-text-secondary">
+          {buyerLines.map((line, i) => (
+            <p key={`${i}-${line}`} className="text-text-secondary">
               {line}
             </p>
           ))}
