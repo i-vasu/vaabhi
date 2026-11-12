@@ -120,6 +120,12 @@ public class JournalService {
     /** Posts the opposite of a manual or opening entry, dated today. */
     @Transactional
     public JournalEntry reverse(long id, @Nullable String actor) {
+        return reverseOn(id, LocalDate.now(clock.withZone(SHOP_ZONE)), actor);
+    }
+
+    /** Like {@link #reverse}, but dated {@code date}; a locked month refuses with 409. */
+    @Transactional
+    public JournalEntry reverseOn(long id, LocalDate date, @Nullable String actor) {
         var original = get(id);
         if (!REVERSIBLE.contains(original.sourceType())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Only manual and opening entries can be reversed");
@@ -133,7 +139,7 @@ public class JournalService {
                 .toList();
         return post(
                 new NewEntry(
-                        LocalDate.now(clock.withZone(SHOP_ZONE)),
+                        date,
                         original.sourceType(),
                         null,
                         "REVERSAL",

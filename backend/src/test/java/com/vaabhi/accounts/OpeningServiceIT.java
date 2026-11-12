@@ -102,6 +102,11 @@ class OpeningServiceIT {
         assertThat(journal.get(first.entryId()).reversedById()).isNotNull();
         assertThat(journal.get(second.entryId()).reversedById()).isNull();
 
+        var atStart = journal.trialBalance(LocalDate.of(2026, 4, 1));
+        assertThat(atStart.lines())
+                .filteredOn(line -> line.accountId() == stock.id())
+                .singleElement()
+                .satisfies(line -> assertThat(line.debitRupees()).isEqualByComparingTo("800"));
         var trial = journal.trialBalance(LocalDate.of(2099, 1, 1));
         assertThat(trial.balanced()).isTrue();
         assertThat(trial.lines())

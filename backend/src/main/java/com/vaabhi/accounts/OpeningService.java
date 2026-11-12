@@ -94,7 +94,7 @@ public class OpeningService {
         }
         var live = jdbc.sql(LIVE_ENTRY).query(Long.class).optional().orElse(null);
         if (live != null) {
-            journal.reverse(live, actor);
+            journal.reverseOn(live, journal.get(live).date(), actor);
         }
         if (!entryLines.isEmpty()) {
             BigDecimal remainderDebit = net.signum() < 0 ? net.negate() : Rupees.ZERO;
