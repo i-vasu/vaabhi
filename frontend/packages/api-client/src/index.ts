@@ -151,6 +151,20 @@ export type Invoice = Schemas["Invoice"];
 export type InvoiceLine = Schemas["InvoiceLine"];
 export type InvoiceSummary = Schemas["InvoiceSummary"];
 export type InvoicePage = Schemas["InvoicePage"];
+export type TaxClass = Schemas["TaxClass"];
+export type TaxClassForm = Schemas["TaxClassForm"];
+export type AdminCategory = Schemas["AdminCategory"];
+export type CreditNote = Schemas["CreditNote"];
+export type CreditNoteLine = Schemas["CreditNoteLine"];
+export type CreditNoteForm = Schemas["CreditNoteForm"];
+export type CreditNoteSummary = Schemas["CreditNoteSummary"];
+export type CreditNotePage = Schemas["CreditNotePage"];
+/** A row of the credit-note list (the generated schema names it just `Item`). */
+export type CreditNoteListItem = CreditNotePage["items"][number];
+export type Gstr1 = Schemas["Gstr1"];
+export type Gstr1Row = Schemas["Gstr1Row"];
+export type Gstr1HsnRow = Schemas["Gstr1HsnRow"];
+export type Gstr1DocRange = Schemas["Gstr1DocRange"];
 export type Expense = Schemas["Expense"];
 export type ExpenseForm = Schemas["ExpenseForm"];
 export type ExpenseCategory = ExpenseForm["category"];
@@ -217,6 +231,7 @@ export type CheckoutStart = Schemas["CheckoutStart"];
 export type PaymentConfirmation = Schemas["PaymentConfirmation"];
 export type WebOrder = Schemas["WebOrder"];
 export type StoreInvoice = Schemas["StoreInvoice"];
+export type StoreCreditNote = Schemas["StoreCreditNote"];
 export type RefundStatus = NonNullable<WebOrder["refundStatus"]>;
 export type ShipmentForm = Schemas["ShipmentForm"];
 export type CancelWebOrderForm = Schemas["CancelWebOrderForm"];
@@ -423,6 +438,12 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
       /** The customer's tax invoice for an order they own; 404 when it has none. */
       myInvoice: (accessToken: string, number: string) =>
         request<StoreInvoice>(`/api/v1/customer/orders/${encodeURIComponent(number)}/invoice`, {
+          headers: bearer(accessToken),
+          cache: "no-store",
+        }),
+      /** Credit notes issued against an order the customer owns (empty when none). */
+      myCreditNotes: (accessToken: string, number: string) =>
+        request<StoreCreditNote[]>(`/api/v1/customer/orders/${encodeURIComponent(number)}/credit-notes`, {
           headers: bearer(accessToken),
           cache: "no-store",
         }),
@@ -706,6 +727,48 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
           request<Ledger>(`/api/v1/admin/money/ledger${queryString(params)}`),
         outstanding: (params: { clientId?: number } = {}) =>
           request<Outstanding>(`/api/v1/admin/money/outstanding${queryString(params)}`),
+        taxClasses: {
+          list: () => request<TaxClass[]>("/api/v1/admin/money/tax-classes"),
+          create: (form: TaxClassForm) => send<TaxClass>("POST", "/api/v1/admin/money/tax-classes", form),
+          update: (id: number, form: TaxClassForm) =>
+            send<TaxClass>("PUT", `/api/v1/admin/money/tax-classes/${id}`, form),
+          remove: (id: number) => send<void>("DELETE", `/api/v1/admin/money/tax-classes/${id}`),
+        },
+        creditNotes: {
+          list: (params: { q?: string; page?: number; size?: number } = {}) =>
+            request<CreditNotePage>(`/api/v1/admin/money/credit-notes${queryString(params)}`),
+          get: (id: number) => request<CreditNote>(`/api/v1/admin/money/credit-notes/${id}`),
+          forInvoice: (invoiceId: number) =>
+            request<CreditNoteSummary[]>(`/api/v1/admin/money/invoices/${invoiceId}/credit-notes`),
+          issue: (invoiceId: number, form: CreditNoteForm) =>
+            send<CreditNote>("POST", `/api/v1/admin/money/invoices/${invoiceId}/credit-notes`, form),
+        },
+        gstr1: {
+          month: (month: string) => request<Gstr1>(`/api/v1/admin/money/gstr1${queryString({ month })}`),
+          /** The section's CSV as a Blob; fetched with the bearer token, since a plain link would not carry it. */
+          csv: async (month: string, section: string): Promise<Blob> => {
+            const token = getToken?.();
+            const response = await fetch(
+              `${baseUrl.replace(/\/$/, "")}/api/v1/admin/money/gstr1/${encodeURIComponent(section)}.csv${queryString({ month })}`,
+              { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+            );
+            if (!response.ok) {
+              const problem = await problemOf(response);
+              throw new ApiError(
+                response.status,
+                `GET gstr1 ${section}.csv failed with ${response.status}`,
+                problem.errors,
+                problem.detail,
+              );
+            }
+            return response.blob();
+          },
+        },
+      },
+      categories: {
+        list: () => request<AdminCategory[]>("/api/v1/admin/categories"),
+        setTaxClass: (id: number, taxClassId: number | null) =>
+          send<AdminCategory>("PUT", `/api/v1/admin/categories/${id}/tax-class`, { taxClassId }),
       },
       startTailoringImageUpload: (purpose: TailoringImagePurpose) =>
         send<TailoringImageUpload>("POST", "/api/v1/admin/tailoring/images", { purpose }),

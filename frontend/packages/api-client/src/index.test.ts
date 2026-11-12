@@ -126,8 +126,20 @@ describe("admin client", () => {
     await api.admin.settings.deliveryPackages();
     await api.admin.settings.saveDeliveryPackages([]);
     await api.admin.settings.garmentTemplates();
-    await api.admin.settings.createGarmentTemplate({ id: null, name: "Kurta", businessType: "ALL", fields: [] });
-    await api.admin.settings.updateGarmentTemplate(3, { id: 3, name: "Kurta", businessType: "ALL", fields: [] });
+    await api.admin.settings.createGarmentTemplate({
+      id: null,
+      name: "Kurta",
+      businessType: "ALL",
+      fields: [],
+      taxClassId: null,
+    });
+    await api.admin.settings.updateGarmentTemplate(3, {
+      id: 3,
+      name: "Kurta",
+      businessType: "ALL",
+      fields: [],
+      taxClassId: null,
+    });
     await expect(api.admin.settings.deleteGarmentTemplate(3)).resolves.toBeUndefined();
     await api.admin.settings.startImageUpload("LOGO");
     await api.admin.changePassword({ currentPassword: "a", newPassword: "b" });

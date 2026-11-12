@@ -18853,7 +18853,71 @@
                     "totalRupees"
                 ]
             },
-            "DocRange": {
+            "Gstr1": {
+                "type": "object",
+                "properties": {
+                    "month": {
+                        "type": "string"
+                    },
+                    "gstOn": {
+                        "type": "boolean"
+                    },
+                    "b2b": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Gstr1Row"
+                        }
+                    },
+                    "b2cl": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Gstr1Row"
+                        }
+                    },
+                    "b2cs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Gstr1Row"
+                        }
+                    },
+                    "cdnr": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Gstr1Row"
+                        }
+                    },
+                    "cdnur": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Gstr1Row"
+                        }
+                    },
+                    "hsn": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Gstr1HsnRow"
+                        }
+                    },
+                    "docs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Gstr1DocRange"
+                        }
+                    }
+                },
+                "required": [
+                    "b2b",
+                    "b2cl",
+                    "b2cs",
+                    "cdnr",
+                    "cdnur",
+                    "docs",
+                    "gstOn",
+                    "hsn",
+                    "month"
+                ]
+            },
+            "Gstr1DocRange": {
                 "type": "object",
                 "properties": {
                     "nature": {
@@ -18882,71 +18946,7 @@
                     "total"
                 ]
             },
-            "Gstr1": {
-                "type": "object",
-                "properties": {
-                    "month": {
-                        "type": "string"
-                    },
-                    "gstOn": {
-                        "type": "boolean"
-                    },
-                    "b2b": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Row"
-                        }
-                    },
-                    "b2cl": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Row"
-                        }
-                    },
-                    "b2cs": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Row"
-                        }
-                    },
-                    "cdnr": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Row"
-                        }
-                    },
-                    "cdnur": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Row"
-                        }
-                    },
-                    "hsn": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/HsnRow"
-                        }
-                    },
-                    "docs": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/DocRange"
-                        }
-                    }
-                },
-                "required": [
-                    "b2b",
-                    "b2cl",
-                    "b2cs",
-                    "cdnr",
-                    "cdnur",
-                    "docs",
-                    "gstOn",
-                    "hsn",
-                    "month"
-                ]
-            },
-            "HsnRow": {
+            "Gstr1HsnRow": {
                 "type": "object",
                 "properties": {
                     "hsn": {
@@ -18995,6 +18995,38 @@
                     "sgst",
                     "taxable",
                     "uqc",
+                    "value"
+                ]
+            },
+            "Gstr1Row": {
+                "type": "object",
+                "properties": {
+                    "columns": {
+                        "type": "object",
+                        "additionalProperties": {}
+                    },
+                    "taxable": {
+                        "type": "number"
+                    },
+                    "igst": {
+                        "type": "number"
+                    },
+                    "cgst": {
+                        "type": "number"
+                    },
+                    "sgst": {
+                        "type": "number"
+                    },
+                    "value": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "cgst",
+                    "columns",
+                    "igst",
+                    "sgst",
+                    "taxable",
                     "value"
                 ]
             },
@@ -19048,36 +19080,7 @@
                     "totalRupees"
                 ]
             },
-            "CreditNotePage": {
-                "type": "object",
-                "properties": {
-                    "items": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Item"
-                        }
-                    },
-                    "total": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "page": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "size": {
-                        "type": "integer",
-                        "format": "int32"
-                    }
-                },
-                "required": [
-                    "items",
-                    "page",
-                    "size",
-                    "total"
-                ]
-            },
-            "Item": {
+            "CreditNoteListItem": {
                 "type": "object",
                 "properties": {
                     "id": {
@@ -19122,6 +19125,35 @@
                     "number",
                     "reason",
                     "totalRupees"
+                ]
+            },
+            "CreditNotePage": {
+                "type": "object",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CreditNoteListItem"
+                        }
+                    },
+                    "total": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "page": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                },
+                "required": [
+                    "items",
+                    "page",
+                    "size",
+                    "total"
                 ]
             },
             "ActivityEntry": {

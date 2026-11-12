@@ -5274,7 +5274,18 @@ export interface components {
             balanceRupees: number;
             cancelled: boolean;
         };
-        DocRange: {
+        Gstr1: {
+            month: string;
+            gstOn: boolean;
+            b2b: components["schemas"]["Gstr1Row"][];
+            b2cl: components["schemas"]["Gstr1Row"][];
+            b2cs: components["schemas"]["Gstr1Row"][];
+            cdnr: components["schemas"]["Gstr1Row"][];
+            cdnur: components["schemas"]["Gstr1Row"][];
+            hsn: components["schemas"]["Gstr1HsnRow"][];
+            docs: components["schemas"]["Gstr1DocRange"][];
+        };
+        Gstr1DocRange: {
             nature: string;
             from: string;
             to: string;
@@ -5283,18 +5294,7 @@ export interface components {
             /** Format: int32 */
             cancelled: number;
         };
-        Gstr1: {
-            month: string;
-            gstOn: boolean;
-            b2b: components["schemas"]["Row"][];
-            b2cl: components["schemas"]["Row"][];
-            b2cs: components["schemas"]["Row"][];
-            cdnr: components["schemas"]["Row"][];
-            cdnur: components["schemas"]["Row"][];
-            hsn: components["schemas"]["HsnRow"][];
-            docs: components["schemas"]["DocRange"][];
-        };
-        HsnRow: {
+        Gstr1HsnRow: {
             hsn: string;
             description: string;
             uqc: string;
@@ -5308,6 +5308,16 @@ export interface components {
             sgst: number;
             cess: number;
         };
+        Gstr1Row: {
+            columns: {
+                [key: string]: unknown;
+            };
+            taxable: number;
+            igst: number;
+            cgst: number;
+            sgst: number;
+            value: number;
+        };
         CategoryTotal: {
             /** @enum {string} */
             category: "RENT" | "SALARY" | "MATERIAL" | "UTILITIES" | "TRANSPORT" | "MAINTENANCE" | "MARKETING" | "OTHER";
@@ -5318,16 +5328,7 @@ export interface components {
             totalRupees: number;
             byCategory: components["schemas"]["CategoryTotal"][];
         };
-        CreditNotePage: {
-            items: components["schemas"]["Item"][];
-            /** Format: int64 */
-            total: number;
-            /** Format: int32 */
-            page: number;
-            /** Format: int32 */
-            size: number;
-        };
-        Item: {
+        CreditNoteListItem: {
             /** Format: int64 */
             id: number;
             number: string;
@@ -5340,6 +5341,15 @@ export interface components {
             totalRupees: number;
             /** @enum {string} */
             reason: "RETURN" | "CANCELLED" | "CORRECTION";
+        };
+        CreditNotePage: {
+            items: components["schemas"]["CreditNoteListItem"][];
+            /** Format: int64 */
+            total: number;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            size: number;
         };
         ActivityEntry: {
             /** Format: int64 */
