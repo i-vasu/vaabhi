@@ -65,9 +65,10 @@ public class SecurityConfig {
                         // permission (the token's "permissions" claim, set at sign-in from the role).
                         .requestMatchers("/api/v1/admin/me", "/api/v1/admin/me/**")
                         .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/admin/settings/**")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/admin/settings/**", "/api/v1/admin/categories/**")
                         .hasRole("ADMIN")
-                        .requestMatchers("/api/v1/admin/settings/**")
+                        // Tax classes on categories are billing configuration, like the settings they sit beside.
+                        .requestMatchers("/api/v1/admin/settings/**", "/api/v1/admin/categories/**")
                         .access(area("SETTINGS"))
                         // Online orders: cancelling (refunds the payment) and refunding a return are for the owner.
                         .requestMatchers(

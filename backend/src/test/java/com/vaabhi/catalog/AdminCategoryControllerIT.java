@@ -67,6 +67,17 @@ class AdminCategoryControllerIT {
     }
 
     @Test
+    void changingNeedsTheSettingsArea() throws Exception {
+        var counter =
+                jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("PERM_ORDERS"));
+        mockMvc.perform(put("/api/v1/admin/categories/" + categoryId() + "/tax-class")
+                        .with(counter)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"taxClassId\":null}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void unknownTaxClassIs400() throws Exception {
         mockMvc.perform(put("/api/v1/admin/categories/" + categoryId() + "/tax-class")
                         .with(ADMIN)

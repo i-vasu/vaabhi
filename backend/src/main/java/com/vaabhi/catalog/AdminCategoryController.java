@@ -9,7 +9,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Category tax classes for the admin app. Requires the ADMIN role (see SecurityConfig). */
+/**
+ * Category tax classes for the admin app. Billing configuration: listing needs the ADMIN role, changing needs the
+ * SETTINGS area (the owner always has it); see SecurityConfig.
+ */
 @RestController
 @RequestMapping("/api/v1/admin/categories")
 class AdminCategoryController {
