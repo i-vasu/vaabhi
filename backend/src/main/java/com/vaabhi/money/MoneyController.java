@@ -3,10 +3,14 @@ package com.vaabhi.money;
 import jakarta.validation.Valid;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -20,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 /** Invoices, expenses, the ledger and what customers owe. Requires the ADMIN role (see SecurityConfig). */
 @RestController
@@ -31,6 +36,7 @@ class MoneyController {
     private final LedgerService ledger;
     private final TaxClassService taxClasses;
     private final CreditNoteService creditNotes;
+    private final Gstr1Service gstr1;
     private final Clock clock;
 
     MoneyController(
@@ -39,8 +45,10 @@ class MoneyController {
             LedgerService ledger,
             TaxClassService taxClasses,
             CreditNoteService creditNotes,
+            Gstr1Service gstr1,
             Clock clock) {
         this.creditNotes = creditNotes;
+        this.gstr1 = gstr1;
         this.invoices = invoices;
         this.expenses = expenses;
         this.ledger = ledger;
@@ -148,6 +156,33 @@ class MoneyController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void deleteTaxClass(@PathVariable long id) {
         taxClasses.delete(id);
+    }
+
+    // --- GSTR-1 -------------------------------------------------------------------------------------------------
+
+    private static YearMonth parseMonth(String month) {
+        try {
+            return YearMonth.parse(month);
+        } catch (DateTimeParseException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The month must look like 2026-11");
+        }
+    }
+
+    @GetMapping("/gstr1")
+    Gstr1 getGstr1(@RequestParam String month) {
+        return gstr1.month(parseMonth(month));
+    }
+
+    @GetMapping("/gstr1/{section}.csv")
+    ResponseEntity<String> getGstr1Csv(@PathVariable String section, @RequestParam String month) {
+        var yearMonth = parseMonth(month);
+        var csv = gstr1.csv(yearMonth, section);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"gstr1-" + section + "-" + yearMonth + ".csv\"")
+                .body(csv);
     }
 
     // --- expenses -----------------------------------------------------------------------------------------------

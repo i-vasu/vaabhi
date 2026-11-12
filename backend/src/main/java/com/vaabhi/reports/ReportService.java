@@ -33,7 +33,6 @@ public class ReportService {
 
     static final List<Report.ReportInfo> CATALOGUE = List.of(
             new Report.ReportInfo("sales", "Sales", "Invoiced per day: taxable value, GST and total"),
-            new Report.ReportInfo("gst", "GST register", "Every invoice with GSTIN, taxable value, CGST and SGST"),
             new Report.ReportInfo("sales-orders", "Sales orders", "Orders booked with what is paid and owed"),
             new Report.ReportInfo("orders", "Orders by status", "How many orders are where, and their value"),
             new Report.ReportInfo("deliveries", "Deliveries", "Orders handed over, on time or late"),
@@ -152,34 +151,6 @@ public class ReportService {
                         rows,
                         totals(rows, "invoices", "taxable", "gst", "total"),
                         "Cancelled invoices are left out.");
-            }
-            case "gst" -> {
-                var rows = rows("""
-                        SELECT v.number, to_char(v.issued_on, 'YYYY-MM-DD') AS date, v.buyer_name AS customer,
-                               v.client_gstin AS gstin, v.gst_rate AS rate, v.taxable_rupees AS taxable,
-                               v.cgst_rupees AS cgst, v.sgst_rupees AS sgst, v.total_rupees AS total
-                        FROM invoice v
-                        WHERE v.cancelled_at IS NULL AND v.issued_on BETWEEN :from AND :to
-                        ORDER BY v.issued_on, v.number
-                        """, p);
-                yield new Report(
-                        name,
-                        info.title(),
-                        from,
-                        to,
-                        List.of(
-                                text("number", "Invoice"),
-                                col("date", "Date", Report.Type.DATE),
-                                text("customer", "Customer"),
-                                text("gstin", "Customer GSTIN"),
-                                col("rate", "GST %", Report.Type.PERCENT),
-                                money("taxable", "Taxable"),
-                                money("cgst", "CGST"),
-                                money("sgst", "SGST"),
-                                money("total", "Total")),
-                        rows,
-                        totals(rows, "taxable", "cgst", "sgst", "total"),
-                        null);
             }
             case "sales-orders" -> {
                 var rows = rows("""

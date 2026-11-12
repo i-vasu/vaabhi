@@ -128,11 +128,6 @@ class ReportsIT {
                 .singleElement()
                 .satisfies(r ->
                         assertThat(((Number) r.get("days_late")).intValue()).isZero());
-        List<Map<String, Object>> gst = JsonPath.read(report("gst"), "$.rows[?(@.customer == 'Rekha')]");
-        assertThat(gst)
-                .singleElement()
-                .satisfies(
-                        r -> assertThat(((Number) r.get("total")).longValue()).isEqualTo(800));
 
         var sales = report("sales");
         long invoiced = ((Number) JsonPath.read(sales, "$.totals.total")).longValue();
