@@ -69,6 +69,12 @@ export default function MoneyPage() {
         <ListRow href="/money/dues/" icon={BankIcon} title="Dues" subtitle="Who owes what, oldest first" />
         <ListRow href="/money/invoices/" icon={DocumentIcon} title="Invoices" subtitle="Tax invoices and GST" />
         <ListRow
+          href="/money/credit-notes/"
+          icon={DocumentIcon}
+          title="Credit notes"
+          subtitle="Returns and corrections against invoices"
+        />
+        <ListRow
           href="/money/expenses/"
           icon={ReceiptIcon}
           title="Expenses"

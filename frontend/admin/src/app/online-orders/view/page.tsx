@@ -23,6 +23,10 @@ function OnlineOrder() {
         : null,
     [invoiceNumber],
   );
+  const creditNotes = useLoad(
+    async () => (invoice.value ? (await api.admin.money.invoice(invoice.value.id)).creditNotes : []),
+    [invoice.value?.id],
+  );
 
   return (
     <section className="mx-auto max-w-3xl">
@@ -36,6 +40,14 @@ function OnlineOrder() {
               <Link href={`/money/invoices/view/?id=${invoice.value.id}`} className="text-accent-ink underline">
                 Invoice {invoiceNumber}
               </Link>
+              {(creditNotes.value ?? []).map((n) => (
+                <span key={n.id}>
+                  {" · "}
+                  <Link href={`/money/credit-notes/view/?id=${n.id}`} className="text-accent-ink underline">
+                    Credit note {n.number}
+                  </Link>
+                </span>
+              ))}
             </li>
           )}
           <OnlineOrderCard order={order.value} onChange={order.setValue} canRefund={staff?.role === "OWNER"} />
