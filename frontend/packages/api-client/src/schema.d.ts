@@ -644,6 +644,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/accounts/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getSettings"];
+        put: operations["saveSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/periods/{month}/lock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["lockPeriod"];
+        post?: never;
+        delete: operations["unlockPeriod"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/opening-balances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getOpeningBalances"];
+        put: operations["saveOpeningBalances"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/accounts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateAccount"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/webhooks/razorpay": {
         parameters: {
             query?: never;
@@ -1908,6 +1972,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/accounts/sweep": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["sweep"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/journal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listJournal"];
+        put?: never;
+        post: operations["postManual"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/journal/{id}/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reverse"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listAccounts"];
+        put?: never;
+        post: operations["createAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/store/shop": {
         parameters: {
             query?: never;
@@ -2740,6 +2868,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/accounts/trial-balance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["trialBalance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/problems": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listProblems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/periods": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listPeriods"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/journal/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getJournalEntry"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/accounts/{id}/ledger": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ledger"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/workshop/pieces/{pieceId}/photos/{photoId}": {
         parameters: {
             query?: never;
@@ -3254,7 +3478,7 @@ export interface components {
         };
         NumberSequence: {
             /** @enum {string} */
-            kind: "ORDER" | "INVOICE" | "ALTERATION" | "ITEM" | "WEB_ORDER" | "CREDIT_NOTE" | "STOCK_ITEM" | "PRODUCT";
+            kind: "ORDER" | "INVOICE" | "ALTERATION" | "ITEM" | "WEB_ORDER" | "CREDIT_NOTE" | "STOCK_ITEM" | "PRODUCT" | "JOURNAL";
             prefix: string;
             /** Format: int64 */
             nextValue: number;
@@ -3824,6 +4048,69 @@ export interface components {
             name: string;
             /** Format: int64 */
             taxClassId: number | null;
+        };
+        BooksSettingsForm: {
+            /** Format: date */
+            startDate: string | null;
+            modeAccounts: {
+                [key: string]: number;
+            };
+        };
+        BooksSettings: {
+            /** Format: date */
+            startDate: string | null;
+            modeAccounts: {
+                [key: string]: number;
+            };
+            /** Format: date-time */
+            lastSweepAt: string | null;
+        };
+        PeriodStatus: {
+            /** Format: date */
+            month: string;
+            locked: boolean;
+            lockedBy: string | null;
+            /** Format: date-time */
+            lockedAt: string | null;
+        };
+        OpeningBalanceLine: {
+            /** Format: int64 */
+            accountId: number;
+            debitRupees: number;
+            creditRupees: number;
+        };
+        OpeningBalancesForm: {
+            lines: components["schemas"]["OpeningBalanceLine"][];
+        };
+        OpeningBalances: {
+            /** Format: date */
+            startDate: string | null;
+            /** Format: int64 */
+            entryId: number | null;
+            entryNumber: string | null;
+            lines: components["schemas"]["OpeningBalanceLine"][];
+        };
+        AccountForm: {
+            code: string;
+            name: string;
+            /** @enum {string} */
+            type: "ASSET" | "LIABILITY" | "EQUITY" | "INCOME" | "EXPENSE";
+            /** Format: int64 */
+            parentId: number | null;
+            active: boolean | null;
+        };
+        Account: {
+            /** Format: int64 */
+            id: number;
+            code: string;
+            name: string;
+            /** @enum {string} */
+            type: "ASSET" | "LIABILITY" | "EQUITY" | "INCOME" | "EXPENSE";
+            /** Format: int64 */
+            parentId: number | null;
+            systemKey: string | null;
+            active: boolean;
+            balanceRupees: number;
         };
         TrackOrderRequest: {
             number: string;
@@ -4715,6 +5002,67 @@ export interface components {
             /** @enum {string|null} */
             settlement: "REFUND" | "KEEP" | null;
         };
+        SweepResult: {
+            /** Format: int32 */
+            posted: number;
+            /** Format: int32 */
+            problems: number;
+        };
+        ManualEntryForm: {
+            /** Format: date */
+            date: string;
+            narration: string;
+            lines: components["schemas"]["ManualEntryLineInput"][];
+        };
+        ManualEntryLineInput: {
+            /** Format: int64 */
+            accountId: number;
+            /** Format: int64 */
+            partyId: number | null;
+            debitRupees: number | null;
+            creditRupees: number | null;
+            memo: string | null;
+        };
+        JournalEntry: {
+            /** Format: int64 */
+            id: number;
+            number: string;
+            /** Format: date */
+            date: string;
+            sourceType: string;
+            /** Format: int64 */
+            sourceId: number | null;
+            sourceStep: string;
+            narration: string;
+            orderKey: string | null;
+            /** Format: int64 */
+            reversesId: number | null;
+            /** Format: int64 */
+            reversedById: number | null;
+            createdBy: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            sourceLink: components["schemas"]["JournalSourceLink"] | null;
+            lines: components["schemas"]["JournalEntryLine"][];
+        };
+        JournalEntryLine: {
+            /** Format: int64 */
+            accountId: number;
+            accountCode: string;
+            accountName: string;
+            /** Format: int64 */
+            partyId: number | null;
+            partyName: string | null;
+            debitRupees: number;
+            creditRupees: number;
+            memo: string | null;
+        };
+        JournalSourceLink: {
+            type: string;
+            /** Format: int64 */
+            id: number;
+            label: string;
+        };
         ShopContact: {
             name: string;
             phone: string | null;
@@ -5454,6 +5802,95 @@ export interface components {
             page: number;
             /** Format: int32 */
             pageSize: number;
+        };
+        TrialBalance: {
+            /** Format: date */
+            asOf: string;
+            lines: components["schemas"]["TrialBalanceLine"][];
+            totalDebitRupees: number;
+            totalCreditRupees: number;
+            balanced: boolean;
+        };
+        TrialBalanceLine: {
+            /** Format: int64 */
+            accountId: number;
+            code: string;
+            name: string;
+            /** @enum {string} */
+            type: "ASSET" | "LIABILITY" | "EQUITY" | "INCOME" | "EXPENSE";
+            debitRupees: number;
+            creditRupees: number;
+        };
+        AccountsStatus: {
+            /** Format: date */
+            startDate: string | null;
+            /** Format: date-time */
+            lastSweepAt: string | null;
+            /** Format: int32 */
+            problemCount: number;
+            trialBalanceDifference: number;
+        };
+        PostingProblem: {
+            sourceType: string;
+            /** Format: int64 */
+            sourceId: number;
+            sourceStep: string;
+            message: string;
+            /** Format: date-time */
+            firstSeen: string;
+            /** Format: date-time */
+            lastSeen: string;
+        };
+        JournalListItem: {
+            /** Format: int64 */
+            id: number;
+            number: string;
+            /** Format: date */
+            date: string;
+            narration: string;
+            sourceType: string;
+            sourceStep: string;
+            totalRupees: number;
+            reversed: boolean;
+        };
+        JournalPage: {
+            items: components["schemas"]["JournalListItem"][];
+            /** Format: int64 */
+            total: number;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            size: number;
+        };
+        LedgerStatement: {
+            /** Format: int64 */
+            accountId: number;
+            accountCode: string;
+            accountName: string;
+            /** @enum {string} */
+            type: "ASSET" | "LIABILITY" | "EQUITY" | "INCOME" | "EXPENSE";
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            openingRupees: number;
+            totalDebitRupees: number;
+            totalCreditRupees: number;
+            closingRupees: number;
+            lines: components["schemas"]["LedgerStatementLine"][];
+        };
+        LedgerStatementLine: {
+            /** Format: int64 */
+            entryId: number;
+            number: string;
+            /** Format: date */
+            date: string;
+            narration: string;
+            partyName: string | null;
+            memo: string | null;
+            debitRupees: number;
+            creditRupees: number;
+            balanceRupees: number;
         };
     };
     responses: never;
@@ -7058,6 +7495,164 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AdminCategory"];
+                };
+            };
+        };
+    };
+    getSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BooksSettings"];
+                };
+            };
+        };
+    };
+    saveSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BooksSettingsForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BooksSettings"];
+                };
+            };
+        };
+    };
+    lockPeriod: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                month: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PeriodStatus"][];
+                };
+            };
+        };
+    };
+    unlockPeriod: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                month: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PeriodStatus"][];
+                };
+            };
+        };
+    };
+    getOpeningBalances: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["OpeningBalances"];
+                };
+            };
+        };
+    };
+    saveOpeningBalances: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpeningBalancesForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["OpeningBalances"];
+                };
+            };
+        };
+    };
+    updateAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Account"];
                 };
             };
         };
@@ -9437,6 +10032,142 @@ export interface operations {
             };
         };
     };
+    sweep: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SweepResult"];
+                };
+            };
+        };
+    };
+    listJournal: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                from?: string | null;
+                to?: string | null;
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["JournalPage"];
+                };
+            };
+        };
+    };
+    postManual: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManualEntryForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["JournalEntry"];
+                };
+            };
+        };
+    };
+    reverse: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["JournalEntry"];
+                };
+            };
+        };
+    };
+    listAccounts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Account"][];
+                };
+            };
+        };
+    };
+    createAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Account"];
+                };
+            };
+        };
+    };
     getShopContact: {
         parameters: {
             query?: never;
@@ -10651,6 +11382,135 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ActivityPage"];
+                };
+            };
+        };
+    };
+    trialBalance: {
+        parameters: {
+            query?: {
+                asOf?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TrialBalance"];
+                };
+            };
+        };
+    };
+    getStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AccountsStatus"];
+                };
+            };
+        };
+    };
+    listProblems: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PostingProblem"][];
+                };
+            };
+        };
+    };
+    listPeriods: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PeriodStatus"][];
+                };
+            };
+        };
+    };
+    getJournalEntry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["JournalEntry"];
+                };
+            };
+        };
+    };
+    ledger: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LedgerStatement"];
                 };
             };
         };
