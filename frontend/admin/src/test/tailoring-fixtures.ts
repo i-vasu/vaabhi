@@ -221,6 +221,7 @@ export const serviceProducts: ServiceProduct[] = [
     photoKey: null,
     stageCosts: [{ stageId: 2, rupees: 150 }],
     profitRupees: 350,
+    taxClassId: null,
   },
 ];
 
@@ -289,8 +290,34 @@ export const invoice: Invoice = {
   buyer: { name: "Meera Iyer", phone: "+919876500001", address: null, state: null },
   issuedOn: "2026-11-02",
   lines: [
-    { description: "3 dart blouse (Maroon)", quantity: 2, unitRupees: 500, amountRupees: 1000 },
-    { description: "Fall & pico", quantity: 1, unitRupees: 100, amountRupees: 100 },
+    {
+      id: 1,
+      description: "3 dart blouse (Maroon)",
+      quantity: 2,
+      unitRupees: 500,
+      amountRupees: 1000,
+      discountRupees: 0,
+      hsnCode: "6204",
+      gstRate: 0,
+      taxableRupees: 1000,
+      cgstRupees: 0,
+      sgstRupees: 0,
+      igstRupees: 0,
+    },
+    {
+      id: 2,
+      description: "Fall & pico",
+      quantity: 1,
+      unitRupees: 100,
+      amountRupees: 100,
+      discountRupees: 0,
+      hsnCode: "6204",
+      gstRate: 0,
+      taxableRupees: 100,
+      cgstRupees: 0,
+      sgstRupees: 0,
+      igstRupees: 0,
+    },
   ],
   discountRupees: 110,
   orderTotalRupees: 990,
@@ -299,6 +326,9 @@ export const invoice: Invoice = {
   taxableRupees: 942.86,
   cgstRupees: 23.57,
   sgstRupees: 23.57,
+  igstRupees: 0,
+  placeOfSupply: "Telangana",
+  supplyType: "INTRA_STATE",
   totalRupees: 990,
   paidRupees: 300,
   balanceRupees: 690,
@@ -308,6 +338,7 @@ export const invoice: Invoice = {
   createdAt: "2026-11-02T12:00:00+05:30",
   cancelledAt: null,
   cancelledBy: null,
+  creditNotes: [],
 };
 
 export const invoicePage: InvoicePage = {

@@ -197,6 +197,7 @@ describe("orders & production", () => {
           { key: "sleeve_length", label: "Sleeve length", unit: "in" },
           { key: "neck_style", label: "Neck style", unit: "" },
         ],
+        taxClassId: null,
       }),
     );
   });
@@ -230,14 +231,16 @@ describe("billing & tax", () => {
 
     fireEvent.click(await screen.findByRole("switch", { name: "Charge GST" }));
     type("GSTIN", "27abcde1234f1z5");
-    type("Default GST rate %", "12");
+    await screen.findByRole("option", { name: "Tailoring service" });
+    fireEvent.change(screen.getByLabelText("Default tax class"), { target: { value: "2" } });
     fireEvent.change(screen.getByLabelText("Discount comes off"), { target: { value: "ITEMS_BEFORE_TAX" } });
     click("Save GST settings");
     await waitFor(() =>
       expect(saved.billing).toMatchObject({
         chargeGst: true,
         gstin: "27ABCDE1234F1Z5",
-        defaultGstRate: 12,
+        defaultGstRate: 5,
+        defaultTaxClassId: 2,
         discountAppliesTo: "ITEMS_BEFORE_TAX",
       }),
     );
@@ -273,6 +276,14 @@ describe("billing & tax", () => {
         },
       }),
     );
+  });
+
+  it("lists tax classes with their rate text", async () => {
+    render(<BillingPage />);
+
+    expect(await screen.findByText("5% up to ₹2,500, then 18%")).toBeInTheDocument();
+    expect(screen.getByLabelText("Sarees")).toHaveValue("");
+    expect(screen.getByRole("option", { name: "Default (Apparel)" })).toBeInTheDocument();
   });
 
   it("previews padded numbers", () => {

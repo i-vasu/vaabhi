@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { GarmentField, GarmentTemplate } from "@vaabhi/api-client";
+import type { GarmentField, GarmentTemplate, TaxClass } from "@vaabhi/api-client";
 import { PlusIcon, RulerIcon, TrashIcon } from "@/components/icons";
 import {
   EmptyState,
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui";
 import { api } from "@/lib/api";
 import { describeError } from "@/lib/settings";
+import { useLoad } from "@/lib/tailoring";
 
 const audiences: { value: GarmentTemplate["businessType"]; label: string }[] = [
   { value: "ALL", label: "Everyone" },
@@ -34,12 +35,14 @@ export function fieldKey(label: string): string {
   return /^[a-z]/.test(key) ? key : `m_${key}`;
 }
 
-const blank: GarmentTemplate = { id: null, name: "", businessType: "ALL", fields: [] };
+const blank: GarmentTemplate = { id: null, name: "", businessType: "ALL", fields: [], taxClassId: null };
 
 export default function GarmentTemplatesPage() {
   const [templates, setTemplates] = useState<GarmentTemplate[]>();
   const [loadError, setLoadError] = useState<string | null>(null);
   const [editing, setEditing] = useState<GarmentTemplate | null>(null);
+  const taxClasses = useLoad(() => api.admin.money.taxClasses.list(), []);
+  const billing = useLoad(() => api.admin.settings.get("billing"), []);
 
   const reload = () =>
     api.admin.settings
@@ -93,6 +96,8 @@ export default function GarmentTemplatesPage() {
       {editing && (
         <TemplateSheet
           template={editing}
+          taxClasses={taxClasses.value ?? []}
+          defaultTaxClassId={billing.value?.defaultTaxClassId ?? null}
           onClose={() => setEditing(null)}
           onSaved={() => {
             setEditing(null);
@@ -106,10 +111,14 @@ export default function GarmentTemplatesPage() {
 
 function TemplateSheet({
   template,
+  taxClasses,
+  defaultTaxClassId,
   onClose,
   onSaved,
 }: {
   template: GarmentTemplate;
+  taxClasses: TaxClass[];
+  defaultTaxClassId: number | null;
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -155,6 +164,15 @@ function TemplateSheet({
           options={audiences}
           value={draft.businessType}
           onChange={(businessType) => setDraft({ ...draft, businessType })}
+        />
+        <SelectField
+          label="Tax class"
+          options={[
+            { value: "", label: `Default (${taxClasses.find((c) => c.id === defaultTaxClassId)?.name ?? "none"})` },
+            ...taxClasses.map((c) => ({ value: String(c.id), label: c.name })),
+          ]}
+          value={draft.taxClassId === null ? "" : String(draft.taxClassId)}
+          onChange={(value) => setDraft({ ...draft, taxClassId: value === "" ? null : Number(value) })}
         />
         <div>
           <p className="mb-2 text-sm font-medium text-ink-soft">Measurements</p>

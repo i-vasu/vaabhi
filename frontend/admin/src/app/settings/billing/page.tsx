@@ -1,8 +1,11 @@
 "use client";
 
-import type { BillingSettings, NumberSequence } from "@vaabhi/api-client";
-import { BankIcon, DocumentIcon } from "@/components/icons";
+import { useState } from "react";
+import type { BillingSettings, NumberSequence, TaxClass, TaxClassForm } from "@vaabhi/api-client";
+import { BankIcon, DocumentIcon, PlusIcon, TagIcon, TrashIcon } from "@/components/icons";
+import { ErrorNote } from "@/components/tailoring";
 import {
+  EmptyState,
   ListCard,
   ListRow,
   LoadState,
@@ -10,12 +13,38 @@ import {
   SaveBar,
   SectionLabel,
   SelectField,
+  Sheet,
   TextField,
   ToggleRow,
+  buttonPrimary,
+  buttonSecondary,
 } from "@/components/ui";
 import { api } from "@/lib/api";
 import { orNull, useSaveable, useSection } from "@/lib/settings";
-import { useLoad } from "@/lib/tailoring";
+import { useAction, useLoad } from "@/lib/tailoring";
+
+const kinds: { value: TaxClass["kind"]; label: string }[] = [
+  { value: "GOODS", label: "Goods (HSN)" },
+  { value: "SERVICE", label: "Service (SAC)" },
+];
+
+const blankClass: TaxClass = {
+  id: 0,
+  name: "",
+  kind: "GOODS",
+  hsnCode: "",
+  ratePercent: 0,
+  slabLimitRupees: null,
+  rateAbovePercent: null,
+  inUse: false,
+};
+
+/** "5% up to ₹2,500, then 18%", or just "5%" when the rate does not change with the price. */
+export function rateText(taxClass: TaxClass): string {
+  if (taxClass.slabLimitRupees === null || taxClass.rateAbovePercent === null) return `${taxClass.ratePercent}%`;
+  const limit = taxClass.slabLimitRupees.toLocaleString("en-IN", { maximumFractionDigits: 2 });
+  return `${taxClass.ratePercent}% up to ₹${limit}, then ${taxClass.rateAbovePercent}%`;
+}
 
 const discountBases: { value: BillingSettings["discountAppliesTo"]; label: string }[] = [
   { value: "ORDER_TOTAL", label: "Order total" },
@@ -55,7 +84,12 @@ export default function BillingPage() {
   const billing = useSection("billing");
   const numbering = useSaveable(api.admin.settings.numbering, api.admin.settings.saveNumbering);
   const states = useLoad(() => api.admin.settings.states(), []);
+  const taxClasses = useLoad(() => api.admin.money.taxClasses.list(), []);
+  const categories = useLoad(() => api.admin.categories.list(), []);
+  const categoryAction = useAction();
+  const [editing, setEditing] = useState<TaxClass | null>(null);
   const b = billing.value;
+  const defaultName = taxClasses.value?.find((c) => c.id === b?.defaultTaxClassId)?.name ?? "none";
   const company = b?.company ?? { legalName: null, cin: null, registeredOffice: null, state: null };
 
   return (
@@ -74,6 +108,10 @@ export default function BillingPage() {
               checked={b.chargeGst}
               onChange={(chargeGst) => billing.update({ chargeGst })}
             />
+            <p className="px-4 pb-3 text-sm text-ink-faint">
+              When on: each line is taxed by its tax class, orders to other states get IGST, and bills are titled Tax
+              Invoice. Check the rates with your CA first.
+            </p>
             <div className="px-4 pb-4">
               <TextField
                 label="GSTIN"
@@ -89,13 +127,16 @@ export default function BillingPage() {
           <div className="mt-4">
             <ListCard>
               <div className="grid gap-4 p-4 sm:grid-cols-2">
-                <TextField
-                  label="Default GST rate %"
-                  hint="Starting rate for a new category"
-                  inputMode="decimal"
-                  value={b.defaultGstRate}
-                  onChange={(event) => billing.update({ defaultGstRate: Number(event.target.value) || 0 })}
-                  error={billing.fieldError("defaultGstRate")}
+                <SelectField
+                  label="Default tax class"
+                  hint="Used for anything without a tax class of its own"
+                  options={[
+                    { value: "", label: "None" },
+                    ...(taxClasses.value ?? []).map((c) => ({ value: String(c.id), label: c.name })),
+                  ]}
+                  value={b.defaultTaxClassId === null ? "" : String(b.defaultTaxClassId)}
+                  onChange={(value) => billing.update({ defaultTaxClassId: value === "" ? null : Number(value) })}
+                  error={billing.fieldError("defaultTaxClassId")}
                 />
                 <SelectField
                   label="Discount comes off"
@@ -180,6 +221,83 @@ export default function BillingPage() {
             onSave={() => void billing.save()}
           />
         </>
+      )}
+
+      <SectionLabel>Tax classes</SectionLabel>
+      <div className="mb-3 flex justify-end">
+        <button type="button" className={buttonSecondary} onClick={() => setEditing(blankClass)}>
+          <PlusIcon size={18} /> Add tax class
+        </button>
+      </div>
+      {!taxClasses.value ? (
+        <LoadState loading={taxClasses.loading} error={taxClasses.error} />
+      ) : taxClasses.value.length === 0 ? (
+        <EmptyState icon={TagIcon} title="No tax classes yet">
+          Add a tax class with its HSN or SAC code and rate.
+        </EmptyState>
+      ) : (
+        <ListCard>
+          {taxClasses.value.map((taxClass) => (
+            <button
+              key={taxClass.id}
+              type="button"
+              className="block w-full text-left hover:bg-panel-2"
+              onClick={() => setEditing(taxClass)}
+            >
+              <ListRow
+                title={taxClass.name}
+                subtitle={`${taxClass.kind === "GOODS" ? "HSN" : "SAC"} ${taxClass.hsnCode}`}
+                trailing={rateText(taxClass)}
+              />
+            </button>
+          ))}
+        </ListCard>
+      )}
+      <p className="mt-2 text-sm text-ink-faint">
+        The starting rates are placeholders. Confirm them with your CA before you charge GST.
+      </p>
+      {editing && (
+        <TaxClassSheet
+          taxClass={editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => {
+            setEditing(null);
+            taxClasses.reload();
+          }}
+        />
+      )}
+
+      <SectionLabel>Tax by category</SectionLabel>
+      {!categories.value ? (
+        <LoadState loading={categories.loading} error={categories.error} />
+      ) : categories.value.length === 0 ? (
+        <EmptyState icon={TagIcon} title="No categories yet">
+          Categories added in the catalogue show up here.
+        </EmptyState>
+      ) : (
+        <div className="rounded-2xl border border-line bg-panel p-4">
+          <ErrorNote>{categoryAction.error}</ErrorNote>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {categories.value.map((category) => (
+              <SelectField
+                key={category.id}
+                label={category.name}
+                options={[
+                  { value: "", label: `Default (${defaultName})` },
+                  ...(taxClasses.value ?? []).map((c) => ({ value: String(c.id), label: c.name })),
+                ]}
+                value={category.taxClassId === null ? "" : String(category.taxClassId)}
+                disabled={categoryAction.busy}
+                onChange={async (value) => {
+                  const done = await categoryAction.run(() =>
+                    api.admin.categories.setTaxClass(category.id, value === "" ? null : Number(value)).then(() => true),
+                  );
+                  if (done) categories.reload();
+                }}
+              />
+            ))}
+          </div>
+        </div>
       )}
 
       <SectionLabel>Numbering</SectionLabel>
@@ -267,4 +385,101 @@ export default function BillingPage() {
   function replaceSequence(index: number, sequence: NumberSequence) {
     numbering.setValue(numbering.value!.map((s, i) => (i === index ? sequence : s)));
   }
+}
+
+function TaxClassSheet({
+  taxClass,
+  onClose,
+  onSaved,
+}: {
+  taxClass: TaxClass;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const isNew = taxClass.id === 0;
+  const [name, setName] = useState(taxClass.name);
+  const [kind, setKind] = useState(taxClass.kind);
+  const [hsnCode, setHsnCode] = useState(taxClass.hsnCode);
+  const [rate, setRate] = useState(isNew ? "" : String(taxClass.ratePercent));
+  const [limit, setLimit] = useState(taxClass.slabLimitRupees === null ? "" : String(taxClass.slabLimitRupees));
+  const [above, setAbove] = useState(taxClass.rateAbovePercent === null ? "" : String(taxClass.rateAbovePercent));
+  const action = useAction();
+
+  async function save() {
+    const ratePercent = Number(rate);
+    if (!name.trim()) return action.setError("Enter the name.");
+    if (!hsnCode.trim()) return action.setError("Enter the HSN or SAC code.");
+    if (rate.trim() === "" || Number.isNaN(ratePercent)) return action.setError("Enter the rate.");
+    const hasLimit = limit.trim() !== "";
+    const hasAbove = above.trim() !== "";
+    if (hasLimit !== hasAbove) return action.setError("Enter both the limit and the rate above it, or neither.");
+    const form: TaxClassForm = {
+      name: name.trim(),
+      kind,
+      hsnCode: hsnCode.trim(),
+      ratePercent,
+      slabLimitRupees: hasLimit ? Number(limit) : null,
+      rateAbovePercent: hasAbove ? Number(above) : null,
+    };
+    if ((hasLimit && Number.isNaN(form.slabLimitRupees)) || (hasAbove && Number.isNaN(form.rateAbovePercent))) {
+      return action.setError("Enter the limit and the rate above it as numbers.");
+    }
+    const saved = await action.run(() =>
+      isNew ? api.admin.money.taxClasses.create(form) : api.admin.money.taxClasses.update(taxClass.id, form),
+    );
+    if (saved) onSaved();
+  }
+
+  return (
+    <Sheet open title={isNew ? "New tax class" : "Edit tax class"} onClose={onClose}>
+      <div className="flex flex-col gap-4">
+        <TextField label="Name" maxLength={60} value={name} onChange={(e) => setName(e.target.value)} />
+        <div className="grid grid-cols-2 gap-3">
+          <SelectField label="Kind" options={kinds} value={kind} onChange={setKind} />
+          <TextField
+            label="HSN / SAC code"
+            maxLength={8}
+            value={hsnCode}
+            onChange={(e) => setHsnCode(e.target.value)}
+          />
+        </div>
+        <TextField label="Rate %" inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} />
+        <div className="grid grid-cols-2 gap-3">
+          <TextField
+            label="Limit per piece (₹)"
+            hint="Optional"
+            inputMode="decimal"
+            value={limit}
+            onChange={(e) => setLimit(e.target.value)}
+          />
+          <TextField
+            label="Rate above limit %"
+            hint="Optional"
+            inputMode="decimal"
+            value={above}
+            onChange={(e) => setAbove(e.target.value)}
+          />
+        </div>
+        <ErrorNote>{action.error}</ErrorNote>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className={buttonPrimary} disabled={action.busy} onClick={() => void save()}>
+            {action.busy ? "Saving…" : "Save tax class"}
+          </button>
+          {!isNew && (
+            <button
+              type="button"
+              className={`${buttonSecondary} text-bad`}
+              disabled={action.busy}
+              onClick={async () => {
+                const done = await action.run(() => api.admin.money.taxClasses.remove(taxClass.id).then(() => true));
+                if (done) onSaved();
+              }}
+            >
+              <TrashIcon size={18} /> Remove
+            </button>
+          )}
+        </div>
+      </div>
+    </Sheet>
+  );
 }

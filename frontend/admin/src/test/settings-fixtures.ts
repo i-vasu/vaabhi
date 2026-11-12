@@ -1,4 +1,5 @@
 import type {
+  AdminCategory,
   BillingSettings,
   CalendarSettings,
   DeliveryPackage,
@@ -12,6 +13,7 @@ import type {
   ProductionStage,
   SettingsSections,
   ShopProfile,
+  TaxClass,
   WatermarkSettings,
 } from "@vaabhi/api-client";
 import { http, HttpResponse } from "msw";
@@ -55,7 +57,33 @@ export const billing: BillingSettings = {
   discountAppliesTo: "ORDER_TOTAL",
   autoInvoice: true,
   company: { legalName: null, cin: null, registeredOffice: null, state: null },
+  defaultTaxClassId: 1,
 };
+
+export const taxClasses: TaxClass[] = [
+  {
+    id: 1,
+    name: "Apparel",
+    kind: "GOODS",
+    hsnCode: "6211",
+    ratePercent: 5,
+    slabLimitRupees: 2500,
+    rateAbovePercent: 18,
+    inUse: true,
+  },
+  {
+    id: 2,
+    name: "Tailoring service",
+    kind: "SERVICE",
+    hsnCode: "9988",
+    ratePercent: 5,
+    slabLimitRupees: null,
+    rateAbovePercent: null,
+    inUse: false,
+  },
+];
+
+export const adminCategories: AdminCategory[] = [{ id: 1, name: "Sarees", taxClassId: null }];
 
 export const states = [
   { name: "Andhra Pradesh", code: "37" },
@@ -149,6 +177,7 @@ export const garmentTemplates: GarmentTemplate[] = [
       { key: "bust", label: "Bust", unit: "in" },
       { key: "waist", label: "Waist", unit: "in" },
     ],
+    taxClassId: null,
   },
 ];
 
@@ -193,6 +222,8 @@ export function serveSettings(): { saved: Record<string, unknown> } {
     http.get(`${API}/api/v1/admin/settings/delivery-packages`, () => HttpResponse.json(deliveryPackages)),
     echo("delivery-packages"),
     http.get(`${API}/api/v1/admin/settings/garment-templates`, () => HttpResponse.json(garmentTemplates)),
+    http.get(`${API}/api/v1/admin/money/tax-classes`, () => HttpResponse.json(taxClasses)),
+    http.get(`${API}/api/v1/admin/categories`, () => HttpResponse.json(adminCategories)),
   );
   return { saved };
 }
