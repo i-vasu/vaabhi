@@ -18,6 +18,7 @@ import org.jspecify.annotations.Nullable;
  * @param taxableRupees value before GST
  * @param totalRupees what the customer pays in all (order total, plus GST when prices exclude it)
  * @param paidRupees what has been paid on the order so far (live)
+ * @param creditNotes the credit notes issued against this invoice, oldest first
  */
 public record Invoice(
         long id,
@@ -49,7 +50,8 @@ public record Invoice(
         @Nullable String createdBy,
         OffsetDateTime createdAt,
         @Nullable OffsetDateTime cancelledAt,
-        @Nullable String cancelledBy) {
+        @Nullable String cancelledBy,
+        List<CreditNoteSummary> creditNotes) {
 
     public enum Source {
         SHOP,

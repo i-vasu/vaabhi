@@ -1,5 +1,7 @@
 package com.vaabhi.checkout;
 
+import com.vaabhi.money.CreditNoteService;
+import com.vaabhi.money.StoreCreditNote;
 import com.vaabhi.money.StoreInvoice;
 import com.vaabhi.money.WebInvoiceService;
 import jakarta.validation.Valid;
@@ -24,11 +26,17 @@ class CheckoutController {
     private final CheckoutService service;
     private final WebOrderReturns returns;
     private final WebInvoiceService webInvoices;
+    private final CreditNoteService creditNotes;
 
-    CheckoutController(CheckoutService service, WebOrderReturns returns, WebInvoiceService webInvoices) {
+    CheckoutController(
+            CheckoutService service,
+            WebOrderReturns returns,
+            WebInvoiceService webInvoices,
+            CreditNoteService creditNotes) {
         this.service = service;
         this.returns = returns;
         this.webInvoices = webInvoices;
+        this.creditNotes = creditNotes;
     }
 
     /** Places the order and returns what Razorpay Checkout needs to take the payment. */
@@ -88,6 +96,12 @@ class CheckoutController {
         return webInvoices
                 .forCustomer(number, customerId(jwt))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No invoice for this order"));
+    }
+
+    /** The credit notes on one of the customer's orders (a cancel or an accepted return); empty when none. */
+    @GetMapping("/orders/{number}/credit-notes")
+    List<StoreCreditNote> getMyCreditNotes(@AuthenticationPrincipal Jwt jwt, @PathVariable("number") String number) {
+        return creditNotes.forCustomer(number, customerId(jwt));
     }
 
     private static long customerId(Jwt jwt) {

@@ -1,6 +1,7 @@
 package com.vaabhi.checkout;
 
 import com.vaabhi.catalog.CatalogStock;
+import com.vaabhi.money.CreditNoteService;
 import com.vaabhi.shared.rupees.Rupees;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,13 +32,16 @@ public class WebOrderReturns {
     private final RazorpayClient razorpay;
     private final CatalogStock stock;
     private final ApplicationEventPublisher events;
+    private final CreditNoteService creditNotes;
 
     WebOrderReturns(
             JdbcClient jdbc,
             CheckoutService orders,
             RazorpayClient razorpay,
             CatalogStock stock,
-            ApplicationEventPublisher events) {
+            ApplicationEventPublisher events,
+            CreditNoteService creditNotes) {
+        this.creditNotes = creditNotes;
         this.jdbc = jdbc;
         this.orders = orders;
         this.razorpay = razorpay;
@@ -192,8 +196,28 @@ public class WebOrderReturns {
                 .list()
                 .forEach(e -> back.merge(e.getKey(), e.getValue(), Integer::sum));
         stock.restore(back);
+        creditForReturn(returnNumber);
         publish(WebOrderReturnEvent.Type.REFUNDED, current.orderNumber(), returnNumber);
         return orders.shopOrder(current.orderNumber());
+    }
+
+    private record ReturnIds(long id, long orderId) {}
+
+    /** The returned items come back on a credit note against the order's invoice (none if it never shipped). */
+    private void creditForReturn(String returnNumber) {
+        var ids = jdbc.sql("SELECT id, order_id FROM web_order_return WHERE number = :number")
+                .param(NUMBER, returnNumber)
+                .query(ReturnIds.class)
+                .single();
+        Map<Long, Integer> byLine = new LinkedHashMap<>();
+        jdbc.sql("SELECT order_line_id, quantity FROM web_order_return_line WHERE return_id = :return")
+                .param("return", ids.id())
+                .query((rs, n) -> {
+                    byLine.merge(rs.getLong("order_line_id"), rs.getInt("quantity"), Integer::sum);
+                    return n;
+                })
+                .list();
+        creditNotes.issueForReturn(ids.id(), ids.orderId(), byLine, null);
     }
 
     // --- for the Shiprocket return pickup ------------------------------------------------------------------------

@@ -572,7 +572,7 @@ public class CheckoutService {
                     .optional()
                     .orElseThrow(() -> conflict("This order was cancelled or moved on just now. Reload it."));
             stock.restore(soldBySku(id));
-            webInvoices.cancelFor(id, null);
+            webInvoices.creditFor(id, null);
             publish(WebOrderEvent.Type.CANCELLED, number);
         });
         if (refundOwed != null) {

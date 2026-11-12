@@ -21,10 +21,12 @@ public class WebInvoiceService {
 
     private final JdbcClient jdbc;
     private final InvoiceService invoices;
+    private final CreditNoteService creditNotes;
 
-    WebInvoiceService(JdbcClient jdbc, InvoiceService invoices) {
+    WebInvoiceService(JdbcClient jdbc, InvoiceService invoices, CreditNoteService creditNotes) {
         this.jdbc = jdbc;
         this.invoices = invoices;
+        this.creditNotes = creditNotes;
     }
 
     /** The web order's live invoice, issuing one first if it has none. */
@@ -98,10 +100,13 @@ public class WebInvoiceService {
         return numbers;
     }
 
-    /** Cancels the web order's live invoice; nothing to do when it has none. */
+    /**
+     * A cancelled web order's live invoice is reversed by a full credit note for whatever is not credited yet;
+     * nothing to do when it has no invoice or is already fully credited.
+     */
     @Transactional
-    public void cancelFor(long webOrderId, @Nullable String actor) {
-        liveId(webOrderId).ifPresent(id -> invoices.cancel(id, actor));
+    public void creditFor(long webOrderId, @Nullable String actor) {
+        liveId(webOrderId).ifPresent(id -> creditNotes.issueRemaining(id, CreditNote.Reason.CANCELLED, null, actor));
     }
 
     /** The live invoice of one of this customer's own orders, by order number. */

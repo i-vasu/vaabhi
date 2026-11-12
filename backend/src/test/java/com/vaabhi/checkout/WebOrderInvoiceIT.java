@@ -105,7 +105,7 @@ class WebOrderInvoiceIT {
     }
 
     @Test
-    void cancelBeforeShipWithInvoiceCancelsIt() throws Exception {
+    void cancelBeforeShipWithInvoiceIssuesCreditNote() throws Exception {
         String number = placeCodOrder(customer);
         var invoice = checkoutService.invoiceFor(number);
 
@@ -114,16 +114,19 @@ class WebOrderInvoiceIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"reason\":null}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("CANCELLED"))
-                .andExpect(jsonPath("$.invoiceNumber").doesNotExist());
+                .andExpect(jsonPath("$.status").value("CANCELLED"));
 
         assertThat(jdbc.sql("SELECT cancelled_at IS NOT NULL FROM invoice WHERE id = :id")
                         .param("id", invoice.id())
                         .query(Boolean.class)
                         .single())
-                .isTrue();
-        mockMvc.perform(get("/api/v1/customer/orders/" + number + "/invoice").with(customer))
-                .andExpect(status().isNotFound());
+                .isFalse();
+        mockMvc.perform(get("/api/v1/customer/orders/" + number + "/credit-notes")
+                        .with(customer))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].reason").value("CANCELLED"))
+                .andExpect(jsonPath("$[0].invoiceNumber").value(invoice.number()));
     }
 
     @Test

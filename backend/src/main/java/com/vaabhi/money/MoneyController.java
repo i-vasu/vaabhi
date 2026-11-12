@@ -30,6 +30,7 @@ class MoneyController {
     private final ExpenseService expenses;
     private final LedgerService ledger;
     private final TaxClassService taxClasses;
+    private final CreditNoteService creditNotes;
     private final Clock clock;
 
     MoneyController(
@@ -37,7 +38,9 @@ class MoneyController {
             ExpenseService expenses,
             LedgerService ledger,
             TaxClassService taxClasses,
+            CreditNoteService creditNotes,
             Clock clock) {
+        this.creditNotes = creditNotes;
         this.invoices = invoices;
         this.expenses = expenses;
         this.ledger = ledger;
@@ -78,6 +81,35 @@ class MoneyController {
     @PostMapping("/invoices/{id}/cancel")
     Invoice cancelInvoice(@PathVariable long id, @AuthenticationPrincipal @Nullable Jwt jwt) {
         return invoices.cancel(id, actor(jwt));
+    }
+
+    // --- credit notes -------------------------------------------------------------------------------------------
+
+    @PostMapping("/invoices/{id}/credit-notes")
+    @ResponseStatus(HttpStatus.CREATED)
+    CreditNote issueCreditNote(
+            @PathVariable long id,
+            @Valid @RequestBody CreditNoteForm form,
+            @AuthenticationPrincipal @Nullable Jwt jwt) {
+        return creditNotes.issue(id, form, actor(jwt));
+    }
+
+    @GetMapping("/invoices/{id}/credit-notes")
+    List<CreditNoteSummary> listInvoiceCreditNotes(@PathVariable long id) {
+        return creditNotes.forInvoice(id);
+    }
+
+    @GetMapping("/credit-notes")
+    CreditNotePage listCreditNotes(
+            @RequestParam(required = false) @Nullable String q,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return creditNotes.list(q, Math.max(1, page), Math.clamp(size, 1, 100));
+    }
+
+    @GetMapping("/credit-notes/{id}")
+    CreditNote getCreditNote(@PathVariable long id) {
+        return creditNotes.get(id);
     }
 
     /** The order's live invoice; 204 when it has none yet. */

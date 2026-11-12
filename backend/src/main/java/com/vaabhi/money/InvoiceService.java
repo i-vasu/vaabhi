@@ -43,6 +43,7 @@ public class InvoiceService {
     private final SettingsService settings;
     private final NumberingService numbering;
     private final TaxClassService taxClasses;
+    private final CreditNoteService creditNotes;
     private final Clock clock;
 
     InvoiceService(
@@ -52,8 +53,10 @@ public class InvoiceService {
             SettingsService settings,
             NumberingService numbering,
             TaxClassService taxClasses,
+            CreditNoteService creditNotes,
             Clock clock) {
         this.taxClasses = taxClasses;
+        this.creditNotes = creditNotes;
         this.jdbc = jdbc;
         this.orders = orders;
         this.clients = clients;
@@ -243,7 +246,7 @@ public class InvoiceService {
                 && liveInvoiceId(event.orderId()).isEmpty()) {
             issue(event.orderId(), event.actor());
         } else if (event.type() == OrderEvent.Type.CANCELLED) {
-            liveInvoiceId(event.orderId()).ifPresent(id -> cancel(id, event.actor()));
+            liveInvoiceId(event.orderId()).ifPresent(id -> voidOrCredit(id, event.actor()));
         } else if (event.type() == OrderEvent.Type.CHANGED
                 && liveInvoiceId(event.orderId()).isPresent()) {
             // An issued invoice is a tax record: the order cannot change under it (this rolls the change back).
@@ -258,6 +261,32 @@ public class InvoiceService {
         if (invoice.cancelledAt() != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This invoice was already cancelled");
         }
+        if (!invoice.issuedOn().equals(InvoiceParties.today(clock))
+                || !invoice.creditNotes().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Issue a credit note instead");
+        }
+        return voidInvoice(id, actor);
+    }
+
+    /**
+     * Cancels the invoice when that is still allowed (issued today, no credit notes), otherwise credits whatever is
+     * left of it in full; so cancelling an order is never blocked by the same-day rule.
+     */
+    @Transactional
+    public void voidOrCredit(long id, @Nullable String actor) {
+        var invoice = get(id);
+        if (invoice.cancelledAt() != null) {
+            return;
+        }
+        if (invoice.issuedOn().equals(InvoiceParties.today(clock))
+                && invoice.creditNotes().isEmpty()) {
+            voidInvoice(id, actor);
+        } else {
+            creditNotes.issueRemaining(id, CreditNote.Reason.CANCELLED, null, actor);
+        }
+    }
+
+    private Invoice voidInvoice(long id, @Nullable String actor) {
         jdbc.sql("UPDATE invoice SET cancelled_at = now(), cancelled_by = :by WHERE id = :id")
                 .param("by", actor)
                 .param(ID, id)
@@ -379,7 +408,8 @@ public class InvoiceService {
                 row.createdBy(),
                 row.createdAt(),
                 row.cancelledAt(),
-                row.cancelledBy());
+                row.cancelledBy(),
+                creditNotes.forInvoice(id));
     }
 
     private record SummaryRow(

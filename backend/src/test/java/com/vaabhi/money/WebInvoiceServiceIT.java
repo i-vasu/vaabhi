@@ -247,18 +247,6 @@ class WebInvoiceServiceIT {
     }
 
     @Test
-    void cancelForThenIssueGivesNewNumber() {
-        var order = order(customer());
-        var first = webInvoices.issueFor(request(order));
-
-        webInvoices.cancelFor(order.id(), "staff:1");
-        var second = webInvoices.issueFor(request(order));
-
-        assertThat(second.id()).isNotEqualTo(first.id());
-        assertThat(second.number()).isNotEqualTo(first.number());
-    }
-
-    @Test
     void forCustomerOtherCustomerEmpty() {
         var owner = customer();
         var order = order(owner);
