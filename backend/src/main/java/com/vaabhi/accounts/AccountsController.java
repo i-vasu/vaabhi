@@ -1,6 +1,7 @@
 package com.vaabhi.accounts;
 
 import jakarta.validation.Valid;
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -70,6 +71,10 @@ class AccountsController {
         return LocalDate.now(clock.withZone(SHOP_ZONE));
     }
 
+    private static BigDecimal orZero(@Nullable BigDecimal amount) {
+        return amount == null ? BigDecimal.ZERO : amount;
+    }
+
     private static YearMonth month(String text) {
         try {
             return YearMonth.parse(text);
@@ -126,7 +131,11 @@ class AccountsController {
     JournalEntry postManual(@Valid @RequestBody ManualEntryForm form, @AuthenticationPrincipal @Nullable Jwt jwt) {
         var lines = form.lines().stream()
                 .map(line -> new NewEntryLine(
-                        line.accountId(), line.partyId(), line.debitRupees(), line.creditRupees(), line.memo()))
+                        line.accountId(),
+                        line.partyId(),
+                        orZero(line.debitRupees()),
+                        orZero(line.creditRupees()),
+                        line.memo()))
                 .toList();
         return journal.post(
                 new NewEntry(form.date(), "MANUAL", null, "MANUAL", form.narration(), null, null, lines), actor(jwt));
@@ -156,7 +165,11 @@ class AccountsController {
     @PutMapping("/opening-balances")
     OpeningBalances saveOpeningBalances(
             @Valid @RequestBody OpeningBalancesForm form, @AuthenticationPrincipal @Nullable Jwt jwt) {
-        return opening.save(form.lines(), actor(jwt));
+        var lines = form.lines().stream()
+                .map(line -> new OpeningBalanceLine(
+                        line.accountId(), orZero(line.debitRupees()), orZero(line.creditRupees())))
+                .toList();
+        return opening.save(lines, actor(jwt));
     }
 
     // --- periods ------------------------------------------------------------------------------------------------

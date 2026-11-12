@@ -11,4 +11,6 @@ import java.util.List;
 public record ManualEntryForm(
         @NotNull LocalDate date,
         @NotBlank @Size(max = 200) String narration,
-        @Size(min = 2, message = "Add at least two lines") List<@Valid ManualEntryLineInput> lines) {}
+
+        @NotNull @Size(min = 2, message = "Add at least two lines")
+        List<@Valid ManualEntryLineInput> lines) {}

@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.vaabhi.TestcontainersConfiguration;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +56,8 @@ class AccountsControllerIT {
                   {"accountId":%d,"debitRupees":100.00,"creditRupees":0},
                   {"accountId":%d,"debitRupees":0,"creditRupees":%s}
                 ]}
-                """.formatted(LocalDate.now(), narration, accounts.get(0), accounts.get(1), creditAmount);
+                """.formatted(
+                LocalDate.now(ZoneId.of("Asia/Kolkata")), narration, accounts.get(0), accounts.get(1), creditAmount);
     }
 
     @Test
