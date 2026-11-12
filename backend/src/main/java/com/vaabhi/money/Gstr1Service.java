@@ -421,7 +421,7 @@ public class Gstr1Service {
         return docs;
     }
 
-    private @Nullable Gstr1.DocRange docRange(String sql, String nature, LocalDate from, LocalDate to) {
+    private Gstr1.@Nullable DocRange docRange(String sql, String nature, LocalDate from, LocalDate to) {
         var range = jdbc.sql(sql)
                 .param("from", from)
                 .param("to", to)
