@@ -132,20 +132,29 @@ public class ShopListService {
 
     // --- garment templates --------------------------------------------------------------------------------------
 
-    private record TemplateRow(long id, String name, GarmentTemplate.Audience businessType, String fields) {}
+    private record TemplateRow(
+            long id,
+            String name,
+            GarmentTemplate.Audience businessType,
+            String fields,
+            @Nullable Long taxClassId) {}
 
     private static final TypeReference<List<GarmentTemplate.Field>> FIELDS = new TypeReference<>() {};
 
     @Transactional(readOnly = true)
     public List<GarmentTemplate> garmentTemplates() {
         return jdbc
-                .sql("SELECT id, name, business_type, fields::text AS fields FROM garment_template WHERE active"
-                        + " ORDER BY position, id")
+                .sql("SELECT id, name, business_type, fields::text AS fields, tax_class_id FROM garment_template"
+                        + " WHERE active ORDER BY position, id")
                 .query(TemplateRow.class)
                 .list()
                 .stream()
                 .map(row -> new GarmentTemplate(
-                        row.id(), row.name(), row.businessType(), json.readValue(row.fields(), FIELDS)))
+                        row.id(),
+                        row.name(),
+                        row.businessType(),
+                        json.readValue(row.fields(), FIELDS),
+                        row.taxClassId()))
                 .toList();
     }
 
@@ -161,6 +170,13 @@ public class ShopListService {
     GarmentTemplate saveGarmentTemplate(@Nullable Long id, GarmentTemplate template) {
         requireUniqueNames(
                 template.fields().stream().map(GarmentTemplate.Field::key).toList());
+        if (template.taxClassId() != null
+                && !jdbc.sql("SELECT EXISTS (SELECT 1 FROM tax_class WHERE id = :id)")
+                        .param(ID, template.taxClassId())
+                        .query(Boolean.class)
+                        .single()) {
+            throw bad("Unknown tax class");
+        }
         var clash = jdbc.sql("SELECT id FROM garment_template WHERE active AND lower(name) = lower(:name)")
                 .param(NAME, template.name().trim())
                 .query(Long.class)
@@ -180,10 +196,12 @@ public class ShopListService {
         long savedId;
         if (revived != null) {
             int updated = jdbc.sql("UPDATE garment_template SET name = :name, business_type = :type,"
-                            + " fields = CAST(:fields AS jsonb), active = TRUE WHERE id = :id")
+                            + " fields = CAST(:fields AS jsonb), tax_class_id = :taxClass, active = TRUE"
+                            + " WHERE id = :id")
                     .param(NAME, template.name().trim())
                     .param("type", template.businessType().name())
                     .param("fields", fields)
+                    .param("taxClass", template.taxClassId())
                     .param(ID, revived)
                     .update();
             if (updated == 0) {
@@ -191,12 +209,13 @@ public class ShopListService {
             }
             savedId = revived;
         } else {
-            savedId = jdbc.sql("INSERT INTO garment_template (name, business_type, fields, position)"
-                            + " VALUES (:name, :type, CAST(:fields AS jsonb),"
+            savedId = jdbc.sql("INSERT INTO garment_template (name, business_type, fields, tax_class_id, position)"
+                            + " VALUES (:name, :type, CAST(:fields AS jsonb), :taxClass,"
                             + " (SELECT COALESCE(MAX(position), 0) + 1 FROM garment_template)) RETURNING id")
                     .param(NAME, template.name().trim())
                     .param("type", template.businessType().name())
                     .param("fields", fields)
+                    .param("taxClass", template.taxClassId())
                     .query(Long.class)
                     .single();
         }

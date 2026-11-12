@@ -12,12 +12,14 @@ import org.jspecify.annotations.Nullable;
  * The measurement form for one garment. Its fields appear on a new order and when adding a measurement.
  *
  * @param id null when creating
+ * @param taxClassId the tax class garments of this kind are billed under; null = shop default
  */
 public record GarmentTemplate(
         @Nullable Long id,
         @NotBlank @Size(max = 60) String name,
         @NotNull Audience businessType,
-        @NotNull @Size(min = 1, max = 40) List<@Valid Field> fields) {
+        @NotNull @Size(min = 1, max = 40) List<@Valid Field> fields,
+        @Nullable Long taxClassId) {
 
     public enum Audience {
         ALL,

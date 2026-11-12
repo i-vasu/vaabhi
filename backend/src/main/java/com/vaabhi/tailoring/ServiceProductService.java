@@ -46,11 +46,12 @@ public class ServiceProductService {
             String name,
             BigDecimal priceRupees,
             @Nullable String photoKey,
-            String stageCosts) {}
+            String stageCosts,
+            @Nullable Long taxClassId) {}
 
     private static final String SELECT = """
             SELECT p.id, p.template_id, t.name AS garment, p.code, p.name, p.price_rupees, p.photo_key,
-                   p.stage_costs::text AS stage_costs
+                   p.stage_costs::text AS stage_costs, p.tax_class_id
             FROM service_product p JOIN garment_template t ON t.id = p.template_id
             """;
 
@@ -66,7 +67,8 @@ public class ServiceProductService {
                 row.priceRupees(),
                 row.photoKey(),
                 costs,
-                row.priceRupees().subtract(totalCost));
+                row.priceRupees().subtract(totalCost),
+                row.taxClassId());
     }
 
     /** Active products, optionally of one garment or matching a search (name or code). */
@@ -103,6 +105,13 @@ public class ServiceProductService {
     public ServiceProduct save(@Nullable Long id, ServiceProductForm form) {
         lists.garmentTemplate(form.templateId());
         requireKnownStages(form.stageCosts());
+        if (form.taxClassId() != null
+                && !jdbc.sql("SELECT EXISTS (SELECT 1 FROM tax_class WHERE id = :id)")
+                        .param(ID, form.taxClassId())
+                        .query(Boolean.class)
+                        .single()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown tax class");
+        }
         var code = form.code() == null || form.code().isBlank()
                 ? (id == null ? numbering.next(NumberSequence.Kind.ITEM) : get(id).code())
                 : form.code().trim();
@@ -112,9 +121,12 @@ public class ServiceProductService {
         try {
             if (id == null) {
                 id = jdbc.sql("""
-                                INSERT INTO service_product (template_id, code, name, price_rupees, photo_key, stage_costs)
-                                VALUES (:template, :code, :name, :price, :photo, CAST(:costs AS jsonb)) RETURNING id
+                                INSERT INTO service_product (template_id, code, name, price_rupees, photo_key, stage_costs,
+                                                             tax_class_id)
+                                VALUES (:template, :code, :name, :price, :photo, CAST(:costs AS jsonb), :taxClass)
+                                RETURNING id
                                 """)
+                        .param("taxClass", form.taxClassId())
                         .param("template", form.templateId())
                         .param("code", code)
                         .param("name", form.name().trim())
@@ -125,9 +137,11 @@ public class ServiceProductService {
                         .single();
             } else if (jdbc.sql("""
                                     UPDATE service_product SET template_id = :template, code = :code, name = :name,
-                                        price_rupees = :price, photo_key = :photo, stage_costs = CAST(:costs AS jsonb)
+                                        price_rupees = :price, photo_key = :photo, stage_costs = CAST(:costs AS jsonb),
+                                        tax_class_id = :taxClass
                                     WHERE id = :id AND active
                                     """)
+                            .param("taxClass", form.taxClassId())
                             .param("template", form.templateId())
                             .param("code", code)
                             .param("name", form.name().trim())

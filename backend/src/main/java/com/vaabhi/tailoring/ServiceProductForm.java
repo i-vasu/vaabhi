@@ -29,4 +29,5 @@ public record ServiceProductForm(
         BigDecimal priceRupees,
 
         @Nullable @Size(max = 200) String photoKey,
-        @NotNull @Size(max = 20) List<@Valid StageCost> stageCosts) {}
+        @NotNull @Size(max = 20) List<@Valid StageCost> stageCosts,
+        @Nullable Long taxClassId) {}
