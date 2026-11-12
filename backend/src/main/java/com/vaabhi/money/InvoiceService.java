@@ -291,11 +291,13 @@ public class InvoiceService {
 
     /** Locks the invoice row so the day and credit note checks cannot race a credit note being issued. */
     private void lock(long id) {
-        jdbc.sql("SELECT id FROM invoice WHERE id = :id FOR UPDATE")
+        var found = jdbc.sql("SELECT id FROM invoice WHERE id = :id FOR UPDATE")
                 .param(ID, id)
                 .query(Long.class)
-                .optional()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
+                .optional();
+        if (found.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found");
+        }
     }
 
     private Invoice voidInvoice(long id, @Nullable String actor) {
