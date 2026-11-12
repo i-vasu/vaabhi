@@ -82,7 +82,8 @@ class WebOrderInvoiceIT {
     void deliverFromPlacedIssuesInvoice() throws Exception {
         String number = placeCodOrder(customer);
 
-        mockMvc.perform(post("/api/v1/admin/online-orders/" + number + "/deliver").with(OWNER))
+        mockMvc.perform(post("/api/v1/admin/online-orders/" + number + "/deliver")
+                        .with(OWNER))
                 .andExpect(status().isOk());
 
         mockMvc.perform(get("/api/v1/customer/orders/" + number + "/invoice").with(customer))

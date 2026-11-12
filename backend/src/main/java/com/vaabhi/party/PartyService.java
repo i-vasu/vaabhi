@@ -36,7 +36,8 @@ public class PartyService {
         }
     }
 
-    private record Existing(long id, @Nullable String phone, boolean isCustomer, boolean isSupplier, boolean isJobWorker) {
+    private record Existing(
+            long id, @Nullable String phone, boolean isCustomer, boolean isSupplier, boolean isJobWorker) {
 
         /** True when the party has a role other than {@code role}: then its name belongs to that other role. */
         boolean hasOtherRole(Role role) {
@@ -61,7 +62,9 @@ public class PartyService {
     @Transactional
     public long save(@Nullable Long current, Details details, Role role) {
         var phone = phone(details.phone());
-        var name = details.name().trim().isEmpty() ? (phone == null ? "Unnamed" : phone) : details.name().trim();
+        var name = details.name().trim().isEmpty()
+                ? (phone == null ? "Unnamed" : phone)
+                : details.name().trim();
         Existing existing = null;
         if (phone != null) {
             existing = find(" WHERE phone = :key", phone);
@@ -107,7 +110,11 @@ public class PartyService {
     }
 
     private @Nullable Existing find(String where, Object key) {
-        return jdbc.sql(EXISTING + where).param("key", key).query(Existing.class).optional().orElse(null);
+        return jdbc.sql(EXISTING + where)
+                .param("key", key)
+                .query(Existing.class)
+                .optional()
+                .orElse(null);
     }
 
     private static Map<String, @Nullable Object> params(Details d, String name, @Nullable String phone, Role role) {

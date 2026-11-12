@@ -60,10 +60,7 @@ public class NumberingService {
     @Transactional(readOnly = true)
     public List<NumberSequence> list() {
         var year = year();
-        return jdbc.sql("SELECT " + COLUMNS + " FROM number_sequence ORDER BY kind")
-                .query(Row.class)
-                .list()
-                .stream()
+        return jdbc.sql("SELECT " + COLUMNS + " FROM number_sequence ORDER BY kind").query(Row.class).list().stream()
                 .map(row -> row.toSequence(year))
                 .toList();
     }

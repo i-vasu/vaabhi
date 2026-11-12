@@ -44,11 +44,7 @@ class CustomerStore {
         var row = jdbc.sql("""
                         SELECT party_id, name, email, phone, address_line1, address_line2, city, state, pincode
                         FROM customer WHERE id = :id
-                        """)
-                .param("id", id)
-                .query(PartyRow.class)
-                .optional()
-                .orElse(null);
+                        """).param("id", id).query(PartyRow.class).optional().orElse(null);
         if (row == null) {
             return;
         }

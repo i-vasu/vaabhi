@@ -25,7 +25,10 @@ public final class InvoiceParties {
 
     /** Who bought, as known when the invoice was issued. */
     public record Buyer(
-            String name, @Nullable String phone, @Nullable String address, @Nullable String state) {}
+            String name,
+            @Nullable String phone,
+            @Nullable String address,
+            @Nullable String state) {}
 
     static Seller seller(ShopProfile profile, BillingSettings billing) {
         var company = billing.company();

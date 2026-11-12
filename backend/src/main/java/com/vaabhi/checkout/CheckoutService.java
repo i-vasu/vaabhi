@@ -441,10 +441,7 @@ public class CheckoutService {
         var address = jdbc.sql("""
                         SELECT left(concat_ws(', ', address_line1, address_line2, city, pincode), 400)
                         FROM web_order WHERE id = :id
-                        """)
-                .param(ID, row.id())
-                .query(String.class)
-                .single();
+                        """).param(ID, row.id()).query(String.class).single();
         var lines = new ArrayList<WebInvoiceRequest.Line>();
         for (var line : order.lines()) {
             var detail = line.colourName() != null && line.size() != null
@@ -683,8 +680,7 @@ public class CheckoutService {
 
     @Transactional(readOnly = true)
     public List<WebOrder> orders(long customerId) {
-        var rows = jdbc
-                .sql(SELECT + " WHERE o.customer_id = :customer ORDER BY o.created_at DESC LIMIT 50")
+        var rows = jdbc.sql(SELECT + " WHERE o.customer_id = :customer ORDER BY o.created_at DESC LIMIT 50")
                 .param(CUSTOMER, customerId)
                 .query(OrderRow.class)
                 .list();
@@ -702,8 +698,7 @@ public class CheckoutService {
     /** The shop's view, newest first; optionally only orders in one status, or with a return still open. */
     @Transactional(readOnly = true)
     public List<WebOrder> recent(WebOrder.@Nullable Status status, boolean openReturns, int limit) {
-        var rows = jdbc
-                .sql(SELECT + " WHERE (CAST(:status AS varchar) IS NULL OR o.status = :status)"
+        var rows = jdbc.sql(SELECT + " WHERE (CAST(:status AS varchar) IS NULL OR o.status = :status)"
                         + " AND (NOT :openReturns OR EXISTS (SELECT 1 FROM web_order_return r WHERE r.order_id = o.id"
                         + " AND r.status IN ('REQUESTED', 'APPROVED')))"
                         + " ORDER BY o.created_at DESC LIMIT :limit")

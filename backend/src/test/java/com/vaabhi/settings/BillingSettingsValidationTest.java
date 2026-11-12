@@ -36,7 +36,6 @@ class BillingSettingsValidationTest {
 
     @Test
     void missingCompanyBecomesAnEmptyOne() {
-        assertThat(BillingSettings.defaults().company())
-                .isEqualTo(new BillingSettings.Company(null, null, null, null));
+        assertThat(BillingSettings.defaults().company()).isEqualTo(new BillingSettings.Company(null, null, null, null));
     }
 }

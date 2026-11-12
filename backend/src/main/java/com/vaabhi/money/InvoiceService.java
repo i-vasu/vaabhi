@@ -207,7 +207,8 @@ public class InvoiceService {
         return lastName == null || lastName.isBlank() ? firstName.trim() : (firstName + " " + lastName).trim();
     }
 
-    private static @Nullable String buyerAddress(@Nullable String address, @Nullable String city, @Nullable String pin) {
+    private static @Nullable String buyerAddress(
+            @Nullable String address, @Nullable String city, @Nullable String pin) {
         var parts = Stream.of(address, city, pin)
                 .filter(part -> part != null && !part.isBlank())
                 .map(String::trim)

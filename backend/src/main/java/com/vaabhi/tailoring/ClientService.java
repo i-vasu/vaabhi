@@ -50,7 +50,10 @@ public class ClientService {
                 .query(Long.class)
                 .optional()
                 .orElse(null);
-        var name = form.firstName().trim() + (blankToNull(form.lastName()) == null ? "" : " " + form.lastName().trim());
+        var name = form.firstName().trim()
+                + (blankToNull(form.lastName()) == null
+                        ? ""
+                        : " " + form.lastName().trim());
         long partyId = parties.save(
                 current,
                 new PartyService.Details(
