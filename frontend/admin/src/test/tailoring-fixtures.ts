@@ -404,6 +404,7 @@ export const invoicePage: InvoicePage = {
   pageSize: 20,
   totalRupees: 990,
   taxRupees: 47.14,
+  creditedRupees: 0,
 };
 
 export const expenseList: ExpenseList = {

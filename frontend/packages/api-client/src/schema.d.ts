@@ -5259,6 +5259,7 @@ export interface components {
             pageSize: number;
             totalRupees: number;
             taxRupees: number;
+            creditedRupees: number;
         };
         InvoiceSummary: {
             /** Format: int64 */

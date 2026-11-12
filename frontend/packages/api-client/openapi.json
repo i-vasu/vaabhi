@@ -18787,9 +18787,13 @@
                     },
                     "taxRupees": {
                         "type": "number"
+                    },
+                    "creditedRupees": {
+                        "type": "number"
                     }
                 },
                 "required": [
+                    "creditedRupees",
                     "items",
                     "page",
                     "pageSize",
