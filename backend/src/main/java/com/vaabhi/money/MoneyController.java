@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Locale;
 import org.jspecify.annotations.Nullable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -181,7 +182,7 @@ class MoneyController {
                 .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
                 .header(
                         HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"gstr1-" + section + "-" + yearMonth + ".csv\"")
+                        "attachment; filename=\"gstr1-" + section.toLowerCase(Locale.ROOT) + "-" + yearMonth + ".csv\"")
                 .body(csv);
     }
 

@@ -405,14 +405,18 @@ public class Gstr1Service {
     private List<Gstr1.DocRange> docs(LocalDate from, LocalDate to) {
         List<Gstr1.DocRange> docs = new ArrayList<>();
         var invoices = docRange("""
-                SELECT min(number) AS first, max(number) AS last, count(*) AS total, count(cancelled_at) AS cancelled
+                SELECT (array_agg(number ORDER BY issued_on, id))[1] AS first,
+                       (array_agg(number ORDER BY issued_on DESC, id DESC))[1] AS last,
+                       count(*) AS total, count(cancelled_at) AS cancelled
                 FROM invoice WHERE issued_on BETWEEN :from AND :to
                 """, "Invoices for outward supply", from, to);
         if (invoices != null) {
             docs.add(invoices);
         }
         var notes = docRange("""
-                SELECT min(number) AS first, max(number) AS last, count(*) AS total, 0 AS cancelled
+                SELECT (array_agg(number ORDER BY issued_on, id))[1] AS first,
+                       (array_agg(number ORDER BY issued_on DESC, id DESC))[1] AS last,
+                       count(*) AS total, 0 AS cancelled
                 FROM credit_note WHERE issued_on BETWEEN :from AND :to
                 """, "Credit Note", from, to);
         if (notes != null) {
@@ -500,6 +504,11 @@ public class Gstr1Service {
 
     private static String field(Object cell) {
         var text = cell instanceof BigDecimal d ? d.toPlainString() : cell.toString();
+        // Numbers (credit netting can make them negative) stay as they are; text that a spreadsheet would read as a
+        // formula gets a leading quote.
+        if (!(cell instanceof Number) && !text.isEmpty() && "=+-@".indexOf(text.charAt(0)) >= 0) {
+            text = "'" + text;
+        }
         if (text.contains(",") || text.contains("\"") || text.contains("\n") || text.contains("\r")) {
             return "\"" + text.replace("\"", "\"\"") + "\"";
         }
