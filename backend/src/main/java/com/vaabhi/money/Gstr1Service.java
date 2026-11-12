@@ -171,8 +171,8 @@ public class Gstr1Service {
                 n.buyer_name AS buyer, COALESCE(n.place_of_supply, n.seller_state_code) AS place,
                 (i.supply_type = 'INTER' AND i.total_rupees > :limit) AS large""", from, to);
 
-        List<Gstr1.Row> b2b = new ArrayList<>();
-        List<Gstr1.Row> b2cl = new ArrayList<>();
+        List<Gstr1.Gstr1Row> b2b = new ArrayList<>();
+        List<Gstr1.Gstr1Row> b2cl = new ArrayList<>();
         Map<Key, BigDecimal[]> small = new TreeMap<>();
         for (var e : invoices) {
             if (e.registered()) {
@@ -183,8 +183,8 @@ public class Gstr1Service {
                 addSmall(small, e, 1);
             }
         }
-        List<Gstr1.Row> cdnr = new ArrayList<>();
-        List<Gstr1.Row> cdnur = new ArrayList<>();
+        List<Gstr1.Gstr1Row> cdnr = new ArrayList<>();
+        List<Gstr1.Gstr1Row> cdnur = new ArrayList<>();
         for (var e : notes) {
             if (e.registered()) {
                 cdnr.add(cdnrRow(e));
@@ -194,7 +194,7 @@ public class Gstr1Service {
                 addSmall(small, e, -1);
             }
         }
-        List<Gstr1.Row> b2cs = new ArrayList<>();
+        List<Gstr1.Gstr1Row> b2cs = new ArrayList<>();
         small.forEach((key, sums) -> b2cs.add(b2csRow(key, sums)));
 
         return new Gstr1(
@@ -232,7 +232,7 @@ public class Gstr1Service {
 
     // --- rows ---------------------------------------------------------------------------------------------------
 
-    private static Gstr1.Row row(List<String> headers, Entry e, BigDecimal value, Object... cells) {
+    private static Gstr1.Gstr1Row row(List<String> headers, Entry e, BigDecimal value, Object... cells) {
         if (headers.size() != cells.length) {
             throw new IllegalStateException("Expected " + headers.size() + " columns but got " + cells.length);
         }
@@ -240,7 +240,7 @@ public class Gstr1Service {
         for (int i = 0; i < cells.length; i++) {
             columns.put(headers.get(i), cells[i]);
         }
-        return new Gstr1.Row(
+        return new Gstr1.Gstr1Row(
                 columns,
                 Rupees.of(e.taxable()),
                 Rupees.of(e.igst()),
@@ -249,7 +249,7 @@ public class Gstr1Service {
                 Rupees.of(value));
     }
 
-    private static Gstr1.Row b2bRow(Entry e) {
+    private static Gstr1.Gstr1Row b2bRow(Entry e) {
         return row(
                 B2B_HEADERS,
                 e,
@@ -269,7 +269,7 @@ public class Gstr1Service {
                 Rupees.ZERO);
     }
 
-    private static Gstr1.Row b2clRow(Entry e) {
+    private static Gstr1.Gstr1Row b2clRow(Entry e) {
         return row(
                 B2CL_HEADERS,
                 e,
@@ -285,7 +285,7 @@ public class Gstr1Service {
                 "");
     }
 
-    private static Gstr1.Row cdnrRow(Entry e) {
+    private static Gstr1.Gstr1Row cdnrRow(Entry e) {
         return row(
                 CDNR_HEADERS,
                 e,
@@ -305,7 +305,7 @@ public class Gstr1Service {
                 Rupees.ZERO);
     }
 
-    private static Gstr1.Row cdnurRow(Entry e) {
+    private static Gstr1.Gstr1Row cdnurRow(Entry e) {
         return row(
                 CDNUR_HEADERS,
                 e,
@@ -333,7 +333,7 @@ public class Gstr1Service {
         sums[3] = sums[3].add(e.igst().multiply(factor));
     }
 
-    private static Gstr1.Row b2csRow(Key key, BigDecimal[] sums) {
+    private static Gstr1.Gstr1Row b2csRow(Key key, BigDecimal[] sums) {
         Map<String, Object> columns = new LinkedHashMap<>();
         Object[] cells = {
             "OE", place(key.place()), "", key.rate(), Rupees.of(sums[0]), Rupees.ZERO, "",
@@ -341,7 +341,7 @@ public class Gstr1Service {
         for (int i = 0; i < cells.length; i++) {
             columns.put(B2CS_HEADERS.get(i), cells[i]);
         }
-        return new Gstr1.Row(
+        return new Gstr1.Gstr1Row(
                 columns, Rupees.of(sums[0]), Rupees.of(sums[3]), Rupees.of(sums[1]), Rupees.of(sums[2]), Rupees.ZERO);
     }
 
@@ -357,7 +357,7 @@ public class Gstr1Service {
 
     // --- HSN summary and documents ------------------------------------------------------------------------------
 
-    private List<Gstr1.HsnRow> hsn(LocalDate from, LocalDate to) {
+    private List<Gstr1.Gstr1HsnRow> hsn(LocalDate from, LocalDate to) {
         Map<String, String> names = new LinkedHashMap<>();
         jdbc.sql("SELECT hsn_code, name FROM tax_class ORDER BY id")
                 .query()
@@ -386,7 +386,7 @@ public class Gstr1Service {
                 .query((rs, rowNum) -> {
                     var code = rs.getString("hsn");
                     var description = HSN_DELIVERY.equals(code) ? "Delivery" : names.getOrDefault(code, "");
-                    return new Gstr1.HsnRow(
+                    return new Gstr1.Gstr1HsnRow(
                             code,
                             description,
                             code.startsWith("99") ? "NA" : "PCS-PIECES",
@@ -402,8 +402,8 @@ public class Gstr1Service {
                 .list();
     }
 
-    private List<Gstr1.DocRange> docs(LocalDate from, LocalDate to) {
-        List<Gstr1.DocRange> docs = new ArrayList<>();
+    private List<Gstr1.Gstr1DocRange> docs(LocalDate from, LocalDate to) {
+        List<Gstr1.Gstr1DocRange> docs = new ArrayList<>();
         var invoices = docRange("""
                 SELECT (array_agg(number ORDER BY issued_on, id))[1] AS first,
                        (array_agg(number ORDER BY issued_on DESC, id DESC))[1] AS last,
@@ -429,7 +429,7 @@ public class Gstr1Service {
         var range = jdbc.sql(sql)
                 .param("from", from)
                 .param("to", to)
-                .query((rs, rowNum) -> new Gstr1.DocRange(
+                .query((rs, rowNum) -> new Gstr1.Gstr1DocRange(
                         nature,
                         rs.getString("first"),
                         rs.getString("last"),
@@ -485,7 +485,7 @@ public class Gstr1Service {
         return out.toString();
     }
 
-    private static void rowsCsv(StringBuilder out, List<String> headers, List<Gstr1.Row> rows) {
+    private static void rowsCsv(StringBuilder out, List<String> headers, List<Gstr1.Gstr1Row> rows) {
         line(out, headers);
         for (var row : rows) {
             line(out, List.copyOf(row.columns().values()));

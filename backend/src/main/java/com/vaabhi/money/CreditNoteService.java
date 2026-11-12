@@ -452,7 +452,7 @@ public class CreditNoteService {
                 .param("q", like)
                 .param("limit", size)
                 .param("offset", (page - 1) * size)
-                .query(CreditNotePage.Item.class)
+                .query(CreditNotePage.CreditNoteListItem.class)
                 .list();
         return new CreditNotePage(items, total, page, size);
     }

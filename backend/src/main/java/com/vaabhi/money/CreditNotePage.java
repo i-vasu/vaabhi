@@ -5,9 +5,9 @@ import java.time.LocalDate;
 import java.util.List;
 
 /** A page of the credit note register. */
-public record CreditNotePage(List<Item> items, long total, int page, int size) {
+public record CreditNotePage(List<CreditNoteListItem> items, long total, int page, int size) {
 
-    public record Item(
+    public record CreditNoteListItem(
             long id,
             String number,
             long invoiceId,
