@@ -91,9 +91,7 @@ export default function LedgerPage() {
                             {entry.party && ` · ${entry.party}`}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-ink-soft">
-                          {paymentModeLabel(entry.mode)}
-                        </td>
+                        <td className="px-4 py-3 text-ink-soft">{paymentModeLabel(entry.mode)}</td>
                         <td
                           className={`whitespace-nowrap px-4 py-3 text-right tabular-nums ${entry.amountRupees < 0 ? "text-warn" : "text-ok"}`}
                         >

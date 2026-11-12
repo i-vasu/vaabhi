@@ -11,9 +11,7 @@ const day = new Intl.DateTimeFormat("en-IN", {
 /** A customer's tax invoice, laid out to read on screen and print on paper. */
 export function InvoiceView({ invoice }: Readonly<{ invoice: StoreInvoice }>) {
   const { seller, buyer } = invoice;
-  const sellerState = seller.state
-    ? `State: ${seller.state}${seller.stateCode ? ` (${seller.stateCode})` : ""}`
-    : null;
+  const sellerState = seller.state ? `State: ${seller.state}${seller.stateCode ? ` (${seller.stateCode})` : ""}` : null;
   const sellerLines = [
     seller.address,
     seller.cin ? `CIN: ${seller.cin}` : null,

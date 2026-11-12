@@ -67,7 +67,10 @@ function InvoiceView({ id }: { id: number }) {
         <Fact label="Date">{formatDate(v.issuedOn)}</Fact>
         <Fact label="Order">
           {v.source === "WEB" ? (
-            <Link href={`/online-orders/view/?number=${encodeURIComponent(v.orderNumber)}`} className="text-accent-ink underline">
+            <Link
+              href={`/online-orders/view/?number=${encodeURIComponent(v.orderNumber)}`}
+              className="text-accent-ink underline"
+            >
               {v.orderNumber}
             </Link>
           ) : v.orderId ? (
