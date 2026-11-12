@@ -21,7 +21,8 @@ class BillingSettingsValidationTest {
                 false,
                 BillingSettings.DiscountBase.ORDER_TOTAL,
                 true,
-                new BillingSettings.Company(null, cin, null, null));
+                new BillingSettings.Company(null, cin, null, null),
+                null);
     }
 
     @Test

@@ -14,11 +14,12 @@ import org.jspecify.annotations.Nullable;
  * GST and bill behaviour.
  *
  * @param chargeGst bills carry GST lines only when this is on and a GSTIN is set
- * @param defaultGstRate starting rate (percent) for a new category
+ * @param defaultGstRate old starting rate; kept so saved settings still load, no longer read when issuing
  * @param pricesIncludeTax product prices already include GST
  * @param showHsnCodes print HSN/SAC codes on invoices
  * @param discountAppliesTo what a discount at booking is taken off
  * @param autoInvoice create the invoice when an order is delivered
+ * @param defaultTaxClassId the tax class used for items that have none of their own
  */
 public record BillingSettings(
         boolean chargeGst,
@@ -37,7 +38,8 @@ public record BillingSettings(
         @NotNull DiscountBase discountAppliesTo,
         boolean autoInvoice,
 
-        @Valid @Nullable Company company) {
+        @Valid @Nullable Company company,
+        @Nullable Long defaultTaxClassId) {
 
     /** Compact constructor: settings saved before company details existed load with an empty company. */
     public BillingSettings {
@@ -77,6 +79,7 @@ public record BillingSettings(
     }
 
     static BillingSettings defaults() {
-        return new BillingSettings(false, null, new BigDecimal("5"), true, false, DiscountBase.ORDER_TOTAL, true, null);
+        return new BillingSettings(
+                false, null, new BigDecimal("5"), true, false, DiscountBase.ORDER_TOTAL, true, null, null);
     }
 }

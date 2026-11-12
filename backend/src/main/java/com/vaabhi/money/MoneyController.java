@@ -3,6 +3,7 @@ package com.vaabhi.money;
 import jakarta.validation.Valid;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.List;
 import org.jspecify.annotations.Nullable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -28,12 +29,19 @@ class MoneyController {
     private final InvoiceService invoices;
     private final ExpenseService expenses;
     private final LedgerService ledger;
+    private final TaxClassService taxClasses;
     private final Clock clock;
 
-    MoneyController(InvoiceService invoices, ExpenseService expenses, LedgerService ledger, Clock clock) {
+    MoneyController(
+            InvoiceService invoices,
+            ExpenseService expenses,
+            LedgerService ledger,
+            TaxClassService taxClasses,
+            Clock clock) {
         this.invoices = invoices;
         this.expenses = expenses;
         this.ledger = ledger;
+        this.taxClasses = taxClasses;
         this.clock = clock;
     }
 
@@ -84,6 +92,30 @@ class MoneyController {
     @ResponseStatus(HttpStatus.CREATED)
     Invoice issueOrderInvoice(@PathVariable long orderId, @AuthenticationPrincipal @Nullable Jwt jwt) {
         return invoices.issue(orderId, actor(jwt));
+    }
+
+    // --- tax classes --------------------------------------------------------------------------------------------
+
+    @GetMapping("/tax-classes")
+    List<TaxClass> listTaxClasses() {
+        return taxClasses.list();
+    }
+
+    @PostMapping("/tax-classes")
+    @ResponseStatus(HttpStatus.CREATED)
+    TaxClass createTaxClass(@Valid @RequestBody TaxClassForm form) {
+        return taxClasses.create(form);
+    }
+
+    @PutMapping("/tax-classes/{id}")
+    TaxClass updateTaxClass(@PathVariable long id, @Valid @RequestBody TaxClassForm form) {
+        return taxClasses.update(id, form);
+    }
+
+    @DeleteMapping("/tax-classes/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void deleteTaxClass(@PathVariable long id) {
+        taxClasses.delete(id);
     }
 
     // --- expenses -----------------------------------------------------------------------------------------------

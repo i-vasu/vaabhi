@@ -54,7 +54,8 @@ class InvoicePartiesTest {
                 false,
                 BillingSettings.DiscountBase.ORDER_TOTAL,
                 true,
-                company);
+                company,
+                null);
     }
 
     private static final BillingSettings.Company NO_COMPANY = new BillingSettings.Company(null, null, null, null);
