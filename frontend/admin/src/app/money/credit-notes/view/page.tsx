@@ -67,7 +67,7 @@ function CreditNoteView({ id }: { id: number }) {
         <Fact label="Date">{formatDate(v.issuedOn)}</Fact>
         <Fact label="Against invoice">
           <Link href={`/money/invoices/view/?id=${v.invoiceId}`} className="text-accent-ink underline">
-            Against invoice {v.invoiceNumber}
+            {v.invoiceNumber}
           </Link>
         </Fact>
         <Fact label="Reason">{REASONS[v.reason]}</Fact>

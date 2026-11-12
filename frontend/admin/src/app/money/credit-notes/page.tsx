@@ -37,8 +37,10 @@ export default function CreditNotesPage() {
       {!v ? (
         <LoadState loading={notes.loading} error={null} />
       ) : v.items.length === 0 ? (
-        <EmptyState icon={DocumentIcon} title="No credit notes">
-          Credit notes are made from an invoice, or when a return is refunded.
+        <EmptyState icon={DocumentIcon} title={q ? `No credit notes match “${q}”` : "No credit notes"}>
+          {q
+            ? "Try the credit note or invoice number, or the customer's name."
+            : "Credit notes are made from an invoice, or when a return is refunded."}
         </EmptyState>
       ) : (
         <>

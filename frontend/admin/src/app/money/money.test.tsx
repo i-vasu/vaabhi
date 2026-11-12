@@ -1,7 +1,10 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { monthLabel, monthOf, shiftMonth } from "@/lib/money";
-import { ledger, lastSent, serveTailoring, type Sent } from "@/test/tailoring-fixtures";
+import { API, server } from "@/test/server";
+import { invoice, ledger, lastSent, serveTailoring, type Sent } from "@/test/tailoring-fixtures";
+import CreditNotePage from "./credit-notes/view/page";
 import DuesPage from "./dues/page";
 import ExpensesPage from "./expenses/page";
 import InvoicesPage from "./invoices/page";
@@ -117,17 +120,67 @@ describe("invoices", () => {
   });
 
   it("shows the invoice with its GST split and can cancel it", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true, toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-02T10:00:00+05:30"));
+    try {
+      search = new URLSearchParams("id=5");
+      render(<InvoicePage />);
+      expect(await screen.findByRole("heading", { name: "Tax invoice" })).toBeInTheDocument();
+      expect(screen.getByText("3 dart blouse (Maroon)")).toBeInTheDocument();
+      expect(screen.getAllByText("CGST")).toHaveLength(2);
+      expect(screen.getAllByText("SGST")).toHaveLength(2);
+      expect(screen.getByText("Telangana (36)")).toBeInTheDocument();
+      expect(screen.getByText("Rupees Nine Hundred Ninety only")).toBeInTheDocument();
+      expect(screen.getByText("Prices include GST.")).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("button", { name: "Cancel invoice" }));
+      fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Cancel invoice" }));
+      await waitFor(() => expect(lastSent(sent, "POST", "/money/invoices/5/cancel")).toBeDefined());
+      expect(await screen.findByText("Cancelled")).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("hides Cancel invoice when the invoice was not issued today", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true, toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-03T10:00:00+05:30"));
+    try {
+      search = new URLSearchParams("id=5");
+      render(<InvoicePage />);
+      expect(await screen.findByRole("heading", { name: "Tax invoice" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Cancel invoice" })).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Credit note" })).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("caps credit note quantities at what is left to credit", async () => {
+    server.use(
+      http.get(`${API}/api/v1/admin/money/invoices/:id`, () =>
+        HttpResponse.json({
+          ...invoice,
+          creditNotes: [{ id: 7, number: "CN-7", issuedOn: "2026-11-02", totalRupees: 500, reason: "RETURN" }],
+        }),
+      ),
+    );
     search = new URLSearchParams("id=5");
     render(<InvoicePage />);
-    expect(await screen.findByRole("heading", { name: "Tax invoice" })).toBeInTheDocument();
-    expect(screen.getByText("3 dart blouse (Maroon)")).toBeInTheDocument();
-    expect(screen.getByText("CGST 2.5%")).toBeInTheDocument();
-    expect(screen.getByText("Prices include GST.")).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole("button", { name: "Credit note" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(await within(dialog).findByText(/CN-7 · 2 Nov/)).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole("radio", { name: "Choose lines" }));
+    const more = within(dialog).getByRole("button", { name: "More 3 dart blouse (Maroon)" });
+    fireEvent.click(more);
+    expect(more).toBeDisabled();
+  });
 
-    fireEvent.click(screen.getByRole("button", { name: "Cancel invoice" }));
-    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Cancel invoice" }));
-    await waitFor(() => expect(lastSent(sent, "POST", "/money/invoices/5/cancel")).toBeDefined());
-    expect(await screen.findByText("Cancelled")).toBeInTheDocument();
+  it("shows a credit note against its invoice", async () => {
+    search = new URLSearchParams("id=7");
+    render(<CreditNotePage />);
+    expect(await screen.findByRole("heading", { name: "Credit Note" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "INV-305" })).toHaveAttribute("href", "/money/invoices/view/?id=5");
   });
 
   it("prints seller CIN and state code", async () => {

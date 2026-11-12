@@ -53,6 +53,7 @@ export function amountInWords(rupees: number): string {
   const totalPaise = Math.round(Math.abs(rupees) * 100);
   const whole = Math.floor(totalPaise / 100);
   const paise = totalPaise % 100;
-  const base = `Rupees ${wholeInWords(whole)}`;
-  return paise > 0 ? `${base} and ${underHundred(paise)} Paise only` : `${base} only`;
+  if (paise === 0) return `Rupees ${wholeInWords(whole)} only`;
+  const paiseWords = `${underHundred(paise)} Paise`;
+  return whole === 0 ? `${paiseWords} only` : `Rupees ${wholeInWords(whole)} and ${paiseWords} only`;
 }

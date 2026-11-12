@@ -12,6 +12,7 @@ import type {
   AlterationPage,
   Client,
   ClientPage,
+  CreditNote,
   ClientSummary,
   Order,
   OrderPage,
@@ -341,6 +342,45 @@ export const invoice: Invoice = {
   creditNotes: [],
 };
 
+export const creditNote: CreditNote = {
+  id: 7,
+  number: "CN-7",
+  invoiceId: 5,
+  invoiceNumber: "INV-305",
+  orderNumber: "ORD-2042",
+  reason: "RETURN",
+  note: null,
+  issuedOn: "2026-11-02",
+  title: "Credit Note",
+  seller: invoice.seller,
+  buyer: invoice.buyer,
+  placeOfSupply: "36",
+  supplyType: "INTRA",
+  lines: [
+    {
+      id: 1,
+      invoiceLineId: 1,
+      description: "3 dart blouse (Maroon)",
+      hsnCode: "6204",
+      quantity: 1,
+      unitRupees: 500,
+      gstRate: 5,
+      taxableRupees: 476.19,
+      cgstRupees: 11.9,
+      sgstRupees: 11.91,
+      igstRupees: 0,
+      amountRupees: 500,
+    },
+  ],
+  taxableRupees: 476.19,
+  cgstRupees: 11.9,
+  sgstRupees: 11.91,
+  igstRupees: 0,
+  totalRupees: 500,
+  createdBy: "Asha Rao",
+  createdAt: "2026-11-02T12:30:00+05:30",
+};
+
 export const invoicePage: InvoicePage = {
   items: [
     {
@@ -525,6 +565,8 @@ export function serveTailoring(): { sent: Sent[] } {
       `${base}/money/invoices/:id/cancel`,
       reply({ ...invoice, cancelledAt: "2026-11-02T13:00:00+05:30", cancelledBy: "Asha Rao" }),
     ),
+    http.get(`${base}/money/credit-notes/:id`, reply(creditNote)),
+    http.get(`${base}/settings/states`, reply([{ code: "36", name: "Telangana" }])),
     http.get(`${base}/money/orders/:id/invoice`, async ({ request }) => {
       await record(request);
       return new HttpResponse(null, { status: 204 });

@@ -11,13 +11,58 @@ import { formatDate, useAction, useLoad } from "@/lib/tailoring";
 type Reason = "RETURN" | "CORRECTION";
 type Scope = "WHOLE" | "LINES";
 
+/** The credit notes already issued under an invoice, with the quantity left to credit on each line. */
+function useCredited(invoice: Invoice) {
+  const issued = useLoad(
+    () => Promise.all(invoice.creditNotes.map((n) => api.admin.money.creditNotes.get(n.id))),
+    [invoice.id, invoice.creditNotes.length],
+  );
+  const credited = new Map<number, number>();
+  for (const n of issued.value ?? []) {
+    for (const line of n.lines) {
+      credited.set(line.invoiceLineId, (credited.get(line.invoiceLineId) ?? 0) + line.quantity);
+    }
+  }
+  const remaining = (lineId: number, quantity: number) => Math.max(0, quantity - (credited.get(lineId) ?? 0));
+  const fullyCredited =
+    issued.value !== undefined && invoice.lines.every((line) => remaining(line.id, line.quantity) === 0);
+  return { issued, remaining, fullyCredited };
+}
+
+/** The "Credit note" button and its sheet; hidden once everything on the invoice has been credited. */
+export function CreditNoteAction({ invoice, onIssued }: { invoice: Invoice; onIssued: (note: CreditNote) => void }) {
+  const [open, setOpen] = useState(false);
+  const credited = useCredited(invoice);
+  if (credited.fullyCredited) return null;
+  return (
+    <>
+      <button type="button" className={buttonSecondary} onClick={() => setOpen(true)}>
+        Credit note
+      </button>
+      {open && (
+        <CreditNoteSheet
+          invoice={invoice}
+          credited={credited}
+          onClose={() => setOpen(false)}
+          onIssued={(created) => {
+            setOpen(false);
+            onIssued(created);
+          }}
+        />
+      )}
+    </>
+  );
+}
+
 /** Issue a credit note against an invoice: the whole invoice, or chosen lines up to what is still uncredited. */
-export function CreditNoteSheet({
+function CreditNoteSheet({
   invoice,
+  credited: { issued, remaining, fullyCredited },
   onClose,
   onIssued,
 }: {
   invoice: Invoice;
+  credited: ReturnType<typeof useCredited>;
   onClose: () => void;
   onIssued: (note: CreditNote) => void;
 }) {
@@ -26,22 +71,11 @@ export function CreditNoteSheet({
   const [reason, setReason] = useState<Reason>("RETURN");
   const [note, setNote] = useState("");
   const [quantities, setQuantities] = useState<Record<number, number>>({});
-  const issued = useLoad(
-    () => Promise.all(invoice.creditNotes.map((n) => api.admin.money.creditNotes.get(n.id))),
-    [invoice.id, invoice.creditNotes.length],
-  );
 
-  const credited = new Map<number, number>();
-  for (const n of issued.value ?? []) {
-    for (const line of n.lines) {
-      credited.set(line.invoiceLineId, (credited.get(line.invoiceLineId) ?? 0) + line.quantity);
-    }
-  }
-  const remaining = (lineId: number, quantity: number) => Math.max(0, quantity - (credited.get(lineId) ?? 0));
   const chosen = invoice.lines
     .map((line) => ({ invoiceLineId: line.id, quantity: quantities[line.id] ?? 0 }))
     .filter((line) => line.quantity > 0);
-  const canIssue = scope === "WHOLE" || chosen.length > 0;
+  const canIssue = !fullyCredited && (scope === "WHOLE" || chosen.length > 0);
 
   const issue = async () => {
     const form: CreditNoteForm = {
@@ -76,7 +110,10 @@ export function CreditNoteSheet({
             value={scope}
             onChange={setScope}
             options={[
-              { value: "WHOLE", label: "Whole invoice" },
+              {
+                value: "WHOLE",
+                label: issued.value.length > 0 ? "Whole invoice (what is left)" : "Whole invoice",
+              },
               { value: "LINES", label: "Choose lines" },
             ]}
           />

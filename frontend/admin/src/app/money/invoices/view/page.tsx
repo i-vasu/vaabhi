@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { AmountLine } from "@/components/money";
-import { CreditNoteSheet } from "@/components/credit-note-sheet";
+import { CreditNoteAction } from "@/components/credit-note-sheet";
 import { ErrorNote, Fact, Pill } from "@/components/tailoring";
 import { LoadState, PageHeader, Sheet, buttonPrimary, buttonSecondary } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -22,7 +22,6 @@ function InvoiceView({ id }: { id: number }) {
   const action = useAction();
   const states = useLoad(() => api.admin.settings.states(), []);
   const [confirming, setConfirming] = useState(false);
-  const [crediting, setCrediting] = useState(false);
 
   if (!invoice.value) {
     return (
@@ -225,25 +224,13 @@ function InvoiceView({ id }: { id: number }) {
               Take payment
             </Link>
           )}
-          <button type="button" className={buttonSecondary} onClick={() => setCrediting(true)}>
-            Credit note
-          </button>
+          <CreditNoteAction invoice={v} onIssued={() => invoice.reload()} />
           {canCancel && (
             <button type="button" className={`${buttonSecondary} text-bad`} onClick={() => setConfirming(true)}>
               Cancel invoice
             </button>
           )}
         </div>
-      )}
-      {crediting && (
-        <CreditNoteSheet
-          invoice={v}
-          onClose={() => setCrediting(false)}
-          onIssued={() => {
-            setCrediting(false);
-            invoice.reload();
-          }}
-        />
       )}
       {confirming && (
         <Sheet open title={`Cancel ${v.number}?`} onClose={() => setConfirming(false)}>
