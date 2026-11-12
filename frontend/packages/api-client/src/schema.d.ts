@@ -4521,7 +4521,13 @@ export interface components {
             /** @enum {string} */
             reason: "RETURN" | "CANCELLED" | "CORRECTION";
             note: string | null;
-            lines: components["schemas"]["Line"][];
+            lines: components["schemas"]["CreditNoteLineInput"][];
+        };
+        CreditNoteLineInput: {
+            /** Format: int64 */
+            invoiceLineId: number;
+            /** Format: int32 */
+            quantity: number;
         };
         CreditNote: {
             /** Format: int64 */

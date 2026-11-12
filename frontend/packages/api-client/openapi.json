@@ -15839,7 +15839,7 @@
                     "lines": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/Line"
+                            "$ref": "#/components/schemas/CreditNoteLineInput"
                         }
                     }
                 },
@@ -15847,6 +15847,24 @@
                     "lines",
                     "note",
                     "reason"
+                ]
+            },
+            "CreditNoteLineInput": {
+                "type": "object",
+                "properties": {
+                    "invoiceLineId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 1
+                    }
+                },
+                "required": [
+                    "invoiceLineId",
+                    "quantity"
                 ]
             },
             "CreditNote": {
