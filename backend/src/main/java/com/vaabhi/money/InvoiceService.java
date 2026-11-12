@@ -10,7 +10,6 @@ import com.vaabhi.tailoring.OrderEvent;
 import com.vaabhi.tailoring.OrderService;
 import com.vaabhi.tailoring.OrderStatus;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -37,7 +36,6 @@ import org.springframework.web.server.ResponseStatusException;
 public class InvoiceService {
 
     private static final String ID = "id";
-    private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
 
     private final JdbcClient jdbc;
     private final OrderService orders;
@@ -59,33 +57,6 @@ public class InvoiceService {
         this.settings = settings;
         this.numbering = numbering;
         this.clock = clock;
-    }
-
-    // --- GST ----------------------------------------------------------------------------------------------------
-
-    /** Taxable value, CGST, SGST and what the customer pays, for an amount at a GST rate (percent). */
-    record Tax(BigDecimal taxableRupees, BigDecimal cgstRupees, BigDecimal sgstRupees, BigDecimal totalRupees) {}
-
-    /**
-     * Splits {@code amountRupees} into taxable value and GST. When prices include tax the amount stays what the
-     * customer pays; otherwise GST is added on top. The tax is halved into CGST and SGST (SGST takes the odd paisa).
-     */
-    static Tax tax(BigDecimal amountRupees, BigDecimal ratePercent, boolean pricesIncludeTax) {
-        var amount = Rupees.of(amountRupees);
-        if (ratePercent.signum() == 0) {
-            return new Tax(amount, Rupees.ZERO, Rupees.ZERO, amount);
-        }
-        BigDecimal taxable;
-        BigDecimal gst;
-        if (pricesIncludeTax) {
-            taxable = amount.multiply(HUNDRED).divide(HUNDRED.add(ratePercent), Rupees.SCALE, RoundingMode.HALF_UP);
-            gst = amount.subtract(taxable);
-        } else {
-            taxable = amount;
-            gst = Rupees.percentOf(amount, ratePercent);
-        }
-        var cgst = gst.divide(BigDecimal.valueOf(2), Rupees.SCALE, RoundingMode.DOWN);
-        return new Tax(taxable, cgst, gst.subtract(cgst), taxable.add(gst));
     }
 
     // --- issuing ------------------------------------------------------------------------------------------------
@@ -140,7 +111,7 @@ public class InvoiceService {
         var billing = settings.billing();
         var rate = billing.gstApplies() ? billing.defaultGstRate() : BigDecimal.ZERO;
         boolean inclusive = invoice.alwaysInclusive() || billing.pricesIncludeTax();
-        var tax = tax(invoice.orderTotalRupees(), rate, inclusive);
+        var tax = TaxEngine.lineTax(invoice.orderTotalRupees(), rate, inclusive);
         var number = numbering.next(NumberSequence.Kind.INVOICE);
         var seller = InvoiceParties.seller(settings.shopProfile(), billing);
         var buyer = invoice.buyer();
