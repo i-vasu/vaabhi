@@ -76,6 +76,10 @@ public class BooksSettingsService {
         }
         json.append('}');
         var startDate = settings.startDate() == null ? before.startDate() : settings.startDate();
+        if (before.startDate() != null && !before.startDate().equals(startDate) && hasPostedEntries()) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT, "The books start date can't change once entries are posted");
+        }
         jdbc.sql("UPDATE books_setting SET start_date = :startDate, mode_accounts = CAST(:modes AS jsonb) WHERE id = 1")
                 .param("startDate", startDate)
                 .param("modes", json.toString())
@@ -101,6 +105,12 @@ public class BooksSettingsService {
         jdbc.sql("UPDATE books_setting SET last_sweep_at = :at WHERE id = 1")
                 .param("at", at)
                 .update();
+    }
+
+    private boolean hasPostedEntries() {
+        return jdbc.sql("SELECT EXISTS (SELECT 1 FROM journal_entry WHERE source_type <> 'OPENING')")
+                .query(Boolean.class)
+                .single();
     }
 
     private boolean isActiveAsset(long accountId) {

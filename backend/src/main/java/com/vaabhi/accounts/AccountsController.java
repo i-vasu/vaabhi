@@ -40,6 +40,7 @@ class AccountsController {
     private final PostingProblemService problems;
     private final AccountsStatusService status;
     private final JournalSweeper sweeper;
+    private final DailyBooksCheck booksCheck;
     private final Clock clock;
 
     AccountsController(
@@ -51,6 +52,7 @@ class AccountsController {
             PostingProblemService problems,
             AccountsStatusService status,
             JournalSweeper sweeper,
+            DailyBooksCheck booksCheck,
             Clock clock) {
         this.chart = chart;
         this.journal = journal;
@@ -60,6 +62,7 @@ class AccountsController {
         this.problems = problems;
         this.status = status;
         this.sweeper = sweeper;
+        this.booksCheck = booksCheck;
         this.clock = clock;
     }
 
@@ -200,7 +203,10 @@ class AccountsController {
 
     @PostMapping("/sweep")
     JournalSweeper.SweepResult sweep() {
-        return sweeper.sweepNow();
+        var result = sweeper.sweepNow();
+        // Post now also refreshes the balance checks, so the problems list is current.
+        booksCheck.run();
+        return result;
     }
 
     @GetMapping("/problems")

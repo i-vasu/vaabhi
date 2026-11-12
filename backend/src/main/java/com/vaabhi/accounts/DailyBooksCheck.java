@@ -44,7 +44,7 @@ public class DailyBooksCheck {
         this.clock = clock;
     }
 
-    record DebtorsRow(long id, String number, BigDecimal debtorsRupees, BigDecimal dueRupees, boolean beforeStart) {}
+    record DebtorsRow(long id, String number, BigDecimal debtorsRupees, BigDecimal dueRupees) {}
 
     @Scheduled(cron = "0 30 3 * * *", zone = "Asia/Kolkata")
     void scheduledCheck() {
@@ -83,19 +83,35 @@ public class DailyBooksCheck {
                     "DEBTORS",
                     "Debtors for " + row.number() + " is ₹"
                             + Rupees.of(row.debtorsRupees()).toPlainString() + " but ₹"
-                            + Rupees.of(row.dueRupees()).toPlainString() + " is due"
-                            + (row.beforeStart()
-                                    ? " (money received before the books start date needs an opening balance)"
-                                    : ""));
+                            + Rupees.of(row.dueRupees()).toPlainString() + " is due");
             found++;
         }
         return found;
     }
 
     /**
+     * Order numbers of live invoices (issued on or after the start) whose order took money before the start date.
+     * The owner settles these with the overall Debtors and advances opening amounts.
+     */
+    public List<String> preStartOrders(LocalDate start) {
+        var sql = """
+                SELECT COALESCE(o.number, w.number) AS number
+                FROM invoice i
+                LEFT JOIN shop_order o ON o.id = i.order_id
+                LEFT JOIN web_order w ON w.id = i.web_order_id
+                WHERE i.cancelled_at IS NULL AND i.issued_on >= :start
+                  AND (EXISTS (SELECT 1 FROM order_payment p
+                               WHERE p.order_id = i.order_id AND %1$s < :start)
+                       OR (w.paid_at IS NOT NULL AND %2$s < :start))
+                ORDER BY 1
+                """.formatted(SHOP_DAY.formatted("p.received_at"), SHOP_DAY.formatted("w.paid_at"));
+        return jdbc.sql(sql).param("start", start).query(String.class).list();
+    }
+
+    /**
      * Live invoices (issued on or after the start, already posted) whose Debtors balance on the order differs from
-     * what is really due: total, less every payment on the order, plus every refund, less credit notes. Orders with
-     * money received before the start date are flagged on purpose; they need an opening balance.
+     * what is really due: total, less payments on the order, plus refunds, less credit notes. Only money moved on or
+     * after the start counts; what was received or refunded before it is part of the opening balances.
      */
     private List<DebtorsRow> debtorsMismatches(LocalDate start) {
         var sql = """
@@ -103,20 +119,19 @@ public class DailyBooksCheck {
                     SELECT i.id, i.number, COALESCE(d.balance, 0) AS debtors_rupees,
                            i.total_rupees
                            - COALESCE((SELECT SUM(p.amount_rupees) FROM order_payment p
-                                       WHERE p.order_id = i.order_id), 0)
-                           - CASE WHEN w.paid_at IS NOT NULL THEN w.total_rupees ELSE 0 END
+                                       WHERE p.order_id = i.order_id AND %1$s >= :start), 0)
+                           - CASE WHEN w.paid_at IS NOT NULL AND %2$s >= :start THEN w.total_rupees ELSE 0 END
                            + CASE WHEN w.refund_status = 'PROCESSED' AND w.refunded_at IS NOT NULL
+                                       AND %3$s >= :start
                                   THEN COALESCE(w.refunded_rupees, 0) ELSE 0 END
                            + COALESCE((SELECT SUM(r.refund_rupees) FROM web_order_return r
                                        WHERE r.order_id = i.web_order_id AND r.refunded_at IS NOT NULL
+                                         AND %4$s >= :start
                                          AND r.refund_rupees > 0
                                          AND ((r.refund_method = 'RAZORPAY' AND r.refund_status = 'PROCESSED')
                                               OR r.refund_method = 'MANUAL')), 0)
                            - COALESCE((SELECT SUM(n.total_rupees) FROM credit_note n
-                                       WHERE n.invoice_id = i.id), 0) AS due_rupees,
-                           (EXISTS (SELECT 1 FROM order_payment p
-                                    WHERE p.order_id = i.order_id AND %1$s < :start)
-                            OR (w.paid_at IS NOT NULL AND %2$s < :start)) AS before_start
+                                       WHERE n.invoice_id = i.id), 0) AS due_rupees
                     FROM invoice i
                     LEFT JOIN web_order w ON w.id = i.web_order_id
                     LEFT JOIN (SELECT e.order_key, SUM(l.debit_rupees - l.credit_rupees) AS balance
@@ -133,7 +148,11 @@ public class DailyBooksCheck {
                 ) m
                 WHERE m.debtors_rupees <> m.due_rupees
                 ORDER BY m.id
-                """.formatted(SHOP_DAY.formatted("p.received_at"), SHOP_DAY.formatted("w.paid_at"));
+                """.formatted(
+                        SHOP_DAY.formatted("p.received_at"),
+                        SHOP_DAY.formatted("w.paid_at"),
+                        SHOP_DAY.formatted("w.refunded_at"),
+                        SHOP_DAY.formatted("r.refunded_at"));
         return jdbc.sql(sql).param("start", start).query(DebtorsRow.class).list();
     }
 }

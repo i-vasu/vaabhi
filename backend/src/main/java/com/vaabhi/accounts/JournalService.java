@@ -62,7 +62,10 @@ public class JournalService {
             @Nullable Long reversedById,
             @Nullable String createdBy,
             OffsetDateTime createdAt,
-            @Nullable String sourceLabel) {}
+            @Nullable String sourceLabel,
+            @Nullable Long orderId,
+            @Nullable Long alterationId,
+            @Nullable String orderNumber) {}
 
     record LedgerRow(
             long entryId,
@@ -87,7 +90,7 @@ public class JournalService {
                                 :reversesId, :by)
                         RETURNING id
                         """)
-                .param("number", numbering.next(NumberSequence.Kind.JOURNAL))
+                .param("number", numbering.next(NumberSequence.Kind.JOURNAL, entry.date()))
                 .param("date", entry.date())
                 .param("sourceType", entry.sourceType())
                 .param("sourceId", entry.sourceId())
@@ -171,7 +174,21 @@ public class JournalService {
                                    WHEN 'WEB_ORDER' THEN (SELECT number FROM web_order WHERE id = e.source_id)
                                    WHEN 'WEB_RETURN' THEN (SELECT number FROM web_order_return WHERE id = e.source_id)
                                    WHEN 'EXPENSE' THEN (SELECT description FROM expense WHERE id = e.source_id)
-                               END AS source_label
+                               END AS source_label,
+                               CASE e.source_type
+                                   WHEN 'ORDER_PAYMENT' THEN (SELECT p.order_id FROM order_payment p
+                                                              WHERE p.id = e.source_id)
+                               END AS order_id,
+                               CASE e.source_type
+                                   WHEN 'ALTERATION_PAYMENT' THEN (SELECT p.alteration_id FROM alteration_payment p
+                                                                   WHERE p.id = e.source_id)
+                               END AS alteration_id,
+                               CASE e.source_type
+                                   WHEN 'WEB_ORDER' THEN (SELECT number FROM web_order WHERE id = e.source_id)
+                                   WHEN 'WEB_RETURN' THEN (SELECT w.number FROM web_order_return r
+                                                           JOIN web_order w ON w.id = r.order_id
+                                                           WHERE r.id = e.source_id)
+                               END AS order_number
                         FROM journal_entry e WHERE e.id = :id
                         """)
                 .param(ID, id)
@@ -191,7 +208,8 @@ public class JournalService {
         var sourceLabel = row.sourceLabel();
         var link = sourceId == null || sourceLabel == null
                 ? null
-                : new JournalSourceLink(row.sourceType(), sourceId, sourceLabel);
+                : new JournalSourceLink(
+                        row.sourceType(), sourceId, sourceLabel, row.orderId(), row.alterationId(), row.orderNumber());
         return new JournalEntry(
                 row.id(),
                 row.number(),

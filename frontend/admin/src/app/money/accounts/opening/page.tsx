@@ -126,9 +126,11 @@ export default function OpeningBalancesPage() {
   const chart = useLoad(() => api.admin.accounts.chart(), []);
   const opening = useLoad(() => api.admin.accounts.opening(), []);
   const o = opening.value;
+  // A turned-off account stays in the list while the saved entry holds an amount on it.
+  const held = new Set((o?.lines ?? []).filter((l) => l.debitRupees || l.creditRupees).map((l) => l.accountId));
   const accounts = (chart.value ?? []).filter(
     (a) =>
-      a.active &&
+      (a.active || held.has(a.id)) &&
       a.systemKey !== "OPENING_BALANCE" &&
       (a.type === "ASSET" || a.type === "LIABILITY" || a.type === "EQUITY"),
   );
@@ -152,6 +154,19 @@ export default function OpeningBalancesPage() {
             As at {formatDate(o.startDate)}
             {o.entryNumber ? ` · entry ${o.entryNumber}` : ""}
           </p>
+          {o.preStartOrders.length > 0 && (
+            <div className="mb-4 rounded-2xl border border-line bg-panel p-4">
+              <p className="font-medium">Orders with money received before the books start</p>
+              <p className="mt-1 text-sm text-ink-soft">
+                Include what these owe, and the advances they hold, in the overall Debtors and advances amounts below.
+              </p>
+              <ul className="mt-2 list-inside list-disc text-sm">
+                {o.preStartOrders.map((number) => (
+                  <li key={number}>{number}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           <OpeningForm
             key={`${accounts.length}-${o.entryId ?? "new"}`}
             accounts={accounts}

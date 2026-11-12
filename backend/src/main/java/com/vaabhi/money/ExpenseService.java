@@ -24,6 +24,8 @@ public class ExpenseService {
             """;
     private static final String FROM_PAYROLL = "This salary was paid from Payroll; change it there";
 
+    private static final String IN_THE_BOOKS = "This expense is in the books; record a correction";
+
     private final JdbcClient jdbc;
 
     ExpenseService(JdbcClient jdbc) {
@@ -83,8 +85,16 @@ public class ExpenseService {
 
     @Transactional
     public Expense update(long id, ExpenseForm form) {
-        if (get(id).fromPayroll()) {
+        var current = get(id);
+        if (current.fromPayroll()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, FROM_PAYROLL);
+        }
+        boolean moneyChanged = !current.spentOn().equals(form.spentOn())
+                || current.category() != form.category()
+                || current.mode() != form.mode()
+                || current.amountRupees().compareTo(form.amountRupees()) != 0;
+        if (moneyChanged && inTheBooks(id)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, IN_THE_BOOKS);
         }
         int updated = jdbc.sql("""
                         UPDATE expense SET spent_on = :spentOn, category = :category, description = :description,
@@ -110,9 +120,20 @@ public class ExpenseService {
         if (get(id).fromPayroll()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, FROM_PAYROLL);
         }
+        if (inTheBooks(id)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, IN_THE_BOOKS);
+        }
         if (jdbc.sql("DELETE FROM expense WHERE id = :id").param(ID, id).update() == 0) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Expense not found");
         }
+    }
+
+    /** True once the books hold an entry for this expense (checked in SQL; money does not import accounts). */
+    private boolean inTheBooks(long id) {
+        return jdbc.sql("SELECT EXISTS (SELECT 1 FROM journal_entry WHERE source_type = 'EXPENSE' AND source_id = :id)")
+                .param(ID, id)
+                .query(Boolean.class)
+                .single();
     }
 
     private static @Nullable String blankToNull(@Nullable String text) {

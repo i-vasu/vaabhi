@@ -66,7 +66,7 @@ export const invoiceEntry: JournalEntry = {
   reversedById: null,
   createdBy: null,
   createdAt: "2026-11-02T10:00:00Z",
-  sourceLink: { type: "INVOICE", id: 5, label: "INV-305" },
+  sourceLink: { type: "INVOICE", id: 5, label: "INV-305", orderId: null, alterationId: null, orderNumber: null },
   lines: [
     {
       accountId: 1,
@@ -114,6 +114,7 @@ export const openingBalances: OpeningBalances = {
   entryId: null,
   entryNumber: null,
   lines: [],
+  preStartOrders: [],
 };
 
 export const openPeriods: PeriodStatus[] = [

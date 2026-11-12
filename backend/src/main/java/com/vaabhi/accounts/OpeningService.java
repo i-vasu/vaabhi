@@ -26,12 +26,19 @@ public class OpeningService {
     private final BooksSettingsService settings;
     private final JournalService journal;
     private final ChartService chart;
+    private final DailyBooksCheck booksCheck;
 
-    OpeningService(JdbcClient jdbc, BooksSettingsService settings, JournalService journal, ChartService chart) {
+    OpeningService(
+            JdbcClient jdbc,
+            BooksSettingsService settings,
+            JournalService journal,
+            ChartService chart,
+            DailyBooksCheck booksCheck) {
         this.jdbc = jdbc;
         this.settings = settings;
         this.journal = journal;
         this.chart = chart;
+        this.booksCheck = booksCheck;
     }
 
     @Transactional(readOnly = true)
@@ -40,9 +47,7 @@ public class OpeningService {
         var entry = live == null ? null : journal.get(live);
         var lines = new ArrayList<OpeningBalanceLine>();
         for (var account : chart.list()) {
-            if (!account.type().onBalanceSheet()
-                    || !account.active()
-                    || "OPENING_BALANCE".equals(account.systemKey())) {
+            if (!account.type().onBalanceSheet() || "OPENING_BALANCE".equals(account.systemKey())) {
                 continue;
             }
             var debit = Rupees.ZERO;
@@ -55,13 +60,19 @@ public class OpeningService {
                     }
                 }
             }
+            // A turned-off account stays listed only while the live entry holds an amount on it.
+            if (!account.active() && debit.signum() == 0 && credit.signum() == 0) {
+                continue;
+            }
             lines.add(new OpeningBalanceLine(account.id(), debit, credit));
         }
+        var startDate = settings.get().startDate();
         return new OpeningBalances(
-                settings.get().startDate(),
+                startDate,
                 entry == null ? null : entry.id(),
                 entry == null ? null : entry.number(),
-                lines);
+                lines,
+                startDate == null ? List.of() : booksCheck.preStartOrders(startDate));
     }
 
     /** Replaces the opening entry: reverses the live one, posts the new amounts with the remainder to equity. */

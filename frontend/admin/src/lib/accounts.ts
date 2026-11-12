@@ -36,12 +36,16 @@ export function sourceHref(link: JournalSourceLink): string | null {
       return `/money/invoices/view/?id=${link.id}`;
     case "CREDIT_NOTE":
       return `/money/credit-notes/view/?id=${link.id}`;
+    case "ORDER_PAYMENT":
+      return link.orderId == null ? null : `/orders/view/?id=${link.orderId}`;
+    case "ALTERATION_PAYMENT":
+      return link.alterationId == null ? null : `/alterations/view/?id=${link.alterationId}`;
     case "WEB_ORDER":
-      return `/online-orders/view/?number=${encodeURIComponent(link.label)}`;
+    case "WEB_RETURN":
+      return link.orderNumber ? `/online-orders/view/?number=${encodeURIComponent(link.orderNumber)}` : null;
     case "EXPENSE":
       return "/money/expenses/";
     default:
-      // ORDER_PAYMENT and ALTERATION_PAYMENT carry the payment's id, not the order's.
       return null;
   }
 }

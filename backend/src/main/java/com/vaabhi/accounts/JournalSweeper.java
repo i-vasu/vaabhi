@@ -100,14 +100,26 @@ public class JournalSweeper {
             try {
                 for (var rule : rules) {
                     dropResolvedProblems(rule, start);
-                    for (long id : rule.pending(start, BATCH)) {
-                        try {
-                            tx.executeWithoutResult(status -> journal.post(rule.build(id), null));
-                            problems.clear(rule.sourceType(), id, rule.step());
-                            posted++;
-                        } catch (RuntimeException e) {
-                            problems.record(rule.sourceType(), id, rule.step(), message(e));
-                            failed++;
+                    var failedIds = new HashSet<Long>();
+                    while (true) {
+                        // Ask for enough extra rows that already-failed ids cannot fill the whole batch.
+                        var batch = rule.pending(start, BATCH + failedIds.size()).stream()
+                                .filter(id -> !failedIds.contains(id))
+                                .limit(BATCH)
+                                .toList();
+                        if (batch.isEmpty()) {
+                            break;
+                        }
+                        for (long id : batch) {
+                            try {
+                                tx.executeWithoutResult(status -> journal.post(rule.build(id), null));
+                                problems.clear(rule.sourceType(), id, rule.step());
+                                posted++;
+                            } catch (RuntimeException e) {
+                                problems.record(rule.sourceType(), id, rule.step(), message(e));
+                                failedIds.add(id);
+                                failed++;
+                            }
                         }
                     }
                 }

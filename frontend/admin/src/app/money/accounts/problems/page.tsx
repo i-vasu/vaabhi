@@ -44,11 +44,15 @@ export default function ProblemsPage() {
         <ListCard>
           {v.map((problem) => {
             const label = `${sourceLabel(problem.sourceType)} #${problem.sourceId}`;
-            // A web order's page is found by its number, which a problem does not carry.
-            const href =
-              problem.sourceType === "WEB_ORDER"
-                ? null
-                : sourceHref({ type: problem.sourceType, id: problem.sourceId, label: String(problem.sourceId) });
+            // Payments, web orders and returns are found by an order id or number, which a problem does not carry.
+            const href = sourceHref({
+              type: problem.sourceType,
+              id: problem.sourceId,
+              label: String(problem.sourceId),
+              orderId: null,
+              alterationId: null,
+              orderNumber: null,
+            });
             return (
               <ListRow
                 key={`${problem.sourceType}-${problem.sourceId}-${problem.sourceStep}`}

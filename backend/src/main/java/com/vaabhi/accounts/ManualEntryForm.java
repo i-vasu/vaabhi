@@ -13,4 +13,4 @@ public record ManualEntryForm(
         @NotBlank @Size(max = 200) String narration,
 
         @NotNull @Size(min = 2, message = "Add at least two lines")
-        List<@Valid ManualEntryLineInput> lines) {}
+        List<@Valid @NotNull ManualEntryLineInput> lines) {}
