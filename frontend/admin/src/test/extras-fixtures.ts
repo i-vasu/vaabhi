@@ -142,7 +142,6 @@ export const activity: ActivityPage = {
 
 export const reportList: ReportInfo[] = [
   { name: "sales", title: "Sales", description: "Invoiced per day: taxable value, GST and total" },
-  { name: "gst", title: "GST register", description: "Every invoice with GSTIN" },
 ];
 
 export const reportsOverview: ReportsOverview = {

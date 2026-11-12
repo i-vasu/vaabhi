@@ -50,6 +50,12 @@ export default function ReportsPage() {
       <SectionLabel>All reports</SectionLabel>
       {reports.value && (
         <ListCard>
+          <ListRow
+            icon={ActivityIcon}
+            href="/reports/gst/"
+            title="GSTR-1"
+            subtitle="Sales return for the month, ready for the GST offline tool"
+          />
           {reports.value.map((r) => (
             <ListRow
               key={r.name}
