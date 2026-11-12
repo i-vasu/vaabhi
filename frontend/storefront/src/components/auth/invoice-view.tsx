@@ -19,6 +19,7 @@ export function InvoiceView({ invoice }: Readonly<{ invoice: StoreInvoice }>) {
     invoice.shopGstin ? `GSTIN: ${invoice.shopGstin}` : null,
   ].filter(Boolean);
   const buyerLines = [buyer.address, buyer.state, buyer.phone].filter(Boolean);
+  const taxed = invoice.cgstRupees + invoice.sgstRupees + invoice.igstRupees > 0;
 
   return (
     <article className="text-left">
@@ -57,8 +58,10 @@ export function InvoiceView({ invoice }: Readonly<{ invoice: StoreInvoice }>) {
         <thead>
           <tr className="border-b border-border-default text-left">
             <th className="py-2 font-medium">Item</th>
+            {taxed && <th className="py-2 font-medium">HSN/SAC</th>}
             <th className="py-2 text-right font-medium">Qty</th>
             <th className="py-2 text-right font-medium">Rate</th>
+            {taxed && <th className="py-2 text-right font-medium">GST</th>}
             <th className="py-2 text-right font-medium">Amount</th>
           </tr>
         </thead>
@@ -66,8 +69,10 @@ export function InvoiceView({ invoice }: Readonly<{ invoice: StoreInvoice }>) {
           {invoice.lines.map((line, index) => (
             <tr key={index} className="border-b border-border-default">
               <td className="py-2">{line.description}</td>
+              {taxed && <td className="py-2">{line.hsnCode ?? ""}</td>}
               <td className="py-2 text-right tabular-nums">{line.quantity}</td>
               <td className="py-2 text-right tabular-nums">{formatPrice(line.unitRupees)}</td>
+              {taxed && <td className="py-2 text-right tabular-nums">{line.gstRate}%</td>}
               <td className="py-2 text-right tabular-nums">{formatPrice(line.amountRupees)}</td>
             </tr>
           ))}
@@ -76,8 +81,14 @@ export function InvoiceView({ invoice }: Readonly<{ invoice: StoreInvoice }>) {
 
       <dl className="ml-auto mt-4 flex max-w-xs flex-col gap-1 text-sm">
         <Row label="Taxable value" value={invoice.taxableRupees} />
-        {invoice.cgstRupees > 0 && <Row label="CGST" value={invoice.cgstRupees} />}
-        {invoice.sgstRupees > 0 && <Row label="SGST" value={invoice.sgstRupees} />}
+        {invoice.supplyType === "INTER" ? (
+          invoice.igstRupees > 0 && <Row label="IGST" value={invoice.igstRupees} />
+        ) : (
+          <>
+            {invoice.cgstRupees > 0 && <Row label="CGST" value={invoice.cgstRupees} />}
+            {invoice.sgstRupees > 0 && <Row label="SGST" value={invoice.sgstRupees} />}
+          </>
+        )}
         <Row label="Total" value={invoice.totalRupees} strong />
       </dl>
     </article>

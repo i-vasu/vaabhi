@@ -2,10 +2,10 @@
 
 import { Button } from "@vaabhi/ui";
 
-export function PrintButton() {
+export function PrintButton({ label = "Print invoice" }: Readonly<{ label?: string }>) {
   return (
     <Button variant="secondary" className="print:hidden" onClick={() => window.print()}>
-      Print invoice
+      {label}
     </Button>
   );
 }
