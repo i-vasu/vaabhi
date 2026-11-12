@@ -1,6 +1,7 @@
 import type { Account, JournalSourceLink, LedgerStatement } from "@vaabhi/api-client";
 import { useStaff } from "@/components/app-shell";
 import { getStaff } from "@/lib/auth";
+import { parseRupees, rupees } from "@/lib/settings";
 
 export type AccountType = Account["type"];
 
@@ -88,9 +89,32 @@ export function relativeTime(iso: string, now: Date = new Date()): string {
   return "just now";
 }
 
-function csvCell(value: string | number): string {
-  const text = String(value);
-  return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+export function csvCell(value: string | number): string {
+  let text = String(value);
+  // A text cell that starts like a formula would be run by a spreadsheet; numbers (even negative) are safe.
+  if (typeof value === "string" && /^[=+\-@]/.test(text)) text = `'${text}`;
+  return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+/** Whole paise of what a person typed ("" = 0), or null when it is not a rupee amount; no float drift. */
+export function toPaise(text: string): number | null {
+  if (text.trim() === "") return 0;
+  const amount = parseRupees(text);
+  return amount === null ? null : Math.round(amount * 100);
+}
+
+/** Paise → "1,250.50"-style rupees for display. */
+export function paiseLabel(paise: number): string {
+  return rupees(paise / 100);
+}
+
+/** "2026-04-01" → "April 2026". */
+export function monthTitle(isoDate: string): string {
+  return new Date(`${isoDate.slice(0, 7)}-01T00:00:00Z`).toLocaleDateString("en-IN", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 }
 
 /** An account's statement as CSV: opening, every line with its running balance, closing. */

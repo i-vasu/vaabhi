@@ -19,7 +19,7 @@ import {
 import { api } from "@/lib/api";
 import { MODE_ACCOUNTS, relativeTime, useIsOwner } from "@/lib/accounts";
 import { rupees } from "@/lib/settings";
-import { today, useAction, useLoad } from "@/lib/tailoring";
+import { formatDate, today, useAction, useLoad } from "@/lib/tailoring";
 
 function StartDate({ settings, owner, onSaved }: { settings: BooksSettings; owner: boolean; onSaved: () => void }) {
   const [date, setDate] = useState(today());
@@ -35,7 +35,7 @@ function StartDate({ settings, owner, onSaved }: { settings: BooksSettings; owne
   return (
     <div className="mb-4 rounded-2xl border border-line bg-panel p-4">
       {settings.startDate ? (
-        <p>Books start on {settings.startDate}.</p>
+        <p>Books start on {formatDate(settings.startDate)}.</p>
       ) : (
         <>
           <p className="font-medium">Books haven&apos;t started. Set the start date to begin.</p>
@@ -187,6 +187,24 @@ export default function AccountsPage() {
               icon={BankIcon}
               title="Chart of accounts"
               subtitle="Accounts and their ledgers"
+            />
+            <ListRow
+              href="/money/accounts/manual/"
+              icon={DocumentIcon}
+              title="Manual journal"
+              subtitle="Post an entry by hand"
+            />
+            <ListRow
+              href="/money/accounts/opening/"
+              icon={BankIcon}
+              title="Opening balances"
+              subtitle="What the books start with"
+            />
+            <ListRow
+              href="/money/accounts/periods/"
+              icon={ActivityIcon}
+              title="Periods"
+              subtitle="Lock months that are closed"
             />
           </ListCard>
           {owner && (

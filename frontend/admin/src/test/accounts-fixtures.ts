@@ -4,6 +4,8 @@ import type {
   BooksSettings,
   JournalEntry,
   JournalPage,
+  OpeningBalances,
+  PeriodStatus,
   TrialBalance,
 } from "@vaabhi/api-client";
 import { http, HttpResponse } from "msw";
@@ -107,6 +109,18 @@ export const journalPage: JournalPage = {
   size: 20,
 };
 
+export const openingBalances: OpeningBalances = {
+  startDate: "2026-04-01",
+  entryId: null,
+  entryNumber: null,
+  lines: [],
+};
+
+export const openPeriods: PeriodStatus[] = [
+  { month: "2026-10-01", locked: false, lockedBy: null, lockedAt: null },
+  { month: "2026-09-01", locked: true, lockedBy: "Owner", lockedAt: "2026-10-02T09:00:00Z" },
+];
+
 /** Serves the Accounts endpoints; pass the settings and status to start from. */
 export function serveAccounts(settings: BooksSettings = notStarted, status: AccountsStatus = startedStatus): void {
   const base = `${API}/api/v1/admin/accounts`;
@@ -117,5 +131,8 @@ export function serveAccounts(settings: BooksSettings = notStarted, status: Acco
     http.get(`${base}/trial-balance`, () => HttpResponse.json(trialBalance)),
     http.get(`${base}/journal`, () => HttpResponse.json(journalPage)),
     http.get(`${base}/journal/:id`, () => HttpResponse.json(invoiceEntry)),
+    http.get(`${base}/opening-balances`, () => HttpResponse.json(openingBalances)),
+    http.get(`${base}/periods`, () => HttpResponse.json(openPeriods)),
+    http.get(`${base}/problems`, () => HttpResponse.json([])),
   );
 }
