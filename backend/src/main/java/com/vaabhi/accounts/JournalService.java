@@ -90,7 +90,7 @@ public class JournalService {
                                 :reversesId, :by)
                         RETURNING id
                         """)
-                .param("number", numbering.next(NumberSequence.Kind.JOURNAL, entry.date()))
+                .param("number", numbering.next(NumberSequence.Kind.JOURNAL))
                 .param("date", entry.date())
                 .param("sourceType", entry.sourceType())
                 .param("sourceId", entry.sourceId())

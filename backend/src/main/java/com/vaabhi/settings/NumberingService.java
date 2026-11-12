@@ -71,20 +71,6 @@ public class NumberingService {
      */
     @Transactional(propagation = Propagation.MANDATORY)
     public String next(NumberSequence.Kind kind) {
-        return take(kind, year());
-    }
-
-    /**
-     * Like {@link #next(NumberSequence.Kind)}, but prints the financial year of {@code on} (an entry dated in another
-     * year). The value still comes from the one shared counter, which follows today's financial year, so posting into a
-     * past year never disturbs the current year's count.
-     */
-    @Transactional(propagation = Propagation.MANDATORY)
-    public String next(NumberSequence.Kind kind, LocalDate on) {
-        return take(kind, NumberSequence.financialYear(on));
-    }
-
-    private String take(NumberSequence.Kind kind, String printedYear) {
         var year = year();
         var row = jdbc.sql("SELECT " + COLUMNS + " FROM number_sequence WHERE kind = :kind FOR UPDATE")
                 .param("kind", kind.name())
@@ -96,7 +82,7 @@ public class NumberingService {
                 .param("period", row.reset() == NumberSequence.Reset.FY ? year : "")
                 .param("kind", kind.name())
                 .update();
-        return NumberSequence.format(row.prefix(), value, row.suffix(), row.pad(), printedYear);
+        return NumberSequence.format(row.prefix(), value, row.suffix(), row.pad(), year);
     }
 
     @Transactional

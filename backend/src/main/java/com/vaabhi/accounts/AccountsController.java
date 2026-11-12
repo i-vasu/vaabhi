@@ -9,6 +9,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,6 +32,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/api/v1/admin/accounts")
 class AccountsController {
 
+    private static final Logger log = LoggerFactory.getLogger(AccountsController.class);
     private static final ZoneId SHOP_ZONE = ZoneId.of("Asia/Kolkata");
 
     private final ChartService chart;
@@ -205,7 +208,11 @@ class AccountsController {
     JournalSweeper.SweepResult sweep() {
         var result = sweeper.sweepNow();
         // Post now also refreshes the balance checks, so the problems list is current.
-        booksCheck.run();
+        try {
+            booksCheck.run();
+        } catch (RuntimeException e) {
+            log.error("Balance checks after Post now failed", e);
+        }
         return result;
     }
 
