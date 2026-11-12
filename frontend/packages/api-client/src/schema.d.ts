@@ -4089,6 +4089,7 @@ export interface components {
             entryId: number | null;
             entryNumber: string | null;
             lines: components["schemas"]["OpeningBalanceLine"][];
+            preStartOrders: string[];
         };
         AccountForm: {
             code: string;
@@ -5062,6 +5063,11 @@ export interface components {
             /** Format: int64 */
             id: number;
             label: string;
+            /** Format: int64 */
+            orderId: number | null;
+            /** Format: int64 */
+            alterationId: number | null;
+            orderNumber: string | null;
         };
         ShopContact: {
             name: string;

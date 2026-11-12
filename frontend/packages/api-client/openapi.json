@@ -13426,12 +13426,19 @@
                         "items": {
                             "$ref": "#/components/schemas/OpeningBalanceLine"
                         }
+                    },
+                    "preStartOrders": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
                     }
                 },
                 "required": [
                     "entryId",
                     "entryNumber",
                     "lines",
+                    "preStartOrders",
                     "startDate"
                 ]
             },
@@ -17760,11 +17767,34 @@
                     },
                     "label": {
                         "type": "string"
+                    },
+                    "orderId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "alterationId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "orderNumber": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     }
                 },
                 "required": [
+                    "alterationId",
                     "id",
                     "label",
+                    "orderId",
+                    "orderNumber",
                     "type"
                 ]
             },
