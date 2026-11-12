@@ -42,6 +42,7 @@ public class InvoiceService {
     private final ClientService clients;
     private final SettingsService settings;
     private final NumberingService numbering;
+    private final TaxClassService taxClasses;
     private final Clock clock;
 
     InvoiceService(
@@ -50,7 +51,9 @@ public class InvoiceService {
             ClientService clients,
             SettingsService settings,
             NumberingService numbering,
+            TaxClassService taxClasses,
             Clock clock) {
+        this.taxClasses = taxClasses;
         this.jdbc = jdbc;
         this.orders = orders;
         this.clients = clients;
@@ -76,6 +79,8 @@ public class InvoiceService {
                 client.phone(),
                 buyerAddress(client.address(), client.city(), client.pinCode()),
                 client.state());
+        var sellerStateCode = InvoiceParties.seller(settings.shopProfile(), settings.billing())
+                .stateCode();
         long id = insertInvoice(new NewInvoice(
                 orderId,
                 null,
@@ -83,6 +88,7 @@ public class InvoiceService {
                 null,
                 buyer,
                 client.gstin(),
+                sellerStateCode,
                 order.totalRupees(),
                 lines(order),
                 actor,
@@ -92,7 +98,8 @@ public class InvoiceService {
 
     /**
      * What a new invoice needs besides the shop settings. The party comes from the client when {@code partyId} is
-     * null; {@code orderTotalRupees} is what the order charged, which GST is worked out on.
+     * null; {@code orderTotalRupees} is what the order charged, which GST is worked out on. {@code buyerStateCode}
+     * is the buyer's GST state code (the seller's own for a shop order); null when unknown.
      */
     record NewInvoice(
             @Nullable Long orderId,
@@ -101,31 +108,40 @@ public class InvoiceService {
             @Nullable Long partyId,
             InvoiceParties.Buyer buyer,
             @Nullable String clientGstin,
+            @Nullable String buyerStateCode,
             BigDecimal orderTotalRupees,
-            List<InvoiceLine> lines,
+            List<TaxEngine.TaxInput> lines,
             @Nullable String actor,
             boolean alwaysInclusive) {}
 
     /** Works out the GST, takes the next number and inserts the invoice with its lines; returns the new id. */
     long insertInvoice(NewInvoice invoice) {
         var billing = settings.billing();
-        var rate = billing.gstApplies() ? billing.defaultGstRate() : BigDecimal.ZERO;
         boolean inclusive = invoice.alwaysInclusive() || billing.pricesIncludeTax();
-        var tax = TaxEngine.lineTax(invoice.orderTotalRupees(), rate, inclusive);
-        var number = numbering.next(NumberSequence.Kind.INVOICE);
         var seller = InvoiceParties.seller(settings.shopProfile(), billing);
+        var tax = TaxEngine.compute(
+                invoice.lines(),
+                invoice.orderTotalRupees(),
+                seller.stateCode(),
+                invoice.buyerStateCode(),
+                billing.gstApplies(),
+                inclusive,
+                taxClasses::resolve);
+        var number = numbering.next(NumberSequence.Kind.INVOICE);
         var buyer = invoice.buyer();
+        var placeOfSupply = invoice.buyerStateCode() != null ? invoice.buyerStateCode() : seller.stateCode();
         long id = jdbc.sql("""
                         INSERT INTO invoice (number, order_id, web_order_id, client_id, party_id, issued_on,
                             order_total_rupees, gst_rate, prices_include_tax, taxable_rupees, cgst_rupees, sgst_rupees,
-                            total_rupees, shop_gstin, client_gstin, created_by, title, buyer_name, buyer_phone,
-                            buyer_address, buyer_state, seller_name, seller_address, seller_cin, seller_state,
-                            seller_state_code)
+                            igst_rupees, place_of_supply, supply_type, total_rupees, shop_gstin, client_gstin,
+                            created_by, title, buyer_name, buyer_phone, buyer_address, buyer_state, seller_name,
+                            seller_address, seller_cin, seller_state, seller_state_code)
                         VALUES (:number, :order, :webOrder, :client,
                             COALESCE(CAST(:party AS bigint), (SELECT party_id FROM client WHERE id = :client)),
-                            :issuedOn, :orderTotal, :rate, :inclusive, :taxable, :cgst, :sgst, :total, :shopGstin,
-                            :clientGstin, :by, :title, :buyerName, :buyerPhone, :buyerAddress, :buyerState,
-                            :sellerName, :sellerAddress, :sellerCin, :sellerState, :sellerStateCode)
+                            :issuedOn, :orderTotal, :rate, :inclusive, :taxable, :cgst, :sgst, :igst, :placeOfSupply,
+                            :supplyType, :total, :shopGstin, :clientGstin, :by, :title, :buyerName, :buyerPhone,
+                            :buyerAddress, :buyerState, :sellerName, :sellerAddress, :sellerCin, :sellerState,
+                            :sellerStateCode)
                         RETURNING id
                         """)
                 .param("number", number)
@@ -145,11 +161,14 @@ public class InvoiceService {
                 .param("sellerState", seller.state())
                 .param("sellerStateCode", seller.stateCode())
                 .param("orderTotal", invoice.orderTotalRupees())
-                .param("rate", rate)
+                .param("rate", tax.highestRate())
                 .param("inclusive", inclusive)
                 .param("taxable", tax.taxableRupees())
                 .param("cgst", tax.cgstRupees())
                 .param("sgst", tax.sgstRupees())
+                .param("igst", tax.igstRupees())
+                .param("placeOfSupply", placeOfSupply)
+                .param("supplyType", tax.supplyType().name())
                 .param("total", tax.totalRupees())
                 .param("shopGstin", billing.gstApplies() ? billing.gstin() : null)
                 .param("clientGstin", invoice.clientGstin())
@@ -157,18 +176,28 @@ public class InvoiceService {
                 .query(Long.class)
                 .single();
         int position = 0;
-        for (var line : invoice.lines()) {
+        for (var line : tax.lines()) {
             jdbc.sql("""
                             INSERT INTO invoice_line (invoice_id, position, description, quantity, unit_rupees,
-                                amount_rupees)
-                            VALUES (:invoice, :position, :description, :quantity, :unit, :amount)
+                                amount_rupees, discount_rupees, hsn_code, gst_rate, taxable_rupees, cgst_rupees,
+                                sgst_rupees, igst_rupees, web_order_line_id)
+                            VALUES (:invoice, :position, :description, :quantity, :unit, :amount, :discount, :hsn,
+                                :rate, :taxable, :cgst, :sgst, :igst, :webOrderLine)
                             """)
                     .param("invoice", id)
                     .param("position", ++position)
-                    .param("description", line.description())
-                    .param("quantity", line.quantity())
-                    .param("unit", line.unitRupees())
+                    .param("description", line.input().description())
+                    .param("quantity", line.input().quantity())
+                    .param("unit", line.input().unitRupees())
                     .param("amount", line.amountRupees())
+                    .param("discount", line.discountRupees())
+                    .param("hsn", line.hsnCode())
+                    .param("rate", line.gstRate())
+                    .param("taxable", line.taxableRupees())
+                    .param("cgst", line.cgstRupees())
+                    .param("sgst", line.sgstRupees())
+                    .param("igst", line.igstRupees())
+                    .param("webOrderLine", line.input().webOrderLineId())
                     .update();
         }
         return id;
@@ -187,19 +216,21 @@ public class InvoiceService {
         return parts.isEmpty() ? null : String.join(", ", parts);
     }
 
-    private static List<InvoiceLine> lines(Order order) {
-        var lines = new ArrayList<InvoiceLine>();
+    private List<TaxEngine.TaxInput> lines(Order order) {
+        var lines = new ArrayList<TaxEngine.TaxInput>();
         for (var item : order.items()) {
             var description =
                     item.colour() == null ? item.description() : item.description() + " (" + item.colour() + ")";
-            lines.add(new InvoiceLine(
+            lines.add(new TaxEngine.TaxInput(
                     description.length() > 160 ? description.substring(0, 160) : description,
                     item.quantity(),
                     item.priceRupees(),
-                    Rupees.times(item.priceRupees(), item.quantity())));
+                    taxClasses.shopItemClass(item.templateId(), item.serviceProductId()),
+                    null,
+                    false));
         }
         if (order.deliveryChargeRupees().signum() > 0) {
-            lines.add(new InvoiceLine("Delivery", 1, order.deliveryChargeRupees(), order.deliveryChargeRupees()));
+            lines.add(new TaxEngine.TaxInput("Delivery", 1, order.deliveryChargeRupees(), null, null, true));
         }
         return lines;
     }
@@ -273,6 +304,9 @@ public class InvoiceService {
             BigDecimal taxableRupees,
             BigDecimal cgstRupees,
             BigDecimal sgstRupees,
+            BigDecimal igstRupees,
+            @Nullable String placeOfSupply,
+            String supplyType,
             BigDecimal totalRupees,
             BigDecimal paidRupees,
             @Nullable String shopGstin,
@@ -289,7 +323,8 @@ public class InvoiceService {
                                v.client_id, v.title, v.buyer_name, v.buyer_phone, v.buyer_address, v.buyer_state,
                                v.seller_name, v.seller_address, v.seller_cin, v.seller_state, v.seller_state_code,
                                v.issued_on, v.order_total_rupees, v.gst_rate, v.prices_include_tax, v.taxable_rupees,
-                               v.cgst_rupees, v.sgst_rupees, v.total_rupees,
+                               v.cgst_rupees, v.sgst_rupees, v.igst_rupees, v.place_of_supply, v.supply_type,
+                               v.total_rupees,
                                CASE WHEN v.web_order_id IS NULL THEN o.paid_rupees
                                     WHEN w.paid_at IS NOT NULL THEN v.total_rupees ELSE 0 END AS paid_rupees,
                                v.shop_gstin, v.client_gstin, v.created_by, v.created_at, v.cancelled_at, v.cancelled_by
@@ -303,7 +338,9 @@ public class InvoiceService {
                 .optional()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
         var lines = jdbc.sql("""
-                        SELECT description, quantity, unit_rupees, amount_rupees FROM invoice_line
+                        SELECT id, description, quantity, unit_rupees, amount_rupees, discount_rupees, hsn_code,
+                               gst_rate, taxable_rupees, cgst_rupees, sgst_rupees, igst_rupees
+                        FROM invoice_line
                         WHERE invoice_id = :id ORDER BY position
                         """).param(ID, id).query(InvoiceLine.class).list();
         var linesRupees = Rupees.sum(lines, InvoiceLine::amountRupees);
@@ -331,6 +368,9 @@ public class InvoiceService {
                 row.taxableRupees(),
                 row.cgstRupees(),
                 row.sgstRupees(),
+                row.igstRupees(),
+                row.placeOfSupply(),
+                row.supplyType(),
                 row.totalRupees(),
                 row.paidRupees(),
                 row.totalRupees().subtract(row.paidRupees()),
@@ -381,7 +421,7 @@ public class InvoiceService {
         var totals = jdbc.sql("""
                         SELECT COUNT(*) AS n,
                                COALESCE(SUM(v.total_rupees) FILTER (WHERE v.cancelled_at IS NULL), 0) AS total,
-                               COALESCE(SUM(v.cgst_rupees + v.sgst_rupees) FILTER (WHERE v.cancelled_at IS NULL), 0) AS tax
+                               COALESCE(SUM(v.cgst_rupees + v.sgst_rupees + v.igst_rupees) FILTER (WHERE v.cancelled_at IS NULL), 0) AS tax
                         """ + where)
                 .params(params)
                 .query((rs, n) ->
@@ -393,7 +433,7 @@ public class InvoiceService {
                 .sql("""
                         SELECT v.id, v.number, v.order_id, v.web_order_id, COALESCE(o.number, w.number) AS order_number,
                                v.client_id, v.buyer_name, v.issued_on, v.taxable_rupees,
-                               v.cgst_rupees + v.sgst_rupees AS tax_rupees, v.total_rupees,
+                               v.cgst_rupees + v.sgst_rupees + v.igst_rupees AS tax_rupees, v.total_rupees,
                                CASE WHEN v.web_order_id IS NULL THEN o.paid_rupees
                                     WHEN w.paid_at IS NOT NULL THEN v.total_rupees ELSE 0 END AS paid_rupees,
                                v.cancelled_at IS NOT NULL AS cancelled

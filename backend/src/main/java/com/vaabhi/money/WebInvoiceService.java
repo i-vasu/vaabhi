@@ -49,17 +49,19 @@ public class WebInvoiceService {
         if (live.isPresent()) {
             return invoices.get(live.get());
         }
-        var lines = new ArrayList<InvoiceLine>();
+        var lines = new ArrayList<TaxEngine.TaxInput>();
         for (var line : request.lines()) {
             var description = line.description();
-            lines.add(new InvoiceLine(
+            lines.add(new TaxEngine.TaxInput(
                     description.length() > 160 ? description.substring(0, 160) : description,
                     line.quantity(),
                     line.unitRupees(),
-                    Rupees.times(line.unitRupees(), line.quantity())));
+                    line.taxClassId(),
+                    line.webOrderLineId(),
+                    false));
         }
         if (request.shippingRupees().signum() > 0) {
-            lines.add(new InvoiceLine("Delivery", 1, request.shippingRupees(), request.shippingRupees()));
+            lines.add(new TaxEngine.TaxInput("Delivery", 1, request.shippingRupees(), null, null, true));
         }
         long id = invoices.insertInvoice(new InvoiceService.NewInvoice(
                 null,
@@ -68,7 +70,8 @@ public class WebInvoiceService {
                 request.partyId(),
                 request.buyer(),
                 null,
-                Rupees.sum(lines, InvoiceLine::amountRupees),
+                request.buyerStateCode(),
+                Rupees.sum(lines, line -> Rupees.times(line.unitRupees(), line.quantity())),
                 lines,
                 null,
                 true));
@@ -125,6 +128,9 @@ public class WebInvoiceService {
                         invoice.taxableRupees(),
                         invoice.cgstRupees(),
                         invoice.sgstRupees(),
+                        invoice.igstRupees(),
+                        invoice.placeOfSupply(),
+                        invoice.supplyType(),
                         invoice.totalRupees(),
                         invoice.shopGstin(),
                         invoice.cancelledAt() != null));

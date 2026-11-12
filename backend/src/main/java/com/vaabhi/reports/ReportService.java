@@ -133,7 +133,7 @@ public class ReportService {
             case "sales" -> {
                 var rows = rows("""
                         SELECT to_char(v.issued_on, 'YYYY-MM-DD') AS day, COUNT(*) AS invoices,
-                               SUM(v.taxable_rupees) AS taxable, SUM(v.cgst_rupees + v.sgst_rupees) AS gst,
+                               SUM(v.taxable_rupees) AS taxable, SUM(v.cgst_rupees + v.sgst_rupees + v.igst_rupees) AS gst,
                                SUM(v.total_rupees) AS total
                         FROM invoice v WHERE v.cancelled_at IS NULL AND v.issued_on BETWEEN :from AND :to
                         GROUP BY v.issued_on ORDER BY v.issued_on

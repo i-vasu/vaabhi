@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.vaabhi.TestcontainersConfiguration;
+import com.vaabhi.shared.rupees.Rupees;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,7 +35,14 @@ class WebInvoiceServiceIT {
 
     private static final String BILLING = """
             {"chargeGst":false,"gstin":null,"defaultGstRate":5,"pricesIncludeTax":true,"showHsnCodes":false,
-             "discountAppliesTo":"ORDER_TOTAL","autoInvoice":true}
+             "discountAppliesTo":"ORDER_TOTAL","autoInvoice":true,
+             "company":{"legalName":"Vaabhi Test Pvt Ltd","state":"Telangana"},"defaultTaxClassId":%d}
+            """;
+
+    private static final String GST_ON = """
+            {"chargeGst":true,"gstin":"36ABCDE1234F1Z5","defaultGstRate":5,"pricesIncludeTax":true,
+             "showHsnCodes":true,"discountAppliesTo":"ORDER_TOTAL","autoInvoice":true,
+             "company":{"legalName":"Vaabhi Test Pvt Ltd","state":"Telangana"},"defaultTaxClassId":%d}
             """;
 
     @Autowired
@@ -54,7 +62,9 @@ class WebInvoiceServiceIT {
                                         new SimpleGrantedAuthority("ROLE_ADMIN"),
                                         new SimpleGrantedAuthority("ROLE_OWNER")))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(BILLING))
+                        .content(BILLING.formatted(jdbc.sql("SELECT id FROM tax_class WHERE name = 'Garments'")
+                                .query(Long.class)
+                                .single())))
                 .andExpect(status().isOk());
     }
 
@@ -85,15 +95,130 @@ class WebInvoiceServiceIT {
     }
 
     private static WebInvoiceRequest request(Order order) {
+        return request(
+                order,
+                "27",
+                "100",
+                new WebInvoiceRequest.Line("Silk saree (Teal)", 1, new BigDecimal("1000"), null, null),
+                new WebInvoiceRequest.Line("Blouse", 1, new BigDecimal("500"), null, null));
+    }
+
+    private static WebInvoiceRequest request(
+            Order order, String buyerStateCode, String shipping, WebInvoiceRequest.Line... lines) {
         return new WebInvoiceRequest(
                 order.id(),
                 order.number(),
                 null,
                 new InvoiceParties.Buyer("Test", "+919876200000", "1 Street, Pune, 411001", "Maharashtra"),
-                List.of(
-                        new WebInvoiceRequest.Line("Silk saree (Teal)", 1, new BigDecimal("1000")),
-                        new WebInvoiceRequest.Line("Blouse", 1, new BigDecimal("500"))),
-                new BigDecimal("100"));
+                buyerStateCode,
+                List.of(lines),
+                new BigDecimal(shipping));
+    }
+
+    /** Switches GST on for the seller in Telangana (36), with Garments as the default tax class. */
+    private void gstOn() throws Exception {
+        long garments = jdbc.sql("SELECT id FROM tax_class WHERE name = 'Garments'")
+                .query(Long.class)
+                .single();
+        mockMvc.perform(put("/api/v1/admin/settings/billing")
+                        .with(jwt().jwt(j -> j.subject("staff:1").claim("name", "Asha Rao"))
+                                .authorities(
+                                        new SimpleGrantedAuthority("ROLE_ADMIN"),
+                                        new SimpleGrantedAuthority("ROLE_OWNER")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(GST_ON.formatted(garments)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void outOfStateOrderIsIgst() throws Exception {
+        gstOn();
+        var order = order(customer());
+
+        var invoice = webInvoices.issueFor(request(
+                order,
+                "29",
+                "100",
+                new WebInvoiceRequest.Line("Silk saree (Teal)", 1, new BigDecimal("1000"), null, null),
+                new WebInvoiceRequest.Line("Blouse", 1, new BigDecimal("500"), null, null)));
+
+        assertThat(invoice.supplyType()).isEqualTo("INTER");
+        assertThat(invoice.placeOfSupply()).isEqualTo("29");
+        assertThat(invoice.igstRupees()).isGreaterThan(BigDecimal.ZERO);
+        assertThat(invoice.cgstRupees()).isEqualByComparingTo("0");
+        assertThat(invoice.sgstRupees()).isEqualByComparingTo("0");
+        assertThat(invoice.totalRupees()).isEqualByComparingTo("1600");
+    }
+
+    @Test
+    void sameStateOrderIsCgstAndSgst() throws Exception {
+        gstOn();
+        var order = order(customer());
+
+        var invoice = webInvoices.issueFor(request(
+                order,
+                "36",
+                "0",
+                new WebInvoiceRequest.Line("Silk saree (Teal)", 1, new BigDecimal("1000"), null, null)));
+
+        assertThat(invoice.supplyType()).isEqualTo("INTRA");
+        assertThat(invoice.igstRupees()).isEqualByComparingTo("0");
+        assertThat(invoice.cgstRupees()).isGreaterThan(BigDecimal.ZERO);
+    }
+
+    @Test
+    void slabPerLine() throws Exception {
+        gstOn();
+        var order = order(customer());
+
+        var invoice = webInvoices.issueFor(request(
+                order,
+                "36",
+                "0",
+                new WebInvoiceRequest.Line("Banarasi saree", 1, new BigDecimal("2800"), null, null),
+                new WebInvoiceRequest.Line("Cotton saree", 1, new BigDecimal("2000"), null, null)));
+
+        assertThat(invoice.lines().get(0).gstRate()).isEqualByComparingTo("18");
+        assertThat(invoice.lines().get(1).gstRate()).isEqualByComparingTo("5");
+        assertThat(invoice.gstRate()).isEqualByComparingTo("18");
+    }
+
+    @Test
+    void gstOffInvoiceHasHsnButNoTax() {
+        var order = order(customer());
+
+        var invoice = webInvoices.issueFor(request(
+                order,
+                "29",
+                "100",
+                new WebInvoiceRequest.Line("Silk saree (Teal)", 1, new BigDecimal("1000"), null, null)));
+
+        assertThat(invoice.lines().get(0).hsnCode()).isEqualTo("6204");
+        assertThat(invoice.lines().get(0).gstRate()).isEqualByComparingTo("0");
+        assertThat(invoice.cgstRupees()).isEqualByComparingTo("0");
+        assertThat(invoice.sgstRupees()).isEqualByComparingTo("0");
+        assertThat(invoice.igstRupees()).isEqualByComparingTo("0");
+        assertThat(invoice.supplyType()).isEqualTo("INTER");
+        assertThat(invoice.taxableRupees()).isEqualByComparingTo(invoice.totalRupees());
+    }
+
+    @Test
+    void linesSumToInvoice() throws Exception {
+        gstOn();
+        var order = order(customer());
+
+        var invoice = webInvoices.issueFor(request(
+                order,
+                "29",
+                "100",
+                new WebInvoiceRequest.Line("Silk saree (Teal)", 1, new BigDecimal("2800"), null, null),
+                new WebInvoiceRequest.Line("Blouse", 3, new BigDecimal("333.33"), null, null)));
+
+        assertThat(Rupees.sum(invoice.lines(), InvoiceLine::taxableRupees))
+                .isEqualByComparingTo(invoice.taxableRupees());
+        assertThat(Rupees.sum(invoice.lines(), InvoiceLine::cgstRupees)).isEqualByComparingTo(invoice.cgstRupees());
+        assertThat(Rupees.sum(invoice.lines(), InvoiceLine::sgstRupees)).isEqualByComparingTo(invoice.sgstRupees());
+        assertThat(Rupees.sum(invoice.lines(), InvoiceLine::igstRupees)).isEqualByComparingTo(invoice.igstRupees());
     }
 
     @Test

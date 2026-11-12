@@ -4,11 +4,13 @@ import com.vaabhi.catalog.BagQuote;
 import com.vaabhi.catalog.BagQuoteRequest;
 import com.vaabhi.catalog.BagQuoteService;
 import com.vaabhi.catalog.CatalogStock;
+import com.vaabhi.catalog.CatalogTax;
 import com.vaabhi.customer.CustomerService;
 import com.vaabhi.money.Invoice;
 import com.vaabhi.money.InvoiceParties;
 import com.vaabhi.money.WebInvoiceRequest;
 import com.vaabhi.money.WebInvoiceService;
+import com.vaabhi.settings.IndianStates;
 import com.vaabhi.settings.NumberSequence;
 import com.vaabhi.settings.NumberingService;
 import com.vaabhi.shared.rupees.Rupees;
@@ -60,6 +62,7 @@ public class CheckoutService {
     private final TransactionTemplate transactions;
     private final NumberingService numbering;
     private final WebInvoiceService webInvoices;
+    private final CatalogTax catalogTax;
 
     CheckoutService(
             JdbcClient jdbc,
@@ -72,7 +75,9 @@ public class CheckoutService {
             ApplicationEventPublisher events,
             PlatformTransactionManager transactionManager,
             NumberingService numbering,
-            WebInvoiceService webInvoices) {
+            WebInvoiceService webInvoices,
+            CatalogTax catalogTax) {
+        this.catalogTax = catalogTax;
         this.webInvoices = webInvoices;
         this.transactions = new TransactionTemplate(transactionManager);
         this.numbering = numbering;
@@ -442,17 +447,32 @@ public class CheckoutService {
                         SELECT left(concat_ws(', ', address_line1, address_line2, city, pincode), 400)
                         FROM web_order WHERE id = :id
                         """).param(ID, row.id()).query(String.class).single();
+        Map<Integer, Long> lineIds = new LinkedHashMap<>();
+        jdbc.sql("SELECT position, id FROM web_order_line WHERE order_id = :id")
+                .param(ID, row.id())
+                .query((rs, n) -> {
+                    lineIds.put(rs.getInt("position"), rs.getLong(ID));
+                    return n;
+                })
+                .list();
         var lines = new ArrayList<WebInvoiceRequest.Line>();
         for (var line : order.lines()) {
+            var classId = catalogTax.classFor(line.productSlug());
+            var lineId = lineIds.get(line.position());
             var detail = line.colourName() != null && line.size() != null
                     ? " (" + line.colourName() + ", " + line.size() + ")"
                     : line.colourName() != null
                             ? " (" + line.colourName() + ")"
                             : line.size() != null ? " (" + line.size() + ")" : "";
-            lines.add(new WebInvoiceRequest.Line(line.name() + detail, line.quantity(), line.unitRupees()));
+            lines.add(new WebInvoiceRequest.Line(
+                    line.name() + detail, line.quantity(), line.unitRupees(), classId, lineId));
             if (line.addonRupees().signum() > 0) {
                 lines.add(new WebInvoiceRequest.Line(
-                        line.addonName() + " for " + line.name(), line.quantity(), line.addonRupees()));
+                        line.addonName() + " for " + line.name(),
+                        line.quantity(),
+                        line.addonRupees(),
+                        classId,
+                        lineId));
             }
         }
         return webInvoices.issueFor(new WebInvoiceRequest(
@@ -460,11 +480,24 @@ public class CheckoutService {
                 number,
                 row.partyId(),
                 new InvoiceParties.Buyer(order.contactName(), order.contactPhone(), address, order.state()),
+                stateCode(order.state()),
                 lines,
                 order.shippingRupees()));
     }
 
     private record OrderParty(long id, @Nullable Long partyId) {}
+
+    /** The GST state code for a delivery state; null when it is blank or not an Indian state. */
+    private static @Nullable String stateCode(@Nullable String state) {
+        if (state == null || state.isBlank()) {
+            return null;
+        }
+        var code = IndianStates.code(state);
+        if (code.isEmpty()) {
+            log.info("Unknown delivery state '{}'; invoicing as a same-state supply", state);
+        }
+        return code.orElse(null);
+    }
 
     /** Marks the order delivered; for cash on delivery this is when the money came in. */
     @Transactional

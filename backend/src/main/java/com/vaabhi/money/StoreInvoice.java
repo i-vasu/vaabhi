@@ -17,6 +17,9 @@ public record StoreInvoice(
         BigDecimal taxableRupees,
         BigDecimal cgstRupees,
         BigDecimal sgstRupees,
+        BigDecimal igstRupees,
+        @Nullable String placeOfSupply,
+        String supplyType,
         BigDecimal totalRupees,
         @Nullable String shopGstin,
         boolean cancelled) {}
