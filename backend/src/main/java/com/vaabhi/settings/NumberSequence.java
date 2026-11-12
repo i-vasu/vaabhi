@@ -45,7 +45,8 @@ public record NumberSequence(
         WEB_ORDER,
         CREDIT_NOTE,
         STOCK_ITEM,
-        PRODUCT
+        PRODUCT,
+        JOURNAL
     }
 
     public enum Reset {
