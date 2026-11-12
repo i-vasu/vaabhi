@@ -82,9 +82,11 @@ Each has a test in the owning task (Tasks 1, 2, 3, 4).
     above it, or neither").
   - `TaxClassService`: `List<TaxClass> list()`, `TaxClass create(TaxClassForm)`, `TaxClass update(long, TaxClassForm)`,
     `void delete(long)` (409 "This tax class is in use" when referenced by category, garment_template,
-    service_product or the billing default), and `public TaxRate resolve(@Nullable Long classId, BigDecimal
-    unitBeforeTax)` → `record TaxRate(String hsnCode, BigDecimal ratePercent, TaxClass.Kind kind)`; falls back to
-    the default class; throws 409 "Set a default tax class in Settings → Billing" when there is neither.
+    service_product or the billing default), and `public @Nullable TaxRate resolve(@Nullable Long classId,
+    BigDecimal unitNetRupees, boolean inclusive)` → `record TaxRate(String hsnCode, BigDecimal ratePercent,
+    TaxClass.Kind kind)`; falls back to the default class; returns null when there is neither. Slab (Ruling 1):
+    value before tax = unit net (exclusive) or unit net × 100 / (100 + lower rate) (inclusive); higher rate when
+    that value > limit.
   - `@Nullable Long shopItemClass(@Nullable Long templateId, @Nullable Long serviceProductId)`:
     service product's class, else its template's class, else the item template's class, else null.
   - Endpoints: `GET/POST /api/v1/admin/money/tax-classes`, `PUT/DELETE /api/v1/admin/money/tax-classes/{id}`.
@@ -101,7 +103,8 @@ Each has a test in the owning task (Tasks 1, 2, 3, 4).
   VARCHAR(16) UNIQUE.
 - [ ] **Step 2: Write tests.** `TaxClassServiceIT`: `resolveUsesLowerRateAtLimit` (Garments, unit 2500.00 → 5),
   `resolveUsesHigherRateAboveLimit` (2500.01 → 18), `resolveFallsBackToDefault` (null id → Garments),
-  `resolveWithoutDefaultFails` (409 message above), `deleteInUseRefused`, `slabNeedsBothFields`.
+  `resolveWithoutDefaultIsNull`,
+  `inclusiveSlabUsesValueBeforeTax` (inclusive 2625.00 → 5; 2625.27 → 18), `deleteInUseRefused`, `slabNeedsBothFields`.
   `V31BackfillIT`: `backfilledLinesSumToInvoice` — for every invoice, `SUM(line taxable/cgst/sgst)` equals the
   invoice's (Review Focus 4).
 - [ ] **Step 3: Implement** the records, service and endpoints (admin role as other money endpoints).
@@ -124,23 +127,23 @@ Each has a test in the owning task (Tasks 1, 2, 3, 4).
   - `enum SupplyType { INTRA, INTER }`
   - `record TaxResult(List<TaxedLine> lines, SupplyType supplyType, BigDecimal taxableRupees, BigDecimal
     cgstRupees, BigDecimal sgstRupees, BigDecimal igstRupees, BigDecimal totalRupees, BigDecimal highestRate)`
-  - `interface RateLookup { TaxClassService.TaxRate resolve(@Nullable Long classId, BigDecimal unitBeforeTax); }`
+  - `interface RateLookup { TaxClassService.@Nullable TaxRate resolve(@Nullable Long classId, BigDecimal
+    unitNetRupees, boolean inclusive); }`
   - `static TaxResult compute(List<TaxInput> lines, BigDecimal chargedRupees, @Nullable String sellerStateCode,
     @Nullable String buyerStateCode, boolean gstApplies, boolean pricesIncludeTax, RateLookup rates)`
 
 Algorithm (not determined by the signature):
 1. `discount = max(0, sum(qty × unit over all lines) − chargedRupees)`; spread over non-shipping lines by amount,
    HALF_UP to paisa, the last non-shipping line taking the remainder.
-2. Per goods line: net = amount − discount share; unit net = net / qty. Look up the class at the lower rate
-   (`rates.resolve(id, unitBeforeTax)` where `unitBeforeTax` = unit net, or unit net ×100/(100+lowerRate) when
-   inclusive). `TaxClassService.resolve` applies the slab (Ruling 1). When `!gstApplies`: rate 0, HSN still
-   from the class, but if lookup throws for a missing default, use HSN null and rate 0.
+2. Per goods line: net = amount − discount share; unit net = net / qty; `rates.resolve(id, unitNet, inclusive)`.
+   Null result: when `gstApplies`, throw 409 "Set a default tax class in Settings → Billing"; otherwise HSN null,
+   rate 0. When `!gstApplies`: rate 0, HSN from the class.
 3. Shipping line: SAC `9965`, rate = highest goods rate (0 when no goods).
 4. Line tax as today's `InvoiceService.tax(net, rate, inclusive)`; INTER when both state codes are non-null and
    differ → whole GST in IGST; else CGST/SGST halves, SGST takes the odd paisa.
 5. Totals are sums of lines.
 
-- [ ] **Step 1: Write `TaxEngineTest`** with a stub `RateLookup` (Garments slab 2500 → 5/18):
+- [ ] **Step 1: Write `TaxEngineTest`** (also `noClassWithGstOnFails` → 409, `noClassWithGstOffIsZero`) with a stub `RateLookup` (Garments slab 2500 → 5/18):
   - `exactlyAtLimitIsLowerRate`: exclusive, one line 1 × 2500.00 → rate 5, taxable 2500.00, gst 125.00.
   - `justAboveLimitIsHigherRate`: exclusive, 2500.01 → rate 18.
   - `discountCanMoveLineToLowerSlab`: exclusive, 1 × 2600, charged 2400 → line discount 200, rate 5.
