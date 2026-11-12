@@ -41,7 +41,8 @@ ALTER TABLE invoice
     ADD COLUMN place_of_supply CHAR(2),
     ADD COLUMN supply_type   VARCHAR(5)     NOT NULL DEFAULT 'INTRA' CHECK (supply_type IN ('INTRA', 'INTER'));
 
--- discount_rupees is the line's share of the order discount; amount_rupees stays quantity x unit.
+-- discount_rupees is the line's share of the order discount; amount_rupees stays quantity x unit. Old invoices keep
+-- discount_rupees = 0 because their taxable value already reflects any discount.
 ALTER TABLE invoice_line
     ADD COLUMN hsn_code          VARCHAR(8),
     ADD COLUMN gst_rate          NUMERIC(5, 2)  NOT NULL DEFAULT 0,

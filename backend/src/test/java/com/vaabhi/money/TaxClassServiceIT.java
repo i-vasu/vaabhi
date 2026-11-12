@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.vaabhi.TestcontainersConfiguration;
 import java.math.BigDecimal;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +51,11 @@ class TaxClassServiceIT {
 
     @BeforeEach
     void defaultGarments() throws Exception {
+        saveBilling(garmentsId());
+    }
+
+    @AfterEach
+    void restoreDefault() throws Exception {
         saveBilling(garmentsId());
     }
 
@@ -143,6 +149,59 @@ class TaxClassServiceIT {
         }
         taxClasses.delete(created.id());
         assertThat(taxClasses.list()).noneMatch(c -> c.id() == created.id());
+    }
+
+    @Test
+    void shopItemClassPrefersServiceProductThenTemplate() {
+        var templateClass =
+                taxClasses.create(form("Template class", null, null)).id();
+        var productClass = taxClasses.create(form("Product class", null, null)).id();
+        long templateId = jdbc.sql("SELECT min(id) FROM garment_template")
+                .query(Long.class)
+                .single();
+        long productId = jdbc.sql("SELECT min(id) FROM service_product")
+                .query(Long.class)
+                .single();
+        long productTemplateId = jdbc.sql("SELECT template_id FROM service_product WHERE id = :id")
+                .param("id", productId)
+                .query(Long.class)
+                .single();
+        try {
+            assertThat(taxClasses.shopItemClass(null, null)).isNull();
+            assertThat(taxClasses.shopItemClass(templateId, null)).isNull();
+
+            jdbc.sql("UPDATE garment_template SET tax_class_id = :id WHERE id = :template")
+                    .param("id", templateClass)
+                    .param("template", templateId)
+                    .update();
+            assertThat(taxClasses.shopItemClass(templateId, null)).isEqualTo(templateClass);
+
+            jdbc.sql("UPDATE service_product SET tax_class_id = :id WHERE id = :product")
+                    .param("id", productClass)
+                    .param("product", productId)
+                    .update();
+            assertThat(taxClasses.shopItemClass(templateId, productId)).isEqualTo(productClass);
+
+            jdbc.sql("UPDATE service_product SET tax_class_id = NULL WHERE id = :product")
+                    .param("product", productId)
+                    .update();
+            jdbc.sql("UPDATE garment_template SET tax_class_id = :id WHERE id = :template")
+                    .param("id", templateClass)
+                    .param("template", productTemplateId)
+                    .update();
+            assertThat(taxClasses.shopItemClass(null, productId)).isEqualTo(templateClass);
+        } finally {
+            jdbc.sql("UPDATE service_product SET tax_class_id = NULL WHERE tax_class_id IN (:a, :b)")
+                    .param("a", templateClass)
+                    .param("b", productClass)
+                    .update();
+            jdbc.sql("UPDATE garment_template SET tax_class_id = NULL WHERE tax_class_id IN (:a, :b)")
+                    .param("a", templateClass)
+                    .param("b", productClass)
+                    .update();
+            taxClasses.delete(templateClass);
+            taxClasses.delete(productClass);
+        }
     }
 
     @Test
