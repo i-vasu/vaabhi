@@ -60,6 +60,7 @@ const sequenceTitles: Record<NumberSequence["kind"], string> = {
   CREDIT_NOTE: "Credit note numbering",
   STOCK_ITEM: "Stock codes",
   PRODUCT: "Product style codes",
+  JOURNAL: "Journal entry numbering",
 };
 
 const RESETS: { value: NonNullable<NumberSequence["reset"]>; label: string }[] = [

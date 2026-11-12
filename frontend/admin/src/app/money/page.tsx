@@ -81,6 +81,12 @@ export default function MoneyPage() {
           subtitle="Rent, salaries, material, bills"
         />
         <ListRow href="/money/ledger/" icon={ActivityIcon} title="Ledger" subtitle="Every rupee in and out" />
+        <ListRow
+          href="/money/accounts/"
+          icon={BankIcon}
+          title="Accounts"
+          subtitle="Journal, trial balance and ledgers"
+        />
       </ListCard>
     </section>
   );
