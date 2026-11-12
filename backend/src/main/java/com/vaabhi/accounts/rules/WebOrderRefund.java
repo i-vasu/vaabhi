@@ -38,7 +38,7 @@ class WebOrderRefund implements PostingRule {
 
     @Override
     public int order() {
-        return 61;
+        return 15;
     }
 
     @Override

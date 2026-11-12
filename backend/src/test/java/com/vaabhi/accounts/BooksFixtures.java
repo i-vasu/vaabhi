@@ -61,21 +61,21 @@ abstract class BooksFixtures {
     }
 
     protected static String unique(String prefix) {
-        return prefix + next() + "-" + System.nanoTime();
+        return prefix + next();
     }
 
     protected long client() {
         return jdbc.sql("""
                         INSERT INTO client (phone, first_name) VALUES (:phone, 'Books Test') RETURNING id
                         """)
-                .param("phone", "+91987%08d".formatted(next() * 1000L + System.nanoTime() % 1000))
+                .param("phone", "+9198%08d".formatted(next()))
                 .query(Long.class)
                 .single();
     }
 
     protected long customer() {
         return jdbc.sql("INSERT INTO customer (name, phone) VALUES ('Books Test', :phone) RETURNING id")
-                .param("phone", "+91986%08d".formatted(next() * 1000L + System.nanoTime() % 1000))
+                .param("phone", "+9197%08d".formatted(next()))
                 .query(Long.class)
                 .single();
     }

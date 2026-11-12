@@ -135,6 +135,23 @@ class PostingRulesIT extends BooksFixtures {
     }
 
     @Test
+    void refundBeforeInvoiceReducesApply() {
+        long order = shopOrder("1050");
+        shopPayment(order, "500", "CASH", base.minusMinutes(20));
+        long refund = shopPayment(order, "-200", "CASH", base.minusMinutes(15));
+        long invoice = shopInvoice(order, base.minusMinutes(5));
+
+        sweeper.sweepNow();
+
+        var key = "SHOP:" + order;
+        entry("ORDER_PAYMENT", refund, "REFUND");
+        var apply = entry("INVOICE", invoice, "APPLY");
+        assertThat(netInEntry(apply.id(), accountId("CUSTOMER_ADVANCES"))).isEqualByComparingTo(rupees("300"));
+        assertThat(net("DEBTORS", key)).isEqualByComparingTo(rupees("750"));
+        assertThat(net("CUSTOMER_ADVANCES", key)).isEqualByComparingTo(rupees("0"));
+    }
+
+    @Test
     void expensePostsToCategoryAccount() {
         long expense = expense("RENT", "1200", "UPI");
 

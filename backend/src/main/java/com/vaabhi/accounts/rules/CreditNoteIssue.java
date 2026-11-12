@@ -51,7 +51,9 @@ class CreditNoteIssue implements PostingRule {
     @Override
     public List<Long> pending(LocalDate start, int limit) {
         return support.pending(
-                "SELECT s.id FROM credit_note s WHERE s.issued_on >= :start AND " + RuleSupport.NOT_POSTED
+                "SELECT s.id FROM credit_note s WHERE s.issued_on >= :start AND s.total_rupees > 0"
+                        + " AND EXISTS (SELECT 1 FROM invoice i WHERE i.id = s.invoice_id AND i.issued_on >= :start)"
+                        + " AND " + RuleSupport.NOT_POSTED
                         + " ORDER BY s.id LIMIT :limit",
                 sourceType(),
                 step(),

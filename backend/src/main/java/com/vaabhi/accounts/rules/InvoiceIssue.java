@@ -51,7 +51,8 @@ class InvoiceIssue implements PostingRule {
     @Override
     public List<Long> pending(LocalDate start, int limit) {
         return support.pending(
-                "SELECT s.id FROM invoice s WHERE s.issued_on >= :start AND " + RuleSupport.NOT_POSTED
+                "SELECT s.id FROM invoice s WHERE s.issued_on >= :start AND s.total_rupees > 0 AND "
+                        + RuleSupport.NOT_POSTED
                         + " ORDER BY s.id LIMIT :limit",
                 sourceType(),
                 step(),

@@ -12,6 +12,6 @@ class AlterationRefund extends AlterationPaymentRule {
 
     @Override
     public int order() {
-        return 63;
+        return 15;
     }
 }

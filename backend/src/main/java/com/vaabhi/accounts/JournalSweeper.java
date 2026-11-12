@@ -1,15 +1,19 @@
 package com.vaabhi.accounts;
 
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -36,6 +40,7 @@ public class JournalSweeper {
     private final PostingProblemService problems;
     private final TransactionTemplate tx;
     private final Clock clock;
+    private final boolean enabled;
     private final ReentrantLock running = new ReentrantLock();
 
     JournalSweeper(
@@ -44,7 +49,8 @@ public class JournalSweeper {
             BooksSettingsService settings,
             PostingProblemService problems,
             PlatformTransactionManager transactions,
-            Clock clock) {
+            Clock clock,
+            @Value("${vaabhi.accounts.sweep.enabled:true}") boolean enabled) {
         this.rules = rules.stream()
                 .sorted(Comparator.comparingInt(PostingRule::order))
                 .toList();
@@ -52,11 +58,16 @@ public class JournalSweeper {
         this.settings = settings;
         this.problems = problems;
         this.tx = new TransactionTemplate(transactions);
+        this.tx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         this.clock = clock;
+        this.enabled = enabled;
     }
 
     @Scheduled(initialDelayString = "PT1M", fixedDelayString = "PT2M")
     void scheduledSweep() {
+        if (!enabled) {
+            return;
+        }
         try {
             sweepNow();
         } catch (RuntimeException e) {
@@ -66,6 +77,9 @@ public class JournalSweeper {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     void onBooksStarted(BooksStarted event) {
+        if (!enabled) {
+            return;
+        }
         try {
             sweepNow();
         } catch (RuntimeException e) {
@@ -73,34 +87,51 @@ public class JournalSweeper {
         }
     }
 
+    /** Sweeps now, waiting for any sweep already running. Posts nothing until the start date is set. */
     public SweepResult sweepNow() {
         var start = settings.get().startDate();
         if (start == null) {
             return new SweepResult(0, 0);
         }
-        if (!running.tryLock()) {
-            return new SweepResult(0, 0);
-        }
-        int posted = 0;
-        int failed = 0;
+        running.lock();
         try {
-            for (var rule : rules) {
-                for (long id : rule.pending(start, BATCH)) {
-                    try {
-                        tx.executeWithoutResult(status -> journal.post(rule.build(id), null));
-                        problems.clear(rule.sourceType(), id, rule.step());
-                        posted++;
-                    } catch (RuntimeException e) {
-                        problems.record(rule.sourceType(), id, rule.step(), message(e));
-                        failed++;
+            int posted = 0;
+            int failed = 0;
+            try {
+                for (var rule : rules) {
+                    dropResolvedProblems(rule, start);
+                    for (long id : rule.pending(start, BATCH)) {
+                        try {
+                            tx.executeWithoutResult(status -> journal.post(rule.build(id), null));
+                            problems.clear(rule.sourceType(), id, rule.step());
+                            posted++;
+                        } catch (RuntimeException e) {
+                            problems.record(rule.sourceType(), id, rule.step(), message(e));
+                            failed++;
+                        }
                     }
                 }
+            } finally {
+                tx.executeWithoutResult(status -> settings.markSwept(OffsetDateTime.now(clock)));
             }
+            return new SweepResult(posted, failed);
         } finally {
-            settings.markSwept(OffsetDateTime.now(clock));
             running.unlock();
         }
-        return new SweepResult(posted, failed);
+    }
+
+    /** Forgets problems for sources of this rule that are posted or no longer eligible. */
+    private void dropResolvedProblems(PostingRule rule, LocalDate start) {
+        var recorded = problems.idsFor(rule.sourceType(), rule.step());
+        if (recorded.isEmpty()) {
+            return;
+        }
+        var stillPending = new HashSet<>(rule.pending(start, Integer.MAX_VALUE));
+        for (long id : recorded) {
+            if (!stillPending.contains(id)) {
+                problems.clear(rule.sourceType(), id, rule.step());
+            }
+        }
     }
 
     private static String message(RuntimeException e) {

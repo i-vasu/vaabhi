@@ -40,7 +40,7 @@ class ShopRefund implements PostingRule {
 
     @Override
     public int order() {
-        return 60;
+        return 15;
     }
 
     @Override

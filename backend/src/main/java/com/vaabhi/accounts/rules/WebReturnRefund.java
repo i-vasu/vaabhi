@@ -40,7 +40,7 @@ class WebReturnRefund implements PostingRule {
 
     @Override
     public int order() {
-        return 62;
+        return 15;
     }
 
     @Override

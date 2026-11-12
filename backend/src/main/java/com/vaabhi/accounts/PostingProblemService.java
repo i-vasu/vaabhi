@@ -3,6 +3,7 @@ package com.vaabhi.accounts;
 import java.util.List;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Records, lists and clears the sources the sweeper could not post. */
@@ -17,7 +18,7 @@ public class PostingProblemService {
         this.jdbc = jdbc;
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void record(String sourceType, long sourceId, String sourceStep, String message) {
         var text = message.length() <= MAX_MESSAGE ? message : message.substring(0, MAX_MESSAGE);
         jdbc.sql("""
@@ -33,7 +34,7 @@ public class PostingProblemService {
                 .update();
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void clear(String sourceType, long sourceId, String sourceStep) {
         jdbc.sql("DELETE FROM posting_problem WHERE source_type = :type AND source_id = :id AND source_step = :step")
                 .param("type", sourceType)
@@ -48,6 +49,16 @@ public class PostingProblemService {
         jdbc.sql("DELETE FROM posting_problem WHERE source_type = :type")
                 .param("type", sourceType)
                 .update();
+    }
+
+    /** Source ids with a recorded problem for one type and step. */
+    @Transactional(readOnly = true)
+    public List<Long> idsFor(String sourceType, String sourceStep) {
+        return jdbc.sql("SELECT source_id FROM posting_problem WHERE source_type = :type AND source_step = :step")
+                .param("type", sourceType)
+                .param("step", sourceStep)
+                .query(Long.class)
+                .list();
     }
 
     @Transactional(readOnly = true)
