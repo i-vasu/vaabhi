@@ -162,7 +162,7 @@ class CreditNoteServiceIT {
 
         var note = creditNotes.issuePartial(
                 invoice.id(),
-                List.of(new CreditNoteForm.Line(first.id(), 1)),
+                List.of(new CreditNoteForm.CreditNoteLineInput(first.id(), 1)),
                 CreditNote.Reason.RETURN,
                 null,
                 "staff:1");
@@ -185,13 +185,13 @@ class CreditNoteServiceIT {
 
         var first = creditNotes.issuePartial(
                 invoice.id(),
-                List.of(new CreditNoteForm.Line(line.id(), 1)),
+                List.of(new CreditNoteForm.CreditNoteLineInput(line.id(), 1)),
                 CreditNote.Reason.RETURN,
                 null,
                 "staff:1");
         var second = creditNotes.issuePartial(
                 invoice.id(),
-                List.of(new CreditNoteForm.Line(line.id(), 2)),
+                List.of(new CreditNoteForm.CreditNoteLineInput(line.id(), 2)),
                 CreditNote.Reason.RETURN,
                 null,
                 "staff:1");
@@ -205,7 +205,7 @@ class CreditNoteServiceIT {
         assertThat(first.totalRupees().add(second.totalRupees())).isEqualByComparingTo(invoice.totalRupees());
         assertThatThrownBy(() -> creditNotes.issuePartial(
                         invoice.id(),
-                        List.of(new CreditNoteForm.Line(line.id(), 1)),
+                        List.of(new CreditNoteForm.CreditNoteLineInput(line.id(), 1)),
                         CreditNote.Reason.RETURN,
                         null,
                         "staff:1"))

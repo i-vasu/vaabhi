@@ -11,7 +11,8 @@ import org.jspecify.annotations.Nullable;
 public record CreditNoteForm(
         @NotNull CreditNote.Reason reason,
         @Nullable @Size(max = 200) String note,
-        List<@Valid Line> lines) {
+        List<@Valid CreditNoteLineInput> lines) {
 
-    public record Line(long invoiceLineId, @Min(1) int quantity) {}
+    public record CreditNoteLineInput(
+            long invoiceLineId, @Min(1) int quantity) {}
 }

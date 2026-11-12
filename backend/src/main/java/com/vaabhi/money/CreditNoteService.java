@@ -76,7 +76,7 @@ public class CreditNoteService {
     @Transactional
     public CreditNote issuePartial(
             long invoiceId,
-            List<CreditNoteForm.Line> lines,
+            List<CreditNoteForm.CreditNoteLineInput> lines,
             CreditNote.Reason reason,
             @Nullable String note,
             @Nullable String actor) {
