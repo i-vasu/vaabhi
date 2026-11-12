@@ -95,6 +95,62 @@ class TaxEngineTest {
     }
 
     @Test
+    void interStateWithDiscountAndShipping() {
+        var lines = List.of(
+                goods(1, "1000.00"),
+                goods(1, "500.00"),
+                new TaxInput("Shipping", 1, new BigDecimal("100.00"), null, null, true));
+
+        var result = compute(lines, "1550.00", false, true, "36", "29");
+
+        var lineGst =
+                result.lines().stream().map(TaxEngine.TaxedLine::igstRupees).reduce(BigDecimal.ZERO, BigDecimal::add);
+        var lineTotal = result.lines().stream()
+                .map(l -> l.taxableRupees()
+                        .add(l.cgstRupees())
+                        .add(l.sgstRupees())
+                        .add(l.igstRupees()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        assertThat(result.supplyType()).isEqualTo(SupplyType.INTER);
+        assertThat(result.cgstRupees()).isEqualByComparingTo("0.00");
+        assertThat(result.sgstRupees()).isEqualByComparingTo("0.00");
+        assertThat(lineGst.signum()).isPositive();
+        assertThat(result.igstRupees()).isEqualByComparingTo(lineGst);
+        assertThat(result.totalRupees()).isEqualByComparingTo(lineTotal);
+    }
+
+    @Test
+    void discountLargerThanGoodsSpillsOntoShipping() {
+        var lines = List.of(goods(1, "100.00"), new TaxInput("Shipping", 1, new BigDecimal("50.00"), null, null, true));
+
+        var result = compute(lines, "30.00", false, false);
+
+        var goodsLine = result.lines().get(0);
+        var shipping = result.lines().get(1);
+        assertThat(goodsLine.amountRupees().subtract(goodsLine.discountRupees()))
+                .isEqualByComparingTo("0.00");
+        assertThat(shipping.amountRupees().subtract(shipping.discountRupees())).isEqualByComparingTo("30.00");
+        assertThat(result.totalRupees()).isEqualByComparingTo("30.00");
+    }
+
+    @Test
+    void noLineGoesNegative() {
+        var lines = List.of(
+                goods(1, "100.00"),
+                goods(2, "33.33"),
+                new TaxInput("Shipping", 1, new BigDecimal("50.00"), null, null, true));
+
+        var result = compute(lines, "0.00", false, false);
+
+        for (var line : result.lines()) {
+            assertThat(line.taxableRupees().signum()).isGreaterThanOrEqualTo(0);
+            assertThat(line.amountRupees().subtract(line.discountRupees()).signum())
+                    .isGreaterThanOrEqualTo(0);
+        }
+        assertThat(result.totalRupees()).isEqualByComparingTo("0.00");
+    }
+
+    @Test
     void oddPaisaAlternatesAcrossLines() {
         var result = compute(List.of(goods(1, "10.10"), goods(1, "10.10")), "20.20", false, true, "36", "36");
 

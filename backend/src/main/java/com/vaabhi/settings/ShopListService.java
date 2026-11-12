@@ -166,6 +166,17 @@ public class ShopListService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Garment template not found"));
     }
 
+    @Transactional(readOnly = true)
+    void requireTaxClass(@Nullable Long taxClassId) {
+        if (taxClassId != null
+                && !jdbc.sql("SELECT EXISTS (SELECT 1 FROM tax_class WHERE id = :id)")
+                        .param(ID, taxClassId)
+                        .query(Boolean.class)
+                        .single()) {
+            throw bad("Unknown tax class");
+        }
+    }
+
     @Transactional
     GarmentTemplate saveGarmentTemplate(@Nullable Long id, GarmentTemplate template) {
         requireUniqueNames(

@@ -135,7 +135,13 @@ public class WebOrderReturns {
     @Transactional
     public WebOrder refund(String returnNumber, ReturnRefundForm form) {
         var current = find(returnNumber);
-        if (current.status() != WebOrder.ReturnStatus.REQUESTED && current.status() != WebOrder.ReturnStatus.APPROVED) {
+        // Lock the row and read the status from it, so a double submit cannot refund twice.
+        var lockedStatus = jdbc.sql("SELECT status FROM web_order_return WHERE number = :number FOR UPDATE")
+                .param(NUMBER, returnNumber)
+                .query(String.class)
+                .optional()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No such return"));
+        if (!lockedStatus.equals("REQUESTED") && !lockedStatus.equals("APPROVED")) {
             throw conflict("This return is already closed");
         }
         var order = orders.shopOrder(current.orderNumber());

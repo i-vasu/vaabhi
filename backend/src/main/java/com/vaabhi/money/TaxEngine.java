@@ -150,7 +150,7 @@ final class TaxEngine {
                             ? taxedLine(
                                     line,
                                     amounts.get(i),
-                                    Rupees.ZERO,
+                                    discounts.get(i),
                                     SHIPPING_SAC,
                                     highest,
                                     pricesIncludeTax,
@@ -215,7 +215,10 @@ final class TaxEngine {
                 Rupees.ZERO);
     }
 
-    /** Each goods line's share of the discount, by amount, to the paisa; the last goods line takes the remainder. */
+    /**
+     * Each goods line's share of the discount, by amount, to the paisa; the last goods line takes the remainder.
+     * Goods take at most their total; any overflow goes onto the shipping lines (capped at their amount).
+     */
     private static List<BigDecimal> spreadDiscount(
             List<TaxInput> lines, List<BigDecimal> amounts, BigDecimal discount) {
         var shares = new ArrayList<BigDecimal>();
@@ -228,19 +231,32 @@ final class TaxEngine {
                 goodsTotal = goodsTotal.add(amounts.get(i));
             }
         }
-        if (last < 0 || goodsTotal.signum() == 0 || discount.signum() == 0) {
+        if (discount.signum() == 0) {
             return shares;
         }
+        var goodsDiscount = Rupees.min(discount, goodsTotal);
         var given = BigDecimal.ZERO;
-        for (int i = 0; i < lines.size(); i++) {
-            if (lines.get(i).shipping()) {
+        if (last >= 0 && goodsDiscount.signum() > 0) {
+            for (int i = 0; i < lines.size(); i++) {
+                if (lines.get(i).shipping()) {
+                    continue;
+                }
+                var share = i == last
+                        ? goodsDiscount.subtract(given)
+                        : goodsDiscount.multiply(amounts.get(i)).divide(goodsTotal, Rupees.SCALE, RoundingMode.HALF_UP);
+                share = Rupees.max(Rupees.ZERO, Rupees.min(share, amounts.get(i)));
+                shares.set(i, share);
+                given = given.add(share);
+            }
+        }
+        var overflow = discount.subtract(given);
+        for (int i = 0; i < lines.size() && overflow.signum() > 0; i++) {
+            if (!lines.get(i).shipping()) {
                 continue;
             }
-            var share = i == last
-                    ? discount.subtract(given)
-                    : discount.multiply(amounts.get(i)).divide(goodsTotal, Rupees.SCALE, RoundingMode.HALF_UP);
+            var share = Rupees.min(overflow, amounts.get(i));
             shares.set(i, share);
-            given = given.add(share);
+            overflow = overflow.subtract(share);
         }
         return shares;
     }

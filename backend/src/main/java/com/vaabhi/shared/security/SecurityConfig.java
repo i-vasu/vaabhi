@@ -99,6 +99,10 @@ public class SecurityConfig {
                         .access(area("REPORTS"))
                         .requestMatchers("/api/v1/admin/workshop/**")
                         .access(area("WORKSHOP"))
+                        // Any admin can read the tax classes (product and category editors list them).
+                        .requestMatchers(
+                                HttpMethod.GET, "/api/v1/admin/money/tax-classes", "/api/v1/admin/money/tax-classes/**")
+                        .hasRole("ADMIN")
                         .requestMatchers("/api/v1/admin/money/**")
                         .access(area("MONEY"))
                         // Changing what a role may do is for the owner alone.

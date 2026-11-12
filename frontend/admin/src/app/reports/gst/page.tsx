@@ -204,7 +204,7 @@ export default function GstReportPage() {
       link.href = url;
       link.download = `gstr1-${section}-${month}.csv`;
       link.click();
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 0);
     } catch (e) {
       setDownloadError(e instanceof Error ? e.message : "Could not download the CSV");
     }

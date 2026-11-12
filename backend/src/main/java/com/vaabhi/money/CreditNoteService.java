@@ -13,6 +13,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class CreditNoteService {
 
+    private static final Logger log = LoggerFactory.getLogger(CreditNoteService.class);
     private static final String ID = "id";
     private static final String FULLY_CREDITED = "This invoice is already fully credited";
 
@@ -132,6 +135,10 @@ public class CreditNoteService {
                 })
                 .list();
         if (wanted.isEmpty()) {
+            log.warn(
+                    "Return {} has no invoice lines to credit (invoice {} predates line links)",
+                    returnId,
+                    invoiceId.get());
             return null;
         }
         return create(invoiceId.get(), CreditNote.Reason.RETURN, null, actor, returnId, wanted, true);

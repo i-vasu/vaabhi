@@ -471,6 +471,11 @@ public class InvoiceService {
                 .query((rs, n) ->
                         new RegisterTotals(rs.getLong("n"), rs.getBigDecimal("total"), rs.getBigDecimal("tax")))
                 .single();
+        var credited = jdbc.sql("SELECT COALESCE(SUM(c.total_rupees), 0) FROM credit_note c WHERE c.invoice_id IN"
+                        + " (SELECT v.id " + where + ")")
+                .params(params)
+                .query(BigDecimal.class)
+                .single();
         params.put("limit", pageSize);
         params.put("offset", (page - 1) * pageSize);
         var items = jdbc
@@ -502,7 +507,13 @@ public class InvoiceService {
                         row.cancelled()))
                 .toList();
         return new InvoicePage(
-                items, totals.count(), page, pageSize, Rupees.of(totals.total()), Rupees.of(totals.tax()));
+                items,
+                totals.count(),
+                page,
+                pageSize,
+                Rupees.of(totals.total()),
+                Rupees.of(totals.tax()),
+                Rupees.of(credited));
     }
 
     /** Case-insensitive "contains" pattern with LIKE wildcards escaped; null for no filter. */

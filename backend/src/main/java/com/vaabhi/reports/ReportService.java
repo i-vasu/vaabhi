@@ -131,11 +131,18 @@ public class ReportService {
         return switch (name) {
             case "sales" -> {
                 var rows = rows("""
-                        SELECT to_char(v.issued_on, 'YYYY-MM-DD') AS day, COUNT(*) AS invoices,
-                               SUM(v.taxable_rupees) AS taxable, SUM(v.cgst_rupees + v.sgst_rupees + v.igst_rupees) AS gst,
-                               SUM(v.total_rupees) AS total
-                        FROM invoice v WHERE v.cancelled_at IS NULL AND v.issued_on BETWEEN :from AND :to
-                        GROUP BY v.issued_on ORDER BY v.issued_on
+                        SELECT to_char(s.issued_on, 'YYYY-MM-DD') AS day, SUM(s.invoices) AS invoices,
+                               SUM(s.taxable) AS taxable, SUM(s.gst) AS gst, SUM(s.total) AS total
+                        FROM (
+                            SELECT v.issued_on, 1 AS invoices, v.taxable_rupees AS taxable,
+                                   v.cgst_rupees + v.sgst_rupees + v.igst_rupees AS gst, v.total_rupees AS total
+                            FROM invoice v WHERE v.cancelled_at IS NULL AND v.issued_on BETWEEN :from AND :to
+                            UNION ALL
+                            SELECT c.issued_on, 0, -c.taxable_rupees,
+                                   -(c.cgst_rupees + c.sgst_rupees + c.igst_rupees), -c.total_rupees
+                            FROM credit_note c WHERE c.issued_on BETWEEN :from AND :to
+                        ) s
+                        GROUP BY s.issued_on ORDER BY s.issued_on
                         """, p);
                 yield new Report(
                         name,
@@ -150,7 +157,7 @@ public class ReportService {
                                 money("total", "Total")),
                         rows,
                         totals(rows, "invoices", "taxable", "gst", "total"),
-                        "Cancelled invoices are left out.");
+                        "Cancelled invoices are left out; credit notes are subtracted on the day they were issued.");
             }
             case "sales-orders" -> {
                 var rows = rows("""

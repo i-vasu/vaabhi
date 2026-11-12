@@ -135,6 +135,27 @@ class ReportsIT {
     }
 
     @Test
+    void salesReportSubtractsCreditNotes() throws Exception {
+        var ids = deliveredOrder("Credit", 700, 0);
+        var invoice = body(mockMvc.perform(
+                        get("/api/v1/admin/orders/" + ids[0] + "/invoice").with(OWNER))
+                .andExpect(status().isOk()));
+        long invoiceId = ((Number) JsonPath.read(invoice, "$.id")).longValue();
+        long lineId = ((Number) JsonPath.read(invoice, "$.lines[0].id")).longValue();
+        long before = ((Number) JsonPath.read(report("sales"), "$.totals.total")).longValue();
+
+        var note = body(send(post("/api/v1/admin/money/invoices/" + invoiceId + "/credit-notes"), """
+                {"reason":"CORRECTION","note":"Sales report test","lines":[{"invoiceLineId":%d,"quantity":1}]}
+                """.formatted(lineId))
+                .andExpect(status().isCreated()));
+        long credited = ((Number) JsonPath.read(note, "$.totalRupees")).longValue();
+
+        long after = ((Number) JsonPath.read(report("sales"), "$.totals.total")).longValue();
+        assertThat(credited).isPositive();
+        assertThat(after).isEqualTo(before - credited);
+    }
+
+    @Test
     void overviewAddsUpTheMonth() throws Exception {
         var before = body(mockMvc.perform(get("/api/v1/admin/reports/overview").with(OWNER))
                 .andExpect(status().isOk()));

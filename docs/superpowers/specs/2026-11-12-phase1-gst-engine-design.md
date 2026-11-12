@@ -67,7 +67,7 @@ entries for credit notes (Phase 4).
     quantity)>, reason, note, actor)`. Tax per line split pro rata from the invoice line; a line's credited quantity
     never exceeds its invoiced quantity across all notes (409). None on a cancelled invoice (409).
   - `issueForReturn(returnId, …)` is idempotent via the unique `web_order_return_id`.
-  - Runs in the caller's transaction (`MANDATORY`), number from `NumberingService`.
+  - Joins the caller's transaction (`REQUIRED`), number from `NumberingService`.
 - `InvoiceService.cancel`: allowed only when `issued_on` is today (IST) and the invoice has no credit notes; else
   409 "Issue a credit note instead".
 - `Gstr1Service.month(YearMonth)`: B2B, B2CL (inter-state, unregistered, invoice total > ₹1,00,000), B2CS (by place

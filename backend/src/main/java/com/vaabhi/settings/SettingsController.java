@@ -70,6 +70,7 @@ class SettingsController {
         if (state != null && IndianStates.code(state).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "company.state: pick a state from the list");
         }
+        lists.requireTaxClass(billing.defaultTaxClassId());
         return settings.save(SettingsService.BILLING, billing, actor(jwt));
     }
 
