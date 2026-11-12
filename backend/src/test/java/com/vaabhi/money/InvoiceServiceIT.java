@@ -134,8 +134,8 @@ class InvoiceServiceIT {
     @Test
     void shopItemUsesServiceProductClass() throws Exception {
         long serviceProduct = jdbc.sql("""
-                        INSERT INTO service_product (template_id, code, name, price_paise, tax_class_id)
-                        VALUES ((SELECT id FROM garment_template ORDER BY id LIMIT 1), :code, 'Stitching', 50000, :class)
+                        INSERT INTO service_product (template_id, code, name, price_rupees, tax_class_id)
+                        VALUES ((SELECT id FROM garment_template ORDER BY id LIMIT 1), :code, 'Stitching', 500.00, :class)
                         RETURNING id
                         """)
                 .param("code", "TAX-IT-" + PHONES.incrementAndGet())

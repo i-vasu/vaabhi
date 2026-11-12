@@ -86,15 +86,26 @@ class TaxEngineTest {
 
     @Test
     void sameStateSplitsWithOddPaisaToSgst() {
-        var result = compute(List.of(goods(1, "105.01")), "105.01", true, true, "36", "36");
+        var result = compute(List.of(goods(1, "10.10")), "10.10", false, true, "36", "36");
 
         var line = result.lines().getFirst();
-        var gst = line.amountRupees().subtract(line.taxableRupees());
-        assertThat(line.cgstRupees().add(line.sgstRupees())).isEqualByComparingTo(gst);
-        var diff = line.sgstRupees().subtract(line.cgstRupees());
-        assertThat(diff.compareTo(BigDecimal.ZERO) == 0 || diff.compareTo(new BigDecimal("0.01")) == 0)
-                .isTrue();
+        assertThat(line.cgstRupees()).isEqualByComparingTo("0.25");
+        assertThat(line.sgstRupees()).isEqualByComparingTo("0.26");
         assertThat(result.supplyType()).isEqualTo(SupplyType.INTRA);
+    }
+
+    @Test
+    void oddPaisaAlternatesAcrossLines() {
+        var result = compute(List.of(goods(1, "10.10"), goods(1, "10.10")), "20.20", false, true, "36", "36");
+
+        var first = result.lines().get(0);
+        var second = result.lines().get(1);
+        assertThat(first.cgstRupees()).isEqualByComparingTo("0.25");
+        assertThat(first.sgstRupees()).isEqualByComparingTo("0.26");
+        assertThat(second.cgstRupees()).isEqualByComparingTo("0.26");
+        assertThat(second.sgstRupees()).isEqualByComparingTo("0.25");
+        assertThat(result.cgstRupees()).isEqualByComparingTo("0.51");
+        assertThat(result.sgstRupees()).isEqualByComparingTo("0.51");
     }
 
     @Test

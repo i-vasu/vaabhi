@@ -172,6 +172,8 @@ class MoneyIT {
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.gstRate").value(5))
                     .andExpect(jsonPath("$.taxableRupees").value(1000))
+                    .andExpect(jsonPath("$.cgstRupees").value(25))
+                    .andExpect(jsonPath("$.sgstRupees").value(25))
                     .andExpect(jsonPath("$.igstRupees").value(0))
                     .andExpect(jsonPath("$.totalRupees").value(1050))
                     .andExpect(jsonPath("$.shopGstin").value("27ABCDE1234F1Z5"));

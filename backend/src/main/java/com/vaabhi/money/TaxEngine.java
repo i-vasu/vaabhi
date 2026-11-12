@@ -89,7 +89,9 @@ final class TaxEngine {
     /**
      * Computes the taxed lines for an invoice. {@code chargedRupees} is what the customer was charged for all
      * lines; anything below the sum of the lines is a discount, spread over the goods (not shipping) by amount.
-     * Shipping takes the highest goods rate. The supply is INTER only when both state codes are known and differ.
+     * Shipping takes the highest goods rate. When a line's GST has an odd paisa, SGST takes it on the 1st, 3rd, ...
+     * such line and CGST on the 2nd, 4th, ... (in line order), so the invoice's CGST and SGST differ by at most
+     * 0.01. The supply is INTER only when both state codes are known and differ.
      */
     static TaxResult compute(
             List<TaxInput> lines,
@@ -110,12 +112,14 @@ final class TaxEngine {
         boolean inter = sellerStateCode != null && buyerStateCode != null && !sellerStateCode.equals(buyerStateCode);
         var supplyType = inter ? SupplyType.INTER : SupplyType.INTRA;
 
-        var taxed = new ArrayList<@Nullable TaxedLine>();
+        var hsns = new ArrayList<@Nullable String>();
+        var goodsRates = new ArrayList<BigDecimal>();
         var highest = BigDecimal.ZERO;
         for (int i = 0; i < lines.size(); i++) {
             var line = lines.get(i);
             if (line.shipping()) {
-                taxed.add(null);
+                hsns.add(null);
+                goodsRates.add(BigDecimal.ZERO);
                 continue;
             }
             var net = amounts.get(i).subtract(discounts.get(i));
@@ -133,18 +137,34 @@ final class TaxEngine {
             if (rate.compareTo(highest) > 0) {
                 highest = rate;
             }
-            taxed.add(taxedLine(line, amounts.get(i), discounts.get(i), hsn, rate, pricesIncludeTax, inter));
+            hsns.add(hsn);
+            goodsRates.add(rate);
         }
 
         var result = new ArrayList<TaxedLine>();
+        var oddPaisa = new int[1];
         for (int i = 0; i < lines.size(); i++) {
             var line = lines.get(i);
-            var done = taxed.get(i);
             result.add(
-                    done != null
-                            ? done
+                    line.shipping()
+                            ? taxedLine(
+                                    line,
+                                    amounts.get(i),
+                                    Rupees.ZERO,
+                                    SHIPPING_SAC,
+                                    highest,
+                                    pricesIncludeTax,
+                                    inter,
+                                    oddPaisa)
                             : taxedLine(
-                                    line, amounts.get(i), Rupees.ZERO, SHIPPING_SAC, highest, pricesIncludeTax, inter));
+                                    line,
+                                    amounts.get(i),
+                                    discounts.get(i),
+                                    hsns.get(i),
+                                    goodsRates.get(i),
+                                    pricesIncludeTax,
+                                    inter,
+                                    oddPaisa));
         }
 
         var taxable = Rupees.sum(result, TaxedLine::taxableRupees);
@@ -162,8 +182,15 @@ final class TaxEngine {
             @Nullable String hsn,
             BigDecimal rate,
             boolean inclusive,
-            boolean inter) {
+            boolean inter,
+            int[] oddPaisa) {
         var tax = lineTax(amount.subtract(discount), rate, inclusive);
+        var gst = tax.cgstRupees().add(tax.sgstRupees());
+        if (!inter && gst.movePointRight(Rupees.SCALE).toBigInteger().testBit(0) && ++oddPaisa[0] % 2 == 0) {
+            var cgst = tax.sgstRupees();
+            return new TaxedLine(
+                    line, amount, discount, hsn, rate, tax.taxableRupees(), cgst, gst.subtract(cgst), Rupees.ZERO);
+        }
         if (inter) {
             return new TaxedLine(
                     line,
