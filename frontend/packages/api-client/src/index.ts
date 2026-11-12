@@ -208,6 +208,28 @@ export type ReportInfo = Schemas["ReportInfo"];
 export type ReportsOverview = Schemas["ReportsOverview"];
 export type Dashboard = Schemas["Dashboard"];
 export type TailoringImagePurpose = Schemas["TailoringImageRequest"]["purpose"];
+export type Account = Schemas["Account"];
+export type AccountForm = Schemas["AccountForm"];
+export type JournalEntry = Schemas["JournalEntry"];
+export type JournalEntryLine = Schemas["JournalEntryLine"];
+export type JournalSourceLink = Schemas["JournalSourceLink"];
+export type JournalPage = Schemas["JournalPage"];
+export type JournalListItem = Schemas["JournalListItem"];
+export type LedgerStatement = Schemas["LedgerStatement"];
+export type LedgerStatementLine = Schemas["LedgerStatementLine"];
+export type TrialBalance = Schemas["TrialBalance"];
+export type TrialBalanceLine = Schemas["TrialBalanceLine"];
+export type PeriodStatus = Schemas["PeriodStatus"];
+export type OpeningBalances = Schemas["OpeningBalances"];
+export type OpeningBalancesForm = Schemas["OpeningBalancesForm"];
+export type OpeningBalanceLine = Schemas["OpeningBalanceLine"];
+export type BooksSettings = Schemas["BooksSettings"];
+export type BooksSettingsForm = Schemas["BooksSettingsForm"];
+export type ManualEntryForm = Schemas["ManualEntryForm"];
+export type ManualEntryLineInput = Schemas["ManualEntryLineInput"];
+export type PostingProblem = Schemas["PostingProblem"];
+export type AccountsStatus = Schemas["AccountsStatus"];
+export type SweepResult = Schemas["SweepResult"];
 
 /** The JSON settings sections, by their API path. */
 export type SettingsSections = {
@@ -764,6 +786,34 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
             return response.blob();
           },
         },
+      },
+      accounts: {
+        status: () => request<AccountsStatus>("/api/v1/admin/accounts/status"),
+        sweep: () => send<SweepResult>("POST", "/api/v1/admin/accounts/sweep"),
+        problems: () => request<PostingProblem[]>("/api/v1/admin/accounts/problems"),
+        settings: () => request<BooksSettings>("/api/v1/admin/accounts/settings"),
+        saveSettings: (form: BooksSettingsForm) => send<BooksSettings>("PUT", "/api/v1/admin/accounts/settings", form),
+        chart: () => request<Account[]>("/api/v1/admin/accounts/accounts"),
+        createAccount: (form: AccountForm) => send<Account>("POST", "/api/v1/admin/accounts/accounts", form),
+        updateAccount: (id: number, form: AccountForm) =>
+          send<Account>("PUT", `/api/v1/admin/accounts/accounts/${id}`, form),
+        ledger: (id: number, params: { from?: string; to?: string } = {}) =>
+          request<LedgerStatement>(`/api/v1/admin/accounts/accounts/${id}/ledger${queryString(params)}`),
+        journal: (params: { q?: string; from?: string; to?: string; page?: number; size?: number } = {}) =>
+          request<JournalPage>(`/api/v1/admin/accounts/journal${queryString(params)}`),
+        entry: (id: number) => request<JournalEntry>(`/api/v1/admin/accounts/journal/${id}`),
+        postManual: (form: ManualEntryForm) => send<JournalEntry>("POST", "/api/v1/admin/accounts/journal", form),
+        reverse: (id: number) => send<JournalEntry>("POST", `/api/v1/admin/accounts/journal/${id}/reverse`),
+        trialBalance: (asOf?: string) =>
+          request<TrialBalance>(`/api/v1/admin/accounts/trial-balance${queryString({ asOf })}`),
+        opening: () => request<OpeningBalances>("/api/v1/admin/accounts/opening-balances"),
+        saveOpening: (form: OpeningBalancesForm) =>
+          send<OpeningBalances>("PUT", "/api/v1/admin/accounts/opening-balances", form),
+        periods: () => request<PeriodStatus[]>("/api/v1/admin/accounts/periods"),
+        lock: (month: string) =>
+          send<PeriodStatus[]>("PUT", `/api/v1/admin/accounts/periods/${encodeURIComponent(month)}/lock`),
+        unlock: (month: string) =>
+          send<PeriodStatus[]>("DELETE", `/api/v1/admin/accounts/periods/${encodeURIComponent(month)}/lock`),
       },
       categories: {
         list: () => request<AdminCategory[]>("/api/v1/admin/categories"),
