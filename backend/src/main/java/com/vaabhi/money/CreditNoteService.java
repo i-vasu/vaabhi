@@ -102,6 +102,11 @@ public class CreditNoteService {
     @Transactional
     public @Nullable CreditNote issueForReturn(
             long returnId, long webOrderId, Map<Long, Integer> qtyByWebOrderLineId, @Nullable String actor) {
+        // The invoice lock comes first, so a concurrent refund of the same return waits and then finds the note.
+        var invoiceId =
+                jdbc.sql("""
+                        SELECT id FROM invoice WHERE web_order_id = :order AND cancelled_at IS NULL FOR UPDATE
+                        """).param("order", webOrderId).query(Long.class).optional();
         var existing = jdbc.sql("SELECT id FROM credit_note WHERE web_order_return_id = :return")
                 .param("return", returnId)
                 .query(Long.class)
@@ -109,10 +114,6 @@ public class CreditNoteService {
         if (existing.isPresent()) {
             return get(existing.get());
         }
-        var invoiceId = jdbc.sql("SELECT id FROM invoice WHERE web_order_id = :order AND cancelled_at IS NULL")
-                .param("order", webOrderId)
-                .query(Long.class)
-                .optional();
         if (invoiceId.isEmpty()) {
             return null;
         }
@@ -259,14 +260,20 @@ public class CreditNoteService {
         return new Part(
                 line,
                 quantity,
-                share(line.taxableRupees(), quantity, line.quantity()),
-                share(line.cgstRupees(), quantity, line.quantity()),
-                share(line.sgstRupees(), quantity, line.quantity()),
-                share(line.igstRupees(), quantity, line.quantity()));
+                share(
+                        line.taxableRupees(),
+                        done == null ? Rupees.ZERO : done.taxableRupees(),
+                        quantity,
+                        line.quantity()),
+                share(line.cgstRupees(), done == null ? Rupees.ZERO : done.cgstRupees(), quantity, line.quantity()),
+                share(line.sgstRupees(), done == null ? Rupees.ZERO : done.sgstRupees(), quantity, line.quantity()),
+                share(line.igstRupees(), done == null ? Rupees.ZERO : done.igstRupees(), quantity, line.quantity()));
     }
 
-    private static BigDecimal share(BigDecimal value, int quantity, int of) {
-        return Rupees.divide(Rupees.times(value, quantity), BigDecimal.valueOf(of));
+    /** The pro rata share, never more than what is left of the line's value after earlier credits. */
+    private static BigDecimal share(BigDecimal value, BigDecimal creditedBefore, int quantity, int of) {
+        return Rupees.min(
+                Rupees.divide(Rupees.times(value, quantity), BigDecimal.valueOf(of)), value.subtract(creditedBefore));
     }
 
     private CreditNote insert(
@@ -496,15 +503,6 @@ public class CreditNoteService {
                         note.supplyType(),
                         note.totalRupees()))
                 .toList();
-    }
-
-    /** True when the invoice has at least one credit note. */
-    @Transactional(readOnly = true)
-    public boolean hasNotes(long invoiceId) {
-        return Boolean.TRUE.equals(jdbc.sql("SELECT EXISTS (SELECT 1 FROM credit_note WHERE invoice_id = :invoice)")
-                .param("invoice", invoiceId)
-                .query(Boolean.class)
-                .single());
     }
 
     private static ResponseStatusException conflict(String message) {

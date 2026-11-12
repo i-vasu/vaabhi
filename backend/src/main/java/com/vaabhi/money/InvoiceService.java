@@ -251,12 +251,14 @@ public class InvoiceService {
                 && liveInvoiceId(event.orderId()).isPresent()) {
             // An issued invoice is a tax record: the order cannot change under it (this rolls the change back).
             throw new ResponseStatusException(
-                    HttpStatus.CONFLICT, "This order has an invoice; cancel the invoice before changing the order");
+                    HttpStatus.CONFLICT,
+                    "This order has an invoice; issue a credit note or cancel it on the day it was issued before changing the order");
         }
     }
 
     @Transactional
     public Invoice cancel(long id, @Nullable String actor) {
+        lock(id);
         var invoice = get(id);
         if (invoice.cancelledAt() != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This invoice was already cancelled");
@@ -274,6 +276,7 @@ public class InvoiceService {
      */
     @Transactional
     public void voidOrCredit(long id, @Nullable String actor) {
+        lock(id);
         var invoice = get(id);
         if (invoice.cancelledAt() != null) {
             return;
@@ -284,6 +287,15 @@ public class InvoiceService {
         } else {
             creditNotes.issueRemaining(id, CreditNote.Reason.CANCELLED, null, actor);
         }
+    }
+
+    /** Locks the invoice row so the day and credit note checks cannot race a credit note being issued. */
+    private void lock(long id) {
+        jdbc.sql("SELECT id FROM invoice WHERE id = :id FOR UPDATE")
+                .param(ID, id)
+                .query(Long.class)
+                .optional()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
     }
 
     private Invoice voidInvoice(long id, @Nullable String actor) {

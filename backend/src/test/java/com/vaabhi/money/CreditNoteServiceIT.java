@@ -280,6 +280,54 @@ class CreditNoteServiceIT {
     }
 
     @Test
+    void adminFormRejectsCancelledReason() {
+        var invoice = twoLineInvoice(order());
+
+        assertThatThrownBy(() -> creditNotes.issue(
+                        invoice.id(), new CreditNoteForm(CreditNote.Reason.CANCELLED, null, List.of()), "staff:1"))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Choose Return or Correction");
+    }
+
+    @Test
+    void adminEmptyLinesIssuesFullNote() {
+        var invoice = twoLineInvoice(order());
+
+        var note = creditNotes.issue(
+                invoice.id(), new CreditNoteForm(CreditNote.Reason.CORRECTION, "Typo", List.of()), "staff:1");
+
+        assertThat(note.lines()).hasSize(invoice.lines().size());
+        assertThat(note.totalRupees()).isEqualByComparingTo(invoice.totalRupees());
+        assertThat(note.note()).isEqualTo("Typo");
+    }
+
+    @Test
+    void shopOrderCancelVoidsSameDayInvoice() {
+        var invoice = twoLineInvoice(order());
+
+        invoices.voidOrCredit(invoice.id(), "staff:1");
+
+        var after = invoices.get(invoice.id());
+        assertThat(after.cancelledAt()).isNotNull();
+        assertThat(after.creditNotes()).isEmpty();
+    }
+
+    @Test
+    void shopOrderCancelCreditsOlderInvoice() {
+        var invoice = twoLineInvoice(order());
+        jdbc.sql("UPDATE invoice SET issued_on = issued_on - 1 WHERE id = :id")
+                .param("id", invoice.id())
+                .update();
+
+        invoices.voidOrCredit(invoice.id(), "staff:1");
+
+        var after = invoices.get(invoice.id());
+        assertThat(after.cancelledAt()).isNull();
+        assertThat(after.creditNotes()).hasSize(1);
+        assertThat(after.creditNotes().get(0).reason()).isEqualTo(CreditNote.Reason.CANCELLED);
+    }
+
+    @Test
     void webCancelIssuesFullNoteNotCancel() {
         var order = order();
         var invoice = twoLineInvoice(order);

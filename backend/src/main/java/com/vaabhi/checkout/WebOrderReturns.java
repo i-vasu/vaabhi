@@ -150,6 +150,8 @@ public class WebOrderReturns {
         if (amount.compareTo(refundable) > 0) {
             throw conflict("At most " + refundable.toPlainString() + " can still be refunded on this order");
         }
+        // Before any money moves: a failure here aborts the refund, and a later failure rolls the note back too.
+        creditForReturn(returnNumber);
         WebOrder.RefundMethod method;
         String reference;
         String status;
@@ -196,7 +198,6 @@ public class WebOrderReturns {
                 .list()
                 .forEach(e -> back.merge(e.getKey(), e.getValue(), Integer::sum));
         stock.restore(back);
-        creditForReturn(returnNumber);
         publish(WebOrderReturnEvent.Type.REFUNDED, current.orderNumber(), returnNumber);
         return orders.shopOrder(current.orderNumber());
     }
