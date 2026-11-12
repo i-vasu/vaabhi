@@ -1723,6 +1723,69 @@
                 }
             }
         },
+        "/api/v1/admin/money/tax-classes/{id}": {
+            "put": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "updateTaxClass",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TaxClassForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TaxClass"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "deleteTaxClass",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
         "/api/v1/admin/money/expenses/{id}": {
             "put": {
                 "tags": [
@@ -2024,6 +2087,47 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/Client"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/categories/{id}/tax-class": {
+            "put": {
+                "tags": [
+                    "admin-category-controller"
+                ],
+                "operationId": "setTaxClass",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TaxClassChoice"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdminCategory"
                                 }
                             }
                         }
@@ -4657,6 +4761,57 @@
                 }
             }
         },
+        "/api/v1/admin/money/tax-classes": {
+            "get": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "listTaxClasses",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/TaxClass"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "createTaxClass",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TaxClassForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TaxClass"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/money/orders/{orderId}/invoice": {
             "get": {
                 "tags": [
@@ -4710,6 +4865,79 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/Invoice"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/invoices/{id}/credit-notes": {
+            "get": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "listInvoiceCreditNotes",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/CreditNoteSummary"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "issueCreditNote",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreditNoteForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CreditNote"
                                 }
                             }
                         }
@@ -6198,6 +6426,39 @@
                 }
             }
         },
+        "/api/v1/customer/orders/{number}/credit-notes": {
+            "get": {
+                "tags": [
+                    "checkout-controller"
+                ],
+                "operationId": "getMyCreditNotes",
+                "parameters": [
+                    {
+                        "name": "number",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/StoreCreditNote"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/options": {
             "get": {
                 "tags": [
@@ -7061,6 +7322,158 @@
                 }
             }
         },
+        "/api/v1/admin/money/gstr1": {
+            "get": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "getGstr1",
+                "parameters": [
+                    {
+                        "name": "month",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Gstr1"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/gstr1/{section}.csv": {
+            "get": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "getGstr1Csv",
+                "parameters": [
+                    {
+                        "name": "section",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "month",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/credit-notes": {
+            "get": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "listCreditNotes",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CreditNotePage"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/credit-notes/{id}": {
+            "get": {
+                "tags": [
+                    "money-controller"
+                ],
+                "operationId": "getCreditNote",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CreditNote"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/me": {
             "get": {
                 "tags": [
@@ -7132,6 +7545,29 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/CouponCheck"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/categories": {
+            "get": {
+                "tags": [
+                    "admin-category-controller"
+                ],
+                "operationId": "listAdminCategories",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AdminCategory"
+                                    }
                                 }
                             }
                         }
@@ -9713,13 +10149,21 @@
                         },
                         "maxItems": 40,
                         "minItems": 1
+                    },
+                    "taxClassId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
                     }
                 },
                 "required": [
                     "businessType",
                     "fields",
                     "id",
-                    "name"
+                    "name",
+                    "taxClassId"
                 ]
             },
             "DocumentSettings": {
@@ -9944,6 +10388,13 @@
                                 "type": "null"
                             }
                         ]
+                    },
+                    "defaultTaxClassId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
                     }
                 },
                 "required": [
@@ -9951,6 +10402,7 @@
                     "chargeGst",
                     "company",
                     "defaultGstRate",
+                    "defaultTaxClassId",
                     "discountAppliesTo",
                     "gstin",
                     "pricesIncludeTax",
@@ -10038,6 +10490,13 @@
                         },
                         "maxItems": 20,
                         "minItems": 0
+                    },
+                    "taxClassId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
                     }
                 },
                 "required": [
@@ -10046,6 +10505,7 @@
                     "photoKey",
                     "priceRupees",
                     "stageCosts",
+                    "taxClassId",
                     "templateId"
                 ]
             },
@@ -10104,6 +10564,13 @@
                     },
                     "profitRupees": {
                         "type": "number"
+                    },
+                    "taxClassId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
                     }
                 },
                 "required": [
@@ -10115,6 +10582,7 @@
                     "priceRupees",
                     "profitRupees",
                     "stageCosts",
+                    "taxClassId",
                     "templateId"
                 ]
             },
@@ -11243,6 +11711,105 @@
                     "trialDate"
                 ]
             },
+            "TaxClassForm": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 60,
+                        "minLength": 0
+                    },
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "GOODS",
+                            "SERVICE"
+                        ]
+                    },
+                    "hsnCode": {
+                        "type": "string",
+                        "pattern": "^[0-9]{4,8}$"
+                    },
+                    "ratePercent": {
+                        "type": "number",
+                        "maximum": 28,
+                        "minimum": 0
+                    },
+                    "slabLimitRupees": {
+                        "type": [
+                            "number",
+                            "null"
+                        ],
+                        "exclusiveMinimum": 0
+                    },
+                    "rateAbovePercent": {
+                        "type": [
+                            "number",
+                            "null"
+                        ],
+                        "maximum": 28,
+                        "minimum": 0
+                    }
+                },
+                "required": [
+                    "hsnCode",
+                    "kind",
+                    "name",
+                    "rateAbovePercent",
+                    "ratePercent",
+                    "slabLimitRupees"
+                ]
+            },
+            "TaxClass": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "GOODS",
+                            "SERVICE"
+                        ]
+                    },
+                    "hsnCode": {
+                        "type": "string"
+                    },
+                    "ratePercent": {
+                        "type": "number"
+                    },
+                    "slabLimitRupees": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "rateAbovePercent": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "inUse": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "hsnCode",
+                    "id",
+                    "inUse",
+                    "kind",
+                    "name",
+                    "rateAbovePercent",
+                    "ratePercent",
+                    "slabLimitRupees"
+                ]
+            },
             "ExpenseForm": {
                 "type": "object",
                 "properties": {
@@ -12076,6 +12643,45 @@
                     "takenBy",
                     "templateId",
                     "values"
+                ]
+            },
+            "TaxClassChoice": {
+                "type": "object",
+                "properties": {
+                    "taxClassId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "taxClassId"
+                ]
+            },
+            "AdminCategory": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "taxClassId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "taxClassId"
                 ]
             },
             "TrackOrderRequest": {
@@ -14904,6 +15510,40 @@
                     "state"
                 ]
             },
+            "CreditNoteSummary": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "number": {
+                        "type": "string"
+                    },
+                    "issuedOn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "totalRupees": {
+                        "type": "number"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "enum": [
+                            "RETURN",
+                            "CANCELLED",
+                            "CORRECTION"
+                        ]
+                    }
+                },
+                "required": [
+                    "id",
+                    "issuedOn",
+                    "number",
+                    "reason",
+                    "totalRupees"
+                ]
+            },
             "Invoice": {
                 "type": "object",
                 "properties": {
@@ -14981,6 +15621,18 @@
                     "sgstRupees": {
                         "type": "number"
                     },
+                    "igstRupees": {
+                        "type": "number"
+                    },
+                    "placeOfSupply": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "supplyType": {
+                        "type": "string"
+                    },
                     "totalRupees": {
                         "type": "number"
                     },
@@ -15024,6 +15676,12 @@
                             "string",
                             "null"
                         ]
+                    },
+                    "creditNotes": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CreditNoteSummary"
+                        }
                     }
                 },
                 "required": [
@@ -15036,9 +15694,11 @@
                     "clientGstin",
                     "createdAt",
                     "createdBy",
+                    "creditNotes",
                     "discountRupees",
                     "gstRate",
                     "id",
+                    "igstRupees",
                     "issuedOn",
                     "lines",
                     "number",
@@ -15046,11 +15706,13 @@
                     "orderNumber",
                     "orderTotalRupees",
                     "paidRupees",
+                    "placeOfSupply",
                     "pricesIncludeTax",
                     "seller",
                     "sgstRupees",
                     "shopGstin",
                     "source",
+                    "supplyType",
                     "taxableRupees",
                     "title",
                     "totalRupees"
@@ -15059,6 +15721,10 @@
             "InvoiceLine": {
                 "type": "object",
                 "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
                     "description": {
                         "type": "string"
                     },
@@ -15071,12 +15737,44 @@
                     },
                     "amountRupees": {
                         "type": "number"
+                    },
+                    "discountRupees": {
+                        "type": "number"
+                    },
+                    "hsnCode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "gstRate": {
+                        "type": "number"
+                    },
+                    "taxableRupees": {
+                        "type": "number"
+                    },
+                    "cgstRupees": {
+                        "type": "number"
+                    },
+                    "sgstRupees": {
+                        "type": "number"
+                    },
+                    "igstRupees": {
+                        "type": "number"
                     }
                 },
                 "required": [
                     "amountRupees",
+                    "cgstRupees",
                     "description",
+                    "discountRupees",
+                    "gstRate",
+                    "hsnCode",
+                    "id",
+                    "igstRupees",
                     "quantity",
+                    "sgstRupees",
+                    "taxableRupees",
                     "unitRupees"
                 ]
             },
@@ -15117,6 +15815,211 @@
                     "name",
                     "state",
                     "stateCode"
+                ]
+            },
+            "CreditNoteForm": {
+                "type": "object",
+                "properties": {
+                    "reason": {
+                        "type": "string",
+                        "enum": [
+                            "RETURN",
+                            "CANCELLED",
+                            "CORRECTION"
+                        ]
+                    },
+                    "note": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 200,
+                        "minLength": 0
+                    },
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Line"
+                        }
+                    }
+                },
+                "required": [
+                    "lines",
+                    "note",
+                    "reason"
+                ]
+            },
+            "CreditNote": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "number": {
+                        "type": "string"
+                    },
+                    "invoiceId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "invoiceNumber": {
+                        "type": "string"
+                    },
+                    "orderNumber": {
+                        "type": "string"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "enum": [
+                            "RETURN",
+                            "CANCELLED",
+                            "CORRECTION"
+                        ]
+                    },
+                    "note": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "issuedOn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "seller": {
+                        "$ref": "#/components/schemas/Seller"
+                    },
+                    "buyer": {
+                        "$ref": "#/components/schemas/Buyer"
+                    },
+                    "placeOfSupply": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "supplyType": {
+                        "type": "string"
+                    },
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CreditNoteLine"
+                        }
+                    },
+                    "taxableRupees": {
+                        "type": "number"
+                    },
+                    "cgstRupees": {
+                        "type": "number"
+                    },
+                    "sgstRupees": {
+                        "type": "number"
+                    },
+                    "igstRupees": {
+                        "type": "number"
+                    },
+                    "totalRupees": {
+                        "type": "number"
+                    },
+                    "createdBy": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "buyer",
+                    "cgstRupees",
+                    "createdAt",
+                    "createdBy",
+                    "id",
+                    "igstRupees",
+                    "invoiceId",
+                    "invoiceNumber",
+                    "issuedOn",
+                    "lines",
+                    "note",
+                    "number",
+                    "orderNumber",
+                    "placeOfSupply",
+                    "reason",
+                    "seller",
+                    "sgstRupees",
+                    "supplyType",
+                    "taxableRupees",
+                    "title",
+                    "totalRupees"
+                ]
+            },
+            "CreditNoteLine": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "invoiceLineId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "hsnCode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "unitRupees": {
+                        "type": "number"
+                    },
+                    "gstRate": {
+                        "type": "number"
+                    },
+                    "taxableRupees": {
+                        "type": "number"
+                    },
+                    "cgstRupees": {
+                        "type": "number"
+                    },
+                    "sgstRupees": {
+                        "type": "number"
+                    },
+                    "igstRupees": {
+                        "type": "number"
+                    },
+                    "amountRupees": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "amountRupees",
+                    "cgstRupees",
+                    "description",
+                    "gstRate",
+                    "hsnCode",
+                    "id",
+                    "igstRupees",
+                    "invoiceLineId",
+                    "quantity",
+                    "sgstRupees",
+                    "taxableRupees",
+                    "unitRupees"
                 ]
             },
             "GalleryUpload": {
@@ -16642,6 +17545,18 @@
                     "sgstRupees": {
                         "type": "number"
                     },
+                    "igstRupees": {
+                        "type": "number"
+                    },
+                    "placeOfSupply": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "supplyType": {
+                        "type": "string"
+                    },
                     "totalRupees": {
                         "type": "number"
                     },
@@ -16659,13 +17574,99 @@
                     "buyer",
                     "cancelled",
                     "cgstRupees",
+                    "igstRupees",
                     "issuedOn",
                     "lines",
                     "number",
                     "orderNumber",
+                    "placeOfSupply",
                     "seller",
                     "sgstRupees",
                     "shopGstin",
+                    "supplyType",
+                    "taxableRupees",
+                    "title",
+                    "totalRupees"
+                ]
+            },
+            "StoreCreditNote": {
+                "type": "object",
+                "properties": {
+                    "number": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "enum": [
+                            "RETURN",
+                            "CANCELLED",
+                            "CORRECTION"
+                        ]
+                    },
+                    "issuedOn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "invoiceNumber": {
+                        "type": "string"
+                    },
+                    "orderNumber": {
+                        "type": "string"
+                    },
+                    "seller": {
+                        "$ref": "#/components/schemas/Seller"
+                    },
+                    "buyer": {
+                        "$ref": "#/components/schemas/Buyer"
+                    },
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CreditNoteLine"
+                        }
+                    },
+                    "taxableRupees": {
+                        "type": "number"
+                    },
+                    "cgstRupees": {
+                        "type": "number"
+                    },
+                    "sgstRupees": {
+                        "type": "number"
+                    },
+                    "igstRupees": {
+                        "type": "number"
+                    },
+                    "placeOfSupply": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "supplyType": {
+                        "type": "string"
+                    },
+                    "totalRupees": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "buyer",
+                    "cgstRupees",
+                    "igstRupees",
+                    "invoiceNumber",
+                    "issuedOn",
+                    "lines",
+                    "number",
+                    "orderNumber",
+                    "placeOfSupply",
+                    "reason",
+                    "seller",
+                    "sgstRupees",
+                    "supplyType",
                     "taxableRupees",
                     "title",
                     "totalRupees"
@@ -17852,6 +18853,151 @@
                     "totalRupees"
                 ]
             },
+            "DocRange": {
+                "type": "object",
+                "properties": {
+                    "nature": {
+                        "type": "string"
+                    },
+                    "from": {
+                        "type": "string"
+                    },
+                    "to": {
+                        "type": "string"
+                    },
+                    "total": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "cancelled": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                },
+                "required": [
+                    "cancelled",
+                    "from",
+                    "nature",
+                    "to",
+                    "total"
+                ]
+            },
+            "Gstr1": {
+                "type": "object",
+                "properties": {
+                    "month": {
+                        "type": "string"
+                    },
+                    "gstOn": {
+                        "type": "boolean"
+                    },
+                    "b2b": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Row"
+                        }
+                    },
+                    "b2cl": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Row"
+                        }
+                    },
+                    "b2cs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Row"
+                        }
+                    },
+                    "cdnr": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Row"
+                        }
+                    },
+                    "cdnur": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Row"
+                        }
+                    },
+                    "hsn": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/HsnRow"
+                        }
+                    },
+                    "docs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DocRange"
+                        }
+                    }
+                },
+                "required": [
+                    "b2b",
+                    "b2cl",
+                    "b2cs",
+                    "cdnr",
+                    "cdnur",
+                    "docs",
+                    "gstOn",
+                    "hsn",
+                    "month"
+                ]
+            },
+            "HsnRow": {
+                "type": "object",
+                "properties": {
+                    "hsn": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "uqc": {
+                        "type": "string"
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "value": {
+                        "type": "number"
+                    },
+                    "rate": {
+                        "type": "number"
+                    },
+                    "taxable": {
+                        "type": "number"
+                    },
+                    "igst": {
+                        "type": "number"
+                    },
+                    "cgst": {
+                        "type": "number"
+                    },
+                    "sgst": {
+                        "type": "number"
+                    },
+                    "cess": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "cess",
+                    "cgst",
+                    "description",
+                    "hsn",
+                    "igst",
+                    "quantity",
+                    "rate",
+                    "sgst",
+                    "taxable",
+                    "uqc",
+                    "value"
+                ]
+            },
             "CategoryTotal": {
                 "type": "object",
                 "properties": {
@@ -17899,6 +19045,82 @@
                 "required": [
                     "byCategory",
                     "items",
+                    "totalRupees"
+                ]
+            },
+            "CreditNotePage": {
+                "type": "object",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Item"
+                        }
+                    },
+                    "total": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "page": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                },
+                "required": [
+                    "items",
+                    "page",
+                    "size",
+                    "total"
+                ]
+            },
+            "Item": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "number": {
+                        "type": "string"
+                    },
+                    "invoiceId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "invoiceNumber": {
+                        "type": "string"
+                    },
+                    "buyerName": {
+                        "type": "string"
+                    },
+                    "issuedOn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "totalRupees": {
+                        "type": "number"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "enum": [
+                            "RETURN",
+                            "CANCELLED",
+                            "CORRECTION"
+                        ]
+                    }
+                },
+                "required": [
+                    "buyerName",
+                    "id",
+                    "invoiceId",
+                    "invoiceNumber",
+                    "issuedOn",
+                    "number",
+                    "reason",
                     "totalRupees"
                 ]
             },

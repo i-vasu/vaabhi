@@ -516,6 +516,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/money/tax-classes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateTaxClass"];
+        post?: never;
+        delete: operations["deleteTaxClass"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/money/expenses/{id}": {
         parameters: {
             query?: never;
@@ -605,6 +621,22 @@ export interface paths {
         };
         get: operations["getClient"];
         put: operations["updateClient"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/categories/{id}/tax-class": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["setTaxClass"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1620,6 +1652,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/money/tax-classes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listTaxClasses"];
+        put?: never;
+        post: operations["createTaxClass"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/money/orders/{orderId}/invoice": {
         parameters: {
             query?: never;
@@ -1630,6 +1678,22 @@ export interface paths {
         get: operations["getOrderInvoice"];
         put?: never;
         post: operations["issueOrderInvoice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/invoices/{id}/credit-notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listInvoiceCreditNotes"];
+        put?: never;
+        post: operations["issueCreditNote"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2084,6 +2148,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/customer/orders/{number}/credit-notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMyCreditNotes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/options": {
         parameters: {
             query?: never;
@@ -2484,6 +2564,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/money/gstr1": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getGstr1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/gstr1/{section}.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getGstr1Csv"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/credit-notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listCreditNotes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/credit-notes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getCreditNote"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/me": {
         parameters: {
             query?: never;
@@ -2524,6 +2668,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["checkCoupon"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listAdminCategories"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3134,6 +3294,8 @@ export interface components {
             /** @enum {string} */
             businessType: "ALL" | "LADIES" | "GENTS" | "KIDS";
             fields: components["schemas"]["Field"][];
+            /** Format: int64 */
+            taxClassId: number | null;
         };
         DocumentSettings: {
             slogan: string | null;
@@ -3174,6 +3336,8 @@ export interface components {
             discountAppliesTo: "ORDER_TOTAL" | "ITEMS_BEFORE_TAX";
             autoInvoice: boolean;
             company: components["schemas"]["Company"] | null;
+            /** Format: int64 */
+            defaultTaxClassId: number | null;
         };
         Company: {
             legalName: string | null;
@@ -3189,6 +3353,8 @@ export interface components {
             priceRupees: number;
             photoKey: string | null;
             stageCosts: components["schemas"]["StageCost"][];
+            /** Format: int64 */
+            taxClassId: number | null;
         };
         StageCost: {
             /** Format: int64 */
@@ -3207,6 +3373,8 @@ export interface components {
             photoKey: string | null;
             stageCosts: components["schemas"]["StageCost"][];
             profitRupees: number;
+            /** Format: int64 */
+            taxClassId: number | null;
         };
         MediaUpdate: {
             /** Format: int64 */
@@ -3448,6 +3616,27 @@ export interface components {
             trialDate: string | null;
             notes: string | null;
         };
+        TaxClassForm: {
+            name: string;
+            /** @enum {string} */
+            kind: "GOODS" | "SERVICE";
+            hsnCode: string;
+            ratePercent: number;
+            slabLimitRupees: number | null;
+            rateAbovePercent: number | null;
+        };
+        TaxClass: {
+            /** Format: int64 */
+            id: number;
+            name: string;
+            /** @enum {string} */
+            kind: "GOODS" | "SERVICE";
+            hsnCode: string;
+            ratePercent: number;
+            slabLimitRupees: number | null;
+            rateAbovePercent: number | null;
+            inUse: boolean;
+        };
         ExpenseForm: {
             /** Format: date */
             spentOn: string;
@@ -3624,6 +3813,17 @@ export interface components {
             takenBy: string | null;
             /** Format: date-time */
             takenAt: string;
+        };
+        TaxClassChoice: {
+            /** Format: int64 */
+            taxClassId: number | null;
+        };
+        AdminCategory: {
+            /** Format: int64 */
+            id: number;
+            name: string;
+            /** Format: int64 */
+            taxClassId: number | null;
         };
         TrackOrderRequest: {
             number: string;
@@ -4245,6 +4445,16 @@ export interface components {
             address: string | null;
             state: string | null;
         };
+        CreditNoteSummary: {
+            /** Format: int64 */
+            id: number;
+            number: string;
+            /** Format: date */
+            issuedOn: string;
+            totalRupees: number;
+            /** @enum {string} */
+            reason: "RETURN" | "CANCELLED" | "CORRECTION";
+        };
         Invoice: {
             /** Format: int64 */
             id: number;
@@ -4268,6 +4478,9 @@ export interface components {
             taxableRupees: number;
             cgstRupees: number;
             sgstRupees: number;
+            igstRupees: number;
+            placeOfSupply: string | null;
+            supplyType: string;
             totalRupees: number;
             paidRupees: number;
             balanceRupees: number;
@@ -4279,13 +4492,23 @@ export interface components {
             /** Format: date-time */
             cancelledAt: string | null;
             cancelledBy: string | null;
+            creditNotes: components["schemas"]["CreditNoteSummary"][];
         };
         InvoiceLine: {
+            /** Format: int64 */
+            id: number;
             description: string;
             /** Format: int32 */
             quantity: number;
             unitRupees: number;
             amountRupees: number;
+            discountRupees: number;
+            hsnCode: string | null;
+            gstRate: number;
+            taxableRupees: number;
+            cgstRupees: number;
+            sgstRupees: number;
+            igstRupees: number;
         };
         Seller: {
             name: string;
@@ -4293,6 +4516,57 @@ export interface components {
             cin: string | null;
             state: string | null;
             stateCode: string | null;
+        };
+        CreditNoteForm: {
+            /** @enum {string} */
+            reason: "RETURN" | "CANCELLED" | "CORRECTION";
+            note: string | null;
+            lines: components["schemas"]["Line"][];
+        };
+        CreditNote: {
+            /** Format: int64 */
+            id: number;
+            number: string;
+            /** Format: int64 */
+            invoiceId: number;
+            invoiceNumber: string;
+            orderNumber: string;
+            /** @enum {string} */
+            reason: "RETURN" | "CANCELLED" | "CORRECTION";
+            note: string | null;
+            /** Format: date */
+            issuedOn: string;
+            title: string;
+            seller: components["schemas"]["Seller"];
+            buyer: components["schemas"]["Buyer"];
+            placeOfSupply: string | null;
+            supplyType: string;
+            lines: components["schemas"]["CreditNoteLine"][];
+            taxableRupees: number;
+            cgstRupees: number;
+            sgstRupees: number;
+            igstRupees: number;
+            totalRupees: number;
+            createdBy: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        CreditNoteLine: {
+            /** Format: int64 */
+            id: number;
+            /** Format: int64 */
+            invoiceLineId: number;
+            description: string;
+            hsnCode: string | null;
+            /** Format: int32 */
+            quantity: number;
+            unitRupees: number;
+            gstRate: number;
+            taxableRupees: number;
+            cgstRupees: number;
+            sgstRupees: number;
+            igstRupees: number;
+            amountRupees: number;
         };
         GalleryUpload: {
             key: string;
@@ -4641,9 +4915,32 @@ export interface components {
             taxableRupees: number;
             cgstRupees: number;
             sgstRupees: number;
+            igstRupees: number;
+            placeOfSupply: string | null;
+            supplyType: string;
             totalRupees: number;
             shopGstin: string | null;
             cancelled: boolean;
+        };
+        StoreCreditNote: {
+            number: string;
+            title: string;
+            /** @enum {string} */
+            reason: "RETURN" | "CANCELLED" | "CORRECTION";
+            /** Format: date */
+            issuedOn: string;
+            invoiceNumber: string;
+            orderNumber: string;
+            seller: components["schemas"]["Seller"];
+            buyer: components["schemas"]["Buyer"];
+            lines: components["schemas"]["CreditNoteLine"][];
+            taxableRupees: number;
+            cgstRupees: number;
+            sgstRupees: number;
+            igstRupees: number;
+            placeOfSupply: string | null;
+            supplyType: string;
+            totalRupees: number;
         };
         AuthOptions: {
             phoneSignIn: boolean;
@@ -4977,6 +5274,40 @@ export interface components {
             balanceRupees: number;
             cancelled: boolean;
         };
+        DocRange: {
+            nature: string;
+            from: string;
+            to: string;
+            /** Format: int32 */
+            total: number;
+            /** Format: int32 */
+            cancelled: number;
+        };
+        Gstr1: {
+            month: string;
+            gstOn: boolean;
+            b2b: components["schemas"]["Row"][];
+            b2cl: components["schemas"]["Row"][];
+            b2cs: components["schemas"]["Row"][];
+            cdnr: components["schemas"]["Row"][];
+            cdnur: components["schemas"]["Row"][];
+            hsn: components["schemas"]["HsnRow"][];
+            docs: components["schemas"]["DocRange"][];
+        };
+        HsnRow: {
+            hsn: string;
+            description: string;
+            uqc: string;
+            /** Format: int64 */
+            quantity: number;
+            value: number;
+            rate: number;
+            taxable: number;
+            igst: number;
+            cgst: number;
+            sgst: number;
+            cess: number;
+        };
         CategoryTotal: {
             /** @enum {string} */
             category: "RENT" | "SALARY" | "MATERIAL" | "UTILITIES" | "TRANSPORT" | "MAINTENANCE" | "MARKETING" | "OTHER";
@@ -4986,6 +5317,29 @@ export interface components {
             items: components["schemas"]["Expense"][];
             totalRupees: number;
             byCategory: components["schemas"]["CategoryTotal"][];
+        };
+        CreditNotePage: {
+            items: components["schemas"]["Item"][];
+            /** Format: int64 */
+            total: number;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            size: number;
+        };
+        Item: {
+            /** Format: int64 */
+            id: number;
+            number: string;
+            /** Format: int64 */
+            invoiceId: number;
+            invoiceNumber: string;
+            buyerName: string;
+            /** Format: date */
+            issuedOn: string;
+            totalRupees: number;
+            /** @enum {string} */
+            reason: "RETURN" | "CANCELLED" | "CORRECTION";
         };
         ActivityEntry: {
             /** Format: int64 */
@@ -6387,6 +6741,52 @@ export interface operations {
             };
         };
     };
+    updateTaxClass: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaxClassForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaxClass"];
+                };
+            };
+        };
+    };
+    deleteTaxClass: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     updateExpense: {
         parameters: {
             query?: never;
@@ -6615,6 +7015,32 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["Client"];
+                };
+            };
+        };
+    };
+    setTaxClass: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaxClassChoice"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminCategory"];
                 };
             };
         };
@@ -8367,6 +8793,50 @@ export interface operations {
             };
         };
     };
+    listTaxClasses: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaxClass"][];
+                };
+            };
+        };
+    };
+    createTaxClass: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaxClassForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaxClass"];
+                };
+            };
+        };
+    };
     getOrderInvoice: {
         parameters: {
             query?: never;
@@ -8407,6 +8877,54 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["Invoice"];
+                };
+            };
+        };
+    };
+    listInvoiceCreditNotes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CreditNoteSummary"][];
+                };
+            };
+        };
+    };
+    issueCreditNote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreditNoteForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CreditNote"];
                 };
             };
         };
@@ -9310,6 +9828,28 @@ export interface operations {
             };
         };
     };
+    getMyCreditNotes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                number: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StoreCreditNote"][];
+                };
+            };
+        };
+    };
     signInOptions: {
         parameters: {
             query?: never;
@@ -9855,6 +10395,98 @@ export interface operations {
             };
         };
     };
+    getGstr1: {
+        parameters: {
+            query: {
+                month: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Gstr1"];
+                };
+            };
+        };
+    };
+    getGstr1Csv: {
+        parameters: {
+            query: {
+                month: string;
+            };
+            header?: never;
+            path: {
+                section: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
+    listCreditNotes: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CreditNotePage"];
+                };
+            };
+        };
+    };
+    getCreditNote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CreditNote"];
+                };
+            };
+        };
+    };
     currentStaff: {
         parameters: {
             query?: never;
@@ -9914,6 +10546,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CouponCheck"];
+                };
+            };
+        };
+    };
+    listAdminCategories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminCategory"][];
                 };
             };
         };
