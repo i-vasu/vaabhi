@@ -105,6 +105,11 @@ public class SecurityConfig {
                         .hasRole("ADMIN")
                         .requestMatchers("/api/v1/admin/money/**")
                         .access(area("MONEY"))
+                        // The books: reading needs the MONEY area; every change is for the owner.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/admin/accounts/**")
+                        .access(area("MONEY"))
+                        .requestMatchers("/api/v1/admin/accounts/**")
+                        .hasRole("OWNER")
                         // Changing what a role may do is for the owner alone.
                         .requestMatchers(HttpMethod.PUT, "/api/v1/admin/staff/roles/**")
                         .hasRole("OWNER")
