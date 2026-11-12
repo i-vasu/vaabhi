@@ -96,6 +96,26 @@ public class ChartService {
         }
         checkParent(form.parentId());
         checkCodeFree(form.code(), id);
+        if (Boolean.FALSE.equals(form.active()) && current.active()) {
+            var mode = jdbc.sql("""
+                            SELECT key FROM books_setting, jsonb_each_text(mode_accounts)
+                            WHERE id = 1 AND value::bigint = :id ORDER BY key LIMIT 1
+                            """).param("id", id).query(String.class).optional();
+            if (mode.isPresent()) {
+                throw new ResponseStatusException(
+                        HttpStatus.CONFLICT,
+                        "This account is used for " + mode.get() + " payments; pick another account there first");
+            }
+        }
+        if (form.type() != current.type()) {
+            boolean posted = jdbc.sql("SELECT EXISTS (SELECT 1 FROM journal_line WHERE account_id = :id)")
+                    .param("id", id)
+                    .query(Boolean.class)
+                    .single();
+            if (posted) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "An account with postings can't change type");
+            }
+        }
         jdbc.sql("""
                         UPDATE account SET code = :code, name = :name, type = :type, parent_id = :parentId,
                                            active = :active

@@ -2,6 +2,8 @@ package com.vaabhi.shared.database;
 
 import javax.sql.DataSource;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -16,6 +18,8 @@ import org.springframework.transaction.TransactionExecutionListener;
  */
 @Component
 class ActorTransactionListener implements TransactionExecutionListener {
+
+    private static final Logger log = LoggerFactory.getLogger(ActorTransactionListener.class);
 
     private static final String STAFF_PREFIX = "staff:";
 
@@ -34,11 +38,17 @@ class ActorTransactionListener implements TransactionExecutionListener {
         if (actor == null) {
             return;
         }
-        // A failed statement aborts the Postgres transaction, so let the failure surface rather than hide its cause.
-        jdbc.sql("SELECT set_config('vaabhi.actor', :actor, true)")
-                .param("actor", actor)
-                .query(String.class)
-                .single();
+        try {
+            jdbc.sql("SELECT set_config('vaabhi.actor', :actor, true)")
+                    .param("actor", actor)
+                    .query(String.class)
+                    .single();
+        } catch (RuntimeException e) {
+            // A failed statement aborts the Postgres transaction; end it cleanly (and visibly) instead of
+            // throwing from a listener Spring does not guard.
+            log.error("Could not record the acting staff member; rolling the transaction back", e);
+            transaction.setRollbackOnly();
+        }
     }
 
     private static @Nullable String currentStaffName() {

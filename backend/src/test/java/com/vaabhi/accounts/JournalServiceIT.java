@@ -7,6 +7,7 @@ import com.vaabhi.TestcontainersConfiguration;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -262,12 +263,41 @@ class JournalServiceIT {
 
         assertThat(periods.list()).isEmpty();
 
+        var today = LocalDate.now(ZoneId.of("Asia/Kolkata"));
         jdbc.sql("UPDATE books_setting SET start_date = :start WHERE id = 1")
-                .param("start", LocalDate.now().minusMonths(2).withDayOfMonth(15))
+                .param("start", today.minusMonths(2).withDayOfMonth(15))
                 .update();
         var months = periods.list();
         assertThat(months).hasSize(3);
-        assertThat(months.get(0).month()).isEqualTo(LocalDate.now().withDayOfMonth(1));
+        assertThat(months.get(0).month()).isEqualTo(today.withDayOfMonth(1));
+    }
+
+    @Test
+    void reversalCannotBeReversed() {
+        var cash = newAccount(AccountType.ASSET);
+        var sales = newAccount(AccountType.INCOME);
+        var original = journal.post(
+                manual(LocalDate.of(2031, 2, 3), List.of(debit(cash.id(), "20"), credit(sales.id(), "20"))), null);
+        var reversal = journal.reverse(original.id(), null);
+
+        assertRejected(() -> journal.reverse(reversal.id(), null), HttpStatus.CONFLICT, "A reversal can't be reversed");
+    }
+
+    @Test
+    void mappedAccountCannotBeTurnedOff() {
+        var bank = newAccount(AccountType.ASSET);
+        var original = settings.get();
+        var modes = new java.util.HashMap<>(original.modeAccounts());
+        modes.put("CARD", bank.id());
+        settings.save(new BooksSettings(original.startDate(), Map.copyOf(modes), null), null);
+        try {
+            assertRejected(
+                    () -> chart.update(bank.id(), new AccountForm(bank.code(), bank.name(), bank.type(), null, false)),
+                    HttpStatus.CONFLICT,
+                    "This account is used for CARD payments; pick another account there first");
+        } finally {
+            settings.save(new BooksSettings(original.startDate(), original.modeAccounts(), null), null);
+        }
     }
 
     @Test

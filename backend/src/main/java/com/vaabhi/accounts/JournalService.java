@@ -130,6 +130,9 @@ public class JournalService {
         if (!REVERSIBLE.contains(original.sourceType())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Only manual and opening entries can be reversed");
         }
+        if ("REVERSAL".equals(original.sourceStep())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "A reversal can't be reversed");
+        }
         if (original.reversedById() != null) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "This entry is already reversed");
         }
