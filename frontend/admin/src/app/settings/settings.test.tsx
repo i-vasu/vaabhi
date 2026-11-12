@@ -231,8 +231,9 @@ describe("billing & tax", () => {
 
     fireEvent.click(await screen.findByRole("switch", { name: "Charge GST" }));
     type("GSTIN", "27abcde1234f1z5");
-    await screen.findByRole("option", { name: "Tailoring service" });
-    fireEvent.change(screen.getByLabelText("Default tax class"), { target: { value: "2" } });
+    const defaultClass = screen.getByLabelText("Default tax class");
+    await within(defaultClass).findByRole("option", { name: "Tailoring service" });
+    fireEvent.change(defaultClass, { target: { value: "2" } });
     fireEvent.change(screen.getByLabelText("Discount comes off"), { target: { value: "ITEMS_BEFORE_TAX" } });
     click("Save GST settings");
     await waitFor(() =>
