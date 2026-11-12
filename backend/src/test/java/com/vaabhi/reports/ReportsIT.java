@@ -138,7 +138,7 @@ class ReportsIT {
     void salesReportSubtractsCreditNotes() throws Exception {
         var ids = deliveredOrder("Credit", 700, 0);
         var invoice = body(mockMvc.perform(
-                        get("/api/v1/admin/orders/" + ids[0] + "/invoice").with(OWNER))
+                        get("/api/v1/admin/money/orders/" + ids[0] + "/invoice").with(OWNER))
                 .andExpect(status().isOk()));
         long invoiceId = ((Number) JsonPath.read(invoice, "$.id")).longValue();
         long lineId = ((Number) JsonPath.read(invoice, "$.lines[0].id")).longValue();
