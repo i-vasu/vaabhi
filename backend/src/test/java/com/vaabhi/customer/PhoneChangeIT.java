@@ -3,6 +3,7 @@ package com.vaabhi.customer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -30,6 +31,9 @@ class PhoneChangeIT {
 
     @Autowired
     private CustomerAuthIT.Fakes.CapturingWhatsApp whatsApp;
+
+    @Autowired
+    private AuthProperties properties;
 
     private ResultActions postJson(String path, String body, String access) throws Exception {
         return mockMvc.perform(post(path)
@@ -142,5 +146,49 @@ class PhoneChangeIT {
         putJson("/api/v1/customer/me/phone", "{\"phone\":\"7100000010\",\"code\":\"" + signInCode + "\"}", access)
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.detail").value("This code has expired. Send a new one."));
+    }
+
+    @Test
+    void rejectsAnInvalidNumber() throws Exception {
+        var access = phoneAccessToken("7100000011");
+        postJson("/api/v1/customer/me/phone/otp", "{\"phone\":\"12345\"}", access)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("phone"))
+                .andExpect(jsonPath("$.detail").value("Enter a valid 10-digit Indian mobile number"));
+    }
+
+    @Test
+    void waitsBeforeSendingAnotherCodeToTheSameNumber() throws Exception {
+        var access = phoneAccessToken("7100000012");
+        requestChangeCode(access, "7100000013");
+        postJson("/api/v1/customer/me/phone/otp", "{\"phone\":\"7100000013\"}", access)
+                .andExpect(status().isTooManyRequests())
+                .andExpect(header().string("Retry-After", "30"))
+                .andExpect(jsonPath("$.retryAfterSeconds").value(30));
+    }
+
+    @Test
+    void verifyWithNoCodeSentFails() throws Exception {
+        var access = phoneAccessToken("7100000014");
+        putJson("/api/v1/customer/me/phone", "{\"phone\":\"7100000015\",\"code\":\"123456\"}", access)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("code"))
+                .andExpect(jsonPath("$.detail").value("This code has expired. Send a new one."));
+    }
+
+    @Test
+    void tooManyWrongCodesLocksTheChange() throws Exception {
+        var access = phoneAccessToken("7100000016");
+        var code = requestChangeCode(access, "7100000017");
+        var wrong = code.equals("000000") ? "111111" : "000000";
+        var maxAttempts = properties.otp().maxAttempts();
+        for (var i = 0; i < maxAttempts; i++) {
+            putJson("/api/v1/customer/me/phone", "{\"phone\":\"7100000017\",\"code\":\"" + wrong + "\"}", access)
+                    .andExpect(status().isBadRequest());
+        }
+        // Even the right code no longer works once the tries are used up.
+        putJson("/api/v1/customer/me/phone", "{\"phone\":\"7100000017\",\"code\":\"" + code + "\"}", access)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("Too many wrong tries. Send a new code."));
     }
 }
