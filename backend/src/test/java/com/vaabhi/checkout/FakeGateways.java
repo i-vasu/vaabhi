@@ -93,6 +93,10 @@ final class FakeGateways implements AutoCloseable {
         if (method.equals("POST") && path.matches("/v1/payments/[^/]+/capture")) {
             return ok("{\"status\":\"captured\"}");
         }
+        if (method.equals("GET") && path.matches("/v1/payments/[^/]+/refunds")) {
+            // No earlier refund on the payment, so a cancel goes on to refund it.
+            return ok("{\"items\":[]}");
+        }
         if (method.equals("POST") && path.matches("/v1/payments/[^/]+/refund")) {
             return ok("{\"id\":\"rfnd_T" + id + "\",\"status\":\"pending\"}");
         }
