@@ -4,9 +4,11 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
@@ -22,10 +24,13 @@ public class BooksSettingsService {
 
     private final JdbcClient jdbc;
     private final ApplicationEventPublisher events;
+    private final DepreciationScheduler depreciation;
 
-    BooksSettingsService(JdbcClient jdbc, ApplicationEventPublisher events) {
+    BooksSettingsService(
+            JdbcClient jdbc, ApplicationEventPublisher events, @Lazy DepreciationScheduler depreciation) {
         this.jdbc = jdbc;
         this.events = events;
+        this.depreciation = depreciation;
     }
 
     record SettingsRow(
@@ -86,6 +91,9 @@ public class BooksSettingsService {
                 .update();
         if (before.startDate() == null && startDate != null) {
             events.publishEvent(new BooksStarted(startDate));
+        }
+        if (!Objects.equals(before.startDate(), startDate)) {
+            depreciation.refreshAll();
         }
         return get();
     }
