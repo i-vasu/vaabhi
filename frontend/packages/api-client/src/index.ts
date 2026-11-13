@@ -471,6 +471,9 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
       /** Cancels; an order paid online is refunded in full through Razorpay. */
       cancelOnlineOrder: (number: string, form: CancelWebOrderForm) =>
         send<WebOrder>("POST", `/api/v1/admin/online-orders/${encodeURIComponent(number)}/cancel`, form),
+      /** Sends a cancelled order's refund again, when Razorpay refused it or it never got there. */
+      retryOnlineOrderRefund: (number: string) =>
+        send<WebOrder>("POST", `/api/v1/admin/online-orders/${encodeURIComponent(number)}/refund`),
       /** The signed-in staff member. */
       me: () => request<StaffProfile>("/api/v1/admin/me"),
       changePassword: (change: PasswordChange) => send<void>("PUT", "/api/v1/admin/me/password", change),

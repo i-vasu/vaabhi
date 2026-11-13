@@ -34,6 +34,7 @@ const order = (patch: Partial<WebOrder> = {}): WebOrder => ({
   refundedRupees: null,
   refundId: null,
   refundStatus: null,
+  refundError: null,
   trackingStatus: null,
   trackingUrl: null,
   shippingLabelUrl: null,

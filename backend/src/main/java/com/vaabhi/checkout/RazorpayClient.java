@@ -15,6 +15,7 @@ import java.util.Base64;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.jspecify.annotations.Nullable;
@@ -99,6 +100,24 @@ class RazorpayClient {
         return new Refund(refund.get("id").asString(), refund.path("status").asString("pending"));
     }
 
+    /**
+     * A refund of exactly {@code amountRupees} already made on the payment and not failed, if there is one. Checked
+     * before refunding again, so a retry after a timeout (Razorpay refunded, the shop never heard) cannot refund twice.
+     */
+    Optional<Refund> existingRefund(String paymentId, BigDecimal amountRupees, String receipt) {
+        requireConfigured();
+        var items = JSON.readTree(call("GET", "/v1/payments/" + paymentId + "/refunds", null, receipt))
+                .path("items");
+        var paise = paise(amountRupees);
+        for (var item : items) {
+            var status = item.path("status").asString("");
+            if (!status.equals("failed") && item.path("amount").asLong(0) == paise) {
+                return Optional.of(new Refund(item.path("id").asString(""), status));
+            }
+        }
+        return Optional.empty();
+    }
+
     record Payment(String id, String status, long amountPaise) {}
 
     /** The payment attempts on a Razorpay order (status created, authorized, captured, refunded or failed). */
@@ -148,7 +167,9 @@ class RazorpayClient {
                         LogSafe.clean(receipt),
                         response.statusCode(),
                         LogSafe.clean(response.body()));
-                throw unavailable("Razorpay refused the request. Please try again or check the Razorpay dashboard.");
+                var reason = errorDescription(response.body());
+                throw unavailable("Razorpay refused the request" + (reason == null ? "" : ": " + reason)
+                        + ". Please try again or check the Razorpay dashboard.");
             }
             return response.body();
         } catch (InterruptedException e) {
@@ -197,6 +218,27 @@ class RazorpayClient {
             return HexFormat.of().formatHex(mac.doFinal(payload.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             throw new IllegalStateException("HmacSHA256 is not available", e);
+        }
+    }
+
+    /** Razorpay's own words for a refused request ({"error":{"description":…}}), cut short; null when absent. */
+    static @Nullable String errorDescription(@Nullable String body) {
+        if (body == null || body.isBlank()) {
+            return null;
+        }
+        try {
+            var description = JSON.readTree(body)
+                    .path("error")
+                    .path("description")
+                    .asString("")
+                    .strip();
+            if (description.isEmpty()) {
+                return null;
+            }
+            description = description.endsWith(".") ? description.substring(0, description.length() - 1) : description;
+            return description.length() <= 120 ? description : description.substring(0, 120);
+        } catch (RuntimeException e) {
+            return null;
         }
     }
 

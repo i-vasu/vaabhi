@@ -73,6 +73,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/v1/admin/online-orders/*/cancel",
+                                "/api/v1/admin/online-orders/*/refund",
                                 "/api/v1/admin/online-orders/returns/*/refund")
                         .hasRole("OWNER")
                         .requestMatchers(

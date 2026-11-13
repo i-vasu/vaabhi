@@ -9,8 +9,10 @@ import org.jspecify.annotations.Nullable;
  * An online order with the prices it was placed at.
  *
  * @param paidAt when the money came in: at payment for ONLINE, on delivery for COD
- * @param refundedRupees what was refunded through Razorpay when a paid order was cancelled
+ * @param refundedRupees what is refunded through Razorpay when a paid order was cancelled
+ * @param refundId Razorpay's refund id; null until Razorpay has accepted the refund
  * @param refundStatus where that refund is (Razorpay's refund webhooks move it on)
+ * @param refundError why Razorpay refused the refund, when it did (the owner can send it again)
  * @param trackingStatus the courier's latest status, when shipped through Shiprocket
  * @param trackingUrl the public tracking page, when shipped through Shiprocket
  * @param shippingLabelUrl the label to print (PDF), when shipped through Shiprocket
@@ -43,6 +45,7 @@ public record WebOrder(
         @Nullable BigDecimal refundedRupees,
         @Nullable String refundId,
         @Nullable RefundStatus refundStatus,
+        @Nullable String refundError,
         @Nullable String trackingStatus,
         @Nullable String trackingUrl,
         @Nullable String shippingLabelUrl,
@@ -51,7 +54,10 @@ public record WebOrder(
         List<Line> lines,
         List<OrderReturn> returns) {
 
-    /** PENDING: Razorpay accepted the refund; PROCESSED: the money reached the customer; FAILED: it did not. */
+    /**
+     * PENDING: owed and sent or about to be sent (no refund id until Razorpay accepts it); PROCESSED: the money
+     * reached the customer; FAILED: Razorpay refused it or it failed on the way (the owner can send it again).
+     */
     public enum RefundStatus {
         PENDING,
         PROCESSED,

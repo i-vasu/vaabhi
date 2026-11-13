@@ -166,6 +166,8 @@ class CheckoutIT {
     /** A published, active variant with 10 in stock, and a signed-in customer of our own. */
     @BeforeEach
     void setUp() {
+        GATEWAYS.refundsList = null;
+        GATEWAYS.refuseRefunds = false;
         sku = jdbc.sql("""
                         SELECT v.sku FROM product_variant v JOIN product p ON p.id = v.product_id
                         WHERE p.status = 'PUBLISHED' AND v.active ORDER BY v.id LIMIT 1
@@ -415,6 +417,97 @@ class CheckoutIT {
         var refund = GATEWAYS.last("POST", "/v1/payments/pay_C1/refund").json();
         assertThat(refund.path("amount").asLong()).isEqualTo(((Number) read(started, "$.amountPaise")).longValue());
         assertThat(stock()).isEqualTo(10);
+    }
+
+    @Test
+    void razorpayRefusingTheRefundLeavesItFailedAndTheOwnerCanSendItAgain() throws Exception {
+        var started = checkout("ONLINE", 1, "110001").andExpect(status().isCreated());
+        String number = read(started, "$.orderNumber");
+        pay(number, read(started, "$.razorpayOrderId"), "pay_R1").andExpect(status().isOk());
+
+        GATEWAYS.refuseRefunds = true;
+        admin("/" + number + "/cancel", "{\"reason\":\"Customer called\"}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELLED"))
+                .andExpect(jsonPath("$.refundStatus").value("FAILED"))
+                .andExpect(
+                        jsonPath("$.refundError").value(org.hamcrest.Matchers.containsString("The amount is invalid")));
+        assertThat(stock()).isEqualTo(10);
+
+        GATEWAYS.refuseRefunds = false;
+        var retried = admin("/" + number + "/refund", "")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.refundStatus").value("PENDING"))
+                .andExpect(jsonPath("$.refundId").isNotEmpty());
+        assertThat((String) read(retried, "$.refundError")).isNull();
+    }
+
+    @Test
+    void retryingARefundThatIsNotOwedIsRefused() throws Exception {
+        var started = checkout("ONLINE", 1, "110001").andExpect(status().isCreated());
+        String number = read(started, "$.orderNumber");
+        pay(number, read(started, "$.razorpayOrderId"), "pay_R2").andExpect(status().isOk());
+
+        // A PLACED order has no refund to send yet.
+        admin("/" + number + "/refund", "").andExpect(status().isConflict());
+
+        // Cancelling refunds it, so the refund is already PENDING: sending it again is refused.
+        admin("/" + number + "/cancel", "{\"reason\":null}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.refundStatus").value("PENDING"));
+        admin("/" + number + "/refund", "").andExpect(status().isConflict());
+    }
+
+    @Test
+    void retryReusesARefundRazorpayAlreadyMadeInsteadOfRefundingAgain() throws Exception {
+        var started = checkout("ONLINE", 1, "110001").andExpect(status().isCreated());
+        String number = read(started, "$.orderNumber");
+        pay(number, read(started, "$.razorpayOrderId"), "pay_R3").andExpect(status().isOk());
+        long paise = ((Number) read(started, "$.amountPaise")).longValue();
+
+        // The first refund is refused: the order is cancelled with the refund FAILED.
+        GATEWAYS.refuseRefunds = true;
+        admin("/" + number + "/cancel", "{\"reason\":\"Customer called\"}")
+                .andExpect(jsonPath("$.refundStatus").value("FAILED"));
+
+        // Razorpay did make a refund after all (a timed-out earlier try): the retry reuses it.
+        GATEWAYS.refuseRefunds = false;
+        GATEWAYS.refundsList = "[{\"id\":\"rfnd_OLD\",\"amount\":" + paise + ",\"status\":\"processed\"}]";
+        int refundPostsBefore =
+                GATEWAYS.calls("POST", "/v1/payments/pay_R3/refund").size();
+        admin("/" + number + "/refund", "")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.refundId").value("rfnd_OLD"))
+                .andExpect(jsonPath("$.refundStatus").value("PROCESSED"));
+        assertThat(GATEWAYS.calls("POST", "/v1/payments/pay_R3/refund")).hasSize(refundPostsBefore);
+    }
+
+    @Test
+    void cancellingACashOnDeliveryOrderMakesNoRazorpayRefund() throws Exception {
+        var started = checkout("COD", 1, "110001").andExpect(status().isCreated());
+        String number = read(started, "$.orderNumber");
+        int paymentPostsBefore = GATEWAYS.calls("POST", "/v1/payments/").size();
+        int paymentGetsBefore = GATEWAYS.calls("GET", "/v1/payments/").size();
+
+        admin("/" + number + "/cancel", "{\"reason\":null}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELLED"))
+                .andExpect(jsonPath("$.refundStatus").isEmpty())
+                .andExpect(jsonPath("$.refundId").isEmpty());
+        assertThat(GATEWAYS.calls("POST", "/v1/payments/")).hasSize(paymentPostsBefore);
+        assertThat(GATEWAYS.calls("GET", "/v1/payments/")).hasSize(paymentGetsBefore);
+    }
+
+    @Test
+    void aCustomerCancelsTheirOwnPaidOrderAndIsRefunded() throws Exception {
+        var started = checkout("ONLINE", 1, "110001").andExpect(status().isCreated());
+        String number = read(started, "$.orderNumber");
+        pay(number, read(started, "$.razorpayOrderId"), "pay_R4").andExpect(status().isOk());
+
+        customerPost("/orders/" + number + "/cancel", "{\"reason\":\"Changed my mind\"}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELLED"))
+                .andExpect(jsonPath("$.refundStatus").value("PENDING"));
     }
 
     @Test

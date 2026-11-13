@@ -65,6 +65,7 @@ class OrderEmailTemplatesTest {
                 null,
                 null,
                 null,
+                null,
                 trackingUrl,
                 null,
                 status == WebOrder.Status.DELIVERED ? NOW.plusDays(7) : null,

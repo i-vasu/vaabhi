@@ -32,6 +32,10 @@ final class FakeGateways implements AutoCloseable {
     final Map<String, String> paymentsByOrder = new ConcurrentHashMap<>();
     /** Pincodes no courier serves. */
     final List<String> unserviceable = new CopyOnWriteArrayList<>(List.of("999999"));
+    /** Refunds already on a payment, when a test wants the GET refunds answer to report them (a JSON array). */
+    volatile String refundsList;
+    /** When true, POST refund is refused with the message a test checks for. */
+    volatile boolean refuseRefunds;
 
     private final AtomicInteger ids = new AtomicInteger(100);
     private final HttpServer server;
@@ -93,7 +97,15 @@ final class FakeGateways implements AutoCloseable {
         if (method.equals("POST") && path.matches("/v1/payments/[^/]+/capture")) {
             return ok("{\"status\":\"captured\"}");
         }
+        if (method.equals("GET") && path.matches("/v1/payments/[^/]+/refunds")) {
+            // No earlier refund on the payment, so a cancel goes on to refund it (unless a test sets one).
+            var refunds = refundsList;
+            return ok("{\"items\":" + (refunds == null ? "[]" : refunds) + "}");
+        }
         if (method.equals("POST") && path.matches("/v1/payments/[^/]+/refund")) {
+            if (refuseRefunds) {
+                return new Answer(400, "{\"error\":{\"description\":\"The amount is invalid.\"}}");
+            }
             return ok("{\"id\":\"rfnd_T" + id + "\",\"status\":\"pending\"}");
         }
         // Shiprocket
