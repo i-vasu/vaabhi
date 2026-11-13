@@ -3433,6 +3433,7 @@ export interface components {
             createdBy: string | null;
             /** Format: date-time */
             createdAt: string;
+            fromPayroll: boolean;
         };
         PasswordChange: {
             currentPassword: string;
@@ -4371,6 +4372,8 @@ export interface components {
             collectRupees: number;
             /** @enum {string|null} */
             mode: "CASH" | "UPI" | "CARD" | "BANK" | null;
+            /** @enum {string|null} */
+            settlement: "REFUND" | "KEEP" | null;
         };
         ShopContact: {
             name: string;

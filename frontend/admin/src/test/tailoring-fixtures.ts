@@ -328,6 +328,7 @@ export const expenseList: ExpenseList = {
   items: [
     {
       id: 3,
+      fromPayroll: false,
       spentOn: "2026-11-01",
       category: "RENT",
       description: "Shop rent",
