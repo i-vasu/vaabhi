@@ -265,4 +265,100 @@ describe("CheckoutView", () => {
     expect(await screen.findByText("Thank you! Your order is placed.")).toBeInTheDocument();
     expect(sent.find((s) => s.path === "checkout")!.body).toMatchObject({ couponCode: null });
   });
+
+  it("re-quotes the applied coupon on a bag change and drops it with the reason", async () => {
+    serve();
+    render(<CheckoutView />);
+    await fillAddress();
+
+    fireEvent.change(screen.getByLabelText("Coupon code"), { target: { value: "save10" } });
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+    expect(await screen.findByText("− ₹500")).toBeInTheDocument();
+
+    server.use(
+      http.post("*/api/auth/checkout/coupon", () =>
+        HttpResponse.json({
+          code: "SAVE10",
+          valid: false,
+          reason: "Needs an order of at least ₹5000",
+          discountRupees: 0,
+          itemsRupees: 18500,
+        }),
+      ),
+    );
+    bagStore.write([{ ...line, sku: "VB-OTHER", name: "Another saree" }]);
+
+    expect(await screen.findByText("Needs an order of at least ₹5000")).toBeInTheDocument();
+    expect(screen.queryByText("− ₹500")).not.toBeInTheDocument();
+    expect(screen.queryByText("SAVE10 applied")).not.toBeInTheDocument();
+  });
+
+  it("re-quotes a still-valid coupon to its new amount on a bag change", async () => {
+    serve();
+    render(<CheckoutView />);
+    await fillAddress();
+
+    fireEvent.change(screen.getByLabelText("Coupon code"), { target: { value: "save10" } });
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+    expect(await screen.findByText("− ₹500")).toBeInTheDocument();
+
+    server.use(
+      http.post("*/api/auth/checkout/coupon", () =>
+        HttpResponse.json({ code: "SAVE10", valid: true, reason: null, discountRupees: 800, itemsRupees: 18500 }),
+      ),
+    );
+    bagStore.write([{ ...line, quantity: 2 }]);
+
+    expect(await screen.findByText("− ₹800")).toBeInTheDocument();
+    expect(screen.queryByText("− ₹500")).not.toBeInTheDocument();
+  });
+
+  it("clears the coupon when placing fails because it has been used up", async () => {
+    serve();
+    render(<CheckoutView />);
+    await fillAddress();
+
+    fireEvent.change(screen.getByLabelText("Coupon code"), { target: { value: "save10" } });
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+    expect(await screen.findByText("− ₹500")).toBeInTheDocument();
+
+    server.use(
+      http.post("*/api/auth/checkout", () =>
+        HttpResponse.json({ detail: "Coupon SAVE10: This coupon has been used up", errors: [] }, { status: 400 }),
+      ),
+    );
+    fireEvent.click((await screen.findAllByRole("button", { name: "Pay ₹18,000" }))[0]!);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Coupon SAVE10: This coupon has been used up");
+    expect(screen.queryByText("− ₹500")).not.toBeInTheDocument();
+    expect(screen.queryByText("SAVE10 applied")).not.toBeInTheDocument();
+  });
+
+  it("returns to sign in when applying a coupon while signed out", async () => {
+    serve();
+    server.use(
+      http.post("*/api/auth/checkout/coupon", () =>
+        HttpResponse.json({ detail: "Please log in again", errors: [] }, { status: 401 }),
+      ),
+    );
+    render(<CheckoutView />);
+    await fillAddress();
+
+    fireEvent.change(screen.getByLabelText("Coupon code"), { target: { value: "SAVE10" } });
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+
+    expect(await screen.findByRole("link", { name: "Login to check out" })).toBeInTheDocument();
+  });
+
+  it("does not request a coupon for an empty code", async () => {
+    serve();
+    render(<CheckoutView />);
+    await fillAddress();
+
+    const apply = screen.getByRole("button", { name: "Apply" });
+    expect(apply).toBeDisabled();
+    fireEvent.click(apply);
+
+    expect(sent.filter((s) => s.path === "coupon")).toHaveLength(0);
+  });
 });

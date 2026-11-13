@@ -72,4 +72,75 @@ describe("AccountView", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent("This number is already on another account");
   });
+
+  it("offers Change (not Add) when a number already exists and opens the edit form", async () => {
+    signedIn({ ...ASHA, phone: "+919876543210" });
+    render(<AccountView measurementForms={[]} />);
+
+    expect(await screen.findByDisplayValue("+91 9876543210")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add mobile number" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Change" }));
+    expect(screen.getByLabelText("New mobile number")).toBeInTheDocument();
+  });
+
+  it("cancels the number edit back to the display state", async () => {
+    signedIn({ ...ASHA, phone: "+919876543210" });
+    render(<AccountView measurementForms={[]} />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Change" }));
+    expect(screen.getByLabelText("New mobile number")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(screen.queryByLabelText("New mobile number")).not.toBeInTheDocument();
+    expect(screen.getByDisplayValue("+91 9876543210")).toBeInTheDocument();
+  });
+
+  it("shows the API's message when the verification code is wrong", async () => {
+    signedIn(ASHA);
+    server.use(
+      http.post("*/api/auth/phone/otp", () =>
+        HttpResponse.json({ phone: "+919876543210", expiresInSeconds: 300, resendAfterSeconds: 30 }),
+      ),
+      http.put("*/api/auth/phone", () =>
+        HttpResponse.json(
+          {
+            detail: "Incorrect code. 2 tries left.",
+            errors: [{ field: "code", message: "Incorrect code. 2 tries left." }],
+          },
+          { status: 400 },
+        ),
+      ),
+    );
+    render(<AccountView measurementForms={[]} />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Add mobile number" }));
+    fireEvent.change(screen.getByLabelText("New mobile number"), { target: { value: "98765 43210" } });
+    fireEvent.click(screen.getByRole("button", { name: "Send code" }));
+
+    expect(await screen.findByText("+91 98765 43210")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Verification code"), { target: { value: "123456" } });
+    fireEvent.click(screen.getByRole("button", { name: "Verify" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Incorrect code. 2 tries left.");
+  });
+
+  it("sends the code when Enter is pressed in the number input", async () => {
+    signedIn(ASHA);
+    server.use(
+      http.post("*/api/auth/phone/otp", async ({ request }) => {
+        expect(await request.json()).toEqual({ phone: "98765 43210" });
+        return HttpResponse.json({ phone: "+919876543210", expiresInSeconds: 300, resendAfterSeconds: 30 });
+      }),
+    );
+    render(<AccountView measurementForms={[]} />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Add mobile number" }));
+    const input = screen.getByLabelText("New mobile number");
+    fireEvent.change(input, { target: { value: "98765 43210" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    expect(await screen.findByText("+91 98765 43210")).toBeInTheDocument();
+  });
 });
