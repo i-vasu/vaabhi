@@ -248,7 +248,7 @@ public class CheckoutService {
      * transaction: see {@link #cancel}.
      */
     public WebOrder cancelByCustomer(long customerId, String number, CancelWebOrderForm form) {
-        var order = order(customerId, number);
+        var order = customerOrder(customerId, number);
         if (order.status() != WebOrder.Status.PLACED) {
             throw conflict(
                     order.status() == WebOrder.Status.SHIPPED
@@ -260,7 +260,7 @@ public class CheckoutService {
                 number,
                 new CancelWebOrderForm(
                         truncate("Cancelled by the customer" + (reason == null ? "" : ": " + reason), 200)));
-        return order(customerId, number);
+        return customerOrder(customerId, number);
     }
 
     /** Records the payment Razorpay Checkout returned to the browser, once its signature checks out. */
@@ -637,6 +637,10 @@ public class CheckoutService {
 
     @Transactional(readOnly = true)
     public WebOrder order(long customerId, String number) {
+        return customerOrder(customerId, number);
+    }
+
+    private WebOrder customerOrder(long customerId, String number) {
         return find(
                         " WHERE o.number = :number AND o.customer_id = :customer",
                         Map.of(NUMBER, number, CUSTOMER, customerId))
