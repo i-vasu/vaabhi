@@ -242,6 +242,18 @@ public class InventoryService {
         return ledger(itemId).stream().filter(m -> m.id() == id).findFirst().orElseThrow();
     }
 
+    /** Sets the cost of one unit, e.g. what a bill paid for it. */
+    @Transactional
+    public void setCost(long itemId, BigDecimal costRupees) {
+        int updated = jdbc.sql("UPDATE stock_item SET cost_rupees = :cost WHERE id = :id")
+                .param("cost", Rupees.of(costRupees))
+                .param("id", itemId)
+                .update();
+        if (updated == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Stock item not found");
+        }
+    }
+
     /** One item's movements, newest first, with the balance after each. */
     @Transactional(readOnly = true)
     public List<StockMovement> ledger(long itemId) {
