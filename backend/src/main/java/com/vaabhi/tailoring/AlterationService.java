@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
@@ -271,15 +272,54 @@ public class AlterationService {
         if (progress.collectRupees().compareTo(before.balanceRupees()) > 0) {
             throw OrderService.bad("That is more than what is due");
         }
+        if (progress.collectRupees().signum() > 0 && progress.mode() == null) {
+            throw OrderService.bad("Say how it was paid");
+        }
+        // Cancelling after money was collected: the shop decides, as with orders, whether it goes back.
+        var refund = BigDecimal.ZERO;
+        String settlement = null;
+        if (target == OrderStatus.CANCELLED) {
+            settlement = Order.CancelSettlement.NONE.name();
+            if (before.collectedRupees().signum() > 0) {
+                if (progress.settlement() == null) {
+                    throw OrderService.bad("₹" + OrderService.rupees(before.collectedRupees())
+                            + " was collected on this alteration; choose to refund it or keep it");
+                }
+                if (progress.settlement() == CancelForm.Settlement.REFUND) {
+                    if (progress.mode() == null) {
+                        throw OrderService.bad("Say how the refund is given back");
+                    }
+                    refund = before.collectedRupees();
+                    settlement = Order.CancelSettlement.REFUNDED.name();
+                } else {
+                    settlement = Order.CancelSettlement.KEPT.name();
+                }
+            }
+        }
         jdbc.sql("""
-                        UPDATE alteration SET status = :status, collected_rupees = collected_rupees + :collect,
+                        UPDATE alteration SET status = :status,
+                            collected_rupees = collected_rupees + :collect - :refund,
+                            cancel_settlement = COALESCE(:settlement, cancel_settlement),
                             delivered_at = CASE WHEN :status = 'DELIVERED' THEN now() ELSE delivered_at END
                         WHERE id = :id
                         """)
                 .param("status", target.name())
                 .param("collect", progress.collectRupees())
+                .param("refund", refund)
+                .param("settlement", settlement)
                 .param(ID, id)
                 .update();
+        if (refund.signum() > 0) {
+            jdbc.sql("""
+                            INSERT INTO alteration_payment (alteration_id, amount_rupees, mode, received_by)
+                            VALUES (:id, :amount, :mode, :by)
+                            """)
+                    .param(ID, id)
+                    .param("amount", refund.negate())
+                    .param("mode", Objects.requireNonNull(progress.mode()).name())
+                    .param("by", actor)
+                    .update();
+        }
         var client = before.client();
         if (progress.collectRupees().signum() > 0) {
             jdbc.sql("""
@@ -288,7 +328,7 @@ public class AlterationService {
                             """)
                     .param(ID, id)
                     .param("amount", progress.collectRupees())
-                    .param("mode", (progress.mode() == null ? PaymentMode.CASH : progress.mode()).name())
+                    .param("mode", Objects.requireNonNull(progress.mode()).name())
                     .param("by", actor)
                     .update();
             events.publishEvent(new AlterationEvent(

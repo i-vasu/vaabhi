@@ -12,7 +12,8 @@ import org.jspecify.annotations.Nullable;
  * CANCELLED.
  *
  * @param collectRupees money taken now (usually on delivery); added to what was collected
- * @param mode how it was paid; cash when not given
+ * @param mode how it was paid, or how a refund is given back; required whenever money moves
+ * @param settlement when cancelling after money was collected: give it back (REFUND) or keep it (KEEP)
  */
 public record AlterationProgress(
         @NotNull OrderStatus status,
@@ -20,4 +21,6 @@ public record AlterationProgress(
         @DecimalMin("0") @DecimalMax("1000000") @Digits(integer = 7, fraction = 2)
         BigDecimal collectRupees,
 
-        @Nullable PaymentMode mode) {}
+        @Nullable PaymentMode mode,
+
+        CancelForm.@Nullable Settlement settlement) {}

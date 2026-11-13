@@ -15,6 +15,8 @@ import com.vaabhi.shared.storage.ObjectStorage;
 import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -144,6 +146,18 @@ class TailoringIT {
                  "discountKind":"AMOUNT","redeemPoints":0,"discountValue":0,"advanceRupees":0,"advanceMode":"CASH"%s}
                 """.formatted(
                         clientId, today, today.plusDays(7), templateId("Blouse"), quantity, priceEach, extra));
+    }
+
+    private long bookAlteration(long clientId, long costRupees) throws Exception {
+        var created = send(post("/api/v1/admin/alterations"), """
+                        {"clientId":%d,"readyBy":"%s","paid":true,"undertakingAccepted":true,"items":[
+                          {"kind":"LENGTH","garment":"Silk saree blouse","costRupees":%d}]}
+                        """.formatted(
+                                clientId, LocalDate.now().plusDays(2), costRupees))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.totalRupees").value(costRupees))
+                .andExpect(jsonPath("$.balanceRupees").value(costRupees));
+        return ((Number) JsonPath.read(body(created), "$.id")).longValue();
     }
 
     // --- customers ----------------------------------------------------------------------------------------------
@@ -336,6 +350,27 @@ class TailoringIT {
     }
 
     @Test
+    void refusesAPaymentAboveWhatIsStillDue() throws Exception {
+        long client = createClient("Vani");
+        var booked = bookBlouse(client, 500, 1, "").andExpect(status().isCreated());
+        long orderId = ((Number) JsonPath.read(body(booked), "$.id")).longValue();
+
+        // ₹500 order, nothing paid: ₹600 is more than what is due.
+        send(post("/api/v1/admin/orders/" + orderId + "/payments"), """
+                        {"amountRupees":600,"mode":"CASH","refund":false}
+                        """).andExpect(status().isBadRequest());
+        send(post("/api/v1/admin/orders/" + orderId + "/payments"), """
+                        {"amountRupees":500,"mode":"CASH","refund":false}
+                        """)
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.paidRupees").value(500));
+        // Nothing is now due.
+        send(post("/api/v1/admin/orders/" + orderId + "/payments"), """
+                        {"amountRupees":1,"mode":"CASH","refund":false}
+                        """).andExpect(status().isBadRequest());
+    }
+
+    @Test
     void reschedulesAndListsOverdueOrders() throws Exception {
         long client = createClient("Deepa");
         var today = LocalDate.now();
@@ -439,9 +474,13 @@ class TailoringIT {
                 .andExpect(jsonPath("$.status").value("READY"));
         send(post("/api/v1/admin/alterations/" + id + "/progress"), "{\"status\":\"BOOKED\",\"collectRupees\":0}")
                 .andExpect(status().isBadRequest());
-        send(post("/api/v1/admin/alterations/" + id + "/progress"), "{\"status\":\"DELIVERED\",\"collectRupees\":500}")
+        send(
+                        post("/api/v1/admin/alterations/" + id + "/progress"),
+                        "{\"status\":\"DELIVERED\",\"collectRupees\":500,\"mode\":\"CASH\"}")
                 .andExpect(status().isBadRequest());
-        send(post("/api/v1/admin/alterations/" + id + "/progress"), "{\"status\":\"DELIVERED\",\"collectRupees\":400}")
+        send(
+                        post("/api/v1/admin/alterations/" + id + "/progress"),
+                        "{\"status\":\"DELIVERED\",\"collectRupees\":400,\"mode\":\"CASH\"}")
                 .andExpect(jsonPath("$.status").value("DELIVERED"))
                 .andExpect(jsonPath("$.balanceRupees").value(0))
                 .andExpect(jsonPath("$.deliveredAt").exists());
@@ -484,5 +523,73 @@ class TailoringIT {
                 .andExpect(jsonPath("$.items[0].costRupees").value(0))
                 .andExpect(jsonPath("$.orderId").value(orderId))
                 .andExpect(jsonPath("$.orderNumber").isNotEmpty());
+    }
+
+    @Test
+    void collectingAlterationMoneyNeedsAPaymentMode() throws Exception {
+        long id = bookAlteration(createClient("Rekha"), 150);
+        // Taking money without saying how it was paid is refused.
+        send(post("/api/v1/admin/alterations/" + id + "/progress"), """
+                        {"status":"READY","collectRupees":150}
+                        """).andExpect(status().isBadRequest());
+        // With a mode it goes through.
+        send(post("/api/v1/admin/alterations/" + id + "/progress"), """
+                        {"status":"READY","collectRupees":150,"mode":"CASH"}
+                        """)
+                .andExpect(jsonPath("$.collectedRupees").value(150));
+    }
+
+    @Test
+    void cancellingACollectedAlterationMustSettleAndRefunds() throws Exception {
+        long client = createClient("Shanti");
+        long id = bookAlteration(client, 150);
+        send(post("/api/v1/admin/alterations/" + id + "/progress"), """
+                        {"status":"READY","collectRupees":150,"mode":"CASH"}
+                        """)
+                .andExpect(jsonPath("$.collectedRupees").value(150));
+
+        // Money was collected, so the shop must say whether to give it back or keep it.
+        send(post("/api/v1/admin/alterations/" + id + "/progress"), """
+                        {"status":"CANCELLED","collectRupees":0}
+                        """).andExpect(status().isBadRequest());
+        // A refund needs a mode to say how it is given back.
+        send(post("/api/v1/admin/alterations/" + id + "/progress"), """
+                        {"status":"CANCELLED","collectRupees":0,"settlement":"REFUND"}
+                        """).andExpect(status().isBadRequest());
+        send(post("/api/v1/admin/alterations/" + id + "/progress"), """
+                        {"status":"CANCELLED","collectRupees":0,"settlement":"REFUND","mode":"CASH"}
+                        """)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELLED"))
+                .andExpect(jsonPath("$.collectedRupees").value(0));
+
+        // The refund reaches the ledger as a negative alteration payment.
+        var today = LocalDate.now().toString();
+        var ledger = body(mockMvc.perform(get("/api/v1/admin/money/ledger")
+                        .param("from", today)
+                        .param("to", today)
+                        .with(OWNER))
+                .andExpect(status().isOk()));
+        List<Map<String, Object>> payments =
+                JsonPath.read(ledger, "$.entries[?(@.sourceId == " + id + " && @.kind == 'ALTERATION_PAYMENT')]");
+        assertThat(payments)
+                .extracting(e -> ((Number) e.get("amountRupees")).longValue())
+                .containsExactlyInAnyOrder(150L, -150L);
+        assertThat(payments).extracting(e -> e.get("mode")).containsOnly("CASH");
+    }
+
+    @Test
+    void cancellingACollectedAlterationCanKeepTheMoney() throws Exception {
+        long id = bookAlteration(createClient("Uma"), 150);
+        send(post("/api/v1/admin/alterations/" + id + "/progress"), """
+                        {"status":"READY","collectRupees":150,"mode":"UPI"}
+                        """)
+                .andExpect(jsonPath("$.collectedRupees").value(150));
+        send(post("/api/v1/admin/alterations/" + id + "/progress"), """
+                        {"status":"CANCELLED","collectRupees":0,"settlement":"KEEP"}
+                        """)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELLED"))
+                .andExpect(jsonPath("$.collectedRupees").value(150));
     }
 }

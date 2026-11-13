@@ -18,9 +18,11 @@ public class ExpenseService {
 
     private static final String ID = "id";
     private static final String SELECT = """
-            SELECT id, spent_on, category, description, amount_rupees, mode, paid_to, created_by, created_at
+            SELECT id, spent_on, category, description, amount_rupees, mode, paid_to, created_by, created_at,
+                   EXISTS (SELECT 1 FROM payslip p WHERE p.expense_id = expense.id) AS from_payroll
             FROM expense
             """;
+    private static final String FROM_PAYROLL = "This salary was paid from Payroll; change it there";
 
     private final JdbcClient jdbc;
 
@@ -81,6 +83,9 @@ public class ExpenseService {
 
     @Transactional
     public Expense update(long id, ExpenseForm form) {
+        if (get(id).fromPayroll()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, FROM_PAYROLL);
+        }
         int updated = jdbc.sql("""
                         UPDATE expense SET spent_on = :spentOn, category = :category, description = :description,
                             amount_rupees = :amount, mode = :mode, paid_to = :paidTo
@@ -102,6 +107,9 @@ public class ExpenseService {
 
     @Transactional
     public void delete(long id) {
+        if (get(id).fromPayroll()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, FROM_PAYROLL);
+        }
         if (jdbc.sql("DELETE FROM expense WHERE id = :id").param(ID, id).update() == 0) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Expense not found");
         }
