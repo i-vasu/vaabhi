@@ -449,7 +449,7 @@ public class CheckoutService {
                     "Only a placed or shipped order can be cancelled (this one is " + label(order.status()) + ")");
         }
         var trackingStatus = order.trackingStatus();
-        var shiprocketOrderId = shipment(number).orderId();
+        var shiprocketOrderId = findShipment(number).orderId();
         if (shiprocketOrderId != null) {
             // The courier must not pick it up; if Shiprocket refuses (e.g. already picked up) the shop sees why.
             try {
@@ -556,6 +556,11 @@ public class CheckoutService {
 
     @Transactional(readOnly = true)
     public Shipment shipment(String number) {
+        return findShipment(number);
+    }
+
+    /** {@link #shipment} without a transaction of its own, for callers in this class that must not open one. */
+    private Shipment findShipment(String number) {
         return jdbc.sql("""
                         SELECT shiprocket_order_id AS order_id, shiprocket_shipment_id AS shipment_id,
                                CASE WHEN shiprocket_shipment_id IS NULL THEN NULL ELSE tracking_number END AS awb
