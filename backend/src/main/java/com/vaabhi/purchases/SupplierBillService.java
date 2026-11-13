@@ -67,18 +67,21 @@ public class SupplierBillService {
     private final CompanyState companyState;
     private final ObjectStorage storage;
     private final BooksPostedCheck posted;
+    private final SupplierPaymentService payments;
 
     SupplierBillService(
             JdbcClient jdbc,
             InventoryService inventory,
             CompanyState companyState,
             ObjectStorage storage,
-            BooksPostedCheck posted) {
+            BooksPostedCheck posted,
+            SupplierPaymentService payments) {
         this.jdbc = jdbc;
         this.inventory = inventory;
         this.companyState = companyState;
         this.storage = storage;
         this.posted = posted;
+        this.payments = payments;
     }
 
     private record SupplierRow(
@@ -148,7 +151,9 @@ public class SupplierBillService {
         }
         var lineIds = insertLines(id, lines);
         applyStockAndAssets(form.billDate(), billNo, lines, lineIds, actor);
-        checkPaidNow(form);
+        if (form.paidNow() != null) {
+            payments.payBill(id, form.paidNow().mode(), form.paidNow().reference(), actor);
+        }
         return view(id, warning(id, form.partyId(), form.billDate(), totals.taxable(), tdsRupees));
     }
 
@@ -208,7 +213,6 @@ public class SupplierBillService {
         }
         var lineIds = insertLines(id, lines);
         applyStockAndAssets(form.billDate(), billNo, lines, lineIds, actor);
-        checkPaidNow(form);
         return view(id, warning(id, form.partyId(), form.billDate(), totals.taxable(), tdsRupees));
     }
 
@@ -682,13 +686,6 @@ public class SupplierBillService {
     private static void checkDueDate(LocalDate billDate, @Nullable LocalDate dueDate) {
         if (dueDate != null && dueDate.isBefore(billDate)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Due date is before the bill date");
-        }
-    }
-
-    private static void checkPaidNow(SupplierBillForm form) {
-        if (form.paidNow() != null) {
-            // Task 4 replaces this with SupplierPaymentService.payBill.
-            throw new UnsupportedOperationException("Paid now arrives with supplier payments");
         }
     }
 

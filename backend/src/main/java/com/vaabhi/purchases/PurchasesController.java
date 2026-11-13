@@ -8,6 +8,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,17 +20,20 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-/** Suppliers, their bills and the bill attachments. Requires the MONEY area (see SecurityConfig). */
+/** Suppliers, their bills, payments and the bill attachments. Requires the MONEY area (see SecurityConfig). */
 @RestController
 @RequestMapping("/api/v1/admin/money/purchases")
 class PurchasesController {
 
     private final SupplierService suppliers;
     private final SupplierBillService bills;
+    private final SupplierPaymentService payments;
 
-    PurchasesController(SupplierService suppliers, SupplierBillService bills) {
+    PurchasesController(
+            SupplierService suppliers, SupplierBillService bills, SupplierPaymentService payments) {
         this.suppliers = suppliers;
         this.bills = bills;
+        this.payments = payments;
     }
 
     private static @Nullable String actor(@Nullable Jwt jwt) {
@@ -119,5 +123,30 @@ class PurchasesController {
     @PostMapping("/bills/tds-check")
     TdsSuggestion checkTds(@Valid @RequestBody TdsCheckForm form) {
         return bills.suggestTds(form.partyId(), form.billDate(), form.taxableRupees(), form.billId());
+    }
+
+    @GetMapping("/payments")
+    List<SupplierPaymentView> listPayments(@RequestParam(required = false) @Nullable Long partyId) {
+        return payments.list(partyId);
+    }
+
+    @PostMapping("/payments")
+    @ResponseStatus(HttpStatus.CREATED)
+    SupplierPaymentView createPayment(
+            @Valid @RequestBody SupplierPaymentForm form, @AuthenticationPrincipal @Nullable Jwt jwt) {
+        return payments.create(form, actor(jwt));
+    }
+
+    @DeleteMapping("/payments/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void deletePayment(@PathVariable long id) {
+        payments.delete(id);
+    }
+
+    @PostMapping("/payments/from-bank-line")
+    @ResponseStatus(HttpStatus.CREATED)
+    SupplierPaymentView payFromBankLine(
+            @Valid @RequestBody BankLinePaymentForm form, @AuthenticationPrincipal @Nullable Jwt jwt) {
+        return payments.fromBankLine(form, actor(jwt));
     }
 }
