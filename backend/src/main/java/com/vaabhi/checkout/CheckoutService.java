@@ -5,6 +5,7 @@ import com.vaabhi.catalog.BagQuoteRequest;
 import com.vaabhi.catalog.BagQuoteService;
 import com.vaabhi.catalog.CatalogStock;
 import com.vaabhi.customer.CustomerService;
+import com.vaabhi.engage.CouponService;
 import com.vaabhi.shared.rupees.Rupees;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -46,6 +47,7 @@ public class CheckoutService {
     private final BagQuoteService quotes;
     private final CatalogStock stock;
     private final CustomerService customers;
+    private final CouponService coupons;
     private final RazorpayClient razorpay;
     private final ShiprocketClient shiprocket;
     private final CheckoutProperties properties;
@@ -57,6 +59,7 @@ public class CheckoutService {
             BagQuoteService quotes,
             CatalogStock stock,
             CustomerService customers,
+            CouponService coupons,
             RazorpayClient razorpay,
             ShiprocketClient shiprocket,
             CheckoutProperties properties,
@@ -67,6 +70,7 @@ public class CheckoutService {
         this.quotes = quotes;
         this.stock = stock;
         this.customers = customers;
+        this.coupons = coupons;
         this.razorpay = razorpay;
         this.shiprocket = shiprocket;
         this.properties = properties;
@@ -104,10 +108,16 @@ public class CheckoutService {
                             : "We cannot deliver to pincode " + pincode + " yet.");
         }
         var items = quote.totalRupees();
-        var shipping = items.compareTo(properties.freeShippingFromRupees()) >= 0
-                ? Rupees.ZERO
-                : Rupees.of(properties.shippingRupees());
-        var total = items.add(shipping);
+        var shipping = shippingFor(items);
+        var couponCode = blankToNull(request.couponCode());
+        var discount = Rupees.ZERO;
+        if (couponCode != null) {
+            coupons.requireForBooking(couponCode, items);
+            var applied = coupons.check(couponCode, items);
+            couponCode = applied.code();
+            discount = cappedDiscount(applied.discountRupees(), items, shipping);
+        }
+        var total = items.subtract(discount).add(shipping);
         var number = "WEB-"
                 + jdbc.sql("SELECT nextval('web_order_number_seq')")
                         .query(Long.class)
@@ -118,9 +128,9 @@ public class CheckoutService {
         long orderId = jdbc.sql("""
                         INSERT INTO web_order (number, customer_id, status, payment_method, contact_name, contact_phone,
                             contact_email, address_line1, address_line2, city, state, pincode, items_rupees,
-                            shipping_rupees, total_rupees)
+                            shipping_rupees, coupon_code, discount_rupees, total_rupees)
                         VALUES (:number, :customer, :status, :method, :name, :phone, :email, :line1, :line2, :city,
-                            :state, :pincode, :items, :shipping, :total)
+                            :state, :pincode, :items, :shipping, :coupon, :discount, :total)
                         RETURNING id
                         """)
                 .param(NUMBER, number)
@@ -137,6 +147,8 @@ public class CheckoutService {
                 .param("pincode", address.pincode())
                 .param("items", items)
                 .param("shipping", shipping)
+                .param("coupon", couponCode)
+                .param("discount", discount)
                 .param("total", total)
                 .query(Long.class)
                 .single();
@@ -191,6 +203,38 @@ public class CheckoutService {
                 address.name().trim(),
                 phone,
                 profile.email());
+    }
+
+    /** Prices a coupon against the bag now, without saving anything. */
+    @Transactional(readOnly = true)
+    public CouponQuote quoteCoupon(CouponQuoteRequest request) {
+        var items = quotes.quote(new BagQuoteRequest(request.lines().stream()
+                        .map(l -> new BagQuoteRequest.Line(l.sku(), l.addonCode(), l.quantity()))
+                        .toList()))
+                .totalRupees();
+        var check = coupons.check(request.code(), items);
+        return new CouponQuote(
+                check.code(),
+                check.valid(),
+                check.reason(),
+                cappedDiscount(check.discountRupees(), items, shippingFor(items)),
+                items);
+    }
+
+    /** Delivery for items worth {@code items}: free from the threshold up. */
+    private BigDecimal shippingFor(BigDecimal items) {
+        return items.compareTo(properties.freeShippingFromRupees()) >= 0
+                ? Rupees.ZERO
+                : Rupees.of(properties.shippingRupees());
+    }
+
+    /**
+     * A coupon never makes an order free: it leaves at least ₹1 to pay (web_order.total_rupees must be positive, and
+     * Razorpay cannot take ₹0).
+     */
+    private static BigDecimal cappedDiscount(BigDecimal discount, BigDecimal items, BigDecimal shipping) {
+        var most = items.add(shipping).subtract(BigDecimal.ONE).max(BigDecimal.ZERO);
+        return discount.min(most);
     }
 
     /**
@@ -701,9 +745,10 @@ public class CheckoutService {
     private static final String SELECT = """
             SELECT o.id, o.number, o.status, o.payment_method, o.contact_name, o.contact_phone, o.contact_email,
                    o.address_line1, o.address_line2, o.city, o.state, o.pincode, o.items_rupees, o.shipping_rupees,
-                   o.total_rupees, o.razorpay_payment_id, o.paid_at, o.courier, o.tracking_number, o.shipped_at,
-                   o.delivered_at, o.cancelled_at, o.cancel_reason, o.refunded_rupees, o.refund_id, o.refund_status,
-                   o.refund_error, o.tracking_status, o.shiprocket_shipment_id, o.shipping_label_url, o.created_at
+                   o.coupon_code, o.discount_rupees, o.total_rupees, o.razorpay_payment_id, o.paid_at, o.courier,
+                   o.tracking_number, o.shipped_at, o.delivered_at, o.cancelled_at, o.cancel_reason,
+                   o.refunded_rupees, o.refund_id, o.refund_status, o.refund_error, o.tracking_status,
+                   o.shiprocket_shipment_id, o.shipping_label_url, o.created_at
             FROM web_order o
             """;
 
@@ -722,6 +767,8 @@ public class CheckoutService {
             String pincode,
             BigDecimal itemsRupees,
             BigDecimal shippingRupees,
+            @Nullable String couponCode,
+            BigDecimal discountRupees,
             BigDecimal totalRupees,
             @Nullable String razorpayPaymentId,
             @Nullable OffsetDateTime paidAt,
@@ -773,6 +820,8 @@ public class CheckoutService {
                 o.pincode(),
                 o.itemsRupees(),
                 o.shippingRupees(),
+                o.couponCode(),
+                o.discountRupees(),
                 o.totalRupees(),
                 o.razorpayPaymentId(),
                 o.paidAt(),

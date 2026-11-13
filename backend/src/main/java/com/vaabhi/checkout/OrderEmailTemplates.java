@@ -242,6 +242,13 @@ final class OrderEmailTemplates {
                     .append(": ")
                     .append(rupees(line.amountRupees()))
                     .append('\n'));
+            if (order.discountRupees().signum() > 0) {
+                text.append("Coupon ")
+                        .append(order.couponCode())
+                        .append(": -")
+                        .append(rupees(order.discountRupees()))
+                        .append('\n');
+            }
             text.append("Shipping: ")
                     .append(order.shippingRupees().signum() == 0 ? "Free" : rupees(order.shippingRupees()))
                     .append("\nTotal: ")
@@ -261,6 +268,9 @@ final class OrderEmailTemplates {
                     .append("</td><td style=\"padding:6px 0;border-bottom:1px solid #eee;text-align:right\">")
                     .append(escape(rupees(line.amountRupees())))
                     .append("</td></tr>"));
+            if (order.discountRupees().signum() > 0) {
+                html.append(row("Coupon " + escape(order.couponCode()), "-" + rupees(order.discountRupees()), false));
+            }
             html.append(row(
                     "Shipping", order.shippingRupees().signum() == 0 ? "Free" : rupees(order.shippingRupees()), false));
             html.append(row("Total", rupees(order.totalRupees()), true));

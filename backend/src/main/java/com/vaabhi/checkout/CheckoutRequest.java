@@ -17,7 +17,8 @@ import org.jspecify.annotations.Nullable;
 public record CheckoutRequest(
         @NotNull @Size(min = 1, max = 20) List<@Valid @NotNull Line> lines,
         @Valid @NotNull Address address,
-        WebOrder.@Nullable PaymentMethod paymentMethod) {
+        WebOrder.@Nullable PaymentMethod paymentMethod,
+        @Nullable @Size(max = 40) String couponCode) {
 
     WebOrder.PaymentMethod method() {
         return paymentMethod == null ? WebOrder.PaymentMethod.ONLINE : paymentMethod;

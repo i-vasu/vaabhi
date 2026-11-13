@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useSyncExternalStore } from "react";
-import type { BagQuote, CheckoutStart, FieldError, WebOrder } from "@vaabhi/api-client";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import type { BagQuote, CheckoutStart, CouponQuote, FieldError, WebOrder } from "@vaabhi/api-client";
 import { Button, buttonClasses, cn } from "@vaabhi/ui";
 import { bagStore } from "@/lib/bag";
 import { fetchQuote } from "@/lib/bag-quote";
@@ -72,6 +72,12 @@ export function CheckoutView() {
   const [error, setError] = useState<{ text: string; errors: FieldError[] } | null>(null);
   const [started, setStarted] = useState<CheckoutStart | null>(null);
   const [method, setMethod] = useState<Method>("ONLINE");
+  const [couponInput, setCouponInput] = useState("");
+  const [coupon, setCoupon] = useState<{ code: string; discountRupees: number } | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponBusy, setCouponBusy] = useState(false);
+  const couponRef = useRef(coupon);
+  couponRef.current = coupon;
 
   useEffect(() => {
     void syncSession().then((session: Session) => {
@@ -93,6 +99,43 @@ export function CheckoutView() {
     fetchQuote(lines)
       .then(setQuote)
       .catch(() => setError({ text: "We could not price your bag. Check your connection and try again.", errors: [] }));
+  }, [lines]);
+
+  // A changed coupon (applied, removed, re-quoted to a new amount) invalidates the Razorpay order already placed.
+  useEffect(() => {
+    setStarted(null);
+  }, [coupon]);
+
+  // Re-quote the applied coupon when the bag lines change; clear it (with the reason) if it no longer applies.
+  useEffect(() => {
+    const applied = couponRef.current;
+    if (!applied || lines.length === 0) return;
+    let cancelled = false;
+    post<CouponQuote>("/api/auth/checkout/coupon", {
+      lines: lines.map((l) => ({ sku: l.sku, addonCode: l.addonCode, blouseSize: l.blouseSize, quantity: l.quantity })),
+      code: applied.code,
+    })
+      .then((quote) => {
+        if (cancelled) return;
+        if (quote.valid) {
+          setCoupon({ code: quote.code, discountRupees: quote.discountRupees });
+        } else {
+          setCoupon(null);
+          setCouponError(quote.reason ?? "This code cannot be used right now.");
+        }
+      })
+      .catch((e: Error & { status?: number }) => {
+        if (cancelled) return;
+        if (e.status === 401) {
+          setStage({ kind: "signedOut" });
+          return;
+        }
+        setCoupon(null);
+        setCouponError(e.message);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [lines]);
 
   if (stage.kind === "placed") return <Thanks placed={stage.placed} />;
@@ -126,7 +169,8 @@ export function CheckoutView() {
 
   const items = quote?.totalRupees ?? 0;
   const shipping = shippingFor(items);
-  const total = items + shipping;
+  const discount = coupon?.discountRupees ?? 0;
+  const total = items - discount + shipping;
   const fieldError = (field: string) => error?.errors.find((e) => e.field === `address.${field}`)?.message;
   const set = (patch: Partial<Address>) => setAddress((a) => ({ ...a, ...patch }));
 
@@ -140,6 +184,7 @@ export function CheckoutView() {
       })),
       address: { ...address, phone: address.phone.replaceAll(/\D/g, ""), line2: address.line2 || null },
       paymentMethod,
+      couponCode: coupon?.code ?? null,
     });
 
   const thanks = (number: string, totalRupees: number, paymentMethod: Method) => {
@@ -155,6 +200,42 @@ export function CheckoutView() {
         pincode: address.pincode,
       },
     });
+  };
+
+  const applyCoupon = async () => {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) return;
+    setCouponBusy(true);
+    setCouponError(null);
+    try {
+      const quote = await post<CouponQuote>("/api/auth/checkout/coupon", {
+        lines: lines.map((l) => ({ sku: l.sku, addonCode: l.addonCode, blouseSize: l.blouseSize, quantity: l.quantity })),
+        code,
+      });
+      if (quote.valid) {
+        setCoupon({ code: quote.code, discountRupees: quote.discountRupees });
+        setCouponInput("");
+      } else {
+        setCoupon(null);
+        setCouponError(quote.reason ?? "This code cannot be used right now.");
+      }
+    } catch (e) {
+      const failure = e as Error & { status?: number };
+      if (failure.status === 401) {
+        setStage({ kind: "signedOut" });
+        return;
+      }
+      setCoupon(null);
+      setCouponError(failure.message);
+    } finally {
+      setCouponBusy(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setCoupon(null);
+    setCouponError(null);
+    setCouponInput("");
   };
 
   async function pay() {
@@ -197,6 +278,11 @@ export function CheckoutView() {
       if (failure.status === 401) {
         setStage({ kind: "signedOut" });
         return;
+      }
+      if (failure.status === 400 && failure.message.startsWith("Coupon")) {
+        setCoupon(null);
+        setCouponError(null);
+        setCouponInput("");
       }
       setError({ text: failure.message, errors: failure.errors ?? [] });
       setStage({ kind: "ready" });
@@ -320,8 +406,52 @@ export function CheckoutView() {
               </li>
             ))}
           </ul>
+          <div className="mt-4 border-t border-border-default pt-3">
+            <label htmlFor="coupon-code" className="block text-sm font-medium">
+              Coupon code
+            </label>
+            <div className="mt-1.5 flex gap-2">
+              <input
+                id="coupon-code"
+                value={couponInput}
+                onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                maxLength={40}
+                autoComplete="off"
+                placeholder="SAVE10"
+                className={cn(input, "min-w-0 flex-1 uppercase")}
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={couponBusy || !couponInput.trim()}
+                onClick={() => void applyCoupon()}
+              >
+                Apply
+              </Button>
+            </div>
+            {coupon && (
+              <p className="mt-2 flex flex-wrap items-center gap-1.5 text-sm">
+                <span className="inline-flex items-center rounded-full border border-brand-primary px-2.5 py-0.5 text-xs font-medium text-brand-primary">
+                  {coupon.code} applied
+                </span>
+                <button
+                  type="button"
+                  onClick={removeCoupon}
+                  className="text-sm font-medium text-brand-primary underline underline-offset-2"
+                >
+                  Remove
+                </button>
+              </p>
+            )}
+            {couponError && (
+              <p role="alert" className="mt-2 text-sm text-feedback-error">
+                {couponError}
+              </p>
+            )}
+          </div>
           <dl className="mt-4 flex flex-col gap-1.5 border-t border-border-default pt-3 text-sm tabular-nums">
             <Row label="Items" value={quote ? formatPrice(items) : "—"} />
+            {coupon && <Row label={`Coupon (${coupon.code})`} value={`− ${formatPrice(discount)}`} />}
             <Row label="Shipping" value={!quote ? "—" : shipping === 0 ? "Free" : formatPrice(shipping)} />
             <Row label="Total" value={quote ? formatPrice(total) : "—"} strong />
           </dl>

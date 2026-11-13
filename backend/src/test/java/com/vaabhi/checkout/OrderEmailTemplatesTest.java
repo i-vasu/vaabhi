@@ -52,6 +52,8 @@ class OrderEmailTemplatesTest {
                 "110001",
                 new BigDecimal("18500.00"),
                 new BigDecimal("0.00"),
+                null,
+                new BigDecimal("0.00"),
                 new BigDecimal("18500.50"),
                 null,
                 null,
