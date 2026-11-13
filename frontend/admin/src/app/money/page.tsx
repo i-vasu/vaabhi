@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { MonthPicker } from "@/components/money";
-import { BankIcon, DocumentIcon, ReceiptIcon, ActivityIcon } from "@/components/icons";
+import { ActivityIcon, BankIcon, DocumentIcon, ReceiptIcon, TruckIcon } from "@/components/icons";
 import { ErrorNote } from "@/components/tailoring";
 import { ListCard, ListRow, LoadState, PageHeader, SectionLabel, StatTile } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -79,6 +79,12 @@ export default function MoneyPage() {
           icon={ReceiptIcon}
           title="Expenses"
           subtitle="Rent, salaries, material, bills"
+        />
+        <ListRow
+          href="/money/purchases/"
+          icon={TruckIcon}
+          title="Purchases"
+          subtitle="Suppliers, bills and what we owe"
         />
         <ListRow href="/money/ledger/" icon={ActivityIcon} title="Ledger" subtitle="Every rupee in and out" />
         <ListRow

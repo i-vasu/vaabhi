@@ -77,6 +77,14 @@ const COLUMN_KEYWORDS: Record<string, string[]> = {
   cod: ["cod"],
   deduction: ["deduction", "charges"],
   net: ["net"],
+  invoiceNo: ["invoice no", "invoice number", "invoice"],
+  invoiceDate: ["invoice date", "date"],
+  taxable: ["taxable", "freight", "base"],
+  gst: ["gst", "tax amount"],
+  cgst: ["cgst"],
+  sgst: ["sgst"],
+  igst: ["igst"],
+  total: ["total", "invoice value"],
 };
 
 /** Maps each field to the first header cell whose text contains one of its keywords. */

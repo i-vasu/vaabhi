@@ -67,10 +67,12 @@ function UnmatchedSheet({
   onDone: () => void;
 }) {
   const candidates = useLoad(() => api.admin.accounts.bank.candidates(line.id), [line.id]);
+  const suppliers = useLoad(() => api.admin.purchases.suppliers(), []);
   const [chosen, setChosen] = useState<number | null>(null);
   const [differenceAccount, setDifferenceAccount] = useState("");
   const [postAccount, setPostAccount] = useState("");
   const [narration, setNarration] = useState("");
+  const [supplierId, setSupplierId] = useState("");
   const [reason, setReason] = useState("");
   const action = useAction();
 
@@ -110,6 +112,24 @@ function UnmatchedSheet({
     const ignored = await action.run(() => api.admin.accounts.bank.ignore(line.id, reason.trim()));
     if (ignored) onDone();
   }
+
+  async function paySupplier() {
+    if (!supplierId) return;
+    const paid = await action.run(() =>
+      api.admin.purchases.paymentFromBankLine({
+        bankLineId: line.id,
+        partyId: Number(supplierId),
+        allocations: null,
+      }),
+    );
+    if (paid) onDone();
+  }
+
+  const moneyOut = line.debitRupees > 0;
+  const supplierOptions = [
+    { value: "", label: "Choose a supplier" },
+    ...(suppliers.value ?? []).map((supplier) => ({ value: String(supplier.partyId), label: supplier.name })),
+  ];
 
   return (
     <Sheet open title={line.description} onClose={onClose}>
@@ -198,6 +218,25 @@ function UnmatchedSheet({
               Ignore line
             </button>
           </div>
+        </>
+      )}
+
+      {moneyOut && (
+        <>
+          <SectionLabel>Supplier payment</SectionLabel>
+          <div className="space-y-3">
+            <SelectField label="Supplier" options={supplierOptions} value={supplierId} onChange={setSupplierId} />
+            <p className="text-sm text-ink-soft">Paid towards the oldest bills first.</p>
+            <button
+              type="button"
+              className={buttonSecondary}
+              disabled={action.busy || !supplierId}
+              onClick={paySupplier}
+            >
+              {action.busy ? "Saving…" : "Record supplier payment"}
+            </button>
+          </div>
+          <ErrorNote>{suppliers.error}</ErrorNote>
         </>
       )}
 

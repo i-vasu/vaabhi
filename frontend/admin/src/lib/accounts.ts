@@ -112,6 +112,19 @@ export function paiseLabel(paise: number): string {
   return rupees(paise / 100);
 }
 
+/** The financial year (1 April – 31 March) a date falls in, as its first and last day. */
+export function fyRange(isoDate: string): { from: string; to: string } {
+  const year = Number(isoDate.slice(0, 4));
+  const startYear = Number(isoDate.slice(5, 7)) >= 4 ? year : year - 1;
+  return { from: `${startYear}-04-01`, to: `${startYear + 1}-03-31` };
+}
+
+/** "2026-04-01" → "FY 2026–27". */
+export function fyLabel(fromDate: string): string {
+  const startYear = Number(fromDate.slice(0, 4));
+  return `FY ${startYear}–${String((startYear + 1) % 100).padStart(2, "0")}`;
+}
+
 /** "2026-04-01" → "April 2026". */
 export function monthTitle(isoDate: string): string {
   return new Date(`${isoDate.slice(0, 7)}-01T00:00:00Z`).toLocaleDateString("en-IN", {

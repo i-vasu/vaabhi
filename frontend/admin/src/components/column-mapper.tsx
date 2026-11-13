@@ -2,16 +2,22 @@
 
 import type { ColumnMapping, FilePreview } from "@vaabhi/api-client";
 import { BANK_FIELDS, COD_FIELDS, guessColumns } from "@/lib/bank";
+import { SHIPROCKET_FIELDS } from "@/lib/purchases";
 import { SegmentedControl, TextField } from "./ui";
 
-export type MapperKind = "bank" | "cod";
+export type MapperKind = "bank" | "cod" | "shiprocket";
+
+function fieldsFor(kind: MapperKind): { key: string; label: string }[] {
+  if (kind === "bank") return BANK_FIELDS;
+  return kind === "cod" ? COD_FIELDS : SHIPROCKET_FIELDS;
+}
 
 /** The mapping a preview starts with: the saved profile, or one guessed from the first row. */
 export function initialMapping(kind: MapperKind, preview: FilePreview): ColumnMapping {
   if (preview.saved) return preview.saved;
   return {
     headerRow: 0,
-    columns: guessColumns(preview.rows[0] ?? [], kind === "bank" ? BANK_FIELDS : COD_FIELDS),
+    columns: guessColumns(preview.rows[0] ?? [], fieldsFor(kind)),
     dateFormat: "dd/MM/yyyy",
     amountStyle: "DEBIT_CREDIT",
   };
@@ -32,7 +38,7 @@ export function ColumnMapper({
   value: ColumnMapping;
   onChange: (value: ColumnMapping) => void;
 }) {
-  const allFields = kind === "bank" ? BANK_FIELDS : COD_FIELDS;
+  const allFields = fieldsFor(kind);
   const fields =
     kind === "bank"
       ? allFields.filter((field) => {

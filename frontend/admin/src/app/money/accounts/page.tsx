@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { Account, BooksSettings } from "@vaabhi/api-client";
-import { ActivityIcon, BankIcon, DocumentIcon } from "@/components/icons";
+import { ActivityIcon, BankIcon, DocumentIcon, ReceiptIcon } from "@/components/icons";
 import { ErrorNote } from "@/components/tailoring";
 import {
   ListCard,
@@ -27,7 +27,11 @@ function StartDate({ settings, owner, onSaved }: { settings: BooksSettings; owne
 
   async function set() {
     const saved = await action.run(() =>
-      api.admin.accounts.saveSettings({ startDate: date, modeAccounts: settings.modeAccounts }),
+      api.admin.accounts.saveSettings({
+        startDate: date,
+        modeAccounts: settings.modeAccounts,
+        shiprocketPartyId: settings.shiprocketPartyId ?? null,
+      }),
     );
     if (saved) onSaved();
   }
@@ -75,7 +79,11 @@ function PaymentAccounts({
     const modeAccounts: Record<string, number> = {};
     for (const mode of MODE_ACCOUNTS) modeAccounts[mode.value] = Number(map[mode.value]);
     const result = await action.run(() =>
-      api.admin.accounts.saveSettings({ startDate: settings.startDate, modeAccounts }),
+      api.admin.accounts.saveSettings({
+        startDate: settings.startDate,
+        modeAccounts,
+        shiprocketPartyId: settings.shiprocketPartyId ?? null,
+      }),
     );
     if (result) {
       setSaved(true);
@@ -111,6 +119,52 @@ function PaymentAccounts({
         </span>
       </div>
       <ErrorNote>{action.error}</ErrorNote>
+    </div>
+  );
+}
+
+/** Which supplier Shiprocket's deductions and freight bills are booked against. */
+function ShiprocketSupplier({ settings, onSaved }: { settings: BooksSettings; onSaved: () => void }) {
+  const suppliers = useLoad(() => api.admin.purchases.suppliers(), []);
+  const [partyId, setPartyId] = useState(() =>
+    settings.shiprocketPartyId == null ? "" : String(settings.shiprocketPartyId),
+  );
+  const action = useAction();
+
+  const options = [
+    { value: "", label: "Not set" },
+    ...(suppliers.value ?? []).map((supplier) => ({
+      value: String(supplier.partyId),
+      label: supplier.gstin ? `${supplier.name} · ${supplier.gstin}` : supplier.name,
+    })),
+  ];
+
+  async function save() {
+    const saved = await action.run(() =>
+      api.admin.accounts.saveSettings({
+        startDate: settings.startDate,
+        modeAccounts: settings.modeAccounts,
+        shiprocketPartyId: partyId ? Number(partyId) : null,
+      }),
+    );
+    if (saved) onSaved();
+  }
+
+  return (
+    <div className="rounded-2xl border border-line bg-panel p-4">
+      <SelectField
+        label="Shiprocket supplier"
+        hint="COD deductions and freight invoices are booked against this supplier."
+        options={options}
+        value={partyId}
+        onChange={setPartyId}
+      />
+      <div className="mt-4">
+        <button type="button" className={buttonPrimary} disabled={action.busy || !suppliers.value} onClick={save}>
+          {action.busy ? "Saving…" : "Save supplier"}
+        </button>
+      </div>
+      <ErrorNote>{action.error ?? suppliers.error}</ErrorNote>
     </div>
   );
 }
@@ -212,11 +266,31 @@ export default function AccountsPage() {
               title="Bank reconciliation"
               subtitle="Import bank statements and COD remittances, sync Razorpay, match to the books"
             />
+            <ListRow
+              href="/money/accounts/assets/"
+              icon={BankIcon}
+              title="Fixed assets"
+              subtitle="What the shop owns, what it has depreciated, and disposals"
+            />
+            <ListRow
+              href="/money/accounts/tds/"
+              icon={DocumentIcon}
+              title="TDS"
+              subtitle="Deducted on bills, challans paid and the balance by section"
+            />
+            <ListRow
+              href="/money/accounts/input-gst/"
+              icon={ReceiptIcon}
+              title="Input GST"
+              subtitle="GST on supplier bills and gateway fees, month by month"
+            />
           </ListCard>
           {owner && (
             <>
               <SectionLabel>Payment accounts</SectionLabel>
               <PaymentAccounts key={assets.length} settings={b} assets={assets} onSaved={refresh} />
+              <SectionLabel>Shiprocket</SectionLabel>
+              <ShiprocketSupplier settings={b} onSaved={refresh} />
             </>
           )}
         </>
