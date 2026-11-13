@@ -34,13 +34,15 @@ public class BooksSettingsService {
     }
 
     record SettingsRow(
-            @Nullable LocalDate startDate, @Nullable OffsetDateTime lastSweepAt) {}
+            @Nullable LocalDate startDate,
+            @Nullable OffsetDateTime lastSweepAt,
+            @Nullable Long shiprocketPartyId) {}
 
     record ModeRow(String mode, long accountId) {}
 
     @Transactional(readOnly = true)
     public BooksSettings get() {
-        var row = jdbc.sql("SELECT start_date, last_sweep_at FROM books_setting WHERE id = 1")
+        var row = jdbc.sql("SELECT start_date, last_sweep_at, shiprocket_party_id FROM books_setting WHERE id = 1")
                 .query(SettingsRow.class)
                 .single();
         var stored = jdbc.sql("""
@@ -55,7 +57,7 @@ public class BooksSettingsService {
                 modeAccounts.put(mode, accountId);
             }
         }
-        return new BooksSettings(row.startDate(), modeAccounts, row.lastSweepAt());
+        return new BooksSettings(row.startDate(), modeAccounts, row.lastSweepAt(), row.shiprocketPartyId());
     }
 
     /** Saves the mode map and start date. A missing start date keeps the current one. */
@@ -85,9 +87,19 @@ public class BooksSettingsService {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT, "The books start date can't change once entries are posted");
         }
-        jdbc.sql("UPDATE books_setting SET start_date = :startDate, mode_accounts = CAST(:modes AS jsonb) WHERE id = 1")
+        var shiprocketPartyId = settings.shiprocketPartyId();
+        if (shiprocketPartyId != null && !isSupplier(shiprocketPartyId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Pick a supplier for Shiprocket");
+        }
+        jdbc.sql("""
+                        UPDATE books_setting
+                        SET start_date = :startDate, mode_accounts = CAST(:modes AS jsonb),
+                            shiprocket_party_id = :shiprocket
+                        WHERE id = 1
+                        """)
                 .param("startDate", startDate)
                 .param("modes", json.toString())
+                .param("shiprocket", shiprocketPartyId)
                 .update();
         if (before.startDate() == null && startDate != null) {
             events.publishEvent(new BooksStarted(startDate));
@@ -108,6 +120,13 @@ public class BooksSettingsService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT, "No account set for " + mode));
     }
 
+    /** The party Shiprocket is a supplier under, or null when it is not set. */
+    @Transactional(readOnly = true)
+    public @Nullable Long shiprocketPartyId() {
+        // Through the settings row: a single-column query of a NULL value does not map cleanly to Optional.
+        return get().shiprocketPartyId();
+    }
+
     @Transactional
     public void markSwept(OffsetDateTime at) {
         jdbc.sql("UPDATE books_setting SET last_sweep_at = :at WHERE id = 1")
@@ -124,6 +143,13 @@ public class BooksSettingsService {
     private boolean isActiveAsset(long accountId) {
         return jdbc.sql("SELECT EXISTS (SELECT 1 FROM account WHERE id = :id AND type = 'ASSET' AND active)")
                 .param("id", accountId)
+                .query(Boolean.class)
+                .single();
+    }
+
+    private boolean isSupplier(long partyId) {
+        return jdbc.sql("SELECT EXISTS (SELECT 1 FROM party WHERE id = :id AND is_supplier)")
+                .param("id", partyId)
                 .query(Boolean.class)
                 .single();
     }

@@ -8,6 +8,7 @@ import com.vaabhi.TestcontainersConfiguration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Map;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -78,6 +79,19 @@ class CodRemittanceIT extends BooksFixtures {
                 .filter(candidate -> candidate.remittanceRef().equals(ref))
                 .findFirst()
                 .orElseThrow();
+    }
+
+    private long shiprocketSupplier() {
+        return jdbc.sql("INSERT INTO party (name, is_supplier) VALUES (:name, TRUE) RETURNING id")
+                .param("name", unique("Shiprocket"))
+                .query(Long.class)
+                .single();
+    }
+
+    /** Sets (or clears, with null) the supplier the COD deduction is owed to. */
+    private void setShiprocketSupplier(@Nullable Long partyId) {
+        settings.save(
+                new BooksSettings(settings.get().startDate(), settings.get().modeAccounts(), null, partyId), null);
     }
 
     @Test
@@ -163,6 +177,8 @@ class CodRemittanceIT extends BooksFixtures {
 
     @Test
     void postsOnSweep() {
+        long shiprocket = shiprocketSupplier();
+        setShiprocketSupplier(shiprocket);
         var ref = unique("RMT");
         remittances.importReport(
                 "remittance.csv",
@@ -179,8 +195,63 @@ class CodRemittanceIT extends BooksFixtures {
         var entry = entry("COD_REMITTANCE", id, "SETTLE");
         assertThat(entry.narration()).isEqualTo("Shiprocket COD remittance " + ref);
         assertThat(netInEntry(entry.id(), accountId("BANK"))).isEqualByComparingTo("1900");
-        assertThat(netInEntry(entry.id(), accountId("EXPENSE_COURIER"))).isEqualByComparingTo("100");
+        assertThat(netInEntry(entry.id(), accountId("CREDITORS"))).isEqualByComparingTo("100");
         assertThat(netInEntry(entry.id(), accountId("COD_CLEARING"))).isEqualByComparingTo("-2000");
+    }
+
+    @Test
+    void deductionGoesToShiprocketCreditors() {
+        long shiprocket = shiprocketSupplier();
+        setShiprocketSupplier(shiprocket);
+        var ref = unique("RMT");
+        remittances.importReport(
+                "remittance.csv",
+                csv(row(ref, today(), "", unique("AWB"), "O1", "2000.00", "100.00", "1900.00")),
+                mapping(),
+                null);
+        long id = jdbc.sql("SELECT id FROM cod_remittance WHERE remittance_ref = :ref")
+                .param("ref", ref)
+                .query(Long.class)
+                .single();
+
+        sweeper.sweepNow();
+
+        var entry = entry("COD_REMITTANCE", id, "SETTLE");
+        assertThat(netInEntry(entry.id(), accountId("CREDITORS"))).isEqualByComparingTo("100");
+        assertThat(netInEntry(entry.id(), accountId("EXPENSE_COURIER"))).isEqualByComparingTo("0");
+        assertThat(jdbc.sql("""
+                                SELECT COUNT(*) FROM journal_line
+                                WHERE entry_id = :entry AND account_id = :account AND party_id = :party
+                                """)
+                        .param("entry", entry.id())
+                        .param("account", accountId("CREDITORS"))
+                        .param("party", shiprocket)
+                        .query(Long.class)
+                        .single())
+                .isEqualTo(1);
+    }
+
+    @Test
+    void deductionWithoutSupplierIsAProblem() {
+        setShiprocketSupplier(null);
+        var ref = unique("RMT");
+        remittances.importReport(
+                "remittance.csv",
+                csv(row(ref, today(), "", unique("AWB"), "O1", "2000.00", "100.00", "1900.00")),
+                mapping(),
+                null);
+        long id = jdbc.sql("SELECT id FROM cod_remittance WHERE remittance_ref = :ref")
+                .param("ref", ref)
+                .query(Long.class)
+                .single();
+
+        sweeper.sweepNow();
+
+        assertThat(entries("COD_REMITTANCE", id)).isEmpty();
+        assertThat(problems.list())
+                .filteredOn(p -> p.sourceType().equals("COD_REMITTANCE") && p.sourceId() == id)
+                .singleElement()
+                .satisfies(p -> assertThat(p.message()).isEqualTo("Pick the Shiprocket supplier in Books settings"));
     }
 
     @Test

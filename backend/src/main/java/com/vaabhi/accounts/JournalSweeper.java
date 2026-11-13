@@ -112,7 +112,10 @@ public class JournalSweeper {
                         }
                         for (long id : batch) {
                             try {
-                                tx.executeWithoutResult(status -> journal.post(rule.build(id), null));
+                                tx.executeWithoutResult(status -> {
+                                    var entry = journal.post(rule.build(id), null);
+                                    rule.posted(id, entry.id());
+                                });
                                 problems.clear(rule.sourceType(), id, rule.step());
                                 posted++;
                             } catch (RuntimeException e) {

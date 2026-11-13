@@ -17,4 +17,7 @@ public interface PostingRule {
     List<Long> pending(LocalDate start, int limit);
 
     NewEntry build(long sourceId);
+
+    /** Called in the posting transaction after the entry is saved; for side effects such as linking a bank line. */
+    default void posted(long sourceId, long entryId) {}
 }

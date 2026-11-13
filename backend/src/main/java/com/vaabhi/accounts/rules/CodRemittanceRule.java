@@ -9,7 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
-/** A Shiprocket COD remittance paid into the bank: Dr Bank net, Dr courier charges deduction, Cr COD clearing cod. */
+/**
+ * A Shiprocket COD remittance paid into the bank: Dr Bank net, Dr Creditors for the deduction Shiprocket kept (freight
+ * it will bill under its supplier party), Cr COD clearing cod. A deduction without the Shiprocket supplier set is a
+ * posting problem.
+ */
 @Component
 class CodRemittanceRule implements PostingRule {
 
@@ -62,10 +66,13 @@ class CodRemittanceRule implements PostingRule {
         var lines = new ArrayList<NewEntryLine>();
         RuleSupport.addIfPositive(
                 lines, row.netRupees(), RuleSupport.debit(support.account("BANK"), null, row.netRupees()));
-        RuleSupport.addIfPositive(
-                lines,
-                row.deductionRupees(),
-                RuleSupport.debit(support.account("EXPENSE_COURIER"), null, row.deductionRupees()));
+        if (row.deductionRupees().signum() > 0) {
+            var shiprocketPartyId = support.shiprocketPartyId();
+            if (shiprocketPartyId == null) {
+                throw new IllegalStateException("Pick the Shiprocket supplier in Books settings");
+            }
+            lines.add(RuleSupport.debit(support.account("CREDITORS"), shiprocketPartyId, row.deductionRupees()));
+        }
         RuleSupport.addIfPositive(
                 lines, row.codRupees(), RuleSupport.credit(support.account("COD_CLEARING"), null, row.codRupees()));
         return new NewEntry(

@@ -53,6 +53,11 @@ class RuleSupport {
         return settings.accountFor(mode);
     }
 
+    /** The supplier party Shiprocket's freight and COD deductions go to, or null when it is not set. */
+    @Nullable Long shiprocketPartyId() {
+        return settings.shiprocketPartyId();
+    }
+
     static LocalDate day(OffsetDateTime at) {
         return at.atZoneSameInstant(SHOP_ZONE).toLocalDate();
     }

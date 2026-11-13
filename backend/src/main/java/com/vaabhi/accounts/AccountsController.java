@@ -228,6 +228,8 @@ class AccountsController {
 
     @PutMapping("/settings")
     BooksSettings saveSettings(@Valid @RequestBody BooksSettingsForm form, @AuthenticationPrincipal @Nullable Jwt jwt) {
-        return settings.save(new BooksSettings(form.startDate(), form.modeAccounts(), null), actor(jwt));
+        return settings.save(
+                new BooksSettings(form.startDate(), form.modeAccounts(), null, form.shiprocketPartyId()),
+                actor(jwt));
     }
 }
