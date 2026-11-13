@@ -68,19 +68,29 @@ public class BankReconciliationService {
         var detail = imports.detail(statementId, null);
         var statement = detail.statement();
         var periodTo = statement.periodTo();
-        var ledgerBalance = journal.ledger(chart.idOf("BANK"), periodTo, periodTo).closingRupees();
+        var ledgerBalance =
+                journal.ledger(chart.idOf("BANK"), periodTo, periodTo).closingRupees();
         var closing = statement.closingRupees();
         var difference = closing == null ? null : Rupees.of(closing.subtract(ledgerBalance));
-        var unmatched = detail.lines().stream().filter(line -> "UNMATCHED".equals(line.status())).toList();
-        var ignored = detail.lines().stream().filter(line -> "IGNORED".equals(line.status())).toList();
+        var unmatched = detail.lines().stream()
+                .filter(line -> "UNMATCHED".equals(line.status()))
+                .toList();
+        var ignored = detail.lines().stream()
+                .filter(line -> "IGNORED".equals(line.status()))
+                .toList();
         var ledgerOnly = jdbc.sql(LEDGER_ONLY_SQL)
                 .param("from", statement.periodFrom())
                 .param("to", periodTo)
                 .query(LedgerOnlyMovement.class)
                 .list();
-        var razorpayClearing = journal.ledger(chart.idOf("RAZORPAY_CLEARING"), periodTo, periodTo).closingRupees();
-        var codClearing = journal.ledger(chart.idOf("COD_CLEARING"), periodTo, periodTo).closingRupees();
-        var oldestRow = jdbc.sql(OLDEST_UNSETTLED_SQL).param("to", periodTo).query(OldestUnsettled.class).single();
+        var razorpayClearing = journal.ledger(chart.idOf("RAZORPAY_CLEARING"), periodTo, periodTo)
+                .closingRupees();
+        var codClearing =
+                journal.ledger(chart.idOf("COD_CLEARING"), periodTo, periodTo).closingRupees();
+        var oldestRow = jdbc.sql(OLDEST_UNSETTLED_SQL)
+                .param("to", periodTo)
+                .query(OldestUnsettled.class)
+                .single();
         var oldest = oldestRow.date();
         boolean openingMismatch =
                 difference != null && difference.signum() != 0 && unmatched.isEmpty() && ledgerOnly.isEmpty();

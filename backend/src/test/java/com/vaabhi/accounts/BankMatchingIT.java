@@ -183,9 +183,9 @@ class BankMatchingIT extends BooksFixtures {
         long receipt = receipt(day(1), amount);
         var line = importLine(day(2), null, null, amount.subtract(new BigDecimal("20.00")));
         assertThatThrownBy(() -> lines.match(line.id(), new BankMatchForm(receipt, null), null))
-                .isInstanceOfSatisfying(ResponseStatusException.class, e -> assertThat(e.getStatusCode()
-                                .value())
-                        .isEqualTo(400));
+                .isInstanceOfSatisfying(
+                        ResponseStatusException.class,
+                        e -> assertThat(e.getStatusCode().value()).isEqualTo(400));
         assertThat(imports.line(line.id()).status()).isEqualTo("UNMATCHED");
     }
 
@@ -235,9 +235,9 @@ class BankMatchingIT extends BooksFixtures {
         periods.lock(YearMonth.from(date), null);
         try {
             assertThatThrownBy(() -> lines.undo(line.id(), null))
-                    .isInstanceOfSatisfying(ResponseStatusException.class, e -> assertThat(e.getStatusCode()
-                                    .value())
-                            .isEqualTo(409));
+                    .isInstanceOfSatisfying(
+                            ResponseStatusException.class,
+                            e -> assertThat(e.getStatusCode().value()).isEqualTo(409));
         } finally {
             periods.unlock(YearMonth.from(date));
         }
@@ -248,9 +248,9 @@ class BankMatchingIT extends BooksFixtures {
     void ignoreNeedsReason() {
         var line = importLine(day(2), null, null, amount());
         assertThatThrownBy(() -> lines.ignore(line.id(), new BankIgnoreForm("  "), null))
-                .isInstanceOfSatisfying(ResponseStatusException.class, e -> assertThat(e.getStatusCode()
-                                .value())
-                        .isEqualTo(400));
+                .isInstanceOfSatisfying(
+                        ResponseStatusException.class,
+                        e -> assertThat(e.getStatusCode().value()).isEqualTo(400));
         assertThat(imports.line(line.id()).status()).isEqualTo("UNMATCHED");
     }
 }

@@ -68,10 +68,7 @@ class BankFileParserTest {
                 "07/11/2026,\"-1,000.00 Cr\",Sweep",
                 "08/11/2026,750.00 Dr,Cheque");
         ColumnMapping mapping = new ColumnMapping(
-                0,
-                Map.of("date", 0, "amount", 1, "description", 2),
-                "dd/MM/yyyy",
-                AmountStyle.SIGNED);
+                0, Map.of("date", 0, "amount", 1, "description", 2), "dd/MM/yyyy", AmountStyle.SIGNED);
 
         ParsedBankFile file = BankFileParser.parse(rows, mapping);
 
@@ -88,10 +85,7 @@ class BankFileParserTest {
 
     @Test
     void blankAndZeroUnusedColumnBothFine() {
-        List<List<String>> rows = readCsv(
-                "Date,Debit,Credit",
-                "05/11/2026,,500",
-                "06/11/2026,0.00,500");
+        List<List<String>> rows = readCsv("Date,Debit,Credit", "05/11/2026,,500", "06/11/2026,0.00,500");
         ColumnMapping mapping = new ColumnMapping(
                 0, Map.of("date", 0, "debit", 1, "credit", 2), "dd/MM/yyyy", AmountStyle.DEBIT_CREDIT);
 
@@ -106,10 +100,7 @@ class BankFileParserTest {
 
     @Test
     void rowWithBothSidesSkipped() {
-        List<List<String>> rows = readCsv(
-                "Date,Debit,Credit",
-                "05/11/2026,10.00,10.00",
-                "06/11/2026,25.00,");
+        List<List<String>> rows = readCsv("Date,Debit,Credit", "05/11/2026,10.00,10.00", "06/11/2026,25.00,");
         ColumnMapping mapping = new ColumnMapping(
                 0, Map.of("date", 0, "debit", 1, "credit", 2), "dd/MM/yyyy", AmountStyle.DEBIT_CREDIT);
 
@@ -125,16 +116,16 @@ class BankFileParserTest {
 
     @Test
     void zeroAmountRowSkipped() {
-        List<List<String>> rows = readCsv(
-                "Date,Debit,Credit",
-                "05/11/2026,0.00,0.00");
+        List<List<String>> rows = readCsv("Date,Debit,Credit", "05/11/2026,0.00,0.00");
         ColumnMapping mapping = new ColumnMapping(
                 0, Map.of("date", 0, "debit", 1, "credit", 2), "dd/MM/yyyy", AmountStyle.DEBIT_CREDIT);
 
         ParsedBankFile file = BankFileParser.parse(rows, mapping);
 
         assertThat(file.lines()).isEmpty();
-        assertThat(file.skipped()).singleElement().satisfies(row -> assertThat(row.reason()).isEqualTo("no amount"));
+        assertThat(file.skipped())
+                .singleElement()
+                .satisfies(row -> assertThat(row.reason()).isEqualTo("no amount"));
     }
 
     @Test

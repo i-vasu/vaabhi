@@ -153,17 +153,15 @@ public class BankLineService {
                 }
             }
             case "IGNORED" -> {}
-            default -> throw new ResponseStatusException(
-                    HttpStatus.CONFLICT, "This line is not matched, posted or ignored");
+            default ->
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "This line is not matched, posted or ignored");
         }
         jdbc.sql("""
                         UPDATE bank_line
                         SET status = 'UNMATCHED', journal_entry_id = NULL, difference_entry_id = NULL,
                             matched_by = NULL, matched_at = NULL, ignore_reason = NULL
                         WHERE id = :id
-                        """)
-                .param("id", lineId)
-                .update();
+                        """).param("id", lineId).update();
         return imports.line(lineId);
     }
 

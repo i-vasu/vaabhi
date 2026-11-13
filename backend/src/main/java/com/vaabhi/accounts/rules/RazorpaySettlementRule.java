@@ -64,7 +64,8 @@ class RazorpaySettlementRule implements PostingRule {
 
     @Override
     public NewEntry build(long sourceId) {
-        var row = support.jdbc().sql("""
+        var row =
+                support.jdbc().sql("""
                         SELECT seq, id, utr, settled_on, gross_rupees, fee_rupees, tax_rupees, net_rupees
                         FROM razorpay_settlement WHERE seq = :seq
                         """).param("seq", sourceId).query(Row.class).single();

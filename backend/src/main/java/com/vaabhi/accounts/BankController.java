@@ -116,7 +116,8 @@ class BankController {
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .header(
                         HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"bank-reconciliation-" + report.statement().periodTo() + ".csv\"")
+                        "attachment; filename=\"bank-reconciliation-"
+                                + report.statement().periodTo() + ".csv\"")
                 .body(reconciliation.csv(id));
     }
 
@@ -165,17 +166,13 @@ class BankController {
 
     @PostMapping("/lines/{id}/match")
     BankLineView match(
-            @PathVariable long id,
-            @Valid @RequestBody BankMatchForm form,
-            @AuthenticationPrincipal @Nullable Jwt jwt) {
+            @PathVariable long id, @Valid @RequestBody BankMatchForm form, @AuthenticationPrincipal @Nullable Jwt jwt) {
         return lines.match(id, form, actor(jwt));
     }
 
     @PostMapping("/lines/{id}/post")
     BankLineView post(
-            @PathVariable long id,
-            @Valid @RequestBody BankPostForm form,
-            @AuthenticationPrincipal @Nullable Jwt jwt) {
+            @PathVariable long id, @Valid @RequestBody BankPostForm form, @AuthenticationPrincipal @Nullable Jwt jwt) {
         return lines.post(id, form, actor(jwt));
     }
 

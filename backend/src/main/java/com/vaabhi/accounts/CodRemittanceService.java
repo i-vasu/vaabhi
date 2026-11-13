@@ -43,8 +43,7 @@ public class CodRemittanceService {
 
     /** Saves the profile and each new remittance with its AWB lines. Refs already imported are skipped. */
     @Transactional
-    public CodImportSummary importReport(
-            String fileName, byte[] bytes, ColumnMapping mapping, @Nullable String actor) {
+    public CodImportSummary importReport(String fileName, byte[] bytes, ColumnMapping mapping, @Nullable String actor) {
         require(mapping, "remittanceRef", "remittance ref");
         require(mapping, "remittedOn", "remittance date");
         require(mapping, "awb", "AWB");
@@ -85,18 +84,19 @@ public class CodRemittanceService {
                             utr.isEmpty() ? null : utr,
                             awb,
                             orderNumber.isEmpty() ? null : orderNumber,
-                            BankFileParser.parseAmount(cell(row, columns, "cod")).abs(),
+                            BankFileParser.parseAmount(cell(row, columns, "cod"))
+                                    .abs(),
                             deductionMapped
                                     ? BankFileParser.parseAmount(cell(row, columns, "deduction"))
                                             .abs()
                                     : Rupees.ZERO,
                             netMapped
-                                    ? BankFileParser.parseAmount(cell(row, columns, "net")).abs()
+                                    ? BankFileParser.parseAmount(cell(row, columns, "net"))
+                                            .abs()
                                     : null));
         }
         if (groups.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "No remittance rows were found. Check the header row and date format.");
+            throw new IllegalArgumentException("No remittance rows were found. Check the header row and date format.");
         }
         profiles.save(KIND, mapping);
         int added = 0;
@@ -184,9 +184,7 @@ public class CodRemittanceService {
                               AND j.source_id = r.id
                         ORDER BY r.remitted_on DESC, r.id DESC
                         LIMIT 200
-                        """)
-                .query(CodRemittanceView.class)
-                .list();
+                        """).query(CodRemittanceView.class).list();
     }
 
     private static void require(ColumnMapping mapping, String key, String label) {

@@ -27,8 +27,6 @@ class RazorpaySettlementQuery {
                               AND j.source_id = s.seq
                         ORDER BY s.settled_on DESC, s.seq DESC
                         LIMIT 200
-                        """)
-                .query(RazorpaySettlementView.class)
-                .list();
+                        """).query(RazorpaySettlementView.class).list();
     }
 }

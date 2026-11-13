@@ -22,8 +22,7 @@ public class BankMatcher {
      * Only an entry with a Bank line, not reversed and not itself a reversal, and not already linked to a bank line
      * can be matched. BANK_LINE / MATCH entries are the differences a match posted, never candidates.
      */
-    private static final String CANDIDATE_FILTER =
-            """
+    private static final String CANDIDATE_FILTER = """
               AND EXISTS (SELECT 1 FROM journal_line bl
                           JOIN account ba ON ba.id = bl.account_id
                           WHERE bl.entry_id = e.id AND ba.system_key = 'BANK')
@@ -40,8 +39,8 @@ public class BankMatcher {
         this.jdbc = jdbc;
     }
 
-    record AutoLine(long id, LocalDate date, @Nullable String reference, BigDecimal debitRupees,
-            BigDecimal creditRupees) {}
+    record AutoLine(
+            long id, LocalDate date, @Nullable String reference, BigDecimal debitRupees, BigDecimal creditRupees) {}
 
     record CandidateLine(long id, LocalDate date, BigDecimal debitRupees, BigDecimal creditRupees) {}
 
@@ -94,14 +93,9 @@ public class BankMatcher {
                         JOIN journal_line l ON l.entry_id = e.id
                         JOIN account a ON a.id = l.account_id AND a.system_key = 'BANK'
                         WHERE e.entry_date BETWEEN :from AND :to
-                        """
-                        + CANDIDATE_FILTER
-                        + """
+                        """ + CANDIDATE_FILTER + """
                         GROUP BY e.id, e.number, e.entry_date, e.narration
-                        HAVING SUM(l.debit_rupees - l.credit_rupees) """
-                        + sign
-                        + "\n"
-                        + """
+                        HAVING SUM(l.debit_rupees - l.credit_rupees) """ + sign + "\n" + """
                         ORDER BY ABS(SUM(l.debit_rupees - l.credit_rupees) - :amount),
                                  ABS(e.entry_date - CAST(:lineDate AS date)), e.id
                         LIMIT :limit
@@ -117,16 +111,15 @@ public class BankMatcher {
 
     /** The entry's Bank amount (credit less debit) when it can be matched, else null. */
     @Transactional(readOnly = true)
-    @Nullable BigDecimal bankAmount(long journalEntryId) {
+    @Nullable
+    BigDecimal bankAmount(long journalEntryId) {
         return jdbc.sql("""
                         SELECT SUM(l.debit_rupees - l.credit_rupees)
                         FROM journal_entry e
                         JOIN journal_line l ON l.entry_id = e.id
                         JOIN account a ON a.id = l.account_id AND a.system_key = 'BANK'
                         WHERE e.id = :id
-                        """
-                        + CANDIDATE_FILTER
-                        + """
+                        """ + CANDIDATE_FILTER + """
                         GROUP BY e.id
                         """)
                 .param("id", journalEntryId)
@@ -149,11 +142,7 @@ public class BankMatcher {
                           AND (SELECT SUM(sl.debit_rupees - sl.credit_rupees)
                                FROM journal_line sl
                                JOIN account sa ON sa.id = sl.account_id
-                               WHERE sl.entry_id = e.id AND sa.system_key = 'BANK') """
-                        + sign
-                        + "\n"
-                        + CANDIDATE_FILTER
-                        + """
+                               WHERE sl.entry_id = e.id AND sa.system_key = 'BANK') """ + sign + "\n" + CANDIDATE_FILTER + """
                         LIMIT 2
                         """)
                 .param("ref", line.reference())
@@ -171,13 +160,9 @@ public class BankMatcher {
                         JOIN journal_line l ON l.entry_id = e.id
                         JOIN account a ON a.id = l.account_id AND a.system_key = 'BANK'
                         WHERE e.entry_date BETWEEN :from AND :to
-                        """
-                        + CANDIDATE_FILTER
-                        + """
+                        """ + CANDIDATE_FILTER + """
                         GROUP BY e.id
-                        HAVING SUM(l.debit_rupees - l.credit_rupees) """
-                        + sign
-                        + """
+                        HAVING SUM(l.debit_rupees - l.credit_rupees) """ + sign + """
                          AND SUM(l.debit_rupees - l.credit_rupees) = :amount
                         LIMIT 2
                         """)
@@ -193,10 +178,7 @@ public class BankMatcher {
                         UPDATE bank_line
                         SET status = 'MATCHED', journal_entry_id = :entry, matched_by = 'auto', matched_at = now()
                         WHERE id = :id
-                        """)
-                .param("entry", entryId)
-                .param("id", lineId)
-                .update();
+                        """).param("entry", entryId).param("id", lineId).update();
     }
 
     private static @Nullable Long only(List<Long> ids) {

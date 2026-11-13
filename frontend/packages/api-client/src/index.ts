@@ -388,7 +388,6 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
     return request<T>(path, { method: "POST", body });
   };
 
-
   return {
     request,
     store: {

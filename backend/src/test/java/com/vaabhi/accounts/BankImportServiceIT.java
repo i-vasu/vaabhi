@@ -125,10 +125,14 @@ class BankImportServiceIT extends BooksFixtures {
 
     @Test
     void rejectsFileWithNoDatedRows() {
-        long before = jdbc.sql("SELECT COUNT(*) FROM bank_statement").query(Long.class).single();
+        long before = jdbc.sql("SELECT COUNT(*) FROM bank_statement")
+                .query(Long.class)
+                .single();
         assertThatThrownBy(() -> imports.importStatement("s.csv", csv(), mapping(), null, null, null))
                 .isInstanceOf(IllegalArgumentException.class);
-        long after = jdbc.sql("SELECT COUNT(*) FROM bank_statement").query(Long.class).single();
+        long after = jdbc.sql("SELECT COUNT(*) FROM bank_statement")
+                .query(Long.class)
+                .single();
         assertThat(after).isEqualTo(before);
     }
 }

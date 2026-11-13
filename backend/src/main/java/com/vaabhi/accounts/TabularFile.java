@@ -56,7 +56,8 @@ public final class TabularFile {
         if (!text.isEmpty() && text.charAt(0) == BOM) {
             text = text.substring(1);
         }
-        CSVFormat format = CSVFormat.DEFAULT.builder().setDelimiter(delimiter(text)).build();
+        CSVFormat format =
+                CSVFormat.DEFAULT.builder().setDelimiter(delimiter(text)).build();
         List<List<String>> rows = new ArrayList<>();
         try (CSVParser parser = CSVParser.parse(new StringReader(text), format)) {
             for (CSVRecord record : parser) {

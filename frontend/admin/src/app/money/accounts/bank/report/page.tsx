@@ -4,15 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import type { BankLineView } from "@vaabhi/api-client";
 import { ErrorNote } from "@/components/tailoring";
-import {
-  ListCard,
-  ListRow,
-  LoadState,
-  PageHeader,
-  SectionLabel,
-  StatTile,
-  buttonSecondary,
-} from "@/components/ui";
+import { ListCard, ListRow, LoadState, PageHeader, SectionLabel, StatTile, buttonSecondary } from "@/components/ui";
 import { api } from "@/lib/api";
 import { rupees } from "@/lib/settings";
 import { formatDate, idParam, useLoad } from "@/lib/tailoring";

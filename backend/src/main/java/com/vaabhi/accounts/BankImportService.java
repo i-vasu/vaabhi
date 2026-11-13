@@ -71,8 +71,14 @@ public class BankImportService {
         }
         profiles.save(KIND, mapping);
         long accountId = chart.idOf("BANK");
-        LocalDate periodFrom = lines.stream().map(ParsedBankLine::date).min(LocalDate::compareTo).orElseThrow();
-        LocalDate periodTo = lines.stream().map(ParsedBankLine::date).max(LocalDate::compareTo).orElseThrow();
+        LocalDate periodFrom = lines.stream()
+                .map(ParsedBankLine::date)
+                .min(LocalDate::compareTo)
+                .orElseThrow();
+        LocalDate periodTo = lines.stream()
+                .map(ParsedBankLine::date)
+                .max(LocalDate::compareTo)
+                .orElseThrow();
         var openingRupees = openingRupees(opening, lines);
         var closingRupees = closing == null ? lines.getLast().balance() : Rupees.of(closing);
         long statementId = jdbc.sql("""
@@ -148,7 +154,8 @@ public class BankImportService {
         if (status != null) {
             query = query.param("status", status);
         }
-        return new BankStatementDetail(statement, query.query(BankLineView.class).list());
+        return new BankStatementDetail(
+                statement, query.query(BankLineView.class).list());
     }
 
     /** One line with its journal entry number; 404 when it does not exist. */

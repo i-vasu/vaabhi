@@ -10,5 +10,4 @@ import java.util.Map;
  * @param dateFormat the pattern the date column uses, e.g. {@code dd/MM/yyyy}; {@code yyyy-MM-dd} is also tried
  * @param amountStyle whether the file has separate debit and credit columns or one signed amount column
  */
-public record ColumnMapping(
-        int headerRow, Map<String, Integer> columns, String dateFormat, AmountStyle amountStyle) {}
+public record ColumnMapping(int headerRow, Map<String, Integer> columns, String dateFormat, AmountStyle amountStyle) {}

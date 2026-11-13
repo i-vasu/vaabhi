@@ -65,14 +65,7 @@ class CodRemittanceIT extends BooksFixtures {
     }
 
     private static String row(
-            String ref,
-            String date,
-            String utr,
-            String awb,
-            String order,
-            String cod,
-            String deduction,
-            String net) {
+            String ref, String date, String utr, String awb, String order, String cod, String deduction, String net) {
         return String.join(",", ref, date, utr, awb, order, cod, deduction, net);
     }
 
@@ -160,13 +153,11 @@ class CodRemittanceIT extends BooksFixtures {
         assertThat(summary.unknownAwbs()).containsExactly(awb);
         var imported = view(ref);
         assertThat(imported.awbCount()).isEqualTo(1);
-        long unmatched = jdbc.sql("""
+        long unmatched =
+                jdbc.sql("""
                         SELECT COUNT(*) FROM cod_remittance_line
                         WHERE remittance_id = :id AND web_order_id IS NULL
-                        """)
-                .param("id", imported.id())
-                .query(Long.class)
-                .single();
+                        """).param("id", imported.id()).query(Long.class).single();
         assertThat(unmatched).isEqualTo(1);
     }
 
@@ -195,15 +186,11 @@ class CodRemittanceIT extends BooksFixtures {
     @Test
     void missingRequiredFieldIs400() {
         var mapping = new ColumnMapping(
-                0,
-                Map.of("remittanceRef", 0, "remittedOn", 1, "cod", 5),
-                "yyyy-MM-dd",
-                AmountStyle.DEBIT_CREDIT);
+                0, Map.of("remittanceRef", 0, "remittedOn", 1, "cod", 5), "yyyy-MM-dd", AmountStyle.DEBIT_CREDIT);
 
         assertThatThrownBy(() -> remittances.importReport(
                         "remittance.csv",
-                        csv(row(
-                                unique("RMT"), today(), "", unique("AWB"), "O1", "1000.00", "", "1000.00")),
+                        csv(row(unique("RMT"), today(), "", unique("AWB"), "O1", "1000.00", "", "1000.00")),
                         mapping,
                         null))
                 .isInstanceOf(IllegalArgumentException.class)

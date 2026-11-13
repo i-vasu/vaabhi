@@ -4,15 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { BankIcon, ReceiptIcon, TruckIcon } from "@/components/icons";
 import { ErrorNote } from "@/components/tailoring";
-import {
-  EmptyState,
-  ListCard,
-  ListRow,
-  LoadState,
-  PageHeader,
-  SegmentedControl,
-  buttonPrimary,
-} from "@/components/ui";
+import { EmptyState, ListCard, ListRow, LoadState, PageHeader, SegmentedControl, buttonPrimary } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useIsOwner } from "@/lib/accounts";
 import { rupees } from "@/lib/settings";

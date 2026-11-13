@@ -186,12 +186,7 @@ function UnmatchedSheet({
               value={narration}
               onChange={(e) => setNarration(e.target.value)}
             />
-            <button
-              type="button"
-              className={buttonSecondary}
-              disabled={action.busy || !postAccount}
-              onClick={post}
-            >
+            <button type="button" className={buttonSecondary} disabled={action.busy || !postAccount} onClick={post}>
               Post
             </button>
           </div>
@@ -331,16 +326,10 @@ function StatementView({ id }: { id: number }) {
                   <span className="block font-medium">{row.description}</span>
                   {row.reference && <span className="mt-0.5 block text-xs text-ink-faint">{row.reference}</span>}
                 </span>
-                <span className="text-right tabular-nums">
-                  {row.creditRupees > 0 ? rupees(row.creditRupees) : ""}
-                </span>
-                <span className="text-right tabular-nums">
-                  {row.debitRupees > 0 ? rupees(row.debitRupees) : ""}
-                </span>
+                <span className="text-right tabular-nums">{row.creditRupees > 0 ? rupees(row.creditRupees) : ""}</span>
+                <span className="text-right tabular-nums">{row.debitRupees > 0 ? rupees(row.debitRupees) : ""}</span>
                 <span className="text-right">
-                  <Pill tone={STATUS_TONES[row.status] ?? "default"}>
-                    {STATUS_LABELS[row.status] ?? row.status}
-                  </Pill>
+                  <Pill tone={STATUS_TONES[row.status] ?? "default"}>{STATUS_LABELS[row.status] ?? row.status}</Pill>
                 </span>
               </button>
             ))}

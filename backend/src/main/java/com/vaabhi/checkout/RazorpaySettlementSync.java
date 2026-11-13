@@ -57,10 +57,7 @@ class RazorpaySettlementSync {
         if (!razorpay.configured()) {
             return new RazorpaySyncOutcome(false, 0, null);
         }
-        var latest = jdbc.sql("SELECT MAX(settled_on) FROM razorpay_settlement")
-                .query(LocalDate.class)
-                .list()
-                .stream()
+        var latest = jdbc.sql("SELECT MAX(settled_on) FROM razorpay_settlement").query(LocalDate.class).list().stream()
                 .filter(day -> day != null)
                 .findFirst()
                 .orElse(null);
@@ -89,7 +86,8 @@ class RazorpaySettlementSync {
     }
 
     private int insert(RazorpaySettlementData settlement) {
-        var settledOn = Instant.ofEpochSecond(settlement.createdAt()).atZone(IST).toLocalDate();
+        var settledOn =
+                Instant.ofEpochSecond(settlement.createdAt()).atZone(IST).toLocalDate();
         return jdbc.sql("""
                         INSERT INTO razorpay_settlement
                             (id, utr, settled_on, gross_rupees, fee_rupees, tax_rupees, net_rupees)

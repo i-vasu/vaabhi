@@ -171,10 +171,7 @@ class PostingRulesIT extends BooksFixtures {
                         VALUES (:id, NULL, CAST(now() AT TIME ZONE 'Asia/Kolkata' AS date),
                                 10000, 200, 36, 9764)
                         RETURNING seq
-                        """)
-                .param("id", unique("setl_"))
-                .query(Long.class)
-                .single();
+                        """).param("id", unique("setl_")).query(Long.class).single();
 
         sweeper.sweepNow();
 

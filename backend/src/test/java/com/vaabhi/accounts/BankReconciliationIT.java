@@ -124,7 +124,8 @@ class BankReconciliationIT extends BooksFixtures {
     void unmatchedLineExplainsDifference() {
         var amount = amount();
         var date = day(3);
-        var closing = journal.ledger(accountId("BANK"), date, date).closingRupees().add(amount);
+        var closing =
+                journal.ledger(accountId("BANK"), date, date).closingRupees().add(amount);
 
         var summary = imports.importStatement(
                 "recon.csv",
@@ -156,7 +157,9 @@ class BankReconciliationIT extends BooksFixtures {
                 null);
 
         var report = reconciliation.report(summary.statementId());
-        assertThat(report.ledgerOnly()).extracting(LedgerOnlyMovement::journalEntryId).contains(receipt);
+        assertThat(report.ledgerOnly())
+                .extracting(LedgerOnlyMovement::journalEntryId)
+                .contains(receipt);
     }
 
     @Test

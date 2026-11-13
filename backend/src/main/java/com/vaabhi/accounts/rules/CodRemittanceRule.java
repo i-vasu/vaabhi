@@ -67,9 +67,7 @@ class CodRemittanceRule implements PostingRule {
                 row.deductionRupees(),
                 RuleSupport.debit(support.account("EXPENSE_COURIER"), null, row.deductionRupees()));
         RuleSupport.addIfPositive(
-                lines,
-                row.codRupees(),
-                RuleSupport.credit(support.account("COD_CLEARING"), null, row.codRupees()));
+                lines, row.codRupees(), RuleSupport.credit(support.account("COD_CLEARING"), null, row.codRupees()));
         return new NewEntry(
                 row.remittedOn(),
                 sourceType(),

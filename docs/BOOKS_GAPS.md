@@ -17,5 +17,4 @@ phase by hand at the end (see each phase spec's "Owner checks by hand").
   re-trigger it; those lines must be matched by hand (candidates list finds them). Re-run auto-match after a sweep.
 - `unknownAwbs` in the COD import summary is not de-duplicated.
 - Razorpay settlement fee is `fees − tax`; a settlement with tax > fees would give a negative fee (journal rejects).
-- Spotless was not run on the Phase 3 code; `verify` may need `spotless:apply` first.
 - Phase 3 owner checks by hand: spec `docs/superpowers/specs/2026-11-12-phase3-bank-reconciliation-design.md`.
