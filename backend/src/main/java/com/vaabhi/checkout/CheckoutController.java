@@ -34,6 +34,12 @@ class CheckoutController {
         return service.start(customerId(jwt), request);
     }
 
+    /** Prices a coupon against the bag now, before checkout. */
+    @PostMapping("/checkout/coupon")
+    CouponQuote quoteCoupon(@Valid @RequestBody CouponQuoteRequest request) {
+        return service.quoteCoupon(request);
+    }
+
     /** Confirms the payment Razorpay Checkout returned (signature checked on the server). */
     @PostMapping("/orders/{number}/payment")
     WebOrder confirmPayment(

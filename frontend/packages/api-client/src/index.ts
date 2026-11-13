@@ -213,6 +213,18 @@ export type CustomerProfile = Schemas["CustomerProfile"];
 export type AuthOptions = Schemas["AuthOptions"];
 export type CheckoutRequest = Schemas["CheckoutRequest"];
 export type CheckoutStart = Schemas["CheckoutStart"];
+/** One bag line when quoting a coupon (the CheckoutRequest line shape). */
+export type CouponLine = { sku: string; addonCode: string | null; blouseSize: string | null; quantity: number };
+/** Body for POST /api/v1/customer/checkout/coupon: the bag lines plus the code to try. */
+export type CouponQuoteRequest = { lines: CouponLine[]; code: string };
+/** The answer to a coupon quote: whether `code` applies, its discount, and the items it was priced on. */
+export type CouponQuote = {
+  code: string;
+  valid: boolean;
+  reason: string | null;
+  discountRupees: number;
+  itemsRupees: number;
+};
 export type PaymentConfirmation = Schemas["PaymentConfirmation"];
 export type WebOrder = Schemas["WebOrder"];
 export type RefundStatus = NonNullable<WebOrder["refundStatus"]>;
@@ -401,6 +413,14 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
           method: "POST",
           headers: { ...bearer(accessToken), "Content-Type": "application/json" },
           body: JSON.stringify(checkout),
+          cache: "no-store",
+        }),
+      /** Quotes a coupon against the current bag lines; the answer shows the discount or why it does not apply. */
+      quoteCoupon: (accessToken: string, body: CouponQuoteRequest) =>
+        request<CouponQuote>("/api/v1/customer/checkout/coupon", {
+          method: "POST",
+          headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+          body: JSON.stringify(body),
           cache: "no-store",
         }),
       /** Confirms the payment Razorpay Checkout returned. */

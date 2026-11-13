@@ -11,6 +11,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.vaabhi.TestcontainersConfiguration;
 import com.vaabhi.shared.email.EmailMessage;
 import com.vaabhi.shared.email.EmailSender;
+import com.vaabhi.shared.rupees.Rupees;
 import com.vaabhi.shared.whatsapp.WhatsAppSender;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -319,6 +320,50 @@ class CheckoutIT {
                 .andExpect(jsonPath("$.refundedRupees").isEmpty());
         assertThat(stock()).isEqualTo(10);
         customerPost("/orders/" + number + "/cancel", "{\"reason\":null}").andExpect(status().isConflict());
+    }
+
+    @Test
+    void quotesACouponAndAppliesItToAnOnlineOrder() throws Exception {
+        var code = "WEB10" + PHONES.incrementAndGet();
+        mockMvc.perform(post("/api/v1/admin/engage/coupons")
+                        .with(OWNER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"code":"%s","description":null,"kind":"PERCENT","value":10,"minOrderRupees":0,
+                                 "validFrom":null,"validTo":null,"maxUses":null,"active":true}
+                                """.formatted(code)))
+                .andExpect(status().isCreated());
+
+        // A valid code quotes its discount.
+        var quote = quoteCoupon(code)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(code))
+                .andExpect(jsonPath("$.valid").value(true))
+                .andExpect(jsonPath("$.reason").isEmpty());
+        BigDecimal items = decimal(read(quote, "$.itemsRupees"));
+        BigDecimal discount = decimal(read(quote, "$.discountRupees"));
+        assertThat(discount).isEqualByComparingTo(Rupees.percentOf(items, new BigDecimal("10")));
+
+        // An unknown code is invalid and says why.
+        quoteCoupon("NOPE" + PHONES.incrementAndGet())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.valid").value(false))
+                .andExpect(jsonPath("$.reason").value("No coupon with this code"))
+                .andExpect(jsonPath("$.discountRupees").value(0));
+
+        // Checkout stores the code (upper case), takes the discount off, and charges the new total.
+        var started = checkout("ONLINE", 1, "110001", code.toLowerCase()).andExpect(status().isCreated());
+        String number = read(started, "$.orderNumber");
+        var order = myOrder(number).andExpect(jsonPath("$.couponCode").value(code));
+        assertThat(decimal(read(order, "$.discountRupees"))).isEqualByComparingTo(discount);
+        BigDecimal shipping = decimal(read(order, "$.shippingRupees"));
+        assertThat(decimal(read(order, "$.totalRupees")))
+                .isEqualByComparingTo(items.subtract(discount).add(shipping));
+        assertThat(GATEWAYS.last("POST", "/v1/orders").json().path("amount").asLong())
+                .isEqualTo(((Number) read(started, "$.amountPaise")).longValue());
+
+        // Checkout with an invalid code is refused.
+        checkout("ONLINE", 1, "110001", "NOPE" + PHONES.incrementAndGet()).andExpect(status().isBadRequest());
     }
 
     @Test
@@ -671,12 +716,24 @@ class CheckoutIT {
     // --- helpers ------------------------------------------------------------------------------------------------
 
     private ResultActions checkout(String method, int quantity, String pincode) throws Exception {
+        return checkout(method, quantity, pincode, null);
+    }
+
+    private ResultActions checkout(String method, int quantity, String pincode, String coupon) throws Exception {
         return customerPost("/checkout", """
                         {"lines":[{"sku":"%s","addonCode":null,"blouseSize":null,"quantity":%d}],
                          "address":{"name":"Meera Iyer","phone":"9876501234","line1":"4 Lake View","line2":null,
                                     "city":"Delhi","state":"Delhi","pincode":"%s"},
-                         "paymentMethod":"%s"}
-                        """.formatted(sku, quantity, pincode, method));
+                         "paymentMethod":"%s","couponCode":%s}
+                        """.formatted(
+                        sku, quantity, pincode, method, coupon == null ? "null" : "\"" + coupon + "\""));
+    }
+
+    private ResultActions quoteCoupon(String code) throws Exception {
+        return customerPost("/checkout/coupon", """
+                        {"lines":[{"sku":"%s","addonCode":null,"blouseSize":null,"quantity":1}],
+                         "code":"%s"}
+                        """.formatted(sku, code));
     }
 
     private ResultActions pay(String number, String razorpayOrderId, String paymentId) throws Exception {
