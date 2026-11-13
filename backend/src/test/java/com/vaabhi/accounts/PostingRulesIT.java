@@ -164,6 +164,28 @@ class PostingRulesIT extends BooksFixtures {
     }
 
     @Test
+    void razorpaySettlementPosts() {
+        long seq = jdbc.sql("""
+                        INSERT INTO razorpay_settlement (id, utr, settled_on, gross_rupees, fee_rupees, tax_rupees,
+                                                         net_rupees)
+                        VALUES (:id, NULL, CAST(now() AT TIME ZONE 'Asia/Kolkata' AS date),
+                                10000, 200, 36, 9764)
+                        RETURNING seq
+                        """)
+                .param("id", unique("setl_"))
+                .query(Long.class)
+                .single();
+
+        sweeper.sweepNow();
+
+        var entry = entry("RAZORPAY_SETTLEMENT", seq, "SETTLE");
+        assertThat(netInEntry(entry.id(), accountId("BANK"))).isEqualByComparingTo(rupees("9764"));
+        assertThat(netInEntry(entry.id(), accountId("EXPENSE_GATEWAY_FEES"))).isEqualByComparingTo(rupees("200"));
+        assertThat(netInEntry(entry.id(), accountId("INPUT_GST"))).isEqualByComparingTo(rupees("36"));
+        assertThat(netInEntry(entry.id(), accountId("RAZORPAY_CLEARING"))).isEqualByComparingTo(rupees("-10000"));
+    }
+
+    @Test
     void alterationReceipt() {
         long payment = alterationPayment("300", "CASH");
 

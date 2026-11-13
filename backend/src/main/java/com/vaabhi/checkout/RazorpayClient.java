@@ -135,6 +135,30 @@ class RazorpayClient {
         return payments;
     }
 
+    /** A page of settlement batches (100 per page, in paise) between the two epoch-second instants. */
+    List<RazorpaySettlementData> settlements(long fromEpoch, long toEpoch, int skip) {
+        requireConfigured();
+        var items = JSON.readTree(call(
+                        "GET",
+                        "/v1/settlements?from=" + fromEpoch + "&to=" + toEpoch + "&count=100&skip=" + skip,
+                        null,
+                        "settlements"))
+                .path("items");
+        List<RazorpaySettlementData> settlements = new ArrayList<>();
+        for (var item : items) {
+            var utr = item.path("utr");
+            settlements.add(new RazorpaySettlementData(
+                    item.path("id").asString(""),
+                    utr.isNull() || utr.isMissingNode() ? null : utr.asString(),
+                    item.path("amount").asLong(0),
+                    item.path("fees").asLong(0),
+                    item.path("tax").asLong(0),
+                    item.path("status").asString(""),
+                    item.path("created_at").asLong(0)));
+        }
+        return settlements;
+    }
+
     /** Captures an authorized payment (needed only when auto-capture is off in the Razorpay dashboard). */
     void capture(String paymentId, long amountPaise, String receipt) {
         requireConfigured();

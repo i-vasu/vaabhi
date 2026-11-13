@@ -28,11 +28,17 @@ class BankController {
     private final BankImportService imports;
     private final BankMatcher matcher;
     private final BankLineService lines;
+    private final RazorpaySettlementQuery settlements;
 
-    BankController(BankImportService imports, BankMatcher matcher, BankLineService lines) {
+    BankController(
+            BankImportService imports,
+            BankMatcher matcher,
+            BankLineService lines,
+            RazorpaySettlementQuery settlements) {
         this.imports = imports;
         this.matcher = matcher;
         this.lines = lines;
+        this.settlements = settlements;
     }
 
     private static @Nullable String actor(@Nullable Jwt jwt) {
@@ -88,6 +94,13 @@ class BankController {
     @GetMapping("/statements/{id}")
     BankStatementDetail getStatement(@PathVariable long id, @RequestParam(required = false) @Nullable String status) {
         return imports.detail(id, status);
+    }
+
+    // --- Razorpay settlements -----------------------------------------------------------------------------------
+
+    @GetMapping("/razorpay/settlements")
+    List<RazorpaySettlementView> listRazorpaySettlements() {
+        return settlements.list();
     }
 
     // --- line actions -------------------------------------------------------------------------------------------
