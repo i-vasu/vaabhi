@@ -243,12 +243,12 @@ jobs:
           distribution: temurin
           java-version: "21"
           cache: maven
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         if: env.SONAR_TOKEN != '' && needs.backend.result == 'success'
         with:
           name: backend-build
           path: backend/target
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         if: env.SONAR_TOKEN != '' && needs.frontend.result == 'success'
         with:
           name: frontend-coverage
@@ -304,7 +304,7 @@ jobs:
       IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/vaabhi
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         if: needs.backend.result == 'success'
         with:
           name: backend-build
