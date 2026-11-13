@@ -174,12 +174,7 @@ function PhoneEditor({ phone, id }: Readonly<{ phone: string | null; id: string 
           Mobile
         </label>
         <div className="flex items-start gap-2">
-          <input
-            id={`${id}-phone`}
-            value={phone ? `+91 ${phone.slice(3)}` : "Not added"}
-            disabled
-            className={input}
-          />
+          <input id={`${id}-phone`} value={phone ? `+91 ${phone.slice(3)}` : "Not added"} disabled className={input} />
           <button
             type="button"
             onClick={() => {
@@ -232,11 +227,7 @@ function PhoneEditor({ phone, id }: Readonly<{ phone: string | null; id: string 
         {message("phone")}
         {message()}
         <div className="mt-2 flex items-center gap-3">
-          <Button
-            variant="secondary"
-            disabled={busy}
-            onClick={submitNumber}
-          >
+          <Button variant="secondary" disabled={busy} onClick={submitNumber}>
             {busy ? "Sending…" : "Send code"}
           </Button>
           <button type="button" onClick={cancel} className="text-sm text-text-secondary underline">
@@ -278,11 +269,7 @@ function PhoneEditor({ phone, id }: Readonly<{ phone: string | null; id: string 
       {message("phone")}
       {message()}
       <div className="mt-2 flex items-center gap-3">
-        <Button
-          variant="secondary"
-          disabled={busy}
-          onClick={() => submitCode(step.phone)}
-        >
+        <Button variant="secondary" disabled={busy} onClick={() => submitCode(step.phone)}>
           {busy ? "Verifying…" : "Verify"}
         </Button>
         <button type="button" onClick={cancel} className="text-sm text-text-secondary underline">
@@ -293,7 +280,12 @@ function PhoneEditor({ phone, id }: Readonly<{ phone: string | null; id: string 
         {resendIn > 0 ? (
           `Resend code in ${resendIn}s`
         ) : (
-          <button type="button" disabled={busy} onClick={() => void sendCode(step.phone)} className="text-brand-primary underline">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void sendCode(step.phone)}
+            className="text-brand-primary underline"
+          >
             Resend code
           </button>
         )}

@@ -3,9 +3,6 @@ import { SectionHeader } from "@vaabhi/ui";
 import { mediaFileUrl } from "@/lib/listing";
 import { ReelTile } from "./reel-tile";
 
-/** The generated API type gains `videoKey` once the client is regenerated; accept its absence until then. */
-type ReelWithVideo = InstagramReel & { videoKey?: string };
-
 /**
  * "On Instagram": the best reels from the shop's account, as cover images copied to our media domain (small JPEGs,
  * lazy-loaded). The row scrolls right-to-left — the best reel sits at the right and scrolling left reveals the
@@ -15,14 +12,12 @@ export function InstagramReels({
   reels,
   profileUrl,
 }: Readonly<{ reels: InstagramReel[]; profileUrl?: string | null }>) {
-  const shown = (reels as ReelWithVideo[])
-    .slice(0, 6)
-    .flatMap((reel) => {
-      const cover = mediaFileUrl(reel.imageKey);
-      if (!cover) return [];
-      const video = reel.videoKey ? mediaFileUrl(reel.videoKey) : undefined;
-      return [{ id: reel.id, permalink: reel.permalink, cover, video }];
-    });
+  const shown = reels.slice(0, 6).flatMap((reel) => {
+    const cover = mediaFileUrl(reel.imageKey);
+    if (!cover) return [];
+    const video = mediaFileUrl(reel.videoKey);
+    return [{ id: reel.id, permalink: reel.permalink, cover, video }];
+  });
   if (shown.length === 0) return null;
 
   return (

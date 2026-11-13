@@ -34,6 +34,8 @@ function order(patch: Partial<WebOrder> = {}): WebOrder {
     pincode: "110001",
     itemsRupees: 18500,
     shippingRupees: 0,
+    couponCode: null,
+    discountRupees: 0,
     totalRupees: 18500,
     razorpayPaymentId: "pay_A1",
     paidAt: "2026-11-04T05:00:00Z",

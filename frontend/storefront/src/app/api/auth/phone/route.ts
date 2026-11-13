@@ -8,10 +8,9 @@ export async function PUT(request: Request): Promise<Response> {
   if (typeof body?.phone !== "string" || typeof body.code !== "string") {
     return Response.json({ detail: "Enter the 6-digit code", errors: [] }, { status: 400 });
   }
+  const { phone, code } = body as { phone: string; code: string };
   try {
-    const customer = await withCustomer((token) =>
-      api.customer.changePhone(token, { phone: body.phone, code: body.code }),
-    );
+    const customer = await withCustomer((token) => api.customer.changePhone(token, { phone, code }));
     if (!customer) return Response.json({ detail: "Please log in again", errors: [] }, { status: 401 });
     return Response.json({ customer }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {

@@ -73,11 +73,18 @@ export function CheckoutView() {
   const [started, setStarted] = useState<CheckoutStart | null>(null);
   const [method, setMethod] = useState<Method>("ONLINE");
   const [couponInput, setCouponInput] = useState("");
-  const [coupon, setCoupon] = useState<{ code: string; discountRupees: number } | null>(null);
+  const [coupon, setCouponState] = useState<{ code: string; discountRupees: number } | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
   const [couponBusy, setCouponBusy] = useState(false);
   const couponRef = useRef(coupon);
-  couponRef.current = coupon;
+  useEffect(() => {
+    couponRef.current = coupon;
+  }, [coupon]);
+  // A changed coupon (applied, removed, re-quoted to a new amount) invalidates the Razorpay order already placed.
+  const setCoupon = (next: { code: string; discountRupees: number } | null) => {
+    setCouponState(next);
+    setStarted(null);
+  };
 
   useEffect(() => {
     void syncSession().then((session: Session) => {
@@ -100,11 +107,6 @@ export function CheckoutView() {
       .then(setQuote)
       .catch(() => setError({ text: "We could not price your bag. Check your connection and try again.", errors: [] }));
   }, [lines]);
-
-  // A changed coupon (applied, removed, re-quoted to a new amount) invalidates the Razorpay order already placed.
-  useEffect(() => {
-    setStarted(null);
-  }, [coupon]);
 
   // Re-quote the applied coupon when the bag lines change; clear it (with the reason) if it no longer applies.
   useEffect(() => {
@@ -209,7 +211,12 @@ export function CheckoutView() {
     setCouponError(null);
     try {
       const quote = await post<CouponQuote>("/api/auth/checkout/coupon", {
-        lines: lines.map((l) => ({ sku: l.sku, addonCode: l.addonCode, blouseSize: l.blouseSize, quantity: l.quantity })),
+        lines: lines.map((l) => ({
+          sku: l.sku,
+          addonCode: l.addonCode,
+          blouseSize: l.blouseSize,
+          quantity: l.quantity,
+        })),
         code,
       });
       if (quote.valid) {

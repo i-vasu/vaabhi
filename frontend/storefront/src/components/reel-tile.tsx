@@ -6,11 +6,7 @@ import { useRef, useState } from "react";
  * One Instagram reel tile. The cover (a JPEG on our media domain) is always shown; on hover the reel's MP4 plays
  * over it, muted and looping. On touch there is no hover, so a tap opens the reel on Instagram instead.
  */
-export function ReelTile({
-  permalink,
-  cover,
-  video,
-}: Readonly<{ permalink: string; cover: string; video?: string }>) {
+export function ReelTile({ permalink, cover, video }: Readonly<{ permalink: string; cover: string; video?: string }>) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
 

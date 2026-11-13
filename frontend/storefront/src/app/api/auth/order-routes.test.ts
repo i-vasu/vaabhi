@@ -95,7 +95,10 @@ describe("/api/auth order routes", () => {
     jar.set("vb_at", "access-1");
     server.use(
       http.post(`${CUSTOMER}/checkout`, answer({ orderNumber: "WEB-1001" }, 201)),
-      http.post(`${CUSTOMER}/checkout/coupon`, answer({ code: "SAVE10", valid: true, reason: null, discountRupees: 500, itemsRupees: 18500 })),
+      http.post(
+        `${CUSTOMER}/checkout/coupon`,
+        answer({ code: "SAVE10", valid: true, reason: null, discountRupees: 500, itemsRupees: 18500 }),
+      ),
       http.post(`${CUSTOMER}/orders/WEB-1001/payment`, answer(ORDER)),
       http.get(`${CUSTOMER}/orders`, answer([ORDER])),
       http.post(`${CUSTOMER}/orders/WEB-1001/pay`, answer({ orderNumber: "WEB-1001" })),
@@ -105,9 +108,18 @@ describe("/api/auth order routes", () => {
 
     expect((await checkout.POST(req("checkout", '{"lines":[],"address":{}}'))).status).toBe(201);
     const quoted = await coupon.POST(
-      req("checkout/coupon", '{"lines":[{"sku":"VB-RANI","addonCode":null,"blouseSize":null,"quantity":1}],"code":"SAVE10"}'),
+      req(
+        "checkout/coupon",
+        '{"lines":[{"sku":"VB-RANI","addonCode":null,"blouseSize":null,"quantity":1}],"code":"SAVE10"}',
+      ),
     );
-    expect((await quoted.json())).toEqual({ code: "SAVE10", valid: true, reason: null, discountRupees: 500, itemsRupees: 18500 });
+    expect(await quoted.json()).toEqual({
+      code: "SAVE10",
+      valid: true,
+      reason: null,
+      discountRupees: 500,
+      itemsRupees: 18500,
+    });
     const paid = await payment.POST(
       req("checkout/WEB-1001/payment", '{"razorpayOrderId":"o","razorpayPaymentId":"p","razorpaySignature":"s"}'),
       params,

@@ -8,8 +8,9 @@ export async function POST(request: Request): Promise<Response> {
   if (typeof body?.phone !== "string") {
     return Response.json({ detail: "Enter your mobile number", errors: [] }, { status: 400 });
   }
+  const phone = body.phone;
   try {
-    const sent = await withCustomer((token) => api.customer.requestPhoneChange(token, { phone: body.phone }));
+    const sent = await withCustomer((token) => api.customer.requestPhoneChange(token, { phone }));
     if (!sent) return Response.json({ detail: "Please log in again", errors: [] }, { status: 401 });
     return Response.json(sent, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
