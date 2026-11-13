@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 /** Shared setup for the posting rule tests: the books start date and SQL-seeded source records. */
-abstract class BooksFixtures {
+public abstract class BooksFixtures {
 
     private static final AtomicInteger SEQUENCE = new AtomicInteger(0);
     private static final ZoneId IST = ZoneId.of("Asia/Kolkata");
@@ -40,7 +40,7 @@ abstract class BooksFixtures {
     protected final OffsetDateTime base = OffsetDateTime.now();
 
     @BeforeEach
-    void startBooks() {
+    protected void startBooks() {
         originalStart = settings.get().startDate();
         var start = LocalDate.now(IST).withDayOfMonth(1);
         settings.save(new BooksSettings(start, settings.get().modeAccounts(), null), null);
@@ -50,7 +50,7 @@ abstract class BooksFixtures {
     }
 
     @AfterEach
-    void restoreStart() {
+    protected void restoreStart() {
         jdbc.sql("UPDATE books_setting SET start_date = :start WHERE id = 1")
                 .param("start", originalStart)
                 .update();
