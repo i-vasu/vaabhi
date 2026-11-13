@@ -1786,6 +1786,219 @@
                 }
             }
         },
+        "/api/v1/admin/money/purchases/suppliers/{id}": {
+            "get": {
+                "tags": [
+                    "purchases-controller"
+                ],
+                "operationId": "getSupplier",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SupplierStatement"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "purchases-controller"
+                ],
+                "operationId": "updateSupplier",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SupplierForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SupplierStatement"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/purchases/bills/{id}": {
+            "get": {
+                "tags": [
+                    "purchases-controller"
+                ],
+                "operationId": "getBill",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SupplierBillView"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "purchases-controller"
+                ],
+                "operationId": "updateBill",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SupplierBillForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SupplierBillView"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/purchases/bills/{id}/attachment": {
+            "put": {
+                "tags": [
+                    "purchases-controller"
+                ],
+                "operationId": "confirmAttachment",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AttachmentConfirmForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "purchases-controller"
+                ],
+                "operationId": "startAttachment",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AttachmentStartForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AttachmentUpload"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/money/expenses/{id}": {
             "put": {
                 "tags": [
@@ -2135,6 +2348,47 @@
                 }
             }
         },
+        "/api/v1/admin/accounts/tds/sections/{id}": {
+            "put": {
+                "tags": [
+                    "tds-controller"
+                ],
+                "operationId": "updateSection",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TdsSectionForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TdsSectionView"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/accounts/settings": {
             "get": {
                 "tags": [
@@ -2288,6 +2542,88 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/OpeningBalances"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/assets/{id}": {
+            "put": {
+                "tags": [
+                    "asset-controller"
+                ],
+                "operationId": "update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AssetUpdateForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FixedAssetView"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/assets/classes/{id}": {
+            "put": {
+                "tags": [
+                    "asset-controller"
+                ],
+                "operationId": "updateClass",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AssetClassForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AssetClassView"
                                 }
                             }
                         }
@@ -5013,6 +5349,414 @@
                 }
             }
         },
+        "/api/v1/admin/money/purchases/suppliers": {
+            "get": {
+                "tags": [
+                    "purchases-controller"
+                ],
+                "operationId": "listSuppliers",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/SupplierBalance"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "purchases-controller"
+                ],
+                "operationId": "createSupplier",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SupplierForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SupplierCreated"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/purchases/shiprocket-invoices": {
+            "post": {
+                "tags": [
+                    "purchases-controller"
+                ],
+                "operationId": "importShiprocketInvoices",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "mapping": {
+                                        "$ref": "#/components/schemas/ColumnMapping"
+                                    }
+                                },
+                                "required": [
+                                    "file",
+                                    "mapping"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ShiprocketInvoiceSummary"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/purchases/shiprocket-invoices/preview": {
+            "post": {
+                "tags": [
+                    "purchases-controller"
+                ],
+                "operationId": "previewShiprocketInvoices",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "required": [
+                                    "file"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FilePreview"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/purchases/payments": {
+            "get": {
+                "tags": [
+                    "purchases-controller"
+                ],
+                "operationId": "listPayments",
+                "parameters": [
+                    {
+                        "name": "partyId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/SupplierPaymentView"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "purchases-controller"
+                ],
+                "operationId": "createPayment",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SupplierPaymentForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SupplierPaymentView"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/purchases/payments/from-bank-line": {
+            "post": {
+                "tags": [
+                    "purchases-controller"
+                ],
+                "operationId": "payFromBankLine",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BankLinePaymentForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SupplierPaymentView"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/purchases/bills": {
+            "get": {
+                "tags": [
+                    "purchases-controller"
+                ],
+                "operationId": "listBills",
+                "parameters": [
+                    {
+                        "name": "partyId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "month",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "source",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/SupplierBillListEntry"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "purchases-controller"
+                ],
+                "operationId": "createBill",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SupplierBillForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SupplierBillView"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/purchases/bills/{id}/cancel": {
+            "post": {
+                "tags": [
+                    "purchases-controller"
+                ],
+                "operationId": "cancelBill",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BillCancelForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SupplierBillView"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/purchases/bills/tds-check": {
+            "post": {
+                "tags": [
+                    "purchases-controller"
+                ],
+                "operationId": "checkTds",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TdsCheckForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TdsSuggestion"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/money/orders/{orderId}/invoice": {
             "get": {
                 "tags": [
@@ -5948,6 +6692,128 @@
                 }
             }
         },
+        "/api/v1/admin/accounts/tds/sections": {
+            "get": {
+                "tags": [
+                    "tds-controller"
+                ],
+                "operationId": "sections",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/TdsSectionView"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "tds-controller"
+                ],
+                "operationId": "createSection",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TdsSectionForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TdsSectionView"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/tds/challans": {
+            "get": {
+                "tags": [
+                    "tds-controller"
+                ],
+                "operationId": "challans",
+                "parameters": [
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/TdsChallanView"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "tds-controller"
+                ],
+                "operationId": "createChallan",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TdsChallanForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TdsChallanView"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/accounts/sweep": {
             "post": {
                 "tags": [
@@ -6473,6 +7339,149 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/FilePreview"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/assets": {
+            "get": {
+                "tags": [
+                    "asset-controller"
+                ],
+                "operationId": "register",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/FixedAssetView"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "asset-controller"
+                ],
+                "operationId": "createOpening",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OpeningAssetForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FixedAssetView"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/assets/{id}/dispose": {
+            "post": {
+                "tags": [
+                    "asset-controller"
+                ],
+                "operationId": "dispose",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AssetDisposalForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FixedAssetView"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/assets/classes": {
+            "get": {
+                "tags": [
+                    "asset-controller"
+                ],
+                "operationId": "classes",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AssetClassView"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "asset-controller"
+                ],
+                "operationId": "createClass",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AssetClassForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AssetClassView"
                                 }
                             }
                         }
@@ -8520,6 +9529,49 @@
                 }
             }
         },
+        "/api/v1/admin/accounts/tds/summary": {
+            "get": {
+                "tags": [
+                    "tds-controller"
+                ],
+                "operationId": "summary",
+                "parameters": [
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/TdsMonthSummary"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/accounts/status": {
             "get": {
                 "tags": [
@@ -8610,6 +9662,89 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/JournalEntry"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/input-gst": {
+            "get": {
+                "tags": [
+                    "accounts-controller"
+                ],
+                "operationId": "inputGst",
+                "parameters": [
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/InputGstMonth"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/input-gst.csv": {
+            "get": {
+                "tags": [
+                    "accounts-controller"
+                ],
+                "operationId": "inputGstCsv",
+                "parameters": [
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/csv": {
+                                "schema": {
+                                    "type": "string"
                                 }
                             }
                         }
@@ -9063,6 +10198,30 @@
                                 }
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/money/purchases/payments/{id}": {
+            "delete": {
+                "tags": [
+                    "purchases-controller"
+                ],
+                "operationId": "deletePayment",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     }
                 }
             }
@@ -12942,6 +14101,678 @@
                     "slabLimitRupees"
                 ]
             },
+            "SupplierForm": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 160,
+                        "minLength": 0
+                    },
+                    "phone": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 20,
+                        "minLength": 0
+                    },
+                    "email": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "email",
+                        "maxLength": 254,
+                        "minLength": 0
+                    },
+                    "gstin": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "pattern": "[0-9A-Z]{15}"
+                    },
+                    "pan": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "pattern": "[A-Z]{5}[0-9]{4}[A-Z]"
+                    },
+                    "address": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 300,
+                        "minLength": 0
+                    },
+                    "city": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 80,
+                        "minLength": 0
+                    },
+                    "state": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 80,
+                        "minLength": 0
+                    },
+                    "pinCode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "pattern": "[0-9]{6}"
+                    },
+                    "tdsSectionId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "address",
+                    "city",
+                    "email",
+                    "gstin",
+                    "name",
+                    "pan",
+                    "phone",
+                    "pinCode",
+                    "state",
+                    "tdsSectionId"
+                ]
+            },
+            "SupplierBalance": {
+                "type": "object",
+                "properties": {
+                    "partyId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "gstin": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "state": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "billedRupees": {
+                        "type": "number"
+                    },
+                    "paidRupees": {
+                        "type": "number"
+                    },
+                    "tdsRupees": {
+                        "type": "number"
+                    },
+                    "balanceRupees": {
+                        "type": "number"
+                    },
+                    "oldestUnpaidDue": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "overdue": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "balanceRupees",
+                    "billedRupees",
+                    "gstin",
+                    "name",
+                    "oldestUnpaidDue",
+                    "overdue",
+                    "paidRupees",
+                    "partyId",
+                    "phone",
+                    "state",
+                    "tdsRupees"
+                ]
+            },
+            "SupplierStatement": {
+                "type": "object",
+                "properties": {
+                    "balance": {
+                        "$ref": "#/components/schemas/SupplierBalance"
+                    },
+                    "email": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "pan": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "address": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "city": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "pinCode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "tdsSectionId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "entries": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SupplierStatementEntry"
+                        }
+                    }
+                },
+                "required": [
+                    "address",
+                    "balance",
+                    "city",
+                    "email",
+                    "entries",
+                    "pan",
+                    "pinCode",
+                    "tdsSectionId"
+                ]
+            },
+            "SupplierStatementEntry": {
+                "type": "object",
+                "properties": {
+                    "date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "kind": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "reference": {
+                        "type": "string"
+                    },
+                    "billedRupees": {
+                        "type": "number"
+                    },
+                    "paidRupees": {
+                        "type": "number"
+                    },
+                    "runningBalanceRupees": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "billedRupees",
+                    "date",
+                    "id",
+                    "kind",
+                    "paidRupees",
+                    "reference",
+                    "runningBalanceRupees"
+                ]
+            },
+            "PaidNow": {
+                "type": "object",
+                "properties": {
+                    "mode": {
+                        "type": "string"
+                    },
+                    "reference": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "mode",
+                    "reference"
+                ]
+            },
+            "SupplierBillForm": {
+                "type": "object",
+                "properties": {
+                    "partyId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "billNo": {
+                        "type": "string",
+                        "maxLength": 40,
+                        "minLength": 0
+                    },
+                    "billDate": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "dueDate": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "supplyStateCode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 2,
+                        "minLength": 2
+                    },
+                    "tdsSectionId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "tdsRupees": {
+                        "type": "number",
+                        "minimum": 0
+                    },
+                    "notes": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 300,
+                        "minLength": 0
+                    },
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SupplierBillLineForm"
+                        },
+                        "minItems": 1
+                    },
+                    "paidNow": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/PaidNow"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "billDate",
+                    "billNo",
+                    "dueDate",
+                    "lines",
+                    "notes",
+                    "paidNow",
+                    "partyId",
+                    "supplyStateCode",
+                    "tdsRupees",
+                    "tdsSectionId"
+                ]
+            },
+            "SupplierBillLineForm": {
+                "type": "object",
+                "properties": {
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "EXPENSE",
+                            "STOCK",
+                            "ASSET"
+                        ]
+                    },
+                    "description": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "minLength": 0
+                    },
+                    "accountId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "stockItemId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "quantity": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "assetClassId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "hsn": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 8,
+                        "minLength": 0
+                    },
+                    "taxableRupees": {
+                        "type": "number",
+                        "minimum": 0.01
+                    },
+                    "gstRatePercent": {
+                        "type": "number",
+                        "maximum": 28,
+                        "minimum": 0
+                    }
+                },
+                "required": [
+                    "accountId",
+                    "assetClassId",
+                    "description",
+                    "gstRatePercent",
+                    "hsn",
+                    "kind",
+                    "quantity",
+                    "stockItemId",
+                    "taxableRupees"
+                ]
+            },
+            "SupplierBillLineView": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "position": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "kind": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "accountId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "accountName": {
+                        "type": "string"
+                    },
+                    "stockItemId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "stockItemName": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "quantity": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "assetClassId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "assetClassName": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "fixedAssetId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "hsn": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "taxableRupees": {
+                        "type": "number"
+                    },
+                    "gstRatePercent": {
+                        "type": "number"
+                    },
+                    "cgstRupees": {
+                        "type": "number"
+                    },
+                    "sgstRupees": {
+                        "type": "number"
+                    },
+                    "igstRupees": {
+                        "type": "number"
+                    },
+                    "totalRupees": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "accountId",
+                    "accountName",
+                    "assetClassId",
+                    "assetClassName",
+                    "cgstRupees",
+                    "description",
+                    "fixedAssetId",
+                    "gstRatePercent",
+                    "hsn",
+                    "id",
+                    "igstRupees",
+                    "kind",
+                    "position",
+                    "quantity",
+                    "sgstRupees",
+                    "stockItemId",
+                    "stockItemName",
+                    "taxableRupees",
+                    "totalRupees"
+                ]
+            },
+            "SupplierBillView": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "partyId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "supplierName": {
+                        "type": "string"
+                    },
+                    "billNo": {
+                        "type": "string"
+                    },
+                    "billDate": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "dueDate": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "supplyStateCode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "taxableRupees": {
+                        "type": "number"
+                    },
+                    "cgstRupees": {
+                        "type": "number"
+                    },
+                    "sgstRupees": {
+                        "type": "number"
+                    },
+                    "igstRupees": {
+                        "type": "number"
+                    },
+                    "totalRupees": {
+                        "type": "number"
+                    },
+                    "tdsSectionId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "tdsRupees": {
+                        "type": "number"
+                    },
+                    "payableRupees": {
+                        "type": "number"
+                    },
+                    "paidRupees": {
+                        "type": "number"
+                    },
+                    "source": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "posted": {
+                        "type": "boolean"
+                    },
+                    "attachmentKey": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "notes": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SupplierBillLineView"
+                        }
+                    },
+                    "tdsWarning": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "attachmentKey",
+                    "billDate",
+                    "billNo",
+                    "cgstRupees",
+                    "dueDate",
+                    "id",
+                    "igstRupees",
+                    "lines",
+                    "notes",
+                    "paidRupees",
+                    "partyId",
+                    "payableRupees",
+                    "posted",
+                    "sgstRupees",
+                    "source",
+                    "status",
+                    "supplierName",
+                    "supplyStateCode",
+                    "taxableRupees",
+                    "tdsRupees",
+                    "tdsSectionId",
+                    "tdsWarning",
+                    "totalRupees"
+                ]
+            },
+            "AttachmentConfirmForm": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "key"
+                ]
+            },
             "ExpenseForm": {
                 "type": "object",
                 "properties": {
@@ -13816,6 +15647,101 @@
                     "taxClassId"
                 ]
             },
+            "TdsSectionForm": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "maxLength": 10,
+                        "minLength": 0
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 80,
+                        "minLength": 0
+                    },
+                    "ratePercent": {
+                        "type": "number",
+                        "maximum": 30,
+                        "minimum": 0
+                    },
+                    "noPanRatePercent": {
+                        "type": "number",
+                        "maximum": 30,
+                        "minimum": 0
+                    },
+                    "yearThresholdRupees": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "singleThresholdRupees": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "active": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "active",
+                    "code",
+                    "name",
+                    "noPanRatePercent",
+                    "ratePercent",
+                    "singleThresholdRupees",
+                    "yearThresholdRupees"
+                ]
+            },
+            "TdsSectionView": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "ratePercent": {
+                        "type": "number"
+                    },
+                    "noPanRatePercent": {
+                        "type": "number"
+                    },
+                    "yearThresholdRupees": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "singleThresholdRupees": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "active": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "active",
+                    "code",
+                    "id",
+                    "name",
+                    "noPanRatePercent",
+                    "ratePercent",
+                    "singleThresholdRupees",
+                    "yearThresholdRupees"
+                ]
+            },
             "BooksSettingsForm": {
                 "type": "object",
                 "properties": {
@@ -13832,10 +15758,18 @@
                             "type": "integer",
                             "format": "int64"
                         }
+                    },
+                    "shiprocketPartyId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
                     }
                 },
                 "required": [
                     "modeAccounts",
+                    "shiprocketPartyId",
                     "startDate"
                 ]
             },
@@ -13862,11 +15796,19 @@
                             "null"
                         ],
                         "format": "date-time"
+                    },
+                    "shiprocketPartyId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
                     }
                 },
                 "required": [
                     "lastSweepAt",
                     "modeAccounts",
+                    "shiprocketPartyId",
                     "startDate"
                 ]
             },
@@ -13977,6 +15919,185 @@
                     "lines",
                     "preStartOrders",
                     "startDate"
+                ]
+            },
+            "AssetUpdateForm": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "classId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "putToUseOn": {
+                        "type": "string",
+                        "format": "date"
+                    }
+                },
+                "required": [
+                    "classId",
+                    "name",
+                    "putToUseOn"
+                ]
+            },
+            "FixedAssetView": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "classId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "className": {
+                        "type": "string"
+                    },
+                    "costRupees": {
+                        "type": "number"
+                    },
+                    "putToUseOn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "openingAccdepRupees": {
+                        "type": "number"
+                    },
+                    "accumulatedRupees": {
+                        "type": "number"
+                    },
+                    "bookValueRupees": {
+                        "type": "number"
+                    },
+                    "billId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "billNo": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "disposedOn": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "disposalProceedsRupees": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "hasPostedDepreciation": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "accumulatedRupees",
+                    "billId",
+                    "billNo",
+                    "bookValueRupees",
+                    "classId",
+                    "className",
+                    "costRupees",
+                    "disposalProceedsRupees",
+                    "disposedOn",
+                    "hasPostedDepreciation",
+                    "id",
+                    "name",
+                    "openingAccdepRupees",
+                    "putToUseOn"
+                ]
+            },
+            "AssetClassForm": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 60,
+                        "minLength": 0
+                    },
+                    "lifeYears": {
+                        "type": "integer",
+                        "format": "int32",
+                        "maximum": 60,
+                        "minimum": 1
+                    },
+                    "residualPercent": {
+                        "type": "number",
+                        "maximum": 50,
+                        "minimum": 0
+                    },
+                    "active": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "active",
+                    "lifeYears",
+                    "name",
+                    "residualPercent"
+                ]
+            },
+            "AssetClassView": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "lifeYears": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "residualPercent": {
+                        "type": "number"
+                    },
+                    "assetAccountId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "assetAccountCode": {
+                        "type": "string"
+                    },
+                    "accdepAccountId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "accdepAccountCode": {
+                        "type": "string"
+                    },
+                    "active": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "accdepAccountCode",
+                    "accdepAccountId",
+                    "active",
+                    "assetAccountCode",
+                    "assetAccountId",
+                    "id",
+                    "lifeYears",
+                    "name",
+                    "residualPercent"
                 ]
             },
             "AccountForm": {
@@ -16872,6 +18993,425 @@
                     "reference"
                 ]
             },
+            "SupplierCreated": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "id"
+                ]
+            },
+            "ColumnMapping": {
+                "type": "object",
+                "properties": {
+                    "headerRow": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "columns": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    "dateFormat": {
+                        "type": "string"
+                    },
+                    "amountStyle": {
+                        "type": "string",
+                        "enum": [
+                            "DEBIT_CREDIT",
+                            "SIGNED"
+                        ]
+                    }
+                },
+                "required": [
+                    "amountStyle",
+                    "columns",
+                    "dateFormat",
+                    "headerRow"
+                ]
+            },
+            "ShiprocketInvoiceSummary": {
+                "type": "object",
+                "properties": {
+                    "invoicesCreated": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "invoicesSkipped": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "skippedInvoiceNos": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "badRows": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SkippedFileRow"
+                        }
+                    },
+                    "totalRupees": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "badRows",
+                    "invoicesCreated",
+                    "invoicesSkipped",
+                    "skippedInvoiceNos",
+                    "totalRupees"
+                ]
+            },
+            "SkippedFileRow": {
+                "type": "object",
+                "properties": {
+                    "rowNumber": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "reason": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "reason",
+                    "rowNumber"
+                ]
+            },
+            "FilePreview": {
+                "type": "object",
+                "properties": {
+                    "rows": {
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "saved": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/ColumnMapping"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "rows",
+                    "saved"
+                ]
+            },
+            "PaymentAllocationInput": {
+                "type": "object",
+                "properties": {
+                    "billId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "amountRupees": {
+                        "type": "number",
+                        "minimum": 0.01
+                    }
+                },
+                "required": [
+                    "amountRupees",
+                    "billId"
+                ]
+            },
+            "SupplierPaymentForm": {
+                "type": "object",
+                "properties": {
+                    "partyId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "paidOn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "mode": {
+                        "type": "string"
+                    },
+                    "amountRupees": {
+                        "type": "number",
+                        "minimum": 0.01
+                    },
+                    "reference": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100,
+                        "minLength": 0
+                    },
+                    "notes": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 300,
+                        "minLength": 0
+                    },
+                    "allocations": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "$ref": "#/components/schemas/PaymentAllocationInput"
+                        }
+                    }
+                },
+                "required": [
+                    "allocations",
+                    "amountRupees",
+                    "mode",
+                    "notes",
+                    "paidOn",
+                    "partyId",
+                    "reference"
+                ]
+            },
+            "PaymentAllocationView": {
+                "type": "object",
+                "properties": {
+                    "billId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "billNo": {
+                        "type": "string"
+                    },
+                    "amountRupees": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "amountRupees",
+                    "billId",
+                    "billNo"
+                ]
+            },
+            "SupplierPaymentView": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "partyId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "supplierName": {
+                        "type": "string"
+                    },
+                    "paidOn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "mode": {
+                        "type": "string"
+                    },
+                    "amountRupees": {
+                        "type": "number"
+                    },
+                    "allocatedRupees": {
+                        "type": "number"
+                    },
+                    "reference": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "bankLineId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "posted": {
+                        "type": "boolean"
+                    },
+                    "allocations": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PaymentAllocationView"
+                        }
+                    }
+                },
+                "required": [
+                    "allocatedRupees",
+                    "allocations",
+                    "amountRupees",
+                    "bankLineId",
+                    "id",
+                    "mode",
+                    "paidOn",
+                    "partyId",
+                    "posted",
+                    "reference",
+                    "supplierName"
+                ]
+            },
+            "BankLinePaymentForm": {
+                "type": "object",
+                "properties": {
+                    "bankLineId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "partyId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "allocations": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "$ref": "#/components/schemas/PaymentAllocationInput"
+                        }
+                    }
+                },
+                "required": [
+                    "allocations",
+                    "bankLineId",
+                    "partyId"
+                ]
+            },
+            "BillCancelForm": {
+                "type": "object",
+                "properties": {
+                    "on": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "on",
+                    "reason"
+                ]
+            },
+            "AttachmentStartForm": {
+                "type": "object",
+                "properties": {
+                    "contentType": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "contentType"
+                ]
+            },
+            "AttachmentUpload": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "uploadUrl": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "key",
+                    "uploadUrl"
+                ]
+            },
+            "TdsCheckForm": {
+                "type": "object",
+                "properties": {
+                    "partyId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "billDate": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "taxableRupees": {
+                        "type": "number"
+                    },
+                    "billId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "billDate",
+                    "billId",
+                    "partyId",
+                    "taxableRupees"
+                ]
+            },
+            "TdsSuggestion": {
+                "type": "object",
+                "properties": {
+                    "sectionId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "sectionCode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "ratePercent": {
+                        "type": "number"
+                    },
+                    "suggestedRupees": {
+                        "type": "number"
+                    },
+                    "thresholdCrossed": {
+                        "type": "boolean"
+                    },
+                    "warning": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "ratePercent",
+                    "sectionCode",
+                    "sectionId",
+                    "suggestedRupees",
+                    "thresholdCrossed",
+                    "warning"
+                ]
+            },
             "Buyer": {
                 "type": "object",
                 "properties": {
@@ -18061,6 +20601,108 @@
                     "status"
                 ]
             },
+            "TdsChallanForm": {
+                "type": "object",
+                "properties": {
+                    "tdsSectionId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "periodMonth": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "amountRupees": {
+                        "type": "number",
+                        "minimum": 0.01
+                    },
+                    "interestRupees": {
+                        "type": "number",
+                        "minimum": 0
+                    },
+                    "challanNo": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 0
+                    },
+                    "bsrCode": {
+                        "type": "string",
+                        "minLength": 1,
+                        "pattern": "[0-9]{7}"
+                    },
+                    "paidOn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "mode": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "amountRupees",
+                    "bsrCode",
+                    "challanNo",
+                    "interestRupees",
+                    "mode",
+                    "paidOn",
+                    "periodMonth",
+                    "tdsSectionId"
+                ]
+            },
+            "TdsChallanView": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "tdsSectionId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "sectionCode": {
+                        "type": "string"
+                    },
+                    "periodMonth": {
+                        "type": "string"
+                    },
+                    "amountRupees": {
+                        "type": "number"
+                    },
+                    "interestRupees": {
+                        "type": "number"
+                    },
+                    "challanNo": {
+                        "type": "string"
+                    },
+                    "bsrCode": {
+                        "type": "string"
+                    },
+                    "paidOn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "mode": {
+                        "type": "string"
+                    },
+                    "posted": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "amountRupees",
+                    "bsrCode",
+                    "challanNo",
+                    "id",
+                    "interestRupees",
+                    "mode",
+                    "paidOn",
+                    "periodMonth",
+                    "posted",
+                    "sectionCode",
+                    "tdsSectionId"
+                ]
+            },
             "SweepResult": {
                 "type": "object",
                 "properties": {
@@ -18360,38 +21002,6 @@
                     "openingRupees"
                 ]
             },
-            "ColumnMapping": {
-                "type": "object",
-                "properties": {
-                    "headerRow": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "columns": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "integer",
-                            "format": "int32"
-                        }
-                    },
-                    "dateFormat": {
-                        "type": "string"
-                    },
-                    "amountStyle": {
-                        "type": "string",
-                        "enum": [
-                            "DEBIT_CREDIT",
-                            "SIGNED"
-                        ]
-                    }
-                },
-                "required": [
-                    "amountStyle",
-                    "columns",
-                    "dateFormat",
-                    "headerRow"
-                ]
-            },
             "BankImportSummary": {
                 "type": "object",
                 "properties": {
@@ -18424,50 +21034,6 @@
                     "duplicates",
                     "skipped",
                     "statementId"
-                ]
-            },
-            "SkippedFileRow": {
-                "type": "object",
-                "properties": {
-                    "rowNumber": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "reason": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "reason",
-                    "rowNumber"
-                ]
-            },
-            "FilePreview": {
-                "type": "object",
-                "properties": {
-                    "rows": {
-                        "type": "array",
-                        "items": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "saved": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/ColumnMapping"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ]
-                    }
-                },
-                "required": [
-                    "rows",
-                    "saved"
                 ]
             },
             "RazorpaySyncOutcome": {
@@ -18644,6 +21210,63 @@
                     "duplicates",
                     "skipped",
                     "unknownAwbs"
+                ]
+            },
+            "OpeningAssetForm": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 120,
+                        "minLength": 0
+                    },
+                    "classId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "costRupees": {
+                        "type": "number",
+                        "minimum": 0.01
+                    },
+                    "putToUseOn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "openingAccdepRupees": {
+                        "type": "number",
+                        "minimum": 0
+                    }
+                },
+                "required": [
+                    "classId",
+                    "costRupees",
+                    "name",
+                    "openingAccdepRupees",
+                    "putToUseOn"
+                ]
+            },
+            "AssetDisposalForm": {
+                "type": "object",
+                "properties": {
+                    "disposedOn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "proceedsRupees": {
+                        "type": "number",
+                        "minimum": 0
+                    },
+                    "mode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "disposedOn",
+                    "mode",
+                    "proceedsRupees"
                 ]
             },
             "ShopContact": {
@@ -20514,6 +23137,63 @@
                     "trialDate"
                 ]
             },
+            "SupplierBillListEntry": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "supplierName": {
+                        "type": "string"
+                    },
+                    "billNo": {
+                        "type": "string"
+                    },
+                    "billDate": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "dueDate": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "totalRupees": {
+                        "type": "number"
+                    },
+                    "payableRupees": {
+                        "type": "number"
+                    },
+                    "paidRupees": {
+                        "type": "number"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "source": {
+                        "type": "string"
+                    },
+                    "posted": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "billDate",
+                    "billNo",
+                    "dueDate",
+                    "id",
+                    "paidRupees",
+                    "payableRupees",
+                    "posted",
+                    "source",
+                    "status",
+                    "supplierName",
+                    "totalRupees"
+                ]
+            },
             "Due": {
                 "type": "object",
                 "properties": {
@@ -21601,6 +24281,37 @@
                     "type"
                 ]
             },
+            "TdsMonthSummary": {
+                "type": "object",
+                "properties": {
+                    "sectionCode": {
+                        "type": "string"
+                    },
+                    "sectionName": {
+                        "type": "string"
+                    },
+                    "month": {
+                        "type": "string"
+                    },
+                    "deductedRupees": {
+                        "type": "number"
+                    },
+                    "paidRupees": {
+                        "type": "number"
+                    },
+                    "balanceRupees": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "balanceRupees",
+                    "deductedRupees",
+                    "month",
+                    "paidRupees",
+                    "sectionCode",
+                    "sectionName"
+                ]
+            },
             "AccountsStatus": {
                 "type": "object",
                 "properties": {
@@ -21735,6 +24446,41 @@
                     "page",
                     "size",
                     "total"
+                ]
+            },
+            "InputGstMonth": {
+                "type": "object",
+                "properties": {
+                    "month": {
+                        "type": "string"
+                    },
+                    "taxableRupees": {
+                        "type": "number"
+                    },
+                    "cgstRupees": {
+                        "type": "number"
+                    },
+                    "sgstRupees": {
+                        "type": "number"
+                    },
+                    "igstRupees": {
+                        "type": "number"
+                    },
+                    "gatewayGstRupees": {
+                        "type": "number"
+                    },
+                    "totalRupees": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "cgstRupees",
+                    "gatewayGstRupees",
+                    "igstRupees",
+                    "month",
+                    "sgstRupees",
+                    "taxableRupees",
+                    "totalRupees"
                 ]
             },
             "BankStatementSummary": {

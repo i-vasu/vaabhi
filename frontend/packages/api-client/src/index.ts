@@ -248,6 +248,42 @@ export type RazorpaySyncOutcome = Schemas["RazorpaySyncOutcome"];
 export type CodImportSummary = Schemas["CodImportSummary"];
 export type CodRemittanceView = Schemas["CodRemittanceView"];
 
+export type SupplierForm = Schemas["SupplierForm"];
+export type SupplierBalance = Schemas["SupplierBalance"];
+export type SupplierStatement = Schemas["SupplierStatement"];
+export type SupplierStatementEntry = Schemas["SupplierStatementEntry"];
+export type SupplierCreated = Schemas["SupplierCreated"];
+export type SupplierBillForm = Schemas["SupplierBillForm"];
+export type SupplierBillLineForm = Schemas["SupplierBillLineForm"];
+export type SupplierBillView = Schemas["SupplierBillView"];
+export type SupplierBillLineView = Schemas["SupplierBillLineView"];
+export type SupplierBillListEntry = Schemas["SupplierBillListEntry"];
+export type PaidNow = Schemas["PaidNow"];
+export type TdsSuggestion = Schemas["TdsSuggestion"];
+export type TdsCheckForm = Schemas["TdsCheckForm"];
+export type BillCancelForm = Schemas["BillCancelForm"];
+export type AttachmentStartForm = Schemas["AttachmentStartForm"];
+export type AttachmentUpload = Schemas["AttachmentUpload"];
+export type AttachmentConfirmForm = Schemas["AttachmentConfirmForm"];
+export type SupplierPaymentForm = Schemas["SupplierPaymentForm"];
+export type SupplierPaymentView = Schemas["SupplierPaymentView"];
+export type PaymentAllocationInput = Schemas["PaymentAllocationInput"];
+export type PaymentAllocationView = Schemas["PaymentAllocationView"];
+export type BankLinePaymentForm = Schemas["BankLinePaymentForm"];
+export type ShiprocketInvoiceSummary = Schemas["ShiprocketInvoiceSummary"];
+export type TdsSectionForm = Schemas["TdsSectionForm"];
+export type TdsSectionView = Schemas["TdsSectionView"];
+export type TdsChallanForm = Schemas["TdsChallanForm"];
+export type TdsChallanView = Schemas["TdsChallanView"];
+export type TdsMonthSummary = Schemas["TdsMonthSummary"];
+export type AssetClassForm = Schemas["AssetClassForm"];
+export type AssetClassView = Schemas["AssetClassView"];
+export type FixedAssetView = Schemas["FixedAssetView"];
+export type OpeningAssetForm = Schemas["OpeningAssetForm"];
+export type AssetUpdateForm = Schemas["AssetUpdateForm"];
+export type AssetDisposalForm = Schemas["AssetDisposalForm"];
+export type InputGstMonth = Schemas["InputGstMonth"];
+
 /** The JSON settings sections, by their API path. */
 export type SettingsSections = {
   "shop-profile": ShopProfile;
@@ -811,6 +847,46 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
           },
         },
       },
+      /** Suppliers, their bills and payments, plus importing Shiprocket's freight invoices. */
+      purchases: {
+        suppliers: (q?: string) =>
+          request<SupplierBalance[]>(`/api/v1/admin/money/purchases/suppliers${queryString({ q })}`),
+        supplier: (id: number) => request<SupplierStatement>(`/api/v1/admin/money/purchases/suppliers/${id}`),
+        createSupplier: (form: SupplierForm) =>
+          send<SupplierCreated>("POST", "/api/v1/admin/money/purchases/suppliers", form),
+        updateSupplier: (id: number, form: SupplierForm) =>
+          send<SupplierStatement>("PUT", `/api/v1/admin/money/purchases/suppliers/${id}`, form),
+        bills: (params: { partyId?: number; status?: string; month?: string; source?: string } = {}) =>
+          request<SupplierBillListEntry[]>(`/api/v1/admin/money/purchases/bills${queryString(params)}`),
+        bill: (id: number) => request<SupplierBillView>(`/api/v1/admin/money/purchases/bills/${id}`),
+        createBill: (form: SupplierBillForm) =>
+          send<SupplierBillView>("POST", "/api/v1/admin/money/purchases/bills", form),
+        updateBill: (id: number, form: SupplierBillForm) =>
+          send<SupplierBillView>("PUT", `/api/v1/admin/money/purchases/bills/${id}`, form),
+        cancelBill: (id: number, form: BillCancelForm) =>
+          send<SupplierBillView>("POST", `/api/v1/admin/money/purchases/bills/${id}/cancel`, form),
+        /** Starts an attachment upload: PUT the file to uploadUrl, then save its key with confirmAttachment. */
+        startAttachment: (id: number, contentType: string) =>
+          send<AttachmentUpload>("POST", `/api/v1/admin/money/purchases/bills/${id}/attachment`, { contentType }),
+        confirmAttachment: (id: number, key: string) =>
+          send<void>("PUT", `/api/v1/admin/money/purchases/bills/${id}/attachment`, { key }),
+        tdsCheck: (form: TdsCheckForm) =>
+          send<TdsSuggestion>("POST", "/api/v1/admin/money/purchases/bills/tds-check", form),
+        payments: (partyId?: number) =>
+          request<SupplierPaymentView[]>(`/api/v1/admin/money/purchases/payments${queryString({ partyId })}`),
+        createPayment: (form: SupplierPaymentForm) =>
+          send<SupplierPaymentView>("POST", "/api/v1/admin/money/purchases/payments", form),
+        deletePayment: (id: number) => send<void>("DELETE", `/api/v1/admin/money/purchases/payments/${id}`),
+        paymentFromBankLine: (form: BankLinePaymentForm) =>
+          send<SupplierPaymentView>("POST", "/api/v1/admin/money/purchases/payments/from-bank-line", form),
+        previewShiprocket: (file: File) =>
+          upload<FilePreview>("/api/v1/admin/money/purchases/shiprocket-invoices/preview", { file }),
+        importShiprocket: (file: File, mapping: ColumnMapping) =>
+          upload<ShiprocketInvoiceSummary>("/api/v1/admin/money/purchases/shiprocket-invoices", {
+            file,
+            mapping: new Blob([JSON.stringify(mapping)], { type: "application/json" }),
+          }),
+      },
       accounts: {
         status: () => request<AccountsStatus>("/api/v1/admin/accounts/status"),
         sweep: () => send<SweepResult>("POST", "/api/v1/admin/accounts/sweep"),
@@ -888,6 +964,53 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
               mapping: new Blob([JSON.stringify(mapping)], { type: "application/json" }),
             }),
           remittances: () => request<CodRemittanceView[]>("/api/v1/admin/accounts/bank/cod-remittances"),
+        },
+        tds: {
+          sections: () => request<TdsSectionView[]>("/api/v1/admin/accounts/tds/sections"),
+          createSection: (form: TdsSectionForm) =>
+            send<TdsSectionView>("POST", "/api/v1/admin/accounts/tds/sections", form),
+          updateSection: (id: number, form: TdsSectionForm) =>
+            send<TdsSectionView>("PUT", `/api/v1/admin/accounts/tds/sections/${id}`, form),
+          summary: (from: string, to: string) =>
+            request<TdsMonthSummary[]>(`/api/v1/admin/accounts/tds/summary${queryString({ from, to })}`),
+          challans: (from: string, to: string) =>
+            request<TdsChallanView[]>(`/api/v1/admin/accounts/tds/challans${queryString({ from, to })}`),
+          createChallan: (form: TdsChallanForm) =>
+            send<TdsChallanView>("POST", "/api/v1/admin/accounts/tds/challans", form),
+        },
+        assets: {
+          classes: () => request<AssetClassView[]>("/api/v1/admin/accounts/assets/classes"),
+          createClass: (form: AssetClassForm) =>
+            send<AssetClassView>("POST", "/api/v1/admin/accounts/assets/classes", form),
+          updateClass: (id: number, form: AssetClassForm) =>
+            send<AssetClassView>("PUT", `/api/v1/admin/accounts/assets/classes/${id}`, form),
+          list: () => request<FixedAssetView[]>("/api/v1/admin/accounts/assets"),
+          createOpening: (form: OpeningAssetForm) =>
+            send<FixedAssetView>("POST", "/api/v1/admin/accounts/assets", form),
+          update: (id: number, form: AssetUpdateForm) =>
+            send<FixedAssetView>("PUT", `/api/v1/admin/accounts/assets/${id}`, form),
+          dispose: (id: number, form: AssetDisposalForm) =>
+            send<FixedAssetView>("POST", `/api/v1/admin/accounts/assets/${id}/dispose`, form),
+        },
+        inputGst: (from: string, to: string) =>
+          request<InputGstMonth[]>(`/api/v1/admin/accounts/input-gst${queryString({ from, to })}`),
+        /** The input-GST CSV as a Blob; fetched with the bearer token, since a plain link would not carry it. */
+        inputGstCsv: async (from: string, to: string): Promise<Blob> => {
+          const token = getToken?.();
+          const response = await fetch(
+            `${baseUrl.replace(/\/$/, "")}/api/v1/admin/accounts/input-gst.csv${queryString({ from, to })}`,
+            { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+          );
+          if (!response.ok) {
+            const problem = await problemOf(response);
+            throw new ApiError(
+              response.status,
+              `GET input-gst.csv failed with ${response.status}`,
+              problem.errors,
+              problem.detail,
+            );
+          }
+          return response.blob();
         },
       },
       categories: {

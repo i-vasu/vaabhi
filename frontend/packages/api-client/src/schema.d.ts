@@ -532,6 +532,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/money/purchases/suppliers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getSupplier"];
+        put: operations["updateSupplier"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/purchases/bills/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getBill"];
+        put: operations["updateBill"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/purchases/bills/{id}/attachment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["confirmAttachment"];
+        post: operations["startAttachment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/money/expenses/{id}": {
         parameters: {
             query?: never;
@@ -644,6 +692,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/accounts/tds/sections/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateSection"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/accounts/settings": {
         parameters: {
             query?: never;
@@ -685,6 +749,38 @@ export interface paths {
         };
         get: operations["getOpeningBalances"];
         put: operations["saveOpeningBalances"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/assets/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/assets/classes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateClass"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1732,6 +1828,134 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/money/purchases/suppliers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listSuppliers"];
+        put?: never;
+        post: operations["createSupplier"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/purchases/shiprocket-invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["importShiprocketInvoices"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/purchases/shiprocket-invoices/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["previewShiprocketInvoices"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/purchases/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listPayments"];
+        put?: never;
+        post: operations["createPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/purchases/payments/from-bank-line": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["payFromBankLine"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/purchases/bills": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listBills"];
+        put?: never;
+        post: operations["createBill"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/purchases/bills/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["cancelBill"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/purchases/bills/tds-check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["checkTds"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/money/orders/{orderId}/invoice": {
         parameters: {
             query?: never;
@@ -1972,6 +2196,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/accounts/tds/sections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["sections"];
+        put?: never;
+        post: operations["createSection"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/tds/challans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["challans"];
+        put?: never;
+        post: operations["createChallan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/accounts/sweep": {
         parameters: {
             query?: never;
@@ -2158,6 +2414,54 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["previewRemittance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/assets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["register"];
+        put?: never;
+        post: operations["createOpening"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/assets/{id}/dispose": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["dispose"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/assets/classes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["classes"];
+        put?: never;
+        post: operations["createClass"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3028,6 +3332,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/accounts/tds/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/accounts/status": {
         parameters: {
             query?: never;
@@ -3084,6 +3404,38 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getJournalEntry"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/input-gst": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["inputGst"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/input-gst.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["inputGstCsv"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3279,6 +3631,22 @@ export interface paths {
         put?: never;
         post?: never;
         delete: operations["removeProductMaterial"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/money/purchases/payments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deletePayment"];
         options?: never;
         head?: never;
         patch?: never;
@@ -4085,6 +4453,152 @@ export interface components {
             rateAbovePercent: number | null;
             inUse: boolean;
         };
+        SupplierForm: {
+            name: string;
+            phone: string | null;
+            /** Format: email */
+            email: string | null;
+            gstin: string | null;
+            pan: string | null;
+            address: string | null;
+            city: string | null;
+            state: string | null;
+            pinCode: string | null;
+            /** Format: int64 */
+            tdsSectionId: number | null;
+        };
+        SupplierBalance: {
+            /** Format: int64 */
+            partyId: number;
+            name: string;
+            phone: string | null;
+            gstin: string | null;
+            state: string | null;
+            billedRupees: number;
+            paidRupees: number;
+            tdsRupees: number;
+            balanceRupees: number;
+            /** Format: date */
+            oldestUnpaidDue: string | null;
+            overdue: boolean;
+        };
+        SupplierStatement: {
+            balance: components["schemas"]["SupplierBalance"];
+            email: string | null;
+            pan: string | null;
+            address: string | null;
+            city: string | null;
+            pinCode: string | null;
+            /** Format: int64 */
+            tdsSectionId: number | null;
+            entries: components["schemas"]["SupplierStatementEntry"][];
+        };
+        SupplierStatementEntry: {
+            /** Format: date */
+            date: string;
+            kind: string;
+            /** Format: int64 */
+            id: number;
+            reference: string;
+            billedRupees: number;
+            paidRupees: number;
+            runningBalanceRupees: number;
+        };
+        PaidNow: {
+            mode: string;
+            reference: string | null;
+        };
+        SupplierBillForm: {
+            /** Format: int64 */
+            partyId: number;
+            billNo: string;
+            /** Format: date */
+            billDate: string;
+            /** Format: date */
+            dueDate: string | null;
+            supplyStateCode: string | null;
+            /** Format: int64 */
+            tdsSectionId: number | null;
+            tdsRupees: number;
+            notes: string | null;
+            lines: components["schemas"]["SupplierBillLineForm"][];
+            paidNow: components["schemas"]["PaidNow"] | null;
+        };
+        SupplierBillLineForm: {
+            /** @enum {string} */
+            kind: "EXPENSE" | "STOCK" | "ASSET";
+            description: string;
+            /** Format: int64 */
+            accountId: number | null;
+            /** Format: int64 */
+            stockItemId: number | null;
+            quantity: number | null;
+            /** Format: int64 */
+            assetClassId: number | null;
+            hsn: string | null;
+            taxableRupees: number;
+            gstRatePercent: number;
+        };
+        SupplierBillLineView: {
+            /** Format: int64 */
+            id: number;
+            /** Format: int32 */
+            position: number;
+            kind: string;
+            description: string;
+            /** Format: int64 */
+            accountId: number;
+            accountName: string;
+            /** Format: int64 */
+            stockItemId: number | null;
+            stockItemName: string | null;
+            quantity: number | null;
+            /** Format: int64 */
+            assetClassId: number | null;
+            assetClassName: string | null;
+            /** Format: int64 */
+            fixedAssetId: number | null;
+            hsn: string | null;
+            taxableRupees: number;
+            gstRatePercent: number;
+            cgstRupees: number;
+            sgstRupees: number;
+            igstRupees: number;
+            totalRupees: number;
+        };
+        SupplierBillView: {
+            /** Format: int64 */
+            id: number;
+            /** Format: int64 */
+            partyId: number;
+            supplierName: string;
+            billNo: string;
+            /** Format: date */
+            billDate: string;
+            /** Format: date */
+            dueDate: string | null;
+            supplyStateCode: string | null;
+            taxableRupees: number;
+            cgstRupees: number;
+            sgstRupees: number;
+            igstRupees: number;
+            totalRupees: number;
+            /** Format: int64 */
+            tdsSectionId: number | null;
+            tdsRupees: number;
+            payableRupees: number;
+            paidRupees: number;
+            source: string;
+            status: string;
+            posted: boolean;
+            attachmentKey: string | null;
+            notes: string | null;
+            lines: components["schemas"]["SupplierBillLineView"][];
+            tdsWarning: string | null;
+        };
+        AttachmentConfirmForm: {
+            key: string;
+        };
         ExpenseForm: {
             /** Format: date */
             spentOn: string;
@@ -4273,12 +4787,34 @@ export interface components {
             /** Format: int64 */
             taxClassId: number | null;
         };
+        TdsSectionForm: {
+            code: string;
+            name: string;
+            ratePercent: number;
+            noPanRatePercent: number;
+            yearThresholdRupees: number | null;
+            singleThresholdRupees: number | null;
+            active: boolean;
+        };
+        TdsSectionView: {
+            /** Format: int64 */
+            id: number;
+            code: string;
+            name: string;
+            ratePercent: number;
+            noPanRatePercent: number;
+            yearThresholdRupees: number | null;
+            singleThresholdRupees: number | null;
+            active: boolean;
+        };
         BooksSettingsForm: {
             /** Format: date */
             startDate: string | null;
             modeAccounts: {
                 [key: string]: number;
             };
+            /** Format: int64 */
+            shiprocketPartyId: number | null;
         };
         BooksSettings: {
             /** Format: date */
@@ -4288,6 +4824,8 @@ export interface components {
             };
             /** Format: date-time */
             lastSweepAt: string | null;
+            /** Format: int64 */
+            shiprocketPartyId: number | null;
         };
         PeriodStatus: {
             /** Format: date */
@@ -4314,6 +4852,56 @@ export interface components {
             entryNumber: string | null;
             lines: components["schemas"]["OpeningBalanceLine"][];
             preStartOrders: string[];
+        };
+        AssetUpdateForm: {
+            name: string;
+            /** Format: int64 */
+            classId: number;
+            /** Format: date */
+            putToUseOn: string;
+        };
+        FixedAssetView: {
+            /** Format: int64 */
+            id: number;
+            name: string;
+            /** Format: int64 */
+            classId: number;
+            className: string;
+            costRupees: number;
+            /** Format: date */
+            putToUseOn: string;
+            openingAccdepRupees: number;
+            accumulatedRupees: number;
+            bookValueRupees: number;
+            /** Format: int64 */
+            billId: number | null;
+            billNo: string | null;
+            /** Format: date */
+            disposedOn: string | null;
+            disposalProceedsRupees: number | null;
+            hasPostedDepreciation: boolean;
+        };
+        AssetClassForm: {
+            name: string;
+            /** Format: int32 */
+            lifeYears: number;
+            residualPercent: number;
+            active: boolean;
+        };
+        AssetClassView: {
+            /** Format: int64 */
+            id: number;
+            name: string;
+            /** Format: int32 */
+            lifeYears: number;
+            residualPercent: number;
+            /** Format: int64 */
+            assetAccountId: number;
+            assetAccountCode: string;
+            /** Format: int64 */
+            accdepAccountId: number;
+            accdepAccountCode: string;
+            active: boolean;
         };
         AccountForm: {
             code: string;
@@ -4951,6 +5539,114 @@ export interface components {
             amountRupees: number;
             reference: string | null;
         };
+        SupplierCreated: {
+            /** Format: int64 */
+            id: number;
+        };
+        ColumnMapping: {
+            /** Format: int32 */
+            headerRow: number;
+            columns: {
+                [key: string]: number;
+            };
+            dateFormat: string;
+            /** @enum {string} */
+            amountStyle: "DEBIT_CREDIT" | "SIGNED";
+        };
+        ShiprocketInvoiceSummary: {
+            /** Format: int32 */
+            invoicesCreated: number;
+            /** Format: int32 */
+            invoicesSkipped: number;
+            skippedInvoiceNos: string[];
+            badRows: components["schemas"]["SkippedFileRow"][];
+            totalRupees: number;
+        };
+        SkippedFileRow: {
+            /** Format: int32 */
+            rowNumber: number;
+            reason: string;
+        };
+        FilePreview: {
+            rows: string[][];
+            saved: components["schemas"]["ColumnMapping"] | null;
+        };
+        PaymentAllocationInput: {
+            /** Format: int64 */
+            billId: number;
+            amountRupees: number;
+        };
+        SupplierPaymentForm: {
+            /** Format: int64 */
+            partyId: number;
+            /** Format: date */
+            paidOn: string;
+            mode: string;
+            amountRupees: number;
+            reference: string | null;
+            notes: string | null;
+            allocations: components["schemas"]["PaymentAllocationInput"][] | null;
+        };
+        PaymentAllocationView: {
+            /** Format: int64 */
+            billId: number;
+            billNo: string;
+            amountRupees: number;
+        };
+        SupplierPaymentView: {
+            /** Format: int64 */
+            id: number;
+            /** Format: int64 */
+            partyId: number;
+            supplierName: string;
+            /** Format: date */
+            paidOn: string;
+            mode: string;
+            amountRupees: number;
+            allocatedRupees: number;
+            reference: string | null;
+            /** Format: int64 */
+            bankLineId: number | null;
+            posted: boolean;
+            allocations: components["schemas"]["PaymentAllocationView"][];
+        };
+        BankLinePaymentForm: {
+            /** Format: int64 */
+            bankLineId: number;
+            /** Format: int64 */
+            partyId: number;
+            allocations: components["schemas"]["PaymentAllocationInput"][] | null;
+        };
+        BillCancelForm: {
+            /** Format: date */
+            on: string;
+            reason: string;
+        };
+        AttachmentStartForm: {
+            contentType: string;
+        };
+        AttachmentUpload: {
+            key: string;
+            uploadUrl: string;
+        };
+        TdsCheckForm: {
+            /** Format: int64 */
+            partyId: number;
+            /** Format: date */
+            billDate: string;
+            taxableRupees: number;
+            /** Format: int64 */
+            billId: number | null;
+        };
+        TdsSuggestion: {
+            /** Format: int64 */
+            sectionId: number | null;
+            sectionCode: string | null;
+            ratePercent: number;
+            suggestedRupees: number;
+            thresholdCrossed: boolean;
+            warning: string | null;
+        };
         Buyer: {
             name: string;
             phone: string | null;
@@ -5227,6 +5923,34 @@ export interface components {
             /** @enum {string|null} */
             settlement: "REFUND" | "KEEP" | null;
         };
+        TdsChallanForm: {
+            /** Format: int64 */
+            tdsSectionId: number;
+            periodMonth: string;
+            amountRupees: number;
+            interestRupees: number;
+            challanNo: string;
+            bsrCode: string;
+            /** Format: date */
+            paidOn: string;
+            mode: string;
+        };
+        TdsChallanView: {
+            /** Format: int64 */
+            id: number;
+            /** Format: int64 */
+            tdsSectionId: number;
+            sectionCode: string;
+            periodMonth: string;
+            amountRupees: number;
+            interestRupees: number;
+            challanNo: string;
+            bsrCode: string;
+            /** Format: date */
+            paidOn: string;
+            mode: string;
+            posted: boolean;
+        };
         SweepResult: {
             /** Format: int32 */
             posted: number;
@@ -5298,16 +6022,6 @@ export interface components {
             openingRupees: number | null;
             closingRupees: number | null;
         };
-        ColumnMapping: {
-            /** Format: int32 */
-            headerRow: number;
-            columns: {
-                [key: string]: number;
-            };
-            dateFormat: string;
-            /** @enum {string} */
-            amountStyle: "DEBIT_CREDIT" | "SIGNED";
-        };
         BankImportSummary: {
             /** Format: int64 */
             statementId: number;
@@ -5318,15 +6032,6 @@ export interface components {
             /** Format: int32 */
             autoMatched: number;
             skipped: components["schemas"]["SkippedFileRow"][];
-        };
-        SkippedFileRow: {
-            /** Format: int32 */
-            rowNumber: number;
-            reason: string;
-        };
-        FilePreview: {
-            rows: string[][];
-            saved: components["schemas"]["ColumnMapping"] | null;
         };
         RazorpaySyncOutcome: {
             configured: boolean;
@@ -5371,6 +6076,21 @@ export interface components {
             duplicates: number;
             unknownAwbs: string[];
             skipped: components["schemas"]["SkippedFileRow"][];
+        };
+        OpeningAssetForm: {
+            name: string;
+            /** Format: int64 */
+            classId: number;
+            costRupees: number;
+            /** Format: date */
+            putToUseOn: string;
+            openingAccdepRupees: number;
+        };
+        AssetDisposalForm: {
+            /** Format: date */
+            disposedOn: string;
+            proceedsRupees: number;
+            mode: string | null;
         };
         ShopContact: {
             name: string;
@@ -5849,6 +6569,22 @@ export interface components {
             onlineStatus: string | null;
             openReturn: boolean;
         };
+        SupplierBillListEntry: {
+            /** Format: int64 */
+            id: number;
+            supplierName: string;
+            billNo: string;
+            /** Format: date */
+            billDate: string;
+            /** Format: date */
+            dueDate: string | null;
+            totalRupees: number;
+            payableRupees: number;
+            paidRupees: number;
+            status: string;
+            source: string;
+            posted: boolean;
+        };
         Due: {
             /** @enum {string} */
             kind: "ORDER" | "ALTERATION";
@@ -6130,6 +6866,14 @@ export interface components {
             debitRupees: number;
             creditRupees: number;
         };
+        TdsMonthSummary: {
+            sectionCode: string;
+            sectionName: string;
+            month: string;
+            deductedRupees: number;
+            paidRupees: number;
+            balanceRupees: number;
+        };
         AccountsStatus: {
             /** Format: date */
             startDate: string | null;
@@ -6170,6 +6914,15 @@ export interface components {
             page: number;
             /** Format: int32 */
             size: number;
+        };
+        InputGstMonth: {
+            month: string;
+            taxableRupees: number;
+            cgstRupees: number;
+            sgstRupees: number;
+            igstRupees: number;
+            gatewayGstRupees: number;
+            totalRupees: number;
         };
         BankStatementSummary: {
             /** Format: int64 */
@@ -7631,6 +8384,152 @@ export interface operations {
             };
         };
     };
+    getSupplier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SupplierStatement"];
+                };
+            };
+        };
+    };
+    updateSupplier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupplierForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SupplierStatement"];
+                };
+            };
+        };
+    };
+    getBill: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SupplierBillView"];
+                };
+            };
+        };
+    };
+    updateBill: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupplierBillForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SupplierBillView"];
+                };
+            };
+        };
+    };
+    confirmAttachment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttachmentConfirmForm"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    startAttachment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttachmentStartForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AttachmentUpload"];
+                };
+            };
+        };
+    };
     updateExpense: {
         parameters: {
             query?: never;
@@ -7889,6 +8788,32 @@ export interface operations {
             };
         };
     };
+    updateSection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TdsSectionForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TdsSectionView"];
+                };
+            };
+        };
+    };
     getSettings: {
         parameters: {
             query?: never;
@@ -8017,6 +8942,58 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["OpeningBalances"];
+                };
+            };
+        };
+    };
+    update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssetUpdateForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FixedAssetView"];
+                };
+            };
+        };
+    };
+    updateClass: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssetClassForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AssetClassView"];
                 };
             };
         };
@@ -9839,6 +10816,276 @@ export interface operations {
             };
         };
     };
+    listSuppliers: {
+        parameters: {
+            query?: {
+                q?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SupplierBalance"][];
+                };
+            };
+        };
+    };
+    createSupplier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupplierForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SupplierCreated"];
+                };
+            };
+        };
+    };
+    importShiprocketInvoices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                    mapping: components["schemas"]["ColumnMapping"];
+                };
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShiprocketInvoiceSummary"];
+                };
+            };
+        };
+    };
+    previewShiprocketInvoices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FilePreview"];
+                };
+            };
+        };
+    };
+    listPayments: {
+        parameters: {
+            query?: {
+                partyId?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SupplierPaymentView"][];
+                };
+            };
+        };
+    };
+    createPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupplierPaymentForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SupplierPaymentView"];
+                };
+            };
+        };
+    };
+    payFromBankLine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankLinePaymentForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SupplierPaymentView"];
+                };
+            };
+        };
+    };
+    listBills: {
+        parameters: {
+            query?: {
+                partyId?: number | null;
+                status?: string | null;
+                month?: string | null;
+                source?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SupplierBillListEntry"][];
+                };
+            };
+        };
+    };
+    createBill: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupplierBillForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SupplierBillView"];
+                };
+            };
+        };
+    };
+    cancelBill: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillCancelForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SupplierBillView"];
+                };
+            };
+        };
+    };
+    checkTds: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TdsCheckForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TdsSuggestion"];
+                };
+            };
+        };
+    };
     getOrderInvoice: {
         parameters: {
             query?: never;
@@ -10422,6 +11669,97 @@ export interface operations {
             };
         };
     };
+    sections: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TdsSectionView"][];
+                };
+            };
+        };
+    };
+    createSection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TdsSectionForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TdsSectionView"];
+                };
+            };
+        };
+    };
+    challans: {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TdsChallanView"][];
+                };
+            };
+        };
+    };
+    createChallan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TdsChallanForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TdsChallanView"];
+                };
+            };
+        };
+    };
     sweep: {
         parameters: {
             query?: never;
@@ -10780,6 +12118,120 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["FilePreview"];
+                };
+            };
+        };
+    };
+    register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FixedAssetView"][];
+                };
+            };
+        };
+    };
+    createOpening: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpeningAssetForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FixedAssetView"];
+                };
+            };
+        };
+    };
+    dispose: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssetDisposalForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FixedAssetView"];
+                };
+            };
+        };
+    };
+    classes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AssetClassView"][];
+                };
+            };
+        };
+    };
+    createClass: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssetClassForm"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AssetClassView"];
                 };
             };
         };
@@ -12068,6 +13520,29 @@ export interface operations {
             };
         };
     };
+    summary: {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TdsMonthSummary"][];
+                };
+            };
+        };
+    };
     getStatus: {
         parameters: {
             query?: never;
@@ -12146,6 +13621,52 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["JournalEntry"];
+                };
+            };
+        };
+    };
+    inputGst: {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InputGstMonth"][];
+                };
+            };
+        };
+    };
+    inputGstCsv: {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
                 };
             };
         };
@@ -12419,6 +13940,26 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["ProductMaking"];
                 };
+            };
+        };
+    };
+    deletePayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
