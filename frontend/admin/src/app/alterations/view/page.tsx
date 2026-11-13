@@ -59,8 +59,15 @@ function AlterationView({ id }: { id: number }) {
   }
   const a = alteration.value;
   const next = NEXT[a.status];
-  const move = async (status: OrderStatus, collectRupees = 0, mode: PaymentMode | null = null) => {
-    const updated = await action.run(() => api.admin.alterations.progress(id, { status, collectRupees, mode }));
+  const move = async (
+    status: OrderStatus,
+    collectRupees = 0,
+    mode: PaymentMode | null = null,
+    settlement: Settlement | null = null,
+  ) => {
+    const updated = await action.run(() =>
+      api.admin.alterations.progress(id, { status, collectRupees, mode, settlement }),
+    );
     if (updated) {
       alteration.setValue(updated);
       setSheet(null);
@@ -152,27 +159,79 @@ function AlterationView({ id }: { id: number }) {
         />
       )}
       {sheet === "cancel" && (
-        <Sheet open title={`Cancel ${a.number}?`} onClose={() => setSheet(null)}>
-          <p className="text-ink-soft">
-            It stays on the customer&apos;s record as {STATUS_LABELS.CANCELLED.toLowerCase()}.
-          </p>
-          <ErrorNote>{action.error}</ErrorNote>
-          <div className="mt-4 flex gap-2">
-            <button
-              type="button"
-              className={`${buttonPrimary} bg-bad hover:bg-bad`}
-              disabled={action.busy}
-              onClick={() => void move("CANCELLED")}
-            >
-              Cancel alteration
-            </button>
-            <button type="button" className={buttonSecondary} onClick={() => setSheet(null)}>
-              Keep it
-            </button>
-          </div>
-        </Sheet>
+        <CancelSheet
+          alteration={a}
+          busy={action.busy}
+          error={action.error}
+          onClose={() => setSheet(null)}
+          onCancel={(settlement, mode) => void move("CANCELLED", 0, mode, settlement)}
+        />
       )}
     </section>
+  );
+}
+
+type Settlement = "REFUND" | "KEEP";
+
+const SETTLEMENTS: { value: Settlement; label: string }[] = [
+  { value: "REFUND", label: "Give it back" },
+  { value: "KEEP", label: "Keep it (work already done)" },
+];
+
+/** Cancels; when money was collected, the shop says whether it goes back and how. */
+function CancelSheet({
+  alteration,
+  busy,
+  error,
+  onClose,
+  onCancel,
+}: {
+  alteration: Alteration;
+  busy: boolean;
+  error: string | null;
+  onClose: () => void;
+  onCancel: (settlement: Settlement | null, mode: PaymentMode | null) => void;
+}) {
+  const collected = alteration.collectedRupees;
+  const [settlement, setSettlement] = useState<Settlement>("REFUND");
+  const [mode, setMode] = useState<PaymentMode>("CASH");
+  return (
+    <Sheet open title={`Cancel ${alteration.number}?`} onClose={onClose}>
+      <div className="flex flex-col gap-4">
+        <p className="text-ink-soft">
+          It stays on the customer&apos;s record as {STATUS_LABELS.CANCELLED.toLowerCase()}.
+        </p>
+        {collected > 0 && (
+          <>
+            <SelectField
+              label={`${rupees(collected)} was collected`}
+              options={SETTLEMENTS}
+              value={settlement}
+              onChange={setSettlement}
+            />
+            {settlement === "REFUND" && (
+              <SelectField label="Given back by" options={PAYMENT_MODES} value={mode} onChange={setMode} />
+            )}
+          </>
+        )}
+        <ErrorNote>{error}</ErrorNote>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className={`${buttonPrimary} bg-bad hover:bg-bad`}
+            disabled={busy}
+            onClick={() =>
+              collected > 0 ? onCancel(settlement, settlement === "REFUND" ? mode : null) : onCancel(null, null)
+            }
+          >
+            Cancel alteration
+          </button>
+          <button type="button" className={buttonSecondary} onClick={onClose}>
+            Keep it
+          </button>
+        </div>
+      </div>
+    </Sheet>
   );
 }
 

@@ -28,6 +28,10 @@ describe("settings helpers", () => {
     });
     expect(describeError(new ApiError(500, "x")).message).toBe("Could not save. Try again.");
     expect(describeError(new TypeError("fetch failed")).message).toMatch(/Could not reach the server/);
+    expect(describeError(new Error("")).message).toMatch(/Could not reach the server/);
+    expect(describeError(new Error("This browser cannot create WebP images.")).message).toBe(
+      "This browser cannot create WebP images.",
+    );
   });
 
   it("uploads a settings image and returns its key", async () => {

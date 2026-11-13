@@ -19,7 +19,9 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -48,6 +50,7 @@ public class CheckoutService {
     private final ShiprocketClient shiprocket;
     private final CheckoutProperties properties;
     private final ApplicationEventPublisher events;
+    private final TransactionTemplate transactions;
 
     CheckoutService(
             JdbcClient jdbc,
@@ -57,7 +60,9 @@ public class CheckoutService {
             RazorpayClient razorpay,
             ShiprocketClient shiprocket,
             CheckoutProperties properties,
-            ApplicationEventPublisher events) {
+            ApplicationEventPublisher events,
+            PlatformTransactionManager transactionManager) {
+        this.transactions = new TransactionTemplate(transactionManager);
         this.jdbc = jdbc;
         this.quotes = quotes;
         this.stock = stock;
@@ -238,10 +243,12 @@ public class CheckoutService {
                 order.contactEmail());
     }
 
-    /** The customer cancels an order that has not been shipped yet (refunded in full when paid online). */
-    @Transactional
+    /**
+     * The customer cancels an order that has not been shipped yet (refunded in full when paid online). Not one
+     * transaction: see {@link #cancel}.
+     */
     public WebOrder cancelByCustomer(long customerId, String number, CancelWebOrderForm form) {
-        var order = order(customerId, number);
+        var order = customerOrder(customerId, number);
         if (order.status() != WebOrder.Status.PLACED) {
             throw conflict(
                     order.status() == WebOrder.Status.SHIPPED
@@ -253,7 +260,7 @@ public class CheckoutService {
                 number,
                 new CancelWebOrderForm(
                         truncate("Cancelled by the customer" + (reason == null ? "" : ": " + reason), 200)));
-        return order(customerId, number);
+        return customerOrder(customerId, number);
     }
 
     /** Records the payment Razorpay Checkout returned to the browser, once its signature checks out. */
@@ -427,9 +434,14 @@ public class CheckoutService {
 
     /**
      * Cancels a placed or shipped order: the items go back into stock and, when it was paid online, the whole
-     * amount is refunded through Razorpay (if Razorpay refuses, nothing changes and the shop can try again).
+     * amount is refunded through Razorpay.
+     *
+     * <p>Deliberately not one transaction, because Shiprocket and Razorpay can't be rolled back. (1) The pickup is
+     * cancelled in Shiprocket; a shipped parcel the courier already has is refused, so no refund goes out while it
+     * is on its way. (2) One short transaction saves the cancel, the refund owed (PENDING, no refund id yet) and the
+     * stock. (3) Only after that commit is the refund sent ({@link #sendRefund}); if Razorpay refuses, the order
+     * stays cancelled with the refund FAILED and the owner can send it again ({@link #retryRefund}).
      */
-    @Transactional
     public WebOrder cancel(String number, CancelWebOrderForm form) {
         var order = byNumber(number);
         if (order.status() != WebOrder.Status.PLACED && order.status() != WebOrder.Status.SHIPPED) {
@@ -437,44 +449,101 @@ public class CheckoutService {
                     "Only a placed or shipped order can be cancelled (this one is " + label(order.status()) + ")");
         }
         var trackingStatus = order.trackingStatus();
-        var shiprocketOrderId = shipment(number).orderId();
+        var shiprocketOrderId = findShipment(number).orderId();
         if (shiprocketOrderId != null) {
             // The courier must not pick it up; if Shiprocket refuses (e.g. already picked up) the shop sees why.
             try {
                 shiprocket.cancel(shiprocketOrderId, number);
                 trackingStatus = "Cancelled in Shiprocket";
             } catch (ResponseStatusException e) {
+                if (order.status() == WebOrder.Status.SHIPPED) {
+                    throw conflict("Shiprocket could not cancel the pickup (" + e.getReason()
+                            + "). Cancel it in Shiprocket first, or wait for the parcel to come back.");
+                }
                 trackingStatus = "Not cancelled in Shiprocket, cancel it there (" + e.getReason() + ")";
             }
         }
-        String refundId = null;
-        String refundStatus = null;
-        BigDecimal refunded = null;
-        if (order.paymentMethod() == WebOrder.PaymentMethod.ONLINE && order.razorpayPaymentId() != null) {
-            var refund = razorpay.refund(order.razorpayPaymentId(), order.totalRupees(), number);
-            refundId = refund.id();
-            refundStatus = refund.status().equals("processed") ? "PROCESSED" : "PENDING";
-            refunded = order.totalRupees();
+        var refundOwed = order.paymentMethod() == WebOrder.PaymentMethod.ONLINE && order.razorpayPaymentId() != null
+                ? order.totalRupees()
+                : null;
+        var tracking = trackingStatus == null ? null : truncate(trackingStatus, 120);
+        transactions.executeWithoutResult(status -> {
+            long id = jdbc.sql("""
+                            UPDATE web_order SET status = 'CANCELLED', cancelled_at = now(), cancel_reason = :reason,
+                                refunded_rupees = :refunded,
+                                refund_status = CASE WHEN CAST(:refunded AS numeric) IS NULL THEN NULL
+                                                     ELSE 'PENDING' END,
+                                refund_id = NULL, refund_error = NULL, refunded_at = NULL, tracking_status = :tracking
+                            WHERE number = :number AND status IN ('PLACED', 'SHIPPED')
+                            RETURNING id
+                            """)
+                    .param("reason", blankToNull(form.reason()))
+                    .param("refunded", refundOwed)
+                    .param("tracking", tracking)
+                    .param(NUMBER, number)
+                    .query(Long.class)
+                    .optional()
+                    .orElseThrow(() -> conflict("This order was cancelled or moved on just now. Reload it."));
+            stock.restore(soldBySku(id));
+            publish(WebOrderEvent.Type.CANCELLED, number);
+        });
+        if (refundOwed != null) {
+            sendRefund(number);
         }
-        long id = jdbc.sql("""
-                        UPDATE web_order SET status = 'CANCELLED', cancelled_at = now(), cancel_reason = :reason,
-                            refund_id = :refund, refunded_rupees = :refunded, refund_status = :refundStatus,
-                            refunded_at = CASE WHEN CAST(:refund AS varchar) IS NULL THEN NULL ELSE now() END,
-                            tracking_status = :tracking
-                        WHERE number = :number
-                        RETURNING id
-                        """)
-                .param("reason", blankToNull(form.reason()))
-                .param("refund", refundId)
-                .param("refunded", refunded)
-                .param("refundStatus", refundStatus)
-                .param("tracking", trackingStatus == null ? null : truncate(trackingStatus, 120))
-                .param(NUMBER, number)
-                .query(Long.class)
-                .single();
-        stock.restore(soldBySku(id));
-        publish(WebOrderEvent.Type.CANCELLED, number);
         return byNumber(number);
+    }
+
+    /** Sends a cancelled order's refund again (the owner's button when it failed or never reached Razorpay). */
+    public WebOrder retryRefund(String number) {
+        var order = byNumber(number);
+        if (order.status() != WebOrder.Status.CANCELLED
+                || order.razorpayPaymentId() == null
+                || order.refundedRupees() == null) {
+            throw conflict("This order has no refund to send");
+        }
+        if (order.refundId() != null && order.refundStatus() != WebOrder.RefundStatus.FAILED) {
+            throw conflict("Razorpay already has this refund (" + order.refundId() + ")");
+        }
+        sendRefund(number);
+        return byNumber(number);
+    }
+
+    /**
+     * Sends the refund a cancelled order is owed, outside any transaction. Reuses a refund Razorpay already made for
+     * this amount (a timed-out earlier try), so calling it again never refunds twice. A refusal is saved, not thrown.
+     */
+    private void sendRefund(String number) {
+        var order = byNumber(number);
+        var paymentId = order.razorpayPaymentId();
+        var amount = order.refundedRupees();
+        if (paymentId == null || amount == null) {
+            return;
+        }
+        try {
+            var refund = razorpay.existingRefund(paymentId, amount, number)
+                    .orElseGet(() -> razorpay.refund(paymentId, amount, number));
+            jdbc.sql("""
+                            UPDATE web_order SET refund_id = :refund, refund_status = :status, refund_error = NULL,
+                                refunded_at = now()
+                            WHERE number = :number
+                            """)
+                    .param("refund", refund.id())
+                    .param("status", refund.status().equals("processed") ? "PROCESSED" : "PENDING")
+                    .param(NUMBER, number)
+                    .update();
+        } catch (ResponseStatusException e) {
+            log.warn("Refund for cancelled order {} failed: {}", LogSafe.clean(number), LogSafe.clean(e.getReason()));
+            // Only when no refund got through meanwhile (a second click that Razorpay refused must not undo it).
+            jdbc.sql("""
+                            UPDATE web_order SET refund_status = 'FAILED', refund_error = :error
+                            WHERE number = :number AND (refund_id IS NULL OR refund_status = 'FAILED')
+                            """)
+                    .param(
+                            "error",
+                            truncate(e.getReason() == null ? "Razorpay could not be reached" : e.getReason(), 200))
+                    .param(NUMBER, number)
+                    .update();
+        }
     }
 
     // --- Shiprocket ----------------------------------------------------------------------------------------------
@@ -487,6 +556,11 @@ public class CheckoutService {
 
     @Transactional(readOnly = true)
     public Shipment shipment(String number) {
+        return findShipment(number);
+    }
+
+    /** {@link #shipment} without a transaction of its own, for callers in this class that must not open one. */
+    private Shipment findShipment(String number) {
         return jdbc.sql("""
                         SELECT shiprocket_order_id AS order_id, shiprocket_shipment_id AS shipment_id,
                                CASE WHEN shiprocket_shipment_id IS NULL THEN NULL ELSE tracking_number END AS awb
@@ -568,6 +642,10 @@ public class CheckoutService {
 
     @Transactional(readOnly = true)
     public WebOrder order(long customerId, String number) {
+        return customerOrder(customerId, number);
+    }
+
+    private WebOrder customerOrder(long customerId, String number) {
         return find(
                         " WHERE o.number = :number AND o.customer_id = :customer",
                         Map.of(NUMBER, number, CUSTOMER, customerId))
@@ -625,7 +703,7 @@ public class CheckoutService {
                    o.address_line1, o.address_line2, o.city, o.state, o.pincode, o.items_rupees, o.shipping_rupees,
                    o.total_rupees, o.razorpay_payment_id, o.paid_at, o.courier, o.tracking_number, o.shipped_at,
                    o.delivered_at, o.cancelled_at, o.cancel_reason, o.refunded_rupees, o.refund_id, o.refund_status,
-                   o.tracking_status, o.shiprocket_shipment_id, o.shipping_label_url, o.created_at
+                   o.refund_error, o.tracking_status, o.shiprocket_shipment_id, o.shipping_label_url, o.created_at
             FROM web_order o
             """;
 
@@ -656,6 +734,7 @@ public class CheckoutService {
             @Nullable BigDecimal refundedRupees,
             @Nullable String refundId,
             WebOrder.@Nullable RefundStatus refundStatus,
+            @Nullable String refundError,
             @Nullable String trackingStatus,
             @Nullable Long shiprocketShipmentId,
             @Nullable String shippingLabelUrl,
@@ -706,6 +785,7 @@ public class CheckoutService {
                 o.refundedRupees(),
                 o.refundId(),
                 o.refundStatus(),
+                o.refundError(),
                 o.trackingStatus(),
                 o.shiprocketShipmentId() != null && o.trackingNumber() != null
                         ? "https://shiprocket.co/tracking/" + o.trackingNumber()

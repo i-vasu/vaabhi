@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import type { Expense, ExpenseCategory, ExpenseForm, PaymentMode } from "@vaabhi/api-client";
 import { MonthPicker } from "@/components/money";
@@ -73,20 +74,31 @@ export default function ExpensesPage() {
             </EmptyState>
           ) : (
             <ListCard>
-              {e.items.map((expense) => (
-                <button
-                  key={expense.id}
-                  type="button"
-                  className="block w-full text-left hover:bg-panel-2"
-                  onClick={() => setEditing({ expense })}
-                >
-                  <ListRow
-                    title={expense.description}
-                    subtitle={`${formatDate(expense.spentOn)} · ${categoryLabel(expense.category)}${expense.paidTo ? ` · ${expense.paidTo}` : ""}`}
-                    trailing={<span className="font-medium text-ink">{rupees(expense.amountRupees)}</span>}
-                  />
-                </button>
-              ))}
+              {e.items.map((expense) =>
+                expense.fromPayroll ? (
+                  // Paid from a payslip: changed from Payroll, so it is a link there, not an editable row.
+                  <Link key={expense.id} href="/payroll/" className="block hover:bg-panel-2">
+                    <ListRow
+                      title={expense.description}
+                      subtitle={`${formatDate(expense.spentOn)} · ${categoryLabel(expense.category)} · from Payroll`}
+                      trailing={<span className="font-medium text-ink">{rupees(expense.amountRupees)}</span>}
+                    />
+                  </Link>
+                ) : (
+                  <button
+                    key={expense.id}
+                    type="button"
+                    className="block w-full text-left hover:bg-panel-2"
+                    onClick={() => setEditing({ expense })}
+                  >
+                    <ListRow
+                      title={expense.description}
+                      subtitle={`${formatDate(expense.spentOn)} · ${categoryLabel(expense.category)}${expense.paidTo ? ` · ${expense.paidTo}` : ""}`}
+                      trailing={<span className="font-medium text-ink">{rupees(expense.amountRupees)}</span>}
+                    />
+                  </button>
+                ),
+              )}
             </ListCard>
           )}
         </>

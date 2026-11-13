@@ -70,6 +70,12 @@ class AdminWebOrderController {
         return service.cancel(number, form);
     }
 
+    /** Sends a cancelled order's refund again, when Razorpay refused it or it never got there. */
+    @PostMapping("/{number}/refund")
+    WebOrder retryOnlineOrderRefund(@PathVariable("number") String number) {
+        return service.retryRefund(number);
+    }
+
     @PostMapping("/returns/{returnNumber}/approve")
     WebOrder approveReturn(
             @PathVariable("returnNumber") String returnNumber, @Valid @RequestBody ReturnDecisionForm form) {

@@ -6,7 +6,7 @@
     },
     "servers": [
         {
-            "url": "http://localhost:8080",
+            "url": "http://localhost:8081",
             "description": "Generated server url"
         }
     ],
@@ -4393,6 +4393,36 @@
                     },
                     "required": true
                 },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebOrder"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/online-orders/{number}/refund": {
+            "post": {
+                "tags": [
+                    "admin-web-order-controller"
+                ],
+                "operationId": "retryOnlineOrderRefund",
+                "parameters": [
+                    {
+                        "name": "number",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -11201,6 +11231,9 @@
                     "createdAt": {
                         "type": "string",
                         "format": "date-time"
+                    },
+                    "fromPayroll": {
+                        "type": "boolean"
                     }
                 },
                 "required": [
@@ -11209,6 +11242,7 @@
                     "createdAt",
                     "createdBy",
                     "description",
+                    "fromPayroll",
                     "id",
                     "mode",
                     "paidTo",
@@ -12673,6 +12707,12 @@
                             "FAILED"
                         ]
                     },
+                    "refundError": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
                     "trackingStatus": {
                         "type": [
                             "string",
@@ -12734,6 +12774,7 @@
                     "paymentMethod",
                     "pincode",
                     "razorpayPaymentId",
+                    "refundError",
                     "refundId",
                     "refundStatus",
                     "refundedRupees",
@@ -15439,11 +15480,22 @@
                             "CARD",
                             "BANK"
                         ]
+                    },
+                    "settlement": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "REFUND",
+                            "KEEP"
+                        ]
                     }
                 },
                 "required": [
                     "collectRupees",
                     "mode",
+                    "settlement",
                     "status"
                 ]
             },

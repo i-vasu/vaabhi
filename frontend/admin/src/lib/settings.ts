@@ -10,6 +10,11 @@ export function describeError(error: unknown): { message: string; fields: FieldE
   if (error instanceof ApiError) {
     return { message: error.detail ?? "Could not save. Try again.", fields: error.errors };
   }
+  // fetch() rejects with a TypeError when the request never got an answer; anything else (a photo the browser
+  // cannot open, a missing WebP encoder…) says what went wrong itself.
+  if (error instanceof Error && !(error instanceof TypeError) && error.message) {
+    return { message: error.message, fields: [] };
+  }
   return { message: "Could not reach the server. Check your connection and try again.", fields: [] };
 }
 
