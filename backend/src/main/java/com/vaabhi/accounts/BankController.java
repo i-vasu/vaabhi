@@ -4,8 +4,10 @@ import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +30,7 @@ class BankController {
     private final BankImportService imports;
     private final BankMatcher matcher;
     private final BankLineService lines;
+    private final BankReconciliationService reconciliation;
     private final RazorpaySettlementQuery settlements;
     private final CodRemittanceService remittances;
 
@@ -35,11 +38,13 @@ class BankController {
             BankImportService imports,
             BankMatcher matcher,
             BankLineService lines,
+            BankReconciliationService reconciliation,
             RazorpaySettlementQuery settlements,
             CodRemittanceService remittances) {
         this.imports = imports;
         this.matcher = matcher;
         this.lines = lines;
+        this.reconciliation = reconciliation;
         this.settlements = settlements;
         this.remittances = remittances;
     }
@@ -97,6 +102,22 @@ class BankController {
     @GetMapping("/statements/{id}")
     BankStatementDetail getStatement(@PathVariable long id, @RequestParam(required = false) @Nullable String status) {
         return imports.detail(id, status);
+    }
+
+    @GetMapping("/statements/{id}/report")
+    BankReconciliation getReport(@PathVariable long id) {
+        return reconciliation.report(id);
+    }
+
+    @GetMapping(value = "/statements/{id}/report.csv", produces = "text/csv")
+    ResponseEntity<String> reportCsv(@PathVariable long id) {
+        var report = reconciliation.report(id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"bank-reconciliation-" + report.statement().periodTo() + ".csv\"")
+                .body(reconciliation.csv(id));
     }
 
     // --- Razorpay settlements -----------------------------------------------------------------------------------
