@@ -210,6 +210,35 @@ export const alterationPage: AlterationPage = {
   pageSize: 20,
 };
 
+export const alterationPaid: Alteration = {
+  id: 10,
+  number: "ALT-110",
+  client: clientSummary,
+  orderId: null,
+  orderNumber: null,
+  status: "READY",
+  readyBy: "2026-11-04",
+  paid: true,
+  totalRupees: 400,
+  collectedRupees: 200,
+  balanceRupees: 200,
+  notes: null,
+  undertaking: "I understand that alterations are best-effort and the final fit is not guaranteed.",
+  createdBy: "Asha Rao",
+  createdAt: "2026-11-02T10:00:00+05:30",
+  deliveredAt: null,
+  items: [
+    {
+      id: 2,
+      kind: "LENGTH",
+      garment: "Silk saree blouse",
+      instructions: "Shorten 1 inch",
+      photoKey: null,
+      costRupees: 400,
+    },
+  ],
+};
+
 export const serviceProducts: ServiceProduct[] = [
   {
     id: 11,
@@ -338,9 +367,24 @@ export const expenseList: ExpenseList = {
       createdBy: "Asha Rao",
       createdAt: "2026-11-01T10:00:00+05:30",
     },
+    {
+      id: 4,
+      fromPayroll: true,
+      spentOn: "2026-11-05",
+      category: "SALARY",
+      description: "Salary — Sita Cutter",
+      amountRupees: 20000,
+      mode: "BANK",
+      paidTo: "Sita Cutter",
+      createdBy: "Asha Rao",
+      createdAt: "2026-11-05T10:00:00+05:30",
+    },
   ],
-  totalRupees: 15000,
-  byCategory: [{ category: "RENT", amountRupees: 15000 }],
+  totalRupees: 35000,
+  byCategory: [
+    { category: "RENT", amountRupees: 15000 },
+    { category: "SALARY", amountRupees: 20000 },
+  ],
 };
 
 export const ledger: Ledger = {
@@ -475,8 +519,18 @@ export function serveTailoring(): { sent: Sent[] } {
     }),
     http.get(`${base}/alterations`, reply(alterationPage)),
     http.post(`${base}/alterations`, reply(alteration, 201)),
-    http.get(`${base}/alterations/:id`, reply(alteration)),
-    http.post(`${base}/alterations/:id/progress`, reply({ ...alteration, status: "DELIVERED", balanceRupees: 0 })),
+    http.get(`${base}/alterations/:id`, async ({ request, params }) => {
+      await record(request);
+      return HttpResponse.json(params.id === "10" ? alterationPaid : alteration);
+    }),
+    http.post(`${base}/alterations/:id/progress`, async ({ request, params }) => {
+      await record(request);
+      return HttpResponse.json(
+        params.id === "10"
+          ? { ...alterationPaid, status: "CANCELLED" }
+          : { ...alteration, status: "DELIVERED", balanceRupees: 0 },
+      );
+    }),
     http.get(`${base}/money/invoices`, reply(invoicePage)),
     http.get(`${base}/money/invoices/:id`, reply(invoice)),
     http.post(
