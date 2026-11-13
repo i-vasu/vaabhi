@@ -119,19 +119,41 @@ export function moved(ids: number[], id: number, step: -1 | 1): number[] {
  */
 export async function uploadSiteImage(file: Blob, resize: Resize = resizeToWebp): Promise<string> {
   const upload = await api.admin.storefront.startUpload();
-  const renditions = await resize(
-    file,
-    upload.renditions.map((r) => r.width),
-  );
+  let renditions: Rendition[];
+  try {
+    renditions = await resize(
+      file,
+      upload.renditions.map((r) => r.width),
+    );
+  } catch (e) {
+    if (isHeic(file)) throw new Error(HEIC_MESSAGE);
+    if (e instanceof Error && e.name === "Error" && e.message) throw e; // e.g. no WebP encoder in this browser
+    throw new Error("This browser could not open the photo. Try a JPEG or PNG.");
+  }
   for (const target of upload.renditions) {
     const rendition = renditions.find((r) => r.width === target.width);
     if (!rendition) throw new Error(`No ${target.width} px version was made`);
-    const response = await fetch(target.uploadUrl, {
-      method: "PUT",
-      body: rendition.blob,
-      headers: { "Content-Type": "image/webp", "Cache-Control": "public, max-age=31536000, immutable" },
-    });
+    let response: Response;
+    try {
+      response = await fetch(target.uploadUrl, {
+        method: "PUT",
+        body: rendition.blob,
+        headers: { "Content-Type": "image/webp", "Cache-Control": "public, max-age=31536000, immutable" },
+      });
+    } catch {
+      // The API answered but storage did not: usually R2's CORS policy not listing this admin address.
+      throw new Error(
+        `Photo storage did not accept the upload from ${window.location.origin}. Check your connection, or add this address to the R2 bucket's CORS policy.`,
+      );
+    }
     if (!response.ok) throw new ApiError(response.status, `Uploading the ${target.width} px version failed`);
   }
   return upload.key;
+}
+
+const HEIC_MESSAGE =
+  "This is an iPhone HEIC photo, which this browser cannot open. Upload it from the iPhone itself (it converts to JPEG), or export it as JPEG first.";
+
+function isHeic(file: Blob): boolean {
+  return /^image\/hei[cf]/.test(file.type) || (file instanceof File && /\.hei[cf]$/i.test(file.name));
 }
