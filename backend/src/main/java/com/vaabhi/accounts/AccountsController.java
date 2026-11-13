@@ -12,7 +12,10 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -44,6 +47,7 @@ class AccountsController {
     private final AccountsStatusService status;
     private final JournalSweeper sweeper;
     private final DailyBooksCheck booksCheck;
+    private final InputGstReport inputGst;
     private final Clock clock;
 
     AccountsController(
@@ -56,6 +60,7 @@ class AccountsController {
             AccountsStatusService status,
             JournalSweeper sweeper,
             DailyBooksCheck booksCheck,
+            InputGstReport inputGst,
             Clock clock) {
         this.chart = chart;
         this.journal = journal;
@@ -66,6 +71,7 @@ class AccountsController {
         this.status = status;
         this.sweeper = sweeper;
         this.booksCheck = booksCheck;
+        this.inputGst = inputGst;
         this.clock = clock;
     }
 
@@ -159,6 +165,25 @@ class AccountsController {
     TrialBalance trialBalance(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @Nullable LocalDate asOf) {
         return journal.trialBalance(asOf != null ? asOf : today());
+    }
+
+    @GetMapping("/input-gst")
+    List<InputGstMonth> inputGst(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return inputGst.months(from, to);
+    }
+
+    @GetMapping(value = "/input-gst.csv", produces = "text/csv")
+    ResponseEntity<String> inputGstCsv(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"input-gst-" + from + "-" + to + ".csv\"")
+                .body(inputGst.csv(from, to));
     }
 
     // --- opening balances ---------------------------------------------------------------------------------------
