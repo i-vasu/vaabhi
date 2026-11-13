@@ -48,6 +48,17 @@ searches and directory listings; they are build output and very large.
 
 These rules apply to every agent and subagent working in this repository.
 
+## Subagents: DeepSeek by default
+
+- When delegating work to a subagent, use the `deepseek` agent (`.claude/agents/deepseek.md`) unless the user asks
+  for another one. It runs the task on DeepSeek via `.claude/deepseek/run.sh`.
+- Give it a complete spec (files, behaviour, constraints); it starts with no context. Review its diff before
+  committing; it never commits or pushes.
+- Use a Claude agent instead only when DeepSeek can't do the job: read-only research across GitHub/CI (it has no MCP
+  tools), or when a DeepSeek run fails or times out. Say so when you fall back.
+- Needs `api.deepseek.com` reachable with a key: in cloud sessions the `vaabhi` environment's proxy adds it; locally
+  set `DEEPSEEK_API_KEY`.
+
 ## Build the happy path first
 
 - Focus on making the real end-to-end flow work: admin action → API → database/storage → storefront.
