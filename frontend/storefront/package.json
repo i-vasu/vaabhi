@@ -16,7 +16,7 @@
     "@vaabhi/api-client": "workspace:*",
     "@vaabhi/observability": "workspace:*",
     "@vaabhi/ui": "workspace:*",
-    "@vercel/otel": "2.2.0",
+    "@vercel/otel": "2.3.0",
     "next": "16.4.6",
     "react": "19.3.1",
     "react-dom": "19.3.1"
