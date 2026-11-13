@@ -49,8 +49,8 @@ class PurchasePostingIT extends BooksFixtures {
     }
 
     private long supplier() {
-        return suppliers.create(new SupplierForm(
-                unique("Supplier"), null, null, null, null, null, null, null, null, null));
+        return suppliers.create(
+                new SupplierForm(unique("Supplier"), null, null, null, null, null, null, null, null, null));
     }
 
     private String supplierName(long party) {
@@ -64,10 +64,7 @@ class PurchasePostingIT extends BooksFixtures {
         return jdbc.sql("""
                         INSERT INTO stock_item (name, unit, reorder_level, cost_rupees)
                         VALUES (:name, 'M', 0, 0) RETURNING id
-                        """)
-                .param("name", unique("Cloth"))
-                .query(Long.class)
-                .single();
+                        """).param("name", unique("Cloth")).query(Long.class).single();
     }
 
     private long computersClass() {
@@ -165,7 +162,15 @@ class PurchasePostingIT extends BooksFixtures {
             long party, @Nullable Long tdsSection, String tds, List<SupplierBillLineForm> lines) {
         return bills.create(
                 new SupplierBillForm(
-                        party, unique("BILL-"), today(), null, null, tdsSection, new BigDecimal(tds), null, lines,
+                        party,
+                        unique("BILL-"),
+                        today(),
+                        null,
+                        null,
+                        tdsSection,
+                        new BigDecimal(tds),
+                        null,
+                        lines,
                         null),
                 null);
     }
@@ -232,8 +237,7 @@ class PurchasePostingIT extends BooksFixtures {
     @Test
     void cancelAfterPostingMirrors() {
         long party = supplier();
-        var bill = createBill(
-                party, null, "0", List.of(expenseLine(accountId("EXPENSE_OTHER"), "1000", "18")));
+        var bill = createBill(party, null, "0", List.of(expenseLine(accountId("EXPENSE_OTHER"), "1000", "18")));
         sweeper.sweepNow();
         entry("SUPPLIER_BILL", bill.id(), "ISSUE");
 
@@ -251,8 +255,7 @@ class PurchasePostingIT extends BooksFixtures {
     @Test
     void cancelBeforePostingPostsNothing() {
         long party = supplier();
-        var bill = createBill(
-                party, null, "0", List.of(expenseLine(accountId("EXPENSE_OTHER"), "1000", "0")));
+        var bill = createBill(party, null, "0", List.of(expenseLine(accountId("EXPENSE_OTHER"), "1000", "0")));
 
         bills.cancel(bill.id(), today(), "Typed twice", null);
         sweeper.sweepNow();
@@ -265,9 +268,7 @@ class PurchasePostingIT extends BooksFixtures {
         long party = supplier();
         expenseBill(party, "1000");
         var payment = payments.create(
-                new SupplierPaymentForm(
-                        party, today(), "BANK", new BigDecimal("600"), "UTR-600", null, null),
-                null);
+                new SupplierPaymentForm(party, today(), "BANK", new BigDecimal("600"), "UTR-600", null, null), null);
 
         sweeper.sweepNow();
 
@@ -291,10 +292,7 @@ class PurchasePostingIT extends BooksFixtures {
         var matched = jdbc.sql("""
                         SELECT status, journal_entry_id, matched_by, matched_at
                         FROM bank_line WHERE id = :id
-                        """)
-                .param("id", line)
-                .query(BankLineRow.class)
-                .single();
+                        """).param("id", line).query(BankLineRow.class).single();
         assertThat(matched.status()).isEqualTo("MATCHED");
         assertThat(matched.journalEntryId()).isEqualTo(posted.id());
         assertThat(matched.matchedBy()).isEqualTo("system");

@@ -39,8 +39,8 @@ class SupplierBillServiceIT extends BooksFixtures {
     }
 
     private long supplier(@Nullable String pan, @Nullable Long tdsSectionId) {
-        return suppliers.create(new SupplierForm(
-                unique("Supplier"), null, null, null, pan, null, null, null, null, tdsSectionId));
+        return suppliers.create(
+                new SupplierForm(unique("Supplier"), null, null, null, pan, null, null, null, null, tdsSectionId));
     }
 
     private long tdsSection(String code) {
@@ -54,10 +54,7 @@ class SupplierBillServiceIT extends BooksFixtures {
         return jdbc.sql("""
                         INSERT INTO stock_item (name, unit, reorder_level, cost_rupees)
                         VALUES (:name, 'M', 0, 0) RETURNING id
-                        """)
-                .param("name", unique("Cloth"))
-                .query(Long.class)
-                .single();
+                        """).param("name", unique("Cloth")).query(Long.class).single();
     }
 
     private long expenseAccount() {
@@ -119,8 +116,7 @@ class SupplierBillServiceIT extends BooksFixtures {
     }
 
     private static SupplierBillForm form(long party, String billNo, List<SupplierBillLineForm> lines) {
-        return new SupplierBillForm(
-                party, billNo, today(), null, null, null, BigDecimal.ZERO, null, lines, null);
+        return new SupplierBillForm(party, billNo, today(), null, null, null, BigDecimal.ZERO, null, lines, null);
     }
 
     @Test
@@ -130,10 +126,13 @@ class SupplierBillServiceIT extends BooksFixtures {
         long assetClass = assetClass();
 
         var bill = bills.create(
-                form(party, unique("BILL-"), List.of(
-                        stockLine(item, "10", "1000"),
-                        expenseLine(expenseAccount(), "400"),
-                        assetLine(assetClass, "2000"))),
+                form(
+                        party,
+                        unique("BILL-"),
+                        List.of(
+                                stockLine(item, "10", "1000"),
+                                expenseLine(expenseAccount(), "400"),
+                                assetLine(assetClass, "2000"))),
                 null);
 
         assertThat(bill.lines()).hasSize(3);
@@ -201,8 +200,7 @@ class SupplierBillServiceIT extends BooksFixtures {
     @Test
     void cancelWithAllocationIs409() {
         long party = supplier(null, null);
-        var bill = bills.create(
-                form(party, unique("BILL-"), List.of(expenseLine(expenseAccount(), "1000"))), null);
+        var bill = bills.create(form(party, unique("BILL-"), List.of(expenseLine(expenseAccount(), "1000"))), null);
         long payment = jdbc.sql("""
                         INSERT INTO supplier_payment (party_id, paid_on, mode, amount_rupees)
                         VALUES (:party, CAST(:date AS date), 'CASH', 1000) RETURNING id
@@ -214,10 +212,7 @@ class SupplierBillServiceIT extends BooksFixtures {
         jdbc.sql("""
                         INSERT INTO supplier_payment_allocation (payment_id, bill_id, amount_rupees)
                         VALUES (:payment, :bill, 1000)
-                        """)
-                .param("payment", payment)
-                .param("bill", bill.id())
-                .update();
+                        """).param("payment", payment).param("bill", bill.id()).update();
 
         assertThatThrownBy(() -> bills.cancel(bill.id(), today(), "Wrong bill", null))
                 .isInstanceOf(ResponseStatusException.class)
@@ -227,8 +222,7 @@ class SupplierBillServiceIT extends BooksFixtures {
     @Test
     void updatePostedBillIs409() {
         long party = supplier(null, null);
-        var bill = bills.create(
-                form(party, unique("BILL-"), List.of(expenseLine(expenseAccount(), "400"))), null);
+        var bill = bills.create(form(party, unique("BILL-"), List.of(expenseLine(expenseAccount(), "400"))), null);
         jdbc.sql("""
                         INSERT INTO journal_entry (number, entry_date, source_type, source_id, source_step, narration)
                         VALUES (:number, CAST(:date AS date), 'SUPPLIER_BILL', :bill, 'ISSUE', 'Test bill')
@@ -239,9 +233,7 @@ class SupplierBillServiceIT extends BooksFixtures {
                 .update();
 
         assertThatThrownBy(() -> bills.update(
-                        bill.id(),
-                        form(party, bill.billNo(), List.of(expenseLine(expenseAccount(), "300"))),
-                        null))
+                        bill.id(), form(party, bill.billNo(), List.of(expenseLine(expenseAccount(), "300"))), null))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining("in the books");
     }

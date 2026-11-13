@@ -52,7 +52,10 @@ public class DepreciationScheduler {
                         FROM fixed_asset f
                         JOIN asset_class c ON c.id = f.asset_class_id
                         WHERE f.id = :id
-                        """).param("id", assetId).query(AssetRow.class).optional()
+                        """)
+                .param("id", assetId)
+                .query(AssetRow.class)
+                .optional()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Asset not found"));
         var start = settings.get().startDate();
         if (start == null) {
@@ -76,7 +79,8 @@ public class DepreciationScheduler {
                 asset.disposedOn());
         deleteUnposted(assetId);
         var posted = new HashSet<YearMonth>();
-        for (var month : jdbc.sql("""
+        for (var month :
+                jdbc.sql("""
                         SELECT d.month FROM asset_depreciation d
                         WHERE d.asset_id = :id AND EXISTS (SELECT 1 FROM journal_entry j
                                 WHERE j.source_type = 'ASSET_DEPRECIATION' AND j.source_id = d.id)
@@ -102,7 +106,9 @@ public class DepreciationScheduler {
     @Scheduled(cron = "0 15 1 * * *", zone = "Asia/Kolkata")
     @Transactional
     public void refreshAll() {
-        for (long id : jdbc.sql("SELECT id FROM fixed_asset ORDER BY id").query(Long.class).list()) {
+        for (long id : jdbc.sql("SELECT id FROM fixed_asset ORDER BY id")
+                .query(Long.class)
+                .list()) {
             refresh(id);
         }
     }

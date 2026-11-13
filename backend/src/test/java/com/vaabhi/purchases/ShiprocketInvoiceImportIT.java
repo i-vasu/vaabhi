@@ -48,11 +48,7 @@ class ShiprocketInvoiceImportIT extends BooksFixtures {
             String status) {}
 
     private record LineRow(
-            BigDecimal cgstRupees,
-            BigDecimal sgstRupees,
-            BigDecimal igstRupees,
-            String description,
-            String hsn) {}
+            BigDecimal cgstRupees, BigDecimal sgstRupees, BigDecimal igstRupees, String description, String hsn) {}
 
     @BeforeEach
     void useShiprocketSupplier() {
@@ -70,7 +66,8 @@ class ShiprocketInvoiceImportIT extends BooksFixtures {
 
     @AfterEach
     void clearShiprocketSupplier() {
-        jdbc.sql("UPDATE books_setting SET shiprocket_party_id = NULL WHERE id = 1").update();
+        jdbc.sql("UPDATE books_setting SET shiprocket_party_id = NULL WHERE id = 1")
+                .update();
     }
 
     private static LocalDate today() {
@@ -98,10 +95,7 @@ class ShiprocketInvoiceImportIT extends BooksFixtures {
         return jdbc.sql("""
                         SELECT bill_no, taxable_rupees, tax_rupees, total_rupees, source, status
                         FROM supplier_bill WHERE party_id = :party ORDER BY bill_no
-                        """)
-                .param("party", supplierId)
-                .query(BillRow.class)
-                .list();
+                        """).param("party", supplierId).query(BillRow.class).list();
     }
 
     @Test
@@ -134,8 +128,7 @@ class ShiprocketInvoiceImportIT extends BooksFixtures {
 
     @Test
     void reimportSkips() {
-        var file = csv(
-                HEADER, "SR-1," + today() + ",AWB1,100,18,118", "SR-2," + today() + ",AWB2,500,90,590");
+        var file = csv(HEADER, "SR-1," + today() + ",AWB1,100,18,118", "SR-2," + today() + ",AWB2,500,90,590");
         imports.importFile(file, standardMapping(), null);
 
         var again = imports.importFile(file, standardMapping(), null);
@@ -148,8 +141,8 @@ class ShiprocketInvoiceImportIT extends BooksFixtures {
 
     @Test
     void splitColumnsUsedWhenMapped() {
-        var file = csv(
-                "Invoice No,Invoice Date,Freight,CGST,SGST,IGST,Total", "SR-9," + today() + ",1000,90,90,0,1180");
+        var file =
+                csv("Invoice No,Invoice Date,Freight,CGST,SGST,IGST,Total", "SR-9," + today() + ",1000,90,90,0,1180");
         var mapping = mapping(Map.of(
                 "invoiceNo", 0,
                 "invoiceDate", 1,
@@ -170,10 +163,7 @@ class ShiprocketInvoiceImportIT extends BooksFixtures {
                         FROM supplier_bill_line l
                         JOIN supplier_bill b ON b.id = l.bill_id
                         WHERE b.party_id = :party AND b.bill_no = 'SR-9'
-                        """)
-                .param("party", supplierId)
-                .query(LineRow.class)
-                .single();
+                        """).param("party", supplierId).query(LineRow.class).single();
         assertThat(line.cgstRupees()).isEqualByComparingTo("90");
         assertThat(line.sgstRupees()).isEqualByComparingTo("90");
         assertThat(line.igstRupees()).isEqualByComparingTo("0");
@@ -183,11 +173,12 @@ class ShiprocketInvoiceImportIT extends BooksFixtures {
 
     @Test
     void noSupplierSetIs409() {
-        jdbc.sql("UPDATE books_setting SET shiprocket_party_id = NULL WHERE id = 1").update();
+        jdbc.sql("UPDATE books_setting SET shiprocket_party_id = NULL WHERE id = 1")
+                .update();
         var file = csv(HEADER, "SR-1," + today() + ",AWB1,100,18,118");
 
-        var error = assertThrows(
-                ResponseStatusException.class, () -> imports.importFile(file, standardMapping(), null));
+        var error =
+                assertThrows(ResponseStatusException.class, () -> imports.importFile(file, standardMapping(), null));
 
         assertThat(error.getStatusCode().value()).isEqualTo(409);
         assertThat(error.getReason()).contains("Pick the Shiprocket supplier in Books settings first");
@@ -196,10 +187,7 @@ class ShiprocketInvoiceImportIT extends BooksFixtures {
 
     @Test
     void badDateRowListed() {
-        var file = csv(
-                HEADER,
-                "SR-10," + today() + ",AWB1,100,18,118",
-                "SR-11,not-a-date,AWB2,100,18,118");
+        var file = csv(HEADER, "SR-10," + today() + ",AWB1,100,18,118", "SR-11,not-a-date,AWB2,100,18,118");
 
         var summary = imports.importFile(file, standardMapping(), null);
 

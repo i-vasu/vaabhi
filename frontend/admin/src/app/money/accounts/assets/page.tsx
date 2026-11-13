@@ -115,15 +115,7 @@ function OpeningAssetSheet({
 }
 
 /** Sell, scrap or write off an asset; its book value leaves the books. */
-function DisposeSheet({
-  asset,
-  onClose,
-  onDone,
-}: {
-  asset: FixedAssetView;
-  onClose: () => void;
-  onDone: () => void;
-}) {
+function DisposeSheet({ asset, onClose, onDone }: { asset: FixedAssetView; onClose: () => void; onDone: () => void }) {
   const [disposedOn, setDisposedOn] = useState(today());
   const [proceeds, setProceeds] = useState("0");
   const [mode, setMode] = useState<PaymentMode>("CASH");
@@ -151,12 +143,7 @@ function DisposeSheet({
         Cost {rupees(asset.costRupees)} · Book value {rupees(asset.bookValueRupees)}
       </p>
       <div className="space-y-3">
-        <TextField
-          label="Disposed on"
-          type="date"
-          value={disposedOn}
-          onChange={(e) => setDisposedOn(e.target.value)}
-        />
+        <TextField label="Disposed on" type="date" value={disposedOn} onChange={(e) => setDisposedOn(e.target.value)} />
         <TextField
           label="Proceeds"
           inputMode="decimal"
@@ -188,15 +175,7 @@ function percent(text: string, max: number): number | null {
 }
 
 /** A class of asset: how long it lasts and its two accounts. */
-function ClassSheet({
-  klass,
-  onClose,
-  onDone,
-}: {
-  klass: AssetClassView;
-  onClose: () => void;
-  onDone: () => void;
-}) {
+function ClassSheet({ klass, onClose, onDone }: { klass: AssetClassView; onClose: () => void; onDone: () => void }) {
   const [name, setName] = useState(klass.name);
   const [lifeYears, setLifeYears] = useState(String(klass.lifeYears));
   const [residual, setResidual] = useState(String(klass.residualPercent));

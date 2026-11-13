@@ -82,9 +82,7 @@ function SupplierView({ id }: { id: number }) {
         <Fact label="Phone">{balance.phone ?? "—"}</Fact>
         <Fact label="State">{balance.state ?? "—"}</Fact>
         <Fact label="Email">{v.email ?? "—"}</Fact>
-        <Fact label="Address">
-          {[v.address, v.city, v.pinCode].filter(Boolean).join(", ") || "—"}
-        </Fact>
+        <Fact label="Address">{[v.address, v.city, v.pinCode].filter(Boolean).join(", ") || "—"}</Fact>
       </dl>
 
       <SectionLabel>Statement</SectionLabel>
@@ -182,9 +180,10 @@ function PaySheet({
     .filter((bill) => bill.outstandingRupees > 0);
 
   const defaults = Object.fromEntries(
-    defaultAllocation(openBills, amount).map(
-      (allocation): [number, string] => [allocation.billId, allocation.amountRupees],
-    ),
+    defaultAllocation(openBills, amount).map((allocation): [number, string] => [
+      allocation.billId,
+      allocation.amountRupees,
+    ]),
   );
   const shown = edited
     ? allocationText

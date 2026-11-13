@@ -50,8 +50,7 @@ class PurchasesSchemaIT extends BooksFixtures {
                 .single();
     }
 
-    private long bill(
-            long party, String billNo, String taxable, String tax, String total, String tds, String payable) {
+    private long bill(long party, String billNo, String taxable, String tax, String total, String tds, String payable) {
         return jdbc.sql("""
                         INSERT INTO supplier_bill (party_id, bill_no, bill_date, taxable_rupees, tax_rupees,
                                                    total_rupees, tds_rupees, payable_rupees)
@@ -86,7 +85,9 @@ class PurchasesSchemaIT extends BooksFixtures {
                         .as("account %s", code)
                         .isEqualTo(1));
 
-        assertThat(jdbc.sql("SELECT count(*) FROM asset_class").query(Long.class).single())
+        assertThat(jdbc.sql("SELECT count(*) FROM asset_class")
+                        .query(Long.class)
+                        .single())
                 .isGreaterThanOrEqualTo(4);
         assertThat(jdbc.sql("SELECT life_years FROM asset_class WHERE name = 'Plant & machinery'")
                         .query(Integer.class)
@@ -149,9 +150,7 @@ class PurchasesSchemaIT extends BooksFixtures {
                                 UPDATE supplier_bill
                                 SET total_rupees = 900, taxable_rupees = 900, payable_rupees = 900
                                 WHERE id = :id
-                                """)
-                        .param("id", bill)
-                        .update())
+                                """).param("id", bill).update())
                 .isInstanceOf(DataAccessException.class)
                 .hasMessageContaining("in the books");
 
@@ -172,18 +171,12 @@ class PurchasesSchemaIT extends BooksFixtures {
                         VALUES ('Laptop', (SELECT id FROM asset_class WHERE name = 'Computers'),
                                 50000, CAST(:date AS date))
                         RETURNING id
-                        """)
-                .param("date", today())
-                .query(Long.class)
-                .single();
+                        """).param("date", today()).query(Long.class).single();
 
         jdbc.sql("""
                         INSERT INTO asset_depreciation (asset_id, month, amount_rupees)
                         VALUES (:asset, CAST(:month AS date), 1000)
-                        """)
-                .param("asset", asset)
-                .param("month", firstOfMonth())
-                .update();
+                        """).param("asset", asset).param("month", firstOfMonth()).update();
 
         assertThatThrownBy(() -> jdbc.sql("""
                                 INSERT INTO asset_depreciation (asset_id, month, amount_rupees)

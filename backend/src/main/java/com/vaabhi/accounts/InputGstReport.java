@@ -81,12 +81,7 @@ public class InputGstReport {
 
     public List<InputGstMonth> months(LocalDate from, LocalDate to) {
         checkRange(from, to);
-        return jdbc.sql(MONTHS_SQL)
-                .param("from", from)
-                .param("to", to)
-                .query(MonthRow.class)
-                .list()
-                .stream()
+        return jdbc.sql(MONTHS_SQL).param("from", from).param("to", to).query(MonthRow.class).list().stream()
                 .map(MonthRow::toMonth)
                 .toList();
     }

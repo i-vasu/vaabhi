@@ -82,7 +82,8 @@ class SupplierPaymentPosting implements PostingRule {
     /** Marks the payment's bank line matched with the new entry, leaving a line that is no longer unmatched alone. */
     @Override
     public void posted(long sourceId, long entryId) {
-        support.jdbc().sql("""
+        support.jdbc()
+                .sql("""
                         UPDATE bank_line
                         SET status = 'MATCHED', journal_entry_id = :entry, matched_by = 'system', matched_at = now()
                         WHERE id = (SELECT bank_line_id FROM supplier_payment WHERE id = :payment)

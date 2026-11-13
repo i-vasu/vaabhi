@@ -52,8 +52,8 @@ class SupplierPaymentServiceIT extends BooksFixtures {
     }
 
     private long supplier() {
-        return suppliers.create(new SupplierForm(
-                unique("Supplier"), null, null, null, null, null, null, null, null, null));
+        return suppliers.create(
+                new SupplierForm(unique("Supplier"), null, null, null, null, null, null, null, null, null));
     }
 
     private SupplierBillView bill(
@@ -152,8 +152,7 @@ class SupplierPaymentServiceIT extends BooksFixtures {
         assertThatThrownBy(() -> pay(
                         party,
                         "1500",
-                        List.of(new SupplierPaymentForm.PaymentAllocationInput(
-                                bill.id(), new BigDecimal("1200")))))
+                        List.of(new SupplierPaymentForm.PaymentAllocationInput(bill.id(), new BigDecimal("1200")))))
                 .isInstanceOfSatisfying(ResponseStatusException.class, e -> {
                     assertThat(e.getStatusCode().value()).isEqualTo(400);
                     assertThat(e.getReason()).contains("More than this bill's balance");
@@ -190,8 +189,8 @@ class SupplierPaymentServiceIT extends BooksFixtures {
         long section = jdbc.sql("SELECT id FROM tds_section WHERE code = '194C-O'")
                 .query(Long.class)
                 .single();
-        long party = suppliers.create(new SupplierForm(
-                unique("Supplier"), null, null, null, "ABCDE1234F", null, null, null, null, section));
+        long party = suppliers.create(
+                new SupplierForm(unique("Supplier"), null, null, null, "ABCDE1234F", null, null, null, null, section));
         var line = new SupplierBillLineForm(
                 SupplierBillLineForm.Kind.EXPENSE,
                 "Freight",

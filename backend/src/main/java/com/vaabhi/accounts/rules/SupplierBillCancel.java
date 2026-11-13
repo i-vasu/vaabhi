@@ -40,8 +40,7 @@ class SupplierBillCancel implements PostingRule {
 
     @Override
     public List<Long> pending(LocalDate start, int limit) {
-        return support.pending(
-                """
+        return support.pending("""
                         SELECT s.id FROM supplier_bill s
                         WHERE s.status = 'CANCELLED' AND s.cancelled_on >= :start
                           AND EXISTS (SELECT 1 FROM journal_entry i
@@ -49,25 +48,26 @@ class SupplierBillCancel implements PostingRule {
                                         AND i.source_step = 'ISSUE')
                           AND %s
                         ORDER BY s.id LIMIT :limit
-                        """.formatted(RuleSupport.NOT_POSTED),
-                sourceType(),
-                step(),
-                start,
-                limit);
+                        """.formatted(RuleSupport.NOT_POSTED), sourceType(), step(), start, limit);
     }
 
     @Override
     public NewEntry build(long sourceId) {
-        var row = support.jdbc().sql("SELECT id, bill_no, cancelled_on FROM supplier_bill WHERE id = :id")
+        var row = support.jdbc()
+                .sql("SELECT id, bill_no, cancelled_on FROM supplier_bill WHERE id = :id")
                 .param("id", sourceId)
                 .query(Row.class)
                 .single();
-        var original = support.jdbc().sql("""
+        var original = support.jdbc()
+                .sql("""
                         SELECT l.account_id, l.party_id, l.debit_rupees, l.credit_rupees
                         FROM journal_line l JOIN journal_entry e ON e.id = l.entry_id
                         WHERE e.source_type = 'SUPPLIER_BILL' AND e.source_id = :id AND e.source_step = 'ISSUE'
                         ORDER BY l.position
-                        """).param("id", sourceId).query(LineRow.class).list();
+                        """)
+                .param("id", sourceId)
+                .query(LineRow.class)
+                .list();
         var reversed = original.stream()
                 .map(l -> new NewEntryLine(l.accountId(), l.partyId(), l.creditRupees(), l.debitRupees(), null))
                 .toList();

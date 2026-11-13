@@ -157,7 +157,8 @@ public class AssetService {
     /** Every asset: the ones still in use first, newest put-to-use date first. */
     @Transactional(readOnly = true)
     public List<FixedAssetView> register() {
-        return jdbc.sql(SELECT + " ORDER BY (a.disposed_on IS NOT NULL), a.put_to_use_on DESC, a.id DESC")
+        return jdbc
+                .sql(SELECT + " ORDER BY (a.disposed_on IS NOT NULL), a.put_to_use_on DESC, a.id DESC")
                 .query(AssetRow.class)
                 .list()
                 .stream()
@@ -260,7 +261,10 @@ public class AssetService {
                         JOIN account aa ON aa.id = c.asset_account_id
                         JOIN account da ON da.id = c.accdep_account_id
                         WHERE c.id = :id
-                        """).param("id", id).query(AssetClassView.class).optional()
+                        """)
+                .param("id", id)
+                .query(AssetClassView.class)
+                .optional()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Asset class not found"));
     }
 

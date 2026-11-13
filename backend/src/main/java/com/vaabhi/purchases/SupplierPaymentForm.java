@@ -21,5 +21,6 @@ public record SupplierPaymentForm(
 
     /** How much of a payment goes to one bill; a null allocation list spreads it over the oldest open bills. */
     public record PaymentAllocationInput(
-            @NotNull Long billId, @NotNull @DecimalMin("0.01") BigDecimal amountRupees) {}
+            @NotNull Long billId,
+            @NotNull @DecimalMin("0.01") BigDecimal amountRupees) {}
 }

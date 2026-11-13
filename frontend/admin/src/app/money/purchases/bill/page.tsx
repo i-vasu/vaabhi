@@ -70,8 +70,7 @@ function blankLine(): LineState {
 }
 
 function lineFromView(line: SupplierBillLineView): LineState {
-  const kind: LineState["kind"] =
-    line.kind === "STOCK" ? "STOCK" : line.kind === "ASSET" ? "ASSET" : "EXPENSE";
+  const kind: LineState["kind"] = line.kind === "STOCK" ? "STOCK" : line.kind === "ASSET" ? "ASSET" : "EXPENSE";
   return {
     key: ++nextLineKey,
     kind,
@@ -272,7 +271,9 @@ function BillForm({
   ];
   const sectionOptions = [
     { value: "", label: "No TDS" },
-    ...sections.filter((row) => row.active).map((row) => ({ value: String(row.id), label: `${row.code} · ${row.name}` })),
+    ...sections
+      .filter((row) => row.active)
+      .map((row) => ({ value: String(row.id), label: `${row.code} · ${row.name}` })),
   ];
   if (tdsSectionId && !sectionOptions.some((option) => option.value === tdsSectionId)) {
     sectionOptions.push({ value: tdsSectionId, label: "Saved section" });
@@ -396,7 +397,11 @@ function BillForm({
 
       <SectionLabel
         action={
-          <button type="button" className={buttonSecondary} onClick={() => setLines((current) => [...current, blankLine()])}>
+          <button
+            type="button"
+            className={buttonSecondary}
+            onClick={() => setLines((current) => [...current, blankLine()])}
+          >
             Add line
           </button>
         }
@@ -582,8 +587,8 @@ function BillForm({
         <div className="mt-4 rounded-2xl border border-line bg-panel p-4 text-sm">
           <p className="font-medium">Saved {saved.billNo}</p>
           <p className="mt-1 text-ink-soft">
-            CGST {rupees(saved.cgstRupees)} · SGST {rupees(saved.sgstRupees)} · IGST {rupees(saved.igstRupees)} · payable{" "}
-            {rupees(saved.payableRupees)}
+            CGST {rupees(saved.cgstRupees)} · SGST {rupees(saved.sgstRupees)} · IGST {rupees(saved.igstRupees)} ·
+            payable {rupees(saved.payableRupees)}
             {saved.paidRupees > 0 ? ` · paid ${rupees(saved.paidRupees)}` : ""}
           </p>
           {saved.tdsWarning && <p className="mt-1 text-warn">{saved.tdsWarning}</p>}
@@ -620,14 +625,21 @@ function BillReadOnly({ view, onChanged }: { view: SupplierBillView; onChanged: 
       <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatTile label="Total" value={rupees(view.totalRupees)} />
         <StatTile label="TDS" value={rupees(view.tdsRupees)} />
-        <StatTile label="Payable" value={rupees(view.payableRupees)} tone={view.payableRupees > view.paidRupees ? "warn" : "default"} />
+        <StatTile
+          label="Payable"
+          value={rupees(view.payableRupees)}
+          tone={view.payableRupees > view.paidRupees ? "warn" : "default"}
+        />
         <StatTile label="Paid" value={rupees(view.paidRupees)} />
       </div>
       <dl className="mb-4 grid grid-cols-2 gap-4 rounded-2xl border border-line bg-panel p-4 text-sm sm:grid-cols-3">
         <div>
           <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-faint">Supplier</dt>
           <dd className="mt-1">
-            <Link href={`/money/purchases/supplier/?id=${view.partyId}`} className="font-medium text-accent-ink underline">
+            <Link
+              href={`/money/purchases/supplier/?id=${view.partyId}`}
+              className="font-medium text-accent-ink underline"
+            >
               {view.supplierName}
             </Link>
           </dd>
@@ -734,9 +746,7 @@ function CancelSheet({
 
   async function cancel() {
     if (!reason.trim()) return action.setError("Say why the bill is cancelled.");
-    const cancelled = await action.run(() =>
-      api.admin.purchases.cancelBill(bill.id, { on, reason: reason.trim() }),
-    );
+    const cancelled = await action.run(() => api.admin.purchases.cancelBill(bill.id, { on, reason: reason.trim() }));
     if (cancelled) onCancelled();
   }
 
@@ -811,7 +821,9 @@ function Attachment({ billId, hasAttachment }: { billId: number; hasAttachment: 
   }
 
   if (unavailable) {
-    return <p className="mt-4 text-sm text-ink-soft">File storage is not set up, so the bill paper cannot be attached.</p>;
+    return (
+      <p className="mt-4 text-sm text-ink-soft">File storage is not set up, so the bill paper cannot be attached.</p>
+    );
   }
 
   return (

@@ -15,6 +15,9 @@ public record TdsChallanForm(
         @NotNull @DecimalMin("0.01") BigDecimal amountRupees,
         @NotNull @DecimalMin("0") BigDecimal interestRupees,
         @NotBlank @Size(max = 20) String challanNo,
-        @NotBlank @Pattern(regexp = "[0-9]{7}", message = "Give the seven-digit BSR code") String bsrCode,
+
+        @NotBlank @Pattern(regexp = "[0-9]{7}", message = "Give the seven-digit BSR code")
+        String bsrCode,
+
         @NotNull LocalDate paidOn,
         @NotNull String mode) {}

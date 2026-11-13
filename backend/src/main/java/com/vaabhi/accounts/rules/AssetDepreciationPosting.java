@@ -52,9 +52,7 @@ class AssetDepreciationPosting implements PostingRule {
         return support.pending(
                 """
                         SELECT s.id FROM asset_depreciation s
-                        WHERE (s.month + INTERVAL '1 month' - INTERVAL '1 day')::date >= :start AND """
-                        + RuleSupport.NOT_POSTED
-                        + " ORDER BY s.month, s.id LIMIT :limit",
+                        WHERE (s.month + INTERVAL '1 month' - INTERVAL '1 day')::date >= :start AND """ + RuleSupport.NOT_POSTED + " ORDER BY s.month, s.id LIMIT :limit",
                 sourceType(),
                 step(),
                 start,

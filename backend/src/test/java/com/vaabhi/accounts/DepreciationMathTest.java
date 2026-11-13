@@ -72,9 +72,7 @@ class DepreciationMathTest {
             assertThat(charges.get(i).amount()).isEqualByComparingTo("79.17");
         }
         assertThat(charges.get(11).amount()).isEqualByComparingTo("79.13");
-        assertThat(charges.stream()
-                        .map(DepreciationMath.MonthCharge::amount)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add))
+        assertThat(charges.stream().map(DepreciationMath.MonthCharge::amount).reduce(BigDecimal.ZERO, BigDecimal::add))
                 .isEqualByComparingTo("950.00");
     }
 

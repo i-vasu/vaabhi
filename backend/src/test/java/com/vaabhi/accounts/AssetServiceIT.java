@@ -125,8 +125,7 @@ class AssetServiceIT extends BooksFixtures {
 
         setBooksStart(start);
         depreciation.refresh(assetId);
-        assertThat(depreciationMonths(assetId))
-                .containsExactly(start, start.plusMonths(1), start.plusMonths(2));
+        assertThat(depreciationMonths(assetId)).containsExactly(start, start.plusMonths(1), start.plusMonths(2));
         assertThat(jdbc.sql("SELECT SUM(amount_rupees) FROM asset_depreciation WHERE asset_id = :id")
                         .param("id", assetId)
                         .query(BigDecimal.class)
@@ -167,8 +166,7 @@ class AssetServiceIT extends BooksFixtures {
         assertThat(netInEntry(disposal.id(), assetAccount)).isEqualByComparingTo("-120000");
         assertThat(netInEntry(disposal.id(), accdepAccount)).isEqualByComparingTo("9500.01");
         assertThat(netInEntry(disposal.id(), accountId("ASSET_GAIN"))).isEqualByComparingTo("-500");
-        assertThat(netInEntry(disposal.id(), settings.accountFor("BANK")))
-                .isEqualByComparingTo(proceeds.negate());
+        assertThat(netInEntry(disposal.id(), settings.accountFor("BANK"))).isEqualByComparingTo(proceeds.negate());
     }
 
     @Test
@@ -185,10 +183,7 @@ class AssetServiceIT extends BooksFixtures {
                 .update();
         jdbc.sql("""
                         UPDATE fixed_asset SET disposed_on = :on, disposal_proceeds_rupees = 0 WHERE id = :id
-                        """)
-                .param("on", today())
-                .param("id", assetId)
-                .update();
+                        """).param("on", today()).param("id", assetId).update();
 
         sweeper.sweepNow();
         assertThat(entries("ASSET", assetId)).isEmpty();

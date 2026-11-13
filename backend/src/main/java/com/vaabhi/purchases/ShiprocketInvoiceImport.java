@@ -72,8 +72,7 @@ public class ShiprocketInvoiceImport {
         require(mapping, "taxable", "taxable amount");
         var rows = TabularFile.read(fileName(file), new ByteArrayInputStream(bytes(file)));
         Map<String, Integer> columns = mapping.columns() == null ? Map.of() : mapping.columns();
-        boolean splitMapped =
-                columns.containsKey("cgst") || columns.containsKey("sgst") || columns.containsKey("igst");
+        boolean splitMapped = columns.containsKey("cgst") || columns.containsKey("sgst") || columns.containsKey("igst");
         boolean gstMapped = columns.containsKey("gst");
         boolean totalMapped = columns.containsKey("total");
 
@@ -117,7 +116,8 @@ public class ShiprocketInvoiceImport {
                 .query(PartyStateRow.class)
                 .single()
                 .state();
-        var supplyStateCode = supplierState == null ? null : IndianStates.code(supplierState).orElse(null);
+        var supplyStateCode =
+                supplierState == null ? null : IndianStates.code(supplierState).orElse(null);
         boolean interState = BillMath.interState(supplyStateCode, companyState.code());
         long courierAccount = jdbc.sql("SELECT id FROM account WHERE system_key = 'EXPENSE_COURIER'")
                 .query(Long.class)
@@ -223,8 +223,7 @@ public class ShiprocketInvoiceImport {
             created++;
             totalRupees = totalRupees.add(total);
         }
-        return new ShiprocketInvoiceSummary(
-                created, duplicates, skippedInvoiceNos, badRows, Rupees.of(totalRupees));
+        return new ShiprocketInvoiceSummary(created, duplicates, skippedInvoiceNos, badRows, Rupees.of(totalRupees));
     }
 
     private long shiprocketParty() {

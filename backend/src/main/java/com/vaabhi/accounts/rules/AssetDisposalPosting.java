@@ -62,13 +62,7 @@ class AssetDisposalPosting implements PostingRule {
                                             AND NOT EXISTS (SELECT 1 FROM journal_entry j
                                                             WHERE j.source_type = 'ASSET_DEPRECIATION'
                                                               AND j.source_id = d.id))
-                          AND """
-                        + RuleSupport.NOT_POSTED
-                        + " ORDER BY s.id LIMIT :limit",
-                sourceType(),
-                step(),
-                start,
-                limit);
+                          AND """ + RuleSupport.NOT_POSTED + " ORDER BY s.id LIMIT :limit", sourceType(), step(), start, limit);
     }
 
     @Override
@@ -87,8 +81,7 @@ class AssetDisposalPosting implements PostingRule {
         var book = cost.subtract(accdep);
         var proceeds = Rupees.orZero(row.proceedsRupees());
         var lines = new ArrayList<NewEntryLine>();
-        RuleSupport.addIfPositive(
-                lines, accdep, RuleSupport.debit(row.accdepAccountId(), null, accdep));
+        RuleSupport.addIfPositive(lines, accdep, RuleSupport.debit(row.accdepAccountId(), null, accdep));
         if (proceeds.signum() > 0) {
             if (row.disposalMode() == null) {
                 throw new IllegalStateException("The disposal has proceeds but no payment mode");
@@ -112,10 +105,14 @@ class AssetDisposalPosting implements PostingRule {
     }
 
     private BigDecimal jdbcPosted(long assetId) {
-        return support.jdbc().sql("""
+        return support.jdbc()
+                .sql("""
                         SELECT COALESCE(SUM(d.amount_rupees), 0) FROM asset_depreciation d
                         WHERE d.asset_id = :id AND EXISTS (SELECT 1 FROM journal_entry j
                                 WHERE j.source_type = 'ASSET_DEPRECIATION' AND j.source_id = d.id)
-                        """).param("id", assetId).query(BigDecimal.class).single();
+                        """)
+                .param("id", assetId)
+                .query(BigDecimal.class)
+                .single();
     }
 }

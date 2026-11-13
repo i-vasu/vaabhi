@@ -26,8 +26,7 @@ public class BooksSettingsService {
     private final ApplicationEventPublisher events;
     private final DepreciationScheduler depreciation;
 
-    BooksSettingsService(
-            JdbcClient jdbc, ApplicationEventPublisher events, @Lazy DepreciationScheduler depreciation) {
+    BooksSettingsService(JdbcClient jdbc, ApplicationEventPublisher events, @Lazy DepreciationScheduler depreciation) {
         this.jdbc = jdbc;
         this.events = events;
         this.depreciation = depreciation;

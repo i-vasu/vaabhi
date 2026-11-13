@@ -160,11 +160,7 @@ public class SupplierPaymentService {
         return jdbc.sql(PAYMENT + """
                         WHERE (CAST(:party AS bigint) IS NULL OR p.party_id = :party)
                         ORDER BY p.paid_on DESC, p.id DESC
-                        """)
-                .param("party", partyId)
-                .query(PaymentRow.class)
-                .list()
-                .stream()
+                        """).param("party", partyId).query(PaymentRow.class).list().stream()
                 .map(this::toView)
                 .toList();
     }

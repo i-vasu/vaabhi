@@ -69,11 +69,7 @@ public class TdsService {
     }
 
     private record SummaryRow(
-            String sectionCode,
-            String sectionName,
-            LocalDate month,
-            BigDecimal deductedRupees,
-            BigDecimal paidRupees) {
+            String sectionCode, String sectionName, LocalDate month, BigDecimal deductedRupees, BigDecimal paidRupees) {
 
         TdsMonthSummary toSummary() {
             return new TdsMonthSummary(
@@ -88,7 +84,9 @@ public class TdsService {
 
     @Transactional(readOnly = true)
     public List<TdsSectionView> sections() {
-        return jdbc.sql(SECTION_SELECT + " ORDER BY code").query(TdsSectionView.class).list();
+        return jdbc.sql(SECTION_SELECT + " ORDER BY code")
+                .query(TdsSectionView.class)
+                .list();
     }
 
     @Transactional
@@ -170,7 +168,8 @@ public class TdsService {
 
     @Transactional(readOnly = true)
     public List<TdsChallanView> challans(LocalDate from, LocalDate to) {
-        return jdbc.sql(CHALLAN_SELECT + " WHERE c.paid_on BETWEEN :from AND :to ORDER BY c.paid_on DESC, c.id DESC")
+        return jdbc
+                .sql(CHALLAN_SELECT + " WHERE c.paid_on BETWEEN :from AND :to ORDER BY c.paid_on DESC, c.id DESC")
                 .param("from", from)
                 .param("to", to)
                 .query(ChallanRow.class)
@@ -185,7 +184,8 @@ public class TdsService {
     public List<TdsMonthSummary> summary(LocalDate from, LocalDate to) {
         var fromMonth = from.withDayOfMonth(1);
         var toMonth = to.withDayOfMonth(1);
-        return jdbc.sql("""
+        return jdbc
+                .sql("""
                         WITH deducted AS (
                             SELECT tds_section_id AS section_id, date_trunc('month', bill_date)::date AS month,
                                    SUM(tds_rupees) AS amount

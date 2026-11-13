@@ -33,7 +33,12 @@ export const salesAccount: Account = {
   balanceRupees: 5000,
 };
 
-export const notStarted: BooksSettings = { startDate: null, modeAccounts: {}, lastSweepAt: null, shiprocketPartyId: null };
+export const notStarted: BooksSettings = {
+  startDate: null,
+  modeAccounts: {},
+  lastSweepAt: null,
+  shiprocketPartyId: null,
+};
 
 export const startedStatus: AccountsStatus = {
   startDate: "2026-04-01",

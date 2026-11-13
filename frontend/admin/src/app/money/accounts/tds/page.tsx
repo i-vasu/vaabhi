@@ -293,13 +293,9 @@ export default function TdsPage() {
                     <span className="font-medium">{row.sectionCode}</span>
                     <span className="ml-2 text-ink-soft">{row.sectionName}</span>
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
-                    {rupees(row.deductedRupees)}
-                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">{rupees(row.deductedRupees)}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">{rupees(row.paidRupees)}</td>
-                  <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
-                    {rupees(row.balanceRupees)}
-                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">{rupees(row.balanceRupees)}</td>
                 </tr>
               ))}
             </tbody>

@@ -71,24 +71,29 @@ class SupplierBillIssue implements PostingRule {
                         FROM supplier_bill b JOIN party p ON p.id = b.party_id
                         WHERE b.id = :id
                         """).param("id", sourceId).query(Row.class).single();
-        var accounts = support.jdbc().sql("""
+        var accounts = support.jdbc()
+                .sql("""
                         SELECT l.account_id, SUM(l.taxable_rupees) AS taxable_rupees,
                                SUM(l.cgst_rupees + l.sgst_rupees + l.igst_rupees) AS tax_rupees
                         FROM supplier_bill_line l
                         WHERE l.bill_id = :id
                         GROUP BY l.account_id
                         ORDER BY MIN(l.position)
-                        """).param("id", sourceId).query(AccountRow.class).list();
+                        """)
+                .param("id", sourceId)
+                .query(AccountRow.class)
+                .list();
         var party = row.partyId();
         var lines = new ArrayList<NewEntryLine>();
         for (var account : accounts) {
             lines.add(RuleSupport.debit(account.accountId(), party, account.taxableRupees()));
         }
         var inputGst = Rupees.sum(accounts, AccountRow::taxRupees);
+        RuleSupport.addIfPositive(lines, inputGst, RuleSupport.debit(support.account("INPUT_GST"), party, inputGst));
         RuleSupport.addIfPositive(
-                lines, inputGst, RuleSupport.debit(support.account("INPUT_GST"), party, inputGst));
-        RuleSupport.addIfPositive(
-                lines, row.payableRupees(), RuleSupport.credit(support.account("CREDITORS"), party, row.payableRupees()));
+                lines,
+                row.payableRupees(),
+                RuleSupport.credit(support.account("CREDITORS"), party, row.payableRupees()));
         RuleSupport.addIfPositive(
                 lines, row.tdsRupees(), RuleSupport.credit(support.account("TDS_PAYABLE"), party, row.tdsRupees()));
         return new NewEntry(

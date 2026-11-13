@@ -102,8 +102,7 @@ export default function BillsPage() {
                 href={`/money/purchases/bill/?id=${bill.id}`}
                 title={
                   <>
-                    {bill.billNo} · {bill.supplierName}{" "}
-                    {bill.status === "CANCELLED" && <Pill>Cancelled</Pill>}
+                    {bill.billNo} · {bill.supplierName} {bill.status === "CANCELLED" && <Pill>Cancelled</Pill>}
                   </>
                 }
                 subtitle={[

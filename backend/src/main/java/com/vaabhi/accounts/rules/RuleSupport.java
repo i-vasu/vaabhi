@@ -54,7 +54,8 @@ class RuleSupport {
     }
 
     /** The supplier party Shiprocket's freight and COD deductions go to, or null when it is not set. */
-    @Nullable Long shiprocketPartyId() {
+    @Nullable
+    Long shiprocketPartyId() {
         return settings.shiprocketPartyId();
     }
 

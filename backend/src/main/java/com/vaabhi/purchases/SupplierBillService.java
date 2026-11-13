@@ -85,7 +85,10 @@ public class SupplierBillService {
     }
 
     private record SupplierRow(
-            String name, @Nullable String state, @Nullable String pan, @Nullable Long tdsSectionId) {}
+            String name,
+            @Nullable String state,
+            @Nullable String pan,
+            @Nullable Long tdsSectionId) {}
 
     private record BillRow(
             long id,
@@ -111,7 +114,10 @@ public class SupplierBillService {
 
     private record AssetClassRow(long assetAccountId) {}
 
-    private record OldLineRow(String kind, @Nullable Long stockItemId, @Nullable BigDecimal quantity) {}
+    private record OldLineRow(
+            String kind,
+            @Nullable Long stockItemId,
+            @Nullable BigDecimal quantity) {}
 
     private record AssetRow(long id, @Nullable LocalDate disposedOn) {}
 
@@ -123,8 +129,7 @@ public class SupplierBillService {
             @Nullable BigDecimal yearThresholdRupees,
             @Nullable BigDecimal singleThresholdRupees) {}
 
-    private record LineCalc(
-            SupplierBillLineForm form, long accountId, BigDecimal taxable, BillMath.LineTax tax) {}
+    private record LineCalc(SupplierBillLineForm form, long accountId, BigDecimal taxable, BillMath.LineTax tax) {}
 
     private record Totals(BigDecimal taxable, BigDecimal tax) {}
 
@@ -139,8 +144,7 @@ public class SupplierBillService {
         var lines = prepareLines(form.lines(), interState);
         var totals = totals(lines);
         var tdsRupees = Rupees.of(form.tdsRupees());
-        var tdsSection =
-                resolveTdsSection(form.tdsSectionId(), party.tdsSectionId(), tdsRupees, totals.taxable());
+        var tdsSection = resolveTdsSection(form.tdsSectionId(), party.tdsSectionId(), tdsRupees, totals.taxable());
         var total = Rupees.of(totals.taxable().add(totals.tax()));
         var payable = Rupees.of(total.subtract(tdsRupees));
         long id;
@@ -175,8 +179,7 @@ public class SupplierBillService {
         var lines = prepareLines(form.lines(), interState);
         var totals = totals(lines);
         var tdsRupees = Rupees.of(form.tdsRupees());
-        var tdsSection =
-                resolveTdsSection(form.tdsSectionId(), party.tdsSectionId(), tdsRupees, totals.taxable());
+        var tdsSection = resolveTdsSection(form.tdsSectionId(), party.tdsSectionId(), tdsRupees, totals.taxable());
         var total = Rupees.of(totals.taxable().add(totals.tax()));
         var payable = Rupees.of(total.subtract(tdsRupees));
 
@@ -252,10 +255,7 @@ public class SupplierBillService {
     /** Bills newest first, optionally of one supplier, status, month or source. */
     @Transactional(readOnly = true)
     public List<SupplierBillListEntry> list(
-            @Nullable Long partyId,
-            @Nullable String status,
-            @Nullable YearMonth month,
-            @Nullable String source) {
+            @Nullable Long partyId, @Nullable String status, @Nullable YearMonth month, @Nullable String source) {
         var monthStart = month == null ? null : month.atDay(1);
         var monthEnd = month == null ? null : month.plusMonths(1).atDay(1);
         return jdbc.sql("""
@@ -355,8 +355,8 @@ public class SupplierBillService {
         var thisYear = Rupees.of(prior.add(billTaxable));
         var yearCrossed =
                 section.yearThresholdRupees() != null && thisYear.compareTo(section.yearThresholdRupees()) > 0;
-        var singleCrossed = section.singleThresholdRupees() != null
-                && billTaxable.compareTo(section.singleThresholdRupees()) > 0;
+        var singleCrossed =
+                section.singleThresholdRupees() != null && billTaxable.compareTo(section.singleThresholdRupees()) > 0;
         var crossed = yearCrossed || singleCrossed;
         var suggested = crossed ? BillMath.tds(billTaxable, rate) : Rupees.ZERO;
         var threshold = yearCrossed ? section.yearThresholdRupees() : section.singleThresholdRupees();
@@ -487,11 +487,7 @@ public class SupplierBillService {
 
     /** Stock comes in and an asset joins the register, each line after its row exists. */
     private void applyStockAndAssets(
-            LocalDate billDate,
-            String billNo,
-            List<LineCalc> lines,
-            List<Long> lineIds,
-            @Nullable String actor) {
+            LocalDate billDate, String billNo, List<LineCalc> lines, List<Long> lineIds, @Nullable String actor) {
         for (int i = 0; i < lines.size(); i++) {
             var line = lines.get(i);
             var form = line.form();
@@ -537,7 +533,8 @@ public class SupplierBillService {
     private static Totals totals(List<LineCalc> lines) {
         var taxable = Rupees.sum(lines, LineCalc::taxable);
         var tax = Rupees.sum(
-                lines, line -> line.tax().cgst().add(line.tax().sgst()).add(line.tax().igst()));
+                lines,
+                line -> line.tax().cgst().add(line.tax().sgst()).add(line.tax().igst()));
         return new Totals(taxable, tax);
     }
 
@@ -574,10 +571,7 @@ public class SupplierBillService {
     }
 
     private @Nullable Long resolveTdsSection(
-            @Nullable Long formSection,
-            @Nullable Long partySection,
-            BigDecimal tdsRupees,
-            BigDecimal taxable) {
+            @Nullable Long formSection, @Nullable Long partySection, BigDecimal tdsRupees, BigDecimal taxable) {
         if (tdsRupees.compareTo(taxable) > 0) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "TDS cannot be more than the bill's taxable value");
@@ -625,10 +619,7 @@ public class SupplierBillService {
                         FROM fixed_asset fa
                         JOIN supplier_bill_line l ON l.id = fa.bill_line_id
                         WHERE l.bill_id = :bill
-                        """)
-                .param("bill", billId)
-                .query(AssetRow.class)
-                .list();
+                        """).param("bill", billId).query(AssetRow.class).list();
         for (var asset : assets) {
             if (asset.disposedOn() != null || depreciationPosted(asset.id())) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, blocked);
@@ -640,15 +631,11 @@ public class SupplierBillService {
                         WHERE asset_id IN (SELECT fa.id FROM fixed_asset fa
                                            JOIN supplier_bill_line l ON l.id = fa.bill_line_id
                                            WHERE l.bill_id = :bill)
-                        """)
-                .param("bill", billId)
-                .update();
+                        """).param("bill", billId).update();
         jdbc.sql("""
                         DELETE FROM fixed_asset
                         WHERE bill_line_id IN (SELECT id FROM supplier_bill_line WHERE bill_id = :bill)
-                        """)
-                .param("bill", billId)
-                .update();
+                        """).param("bill", billId).update();
     }
 
     private boolean depreciationPosted(long assetId) {
@@ -658,10 +645,7 @@ public class SupplierBillService {
                                        JOIN journal_entry e ON e.source_type = 'ASSET_DEPRECIATION'
                                                            AND e.source_id = d.id
                                        WHERE d.asset_id = :id)
-                        """)
-                .param("id", assetId)
-                .query(Boolean.class)
-                .single();
+                        """).param("id", assetId).query(Boolean.class).single();
     }
 
     /** A warning on the saved bill when the supplier's TDS threshold is crossed but no TDS was taken. */

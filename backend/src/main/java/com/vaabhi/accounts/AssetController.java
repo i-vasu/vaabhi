@@ -53,7 +53,8 @@ class AssetController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    FixedAssetView createOpening(@Valid @RequestBody OpeningAssetForm form, @AuthenticationPrincipal @Nullable Jwt jwt) {
+    FixedAssetView createOpening(
+            @Valid @RequestBody OpeningAssetForm form, @AuthenticationPrincipal @Nullable Jwt jwt) {
         return assets.createOpening(form, actor(jwt));
     }
 

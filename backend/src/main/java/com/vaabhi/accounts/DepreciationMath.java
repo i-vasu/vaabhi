@@ -52,12 +52,9 @@ public final class DepreciationMath {
             var days = end.toEpochDay() - start.toEpochDay() + 1;
             var charge = days == month.lengthOfMonth()
                     ? fullMonth
-                    : Rupees.of(
-                            fullMonth.multiply(BigDecimal.valueOf(days))
-                                    .divide(
-                                            BigDecimal.valueOf(month.lengthOfMonth()),
-                                            Rupees.SCALE,
-                                            RoundingMode.HALF_UP));
+                    : Rupees.of(fullMonth
+                            .multiply(BigDecimal.valueOf(days))
+                            .divide(BigDecimal.valueOf(month.lengthOfMonth()), Rupees.SCALE, RoundingMode.HALF_UP));
             var remaining = depreciable.subtract(running);
             if (remaining.signum() <= 0) {
                 break;

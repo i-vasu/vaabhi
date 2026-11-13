@@ -96,12 +96,7 @@ public class SupplierService {
             @Nullable Long tdsSectionId) {}
 
     private record EntryRow(
-            LocalDate date,
-            String kind,
-            long id,
-            String reference,
-            BigDecimal billedRupees,
-            BigDecimal paidRupees) {}
+            LocalDate date, String kind, long id, String reference, BigDecimal billedRupees, BigDecimal paidRupees) {}
 
     /** Suppliers whose name, phone or GSTIN contains {@code query} (all when it is null), largest balance first. */
     @Transactional(readOnly = true)
@@ -114,11 +109,7 @@ public class SupplierService {
                              OR p.phone ILIKE '%' || CAST(:q AS text) || '%'
                              OR p.gstin ILIKE '%' || CAST(:q AS text) || '%')
                         ORDER BY balance_rupees DESC, p.name
-                        """)
-                .param("q", needle)
-                .query(BalanceRow.class)
-                .list()
-                .stream()
+                        """).param("q", needle).query(BalanceRow.class).list().stream()
                 .map(row -> row.toBalance(today))
                 .toList();
     }
@@ -149,10 +140,7 @@ public class SupplierService {
                                CAST(0 AS numeric), amount_rupees
                         FROM supplier_payment WHERE party_id = :party
                         ORDER BY date, kind, id
-                        """)
-                .param("party", partyId)
-                .query(EntryRow.class)
-                .list();
+                        """).param("party", partyId).query(EntryRow.class).list();
         var running = Rupees.ZERO;
         var entries = new ArrayList<SupplierStatementEntry>(rows.size());
         for (var row : rows) {

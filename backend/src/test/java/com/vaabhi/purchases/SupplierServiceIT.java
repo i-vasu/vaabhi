@@ -69,10 +69,7 @@ class SupplierServiceIT extends BooksFixtures {
                         UPDATE supplier_bill
                         SET status = 'CANCELLED', cancelled_on = CAST(:date AS date), cancel_reason = 'Test'
                         WHERE id = :id
-                        """)
-                .param("date", LocalDate.now(IST))
-                .param("id", bill)
-                .update();
+                        """).param("date", LocalDate.now(IST)).param("id", bill).update();
     }
 
     private long payment(long party, LocalDate paidOn, String amount) {
@@ -198,8 +195,8 @@ class SupplierServiceIT extends BooksFixtures {
 
     @Test
     void unknownTdsSectionIs400() {
-        assertThatThrownBy(() -> suppliers.create(
-                        new SupplierForm(unique("Supplier"), null, null, null, null, null, null, null, null, 999_999_999L)))
+        assertThatThrownBy(() -> suppliers.create(new SupplierForm(
+                        unique("Supplier"), null, null, null, null, null, null, null, null, 999_999_999L)))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining("Pick a TDS section");
     }
