@@ -439,9 +439,13 @@ class TailoringIT {
                 .andExpect(jsonPath("$.status").value("READY"));
         send(post("/api/v1/admin/alterations/" + id + "/progress"), "{\"status\":\"BOOKED\",\"collectRupees\":0}")
                 .andExpect(status().isBadRequest());
-        send(post("/api/v1/admin/alterations/" + id + "/progress"), "{\"status\":\"DELIVERED\",\"collectRupees\":500}")
+        send(
+                        post("/api/v1/admin/alterations/" + id + "/progress"),
+                        "{\"status\":\"DELIVERED\",\"collectRupees\":500,\"mode\":\"CASH\"}")
                 .andExpect(status().isBadRequest());
-        send(post("/api/v1/admin/alterations/" + id + "/progress"), "{\"status\":\"DELIVERED\",\"collectRupees\":400}")
+        send(
+                        post("/api/v1/admin/alterations/" + id + "/progress"),
+                        "{\"status\":\"DELIVERED\",\"collectRupees\":400,\"mode\":\"CASH\"}")
                 .andExpect(jsonPath("$.status").value("DELIVERED"))
                 .andExpect(jsonPath("$.balanceRupees").value(0))
                 .andExpect(jsonPath("$.deliveredAt").exists());
