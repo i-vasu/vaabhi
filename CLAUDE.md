@@ -68,3 +68,17 @@ These rules apply to every agent and subagent working in this repository.
 - Typecheck and lint are allowed, because they are quick checks that the code compiles.
 - You may add or update tests alongside a change when it is cheap, but do not run them.
 - At the end, list what the owner should check by hand to confirm the flow works.
+
+## Delegate implementation to DeepSeek
+
+- Plan and review in the main session; hand each well-specified implementation chunk to DeepSeek through a
+  background subagent. Write a tight spec to the scratchpad (files, signatures, behaviour, done criteria), then spawn
+  a `general-purpose` subagent (model `haiku`, effort `lower`) whose only job is to run
+  `bash .claude/scripts/deepseek-coder.sh <spec-file>` from the repo root and report the script's summary and
+  `git status`. It must not edit files, run checks or commit itself.
+- Independent chunks can run as parallel subagents; chunks that touch the same files run one after another.
+- Afterwards the main session reviews `git diff`, runs the allowed checks, fixes small issues or re-runs with
+  precise notes, and commits.
+- Fallback when `DEEPSEEK_API_KEY` is missing or DeepSeek fails: the `coder` subagent. Keep secrets, `.env` files
+  and `hs_err_pid*.log` out of specs.
+- Subagents themselves never re-delegate: a subagent asked to implement something does the work directly.
