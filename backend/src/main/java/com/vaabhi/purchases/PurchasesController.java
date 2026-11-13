@@ -1,11 +1,14 @@
 package com.vaabhi.purchases;
 
+import com.vaabhi.accounts.ColumnMapping;
+import com.vaabhi.accounts.FilePreview;
 import jakarta.validation.Valid;
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,8 +19,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 /** Suppliers, their bills, payments and the bill attachments. Requires the MONEY area (see SecurityConfig). */
@@ -28,12 +33,17 @@ class PurchasesController {
     private final SupplierService suppliers;
     private final SupplierBillService bills;
     private final SupplierPaymentService payments;
+    private final ShiprocketInvoiceImport shiprocket;
 
     PurchasesController(
-            SupplierService suppliers, SupplierBillService bills, SupplierPaymentService payments) {
+            SupplierService suppliers,
+            SupplierBillService bills,
+            SupplierPaymentService payments,
+            ShiprocketInvoiceImport shiprocket) {
         this.suppliers = suppliers;
         this.bills = bills;
         this.payments = payments;
+        this.shiprocket = shiprocket;
     }
 
     private static @Nullable String actor(@Nullable Jwt jwt) {
@@ -148,5 +158,27 @@ class PurchasesController {
     SupplierPaymentView payFromBankLine(
             @Valid @RequestBody BankLinePaymentForm form, @AuthenticationPrincipal @Nullable Jwt jwt) {
         return payments.fromBankLine(form, actor(jwt));
+    }
+
+    @PostMapping(value = "/shiprocket-invoices/preview", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    FilePreview previewShiprocketInvoices(@RequestPart("file") MultipartFile file) {
+        try {
+            return shiprocket.preview(file);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @PostMapping(value = "/shiprocket-invoices", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    ShiprocketInvoiceSummary importShiprocketInvoices(
+            @RequestPart("file") MultipartFile file,
+            @RequestPart("mapping") ColumnMapping mapping,
+            @AuthenticationPrincipal @Nullable Jwt jwt) {
+        try {
+            return shiprocket.importFile(file, mapping, actor(jwt));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 }

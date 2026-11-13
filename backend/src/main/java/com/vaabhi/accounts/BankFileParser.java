@@ -76,7 +76,7 @@ public final class BankFileParser {
      * The amount in the cell as rupees: strips {@code ₹}, grouping commas, spaces and a {@code Cr}/{@code Dr}
      * suffix; parentheses mean negative. Blank or unreadable cells are zero.
      */
-    static BigDecimal parseAmount(@Nullable String raw) {
+    public static BigDecimal parseAmount(@Nullable String raw) {
         if (raw == null) {
             return Rupees.ZERO;
         }
@@ -114,7 +114,7 @@ public final class BankFileParser {
     }
 
     /** The date in the cell, trying the mapping's pattern first and {@code yyyy-MM-dd} second. */
-    static @Nullable LocalDate parseDate(@Nullable String raw, @Nullable String pattern) {
+    public static @Nullable LocalDate parseDate(@Nullable String raw, @Nullable String pattern) {
         if (raw == null || raw.isBlank()) {
             return null;
         }
