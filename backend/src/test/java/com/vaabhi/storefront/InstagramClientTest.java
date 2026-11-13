@@ -60,8 +60,9 @@ class InstagramClientTest {
         respond(200, """
                 {"data": [
                   {"id": "1", "media_type": "VIDEO", "media_product_type": "REELS",
-                   "thumbnail_url": "https://cdn.test/1.jpg", "permalink": "https://instagram.com/reel/1",
-                   "caption": "New sarees", "timestamp": "2026-11-01T10:15:30+0000"},
+                   "thumbnail_url": "https://cdn.test/1.jpg", "media_url": "https://cdn.test/1.mp4",
+                   "permalink": "https://instagram.com/reel/1", "caption": "New sarees",
+                   "timestamp": "2026-11-01T10:15:30+0000", "like_count": 120, "comments_count": 3},
                   {"id": "2", "media_type": "IMAGE", "media_product_type": "FEED",
                    "permalink": "https://instagram.com/p/2", "caption": "  ", "timestamp": "2026-10-30T08:00:00+0000"},
                   {"id": "3", "permalink": "https://instagram.com/p/3"},
@@ -76,15 +77,22 @@ class InstagramClientTest {
         assertThat(reel.id()).isEqualTo("1");
         assertThat(reel.reel()).isTrue();
         assertThat(reel.thumbnailUrl()).isEqualTo("https://cdn.test/1.jpg");
+        assertThat(reel.mediaUrl()).isEqualTo("https://cdn.test/1.mp4");
         assertThat(reel.permalink()).isEqualTo("https://instagram.com/reel/1");
         assertThat(reel.caption()).isEqualTo("New sarees");
         assertThat(reel.postedAt()).isEqualTo(Instant.parse("2026-11-01T10:15:30Z"));
+        assertThat(reel.engagement()).isEqualTo(123);
         var post = media.get(1);
         assertThat(post.reel()).isFalse();
         assertThat(post.thumbnailUrl()).isNull();
+        assertThat(post.mediaUrl()).isNull();
         assertThat(post.caption()).isNull();
+        assertThat(post.engagement()).isZero();
         assertThat(lastQuery.get())
                 .startsWith("/17841/media?fields=")
+                .contains("media_url")
+                .contains("like_count")
+                .contains("comments_count")
                 .contains("limit=50")
                 .contains("access_token=secret+token");
     }
@@ -135,7 +143,7 @@ class InstagramClientTest {
         assertThat(blank.accessToken()).isNull();
         assertThat(blank.accountId()).isNull();
         assertThat(blank.baseUrl()).isEqualTo("https://graph.facebook.com/v23.0");
-        assertThat(blank.limit()).isEqualTo(8);
+        assertThat(blank.limit()).isEqualTo(6);
 
         var set = new InstagramProperties(" token ", " 17841 ", null, 4);
         assertThat(set.configured()).isTrue();
