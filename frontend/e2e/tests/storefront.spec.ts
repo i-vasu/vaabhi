@@ -83,14 +83,16 @@ test.describe("Storefront", () => {
     await expect(page.getByText("Choose a blouse size.")).toBeVisible();
     await page.locator("label").filter({ hasText: /^36$/ }).click();
     await page.getByRole("button", { name: "Add to bag" }).first().click();
-    await expect(page.getByText("Added to bag.")).toBeVisible();
+    // The same button now takes the customer to the bag.
+    await expect(page.getByRole("link", { name: "View bag" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Add to bag" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Shopping bag, 1 item" })).toBeVisible();
 
     await page.getByRole("textbox", { name: "Pincode" }).fill("600001");
     await page.getByRole("button", { name: "CHECK" }).click();
     await expect(page.getByText(/Estimated delivery .* to 600001/)).toBeVisible();
     // The bag prices the line from the shop: saree ₹18,500 + standard blouse ₹1,200.
-    await page.getByRole("link", { name: "View bag" }).click();
+    await page.getByRole("link", { name: "View bag" }).first().click();
     await expect(page.getByRole("heading", { name: "Your bag" })).toBeVisible();
     await expect(page.getByText("Stitched blouse, standard size, size 36")).toBeVisible();
     const summary = page.getByRole("complementary");
