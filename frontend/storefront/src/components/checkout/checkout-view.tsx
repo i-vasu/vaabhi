@@ -116,7 +116,7 @@ export function CheckoutView() {
   if (stage.kind === "signedOut") {
     return (
       <Shell>
-        <p className="mb-4 text-text-muted">Log in with your mobile number to check out. Your bag stays as it is.</p>
+        <p className="mb-4 text-text-muted">Log in to check out (mobile number or Google). Your bag stays as it is.</p>
         <Link href="/login?next=/checkout" className={buttonClasses("primary")}>
           Login to check out
         </Link>

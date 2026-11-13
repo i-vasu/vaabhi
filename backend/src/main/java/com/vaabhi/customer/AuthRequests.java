@@ -32,4 +32,17 @@ public final class AuthRequests {
 
     @Schema(name = "ProfileUpdate")
     public record ProfileUpdate(@NotBlank @Size(max = 80) String name) {}
+
+    /** Sends a code to verify a new mobile number for the signed-in customer's profile. */
+    @Schema(name = "PhoneChangeRequest")
+    public record PhoneChangeRequest(
+            @Schema(example = "98765 43210") @NotBlank @Size(max = 20)
+            String phone) {}
+
+    @Schema(name = "PhoneChangeVerification")
+    public record PhoneChangeVerify(
+            @NotBlank @Size(max = 20) String phone,
+
+            @NotBlank @Pattern(regexp = "\\d{6}", message = "Enter the 6-digit code")
+            String code) {}
 }
