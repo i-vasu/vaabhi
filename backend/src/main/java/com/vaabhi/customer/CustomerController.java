@@ -1,13 +1,18 @@
 package com.vaabhi.customer;
 
+import com.vaabhi.customer.AuthRequests.PhoneChangeRequest;
+import com.vaabhi.customer.AuthRequests.PhoneChangeVerify;
 import com.vaabhi.customer.AuthRequests.ProfileUpdate;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /** The signed-in customer (role CUSTOMER; the token's subject is the customer id). */
@@ -16,9 +21,11 @@ import org.springframework.web.bind.annotation.RestController;
 class CustomerController {
 
     private final CustomerService service;
+    private final PhoneChangeService phoneChange;
 
-    CustomerController(CustomerService service) {
+    CustomerController(CustomerService service, PhoneChangeService phoneChange) {
         this.service = service;
+        this.phoneChange = phoneChange;
     }
 
     @GetMapping("/me")
@@ -40,6 +47,19 @@ class CustomerController {
     @PutMapping("/me/details")
     CustomerDetails updateDetails(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CustomerDetails details) {
         return service.updateDetails(customerId(jwt), details);
+    }
+
+    /** Sends a code to verify a new mobile number for this customer's profile. */
+    @PostMapping("/me/phone/otp")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    OtpSent requestPhoneOtp(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody PhoneChangeRequest request) {
+        return phoneChange.request(customerId(jwt), request.phone());
+    }
+
+    /** Verifies the code and sets the new mobile number. */
+    @PutMapping("/me/phone")
+    CustomerProfile updatePhone(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody PhoneChangeVerify request) {
+        return phoneChange.verify(customerId(jwt), request.phone(), request.code());
     }
 
     private static long customerId(Jwt jwt) {

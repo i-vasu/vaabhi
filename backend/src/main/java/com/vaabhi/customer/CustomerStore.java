@@ -57,6 +57,13 @@ class CustomerStore {
                 .optional();
     }
 
+    Optional<Long> idByPhone(String phone) {
+        return jdbc.sql("SELECT id FROM customer WHERE phone = :phone")
+                .param("phone", phone)
+                .query(Long.class)
+                .optional();
+    }
+
     /** Links Google to an account and fills in a missing name or email; never overwrites what the customer set. */
     void linkGoogle(long id, String sub, @Nullable String email, @Nullable String name, OffsetDateTime now) {
         jdbc.sql("""
@@ -95,6 +102,13 @@ class CustomerStore {
         jdbc.sql("UPDATE customer SET name = :name WHERE id = :id")
                 .param("id", id)
                 .param("name", name)
+                .update();
+    }
+
+    void updatePhone(long id, String phone) {
+        jdbc.sql("UPDATE customer SET phone = :phone WHERE id = :id")
+                .param("id", id)
+                .param("phone", phone)
                 .update();
     }
 

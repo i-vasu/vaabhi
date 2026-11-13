@@ -18,6 +18,8 @@ const profile = await import("./profile/route");
 const session = await import("./session/route");
 const otpRequest = await import("./otp/request/route");
 const otpVerify = await import("./otp/verify/route");
+const phone = await import("./phone/route");
+const phoneOtp = await import("./phone/otp/route");
 
 const ASHA = { id: 1, name: "Asha", email: null, phone: "+919876543210" };
 const SESSION = {
@@ -46,6 +48,8 @@ describe("/api/auth routes", () => {
     expect((await profile.PUT(req("profile", "{}", evil))).status).toBe(403);
     expect((await otpRequest.POST(req("otp/request", "{}", evil))).status).toBe(403);
     expect((await otpVerify.POST(req("otp/verify", "{}", evil))).status).toBe(403);
+    expect((await phoneOtp.POST(req("phone/otp", "{}", evil))).status).toBe(403);
+    expect((await phone.PUT(req("phone", "{}", evil))).status).toBe(403);
   });
 
   it("rejects bodies without the required fields", async () => {
@@ -53,6 +57,8 @@ describe("/api/auth routes", () => {
     expect((await profile.PUT(req("profile", '{"name":1}'))).status).toBe(400);
     expect((await otpRequest.POST(req("otp/request", "{}"))).status).toBe(400);
     expect((await otpVerify.POST(req("otp/verify", '{"phone":"+919876543210"}'))).status).toBe(400);
+    expect((await phoneOtp.POST(req("phone/otp", "{}"))).status).toBe(400);
+    expect((await phone.PUT(req("phone", '{"phone":"+919876543210"}'))).status).toBe(400);
   });
 
   it("sends a code and passes on the API's problems", async () => {
@@ -95,6 +101,34 @@ describe("/api/auth routes", () => {
     expect(wrong.status).toBe(400);
     expect(jar.size).toBe(0);
     expect((await google.POST(req("google", '{"credential":"id-token"}'))).status).toBe(502);
+  });
+
+  it("sends a code and saves the customer's new mobile number", async () => {
+    server.use(
+      http.post(`${API}/api/v1/customer/me/phone/otp`, async ({ request }) => {
+        expect(await request.json()).toEqual({ phone: "+919999999999" });
+        return HttpResponse.json({ phone: "+919999999999", expiresInSeconds: 300, resendAfterSeconds: 30 });
+      }),
+      http.put(`${API}/api/v1/customer/me/phone`, async ({ request }) => {
+        expect(await request.json()).toEqual({ phone: "+919999999999", code: "123456" });
+        return HttpResponse.json({ ...ASHA, phone: "+919999999999" });
+      }),
+    );
+    jar.set("vb_at", "access-1");
+
+    const sent = await phoneOtp.POST(req("phone/otp", '{"phone":"+919999999999"}'));
+    expect(sent.status).toBe(200);
+    expect(sent.headers.get("cache-control")).toBe("no-store");
+    expect(await sent.json()).toEqual({ phone: "+919999999999", expiresInSeconds: 300, resendAfterSeconds: 30 });
+
+    const changed = await phone.PUT(req("phone", '{"phone":"+919999999999","code":"123456"}'));
+    expect(changed.status).toBe(200);
+    expect((await changed.json()).customer.phone).toBe("+919999999999");
+  });
+
+  it("asks to log in again when the phone routes have no session", async () => {
+    expect((await phoneOtp.POST(req("phone/otp", '{"phone":"+919999999999"}'))).status).toBe(401);
+    expect((await phone.PUT(req("phone", '{"phone":"+919999999999","code":"123456"}'))).status).toBe(401);
   });
 
   it("returns who is signed in, updates their name and signs them out", async () => {
