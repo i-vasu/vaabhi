@@ -9,3 +9,6 @@ out/
 
 # Claude Code personal settings
 .claude/settings.local.json
+
+# Turborepo cache (also created at the repo root)
+.turbo/
