@@ -208,7 +208,7 @@ class JournalServiceIT {
         assertRejected(
                 () -> journal.reverse(swept.id(), null),
                 HttpStatus.CONFLICT,
-                "Only manual and opening entries can be reversed");
+                "Only manual, opening and bank line entries can be reversed");
     }
 
     @Test

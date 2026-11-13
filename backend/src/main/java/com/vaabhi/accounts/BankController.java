@@ -1,5 +1,6 @@
 package com.vaabhi.accounts;
 
+import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
@@ -10,6 +11,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -18,15 +20,19 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-/** Bank statement upload, preview and list. Already OWNER-only in SecurityConfig. */
+/** Bank statement upload, preview and list, plus the actions on a line. Already OWNER-only in SecurityConfig. */
 @RestController
 @RequestMapping("/api/v1/admin/accounts/bank")
 class BankController {
 
     private final BankImportService imports;
+    private final BankMatcher matcher;
+    private final BankLineService lines;
 
-    BankController(BankImportService imports) {
+    BankController(BankImportService imports, BankMatcher matcher, BankLineService lines) {
         this.imports = imports;
+        this.matcher = matcher;
+        this.lines = lines;
     }
 
     private static @Nullable String actor(@Nullable Jwt jwt) {
@@ -82,5 +88,41 @@ class BankController {
     @GetMapping("/statements/{id}")
     BankStatementDetail getStatement(@PathVariable long id, @RequestParam(required = false) @Nullable String status) {
         return imports.detail(id, status);
+    }
+
+    // --- line actions -------------------------------------------------------------------------------------------
+
+    @GetMapping("/lines/{id}/candidates")
+    List<MatchCandidate> candidates(@PathVariable long id) {
+        return matcher.candidates(id);
+    }
+
+    @PostMapping("/lines/{id}/match")
+    BankLineView match(
+            @PathVariable long id,
+            @Valid @RequestBody BankMatchForm form,
+            @AuthenticationPrincipal @Nullable Jwt jwt) {
+        return lines.match(id, form, actor(jwt));
+    }
+
+    @PostMapping("/lines/{id}/post")
+    BankLineView post(
+            @PathVariable long id,
+            @Valid @RequestBody BankPostForm form,
+            @AuthenticationPrincipal @Nullable Jwt jwt) {
+        return lines.post(id, form, actor(jwt));
+    }
+
+    @PostMapping("/lines/{id}/ignore")
+    BankLineView ignore(
+            @PathVariable long id,
+            @Valid @RequestBody BankIgnoreForm form,
+            @AuthenticationPrincipal @Nullable Jwt jwt) {
+        return lines.ignore(id, form, actor(jwt));
+    }
+
+    @PostMapping("/lines/{id}/undo")
+    BankLineView undo(@PathVariable long id, @AuthenticationPrincipal @Nullable Jwt jwt) {
+        return lines.undo(id, actor(jwt));
     }
 }

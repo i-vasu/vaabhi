@@ -151,6 +151,23 @@ public class BankImportService {
         return new BankStatementDetail(statement, query.query(BankLineView.class).list());
     }
 
+    /** One line with its journal entry number; 404 when it does not exist. */
+    @Transactional(readOnly = true)
+    BankLineView line(long lineId) {
+        return jdbc.sql("""
+                        SELECT l.id, l.line_date AS date, l.description, l.reference, l.debit_rupees,
+                               l.credit_rupees, l.balance_rupees, l.status, l.journal_entry_id,
+                               j.number AS journal_number, l.ignore_reason
+                        FROM bank_line l
+                        LEFT JOIN journal_entry j ON j.id = l.journal_entry_id
+                        WHERE l.id = :id
+                        """)
+                .param("id", lineId)
+                .query(BankLineView.class)
+                .optional()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Line not found"));
+    }
+
     private static void checkSize(byte[] bytes) {
         if (bytes.length > MAX_BYTES) {
             throw new IllegalArgumentException("File is larger than 5 MB");

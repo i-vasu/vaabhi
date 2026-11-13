@@ -29,7 +29,7 @@ public class JournalService {
 
     private static final ZoneId SHOP_ZONE = ZoneId.of("Asia/Kolkata");
     private static final DateTimeFormatter MONTH_YEAR = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);
-    private static final Set<String> REVERSIBLE = Set.of("MANUAL", "OPENING");
+    private static final Set<String> REVERSIBLE = Set.of("MANUAL", "OPENING", "BANK_LINE");
     private static final int MAX_NARRATION = 200;
     private static final int MAX_MEMO = 120;
     private static final int MAX_PAGE_SIZE = 100;
@@ -120,7 +120,7 @@ public class JournalService {
         return get(id);
     }
 
-    /** Posts the opposite of a manual or opening entry, dated today. */
+    /** Posts the opposite of a manual, opening or bank line entry, dated today. */
     @Transactional
     public JournalEntry reverse(long id, @Nullable String actor) {
         return reverseOn(id, LocalDate.now(clock.withZone(SHOP_ZONE)), actor);
@@ -131,7 +131,8 @@ public class JournalService {
     public JournalEntry reverseOn(long id, LocalDate date, @Nullable String actor) {
         var original = get(id);
         if (!REVERSIBLE.contains(original.sourceType())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Only manual and opening entries can be reversed");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT, "Only manual, opening and bank line entries can be reversed");
         }
         if ("REVERSAL".equals(original.sourceStep())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "A reversal can't be reversed");
