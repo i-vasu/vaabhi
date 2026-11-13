@@ -137,7 +137,7 @@ public class PartyService {
      * A phone as stored on parties: E.164 (+…) kept as digits, Indian numbers as +91XXXXXXXXXX; null when it is not
      * a usable phone. Matches the backfill in V29.
      */
-    static @Nullable String phone(@Nullable String raw) {
+    public static @Nullable String phone(@Nullable String raw) {
         if (raw == null || raw.isBlank()) {
             return null;
         }
