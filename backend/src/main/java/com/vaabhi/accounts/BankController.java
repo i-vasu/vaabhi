@@ -29,16 +29,19 @@ class BankController {
     private final BankMatcher matcher;
     private final BankLineService lines;
     private final RazorpaySettlementQuery settlements;
+    private final CodRemittanceService remittances;
 
     BankController(
             BankImportService imports,
             BankMatcher matcher,
             BankLineService lines,
-            RazorpaySettlementQuery settlements) {
+            RazorpaySettlementQuery settlements,
+            CodRemittanceService remittances) {
         this.imports = imports;
         this.matcher = matcher;
         this.lines = lines;
         this.settlements = settlements;
+        this.remittances = remittances;
     }
 
     private static @Nullable String actor(@Nullable Jwt jwt) {
@@ -101,6 +104,35 @@ class BankController {
     @GetMapping("/razorpay/settlements")
     List<RazorpaySettlementView> listRazorpaySettlements() {
         return settlements.list();
+    }
+
+    // --- COD remittances ----------------------------------------------------------------------------------------
+
+    @PostMapping(value = "/cod-remittances/preview", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    FilePreview previewRemittance(@RequestPart("file") MultipartFile file) {
+        try {
+            return remittances.preview(fileName(file), bytes(file));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @PostMapping(value = "/cod-remittances", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    CodImportSummary importRemittance(
+            @RequestPart("file") MultipartFile file,
+            @RequestPart("mapping") ColumnMapping mapping,
+            @AuthenticationPrincipal @Nullable Jwt jwt) {
+        try {
+            return remittances.importReport(fileName(file), bytes(file), mapping, actor(jwt));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @GetMapping("/cod-remittances")
+    List<CodRemittanceView> listRemittances() {
+        return remittances.list();
     }
 
     // --- line actions -------------------------------------------------------------------------------------------
