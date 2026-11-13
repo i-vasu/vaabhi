@@ -1,6 +1,6 @@
 ---
 name: deepseek
-description: Hands a well-specified coding task in the Vaabhi repo to a DeepSeek model (DeepSeek-V4-Pro by default), which reads and edits the files itself. Use when the user asks for DeepSeek, or for routine, clearly specified work (tests, small fixes) the main session will review. Give it the full spec: files, behaviour, constraints. It never commits or pushes.
+description: The default subagent in the Vaabhi repo. Hands a coding task to a DeepSeek model (DeepSeek-V4-Pro by default), which reads and edits the files itself. Use it for any delegated coding work (features, fixes, tests) unless the user asks for another agent. Give it the full spec: files, behaviour, constraints. It never commits or pushes.
 tools: Bash
 model: haiku
 ---
