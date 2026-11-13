@@ -2020,6 +2020,150 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/accounts/bank/statements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listStatements"];
+        put?: never;
+        post: operations["importStatement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/bank/statements/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/bank/razorpay/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["sync"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/bank/lines/{id}/undo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["undo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/bank/lines/{id}/post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/bank/lines/{id}/match": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["match"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/bank/lines/{id}/ignore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ignore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/bank/cod-remittances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listRemittances"];
+        put?: never;
+        post: operations["importRemittance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/bank/cod-remittances/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["previewRemittance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/accounts/accounts": {
         parameters: {
             query?: never;
@@ -2940,6 +3084,86 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getJournalEntry"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/bank/statements/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getStatement"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/bank/statements/{id}/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getReport_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/bank/statements/{id}/report.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["reportCsv"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/bank/razorpay/settlements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listRazorpaySettlements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/bank/lines/{id}/candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["candidates"];
         put?: never;
         post?: never;
         delete?: never;
@@ -5069,6 +5293,85 @@ export interface components {
             alterationId: number | null;
             orderNumber: string | null;
         };
+        BankImportForm: {
+            mapping: components["schemas"]["ColumnMapping"];
+            openingRupees: number | null;
+            closingRupees: number | null;
+        };
+        ColumnMapping: {
+            /** Format: int32 */
+            headerRow: number;
+            columns: {
+                [key: string]: number;
+            };
+            dateFormat: string;
+            /** @enum {string} */
+            amountStyle: "DEBIT_CREDIT" | "SIGNED";
+        };
+        BankImportSummary: {
+            /** Format: int64 */
+            statementId: number;
+            /** Format: int32 */
+            added: number;
+            /** Format: int32 */
+            duplicates: number;
+            /** Format: int32 */
+            autoMatched: number;
+            skipped: components["schemas"]["SkippedFileRow"][];
+        };
+        SkippedFileRow: {
+            /** Format: int32 */
+            rowNumber: number;
+            reason: string;
+        };
+        FilePreview: {
+            rows: string[][];
+            saved: components["schemas"]["ColumnMapping"] | null;
+        };
+        RazorpaySyncOutcome: {
+            configured: boolean;
+            /** Format: int32 */
+            added: number;
+            error: string | null;
+        };
+        BankLineView: {
+            /** Format: int64 */
+            id: number;
+            /** Format: date */
+            date: string;
+            description: string;
+            reference: string | null;
+            debitRupees: number;
+            creditRupees: number;
+            balanceRupees: number | null;
+            status: string;
+            /** Format: int64 */
+            journalEntryId: number | null;
+            journalNumber: string | null;
+            ignoreReason: string | null;
+        };
+        BankPostForm: {
+            /** Format: int64 */
+            accountId: number;
+            narration: string | null;
+        };
+        BankMatchForm: {
+            /** Format: int64 */
+            journalEntryId: number;
+            /** Format: int64 */
+            differenceAccountId: number | null;
+        };
+        BankIgnoreForm: {
+            reason: string | null;
+        };
+        CodImportSummary: {
+            /** Format: int32 */
+            added: number;
+            /** Format: int32 */
+            duplicates: number;
+            unknownAwbs: string[];
+            skipped: components["schemas"]["SkippedFileRow"][];
+        };
         ShopContact: {
             name: string;
             phone: string | null;
@@ -5867,6 +6170,87 @@ export interface components {
             page: number;
             /** Format: int32 */
             size: number;
+        };
+        BankStatementSummary: {
+            /** Format: int64 */
+            id: number;
+            fileName: string;
+            /** Format: date */
+            periodFrom: string;
+            /** Format: date */
+            periodTo: string;
+            openingRupees: number | null;
+            closingRupees: number | null;
+            /** Format: int32 */
+            lineCount: number;
+            /** Format: int32 */
+            unmatchedCount: number;
+            /** Format: date-time */
+            uploadedAt: string;
+        };
+        BankStatementDetail: {
+            statement: components["schemas"]["BankStatementSummary"];
+            lines: components["schemas"]["BankLineView"][];
+        };
+        BankReconciliation: {
+            statement: components["schemas"]["BankStatementSummary"];
+            statementClosingRupees: number | null;
+            ledgerBalanceRupees: number;
+            differenceRupees: number | null;
+            unmatchedLines: components["schemas"]["BankLineView"][];
+            ledgerOnly: components["schemas"]["LedgerOnlyMovement"][];
+            razorpayClearingRupees: number;
+            codClearingRupees: number;
+            /** Format: date */
+            oldestUnsettledWebPayment: string | null;
+            openingMismatch: boolean;
+            ignoredLines: components["schemas"]["BankLineView"][];
+        };
+        LedgerOnlyMovement: {
+            /** Format: int64 */
+            journalEntryId: number;
+            number: string;
+            /** Format: date */
+            date: string;
+            narration: string;
+            debitRupees: number;
+            creditRupees: number;
+        };
+        RazorpaySettlementView: {
+            id: string;
+            utr: string | null;
+            /** Format: date */
+            settledOn: string;
+            grossRupees: number;
+            feeRupees: number;
+            taxRupees: number;
+            netRupees: number;
+            /** Format: int64 */
+            journalEntryId: number | null;
+            journalNumber: string | null;
+        };
+        MatchCandidate: {
+            /** Format: int64 */
+            journalEntryId: number;
+            number: string;
+            /** Format: date */
+            date: string;
+            narration: string;
+            amountRupees: number;
+        };
+        CodRemittanceView: {
+            /** Format: int64 */
+            id: number;
+            remittanceRef: string;
+            utr: string | null;
+            /** Format: date */
+            remittedOn: string;
+            codRupees: number;
+            deductionRupees: number;
+            netRupees: number;
+            /** Format: int32 */
+            awbCount: number;
+            journalNumber: string | null;
         };
         LedgerStatement: {
             /** Format: int64 */
@@ -10130,6 +10514,276 @@ export interface operations {
             };
         };
     };
+    listStatements: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BankStatementSummary"][];
+                };
+            };
+        };
+    };
+    importStatement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                    mapping: components["schemas"]["BankImportForm"];
+                };
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BankImportSummary"];
+                };
+            };
+        };
+    };
+    preview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FilePreview"];
+                };
+            };
+        };
+    };
+    sync: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RazorpaySyncOutcome"];
+                };
+            };
+        };
+    };
+    undo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BankLineView"];
+                };
+            };
+        };
+    };
+    post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankPostForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BankLineView"];
+                };
+            };
+        };
+    };
+    match: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankMatchForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BankLineView"];
+                };
+            };
+        };
+    };
+    ignore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankIgnoreForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BankLineView"];
+                };
+            };
+        };
+    };
+    listRemittances: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CodRemittanceView"][];
+                };
+            };
+        };
+    };
+    importRemittance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                    mapping: components["schemas"]["ColumnMapping"];
+                };
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CodImportSummary"];
+                };
+            };
+        };
+    };
+    previewRemittance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FilePreview"];
+                };
+            };
+        };
+    };
     listAccounts: {
         parameters: {
             query?: never;
@@ -11492,6 +12146,116 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["JournalEntry"];
+                };
+            };
+        };
+    };
+    getStatement: {
+        parameters: {
+            query?: {
+                status?: string | null;
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BankStatementDetail"];
+                };
+            };
+        };
+    };
+    getReport_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BankReconciliation"];
+                };
+            };
+        };
+    };
+    reportCsv: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                };
+            };
+        };
+    };
+    listRazorpaySettlements: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RazorpaySettlementView"][];
+                };
+            };
+        };
+    };
+    candidates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MatchCandidate"][];
                 };
             };
         };

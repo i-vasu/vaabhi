@@ -162,6 +162,33 @@ describe("admin client", () => {
     ]);
   });
 
+  it("uploads a bank statement as multipart with its mapping", async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(new Response("{}")));
+    vi.stubGlobal("fetch", fetchMock);
+    const api = createApiClient({ baseUrl: "https://api.example.com", getToken: () => "t" });
+    const file = new File(["date,description"], "bank.csv", { type: "text/csv" });
+    const mapping = {
+      headerRow: 0,
+      columns: { date: 0, description: 1 },
+      dateFormat: "dd/MM/yyyy",
+      amountStyle: "SIGNED" as const,
+    };
+
+    await api.admin.accounts.bank.importStatement(file, { mapping, openingRupees: null, closingRupees: null });
+
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe("https://api.example.com/api/v1/admin/accounts/bank/statements");
+    expect(init.method).toBe("POST");
+    expect(init.body).toBeInstanceOf(FormData);
+    const body = init.body as FormData;
+    expect(body.get("file")).toBe(file);
+    expect(JSON.parse(await (body.get("mapping") as File).text())).toEqual({
+      mapping,
+      openingRupees: null,
+      closingRupees: null,
+    });
+  });
+
   it("exposes field errors from problem details", async () => {
     const problem = {
       detail: "Unknown category",

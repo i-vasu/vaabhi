@@ -6104,6 +6104,382 @@
                 }
             }
         },
+        "/api/v1/admin/accounts/bank/statements": {
+            "get": {
+                "tags": [
+                    "bank-controller"
+                ],
+                "operationId": "listStatements",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/BankStatementSummary"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "bank-controller"
+                ],
+                "operationId": "importStatement",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "mapping": {
+                                        "$ref": "#/components/schemas/BankImportForm"
+                                    }
+                                },
+                                "required": [
+                                    "file",
+                                    "mapping"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BankImportSummary"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/bank/statements/preview": {
+            "post": {
+                "tags": [
+                    "bank-controller"
+                ],
+                "operationId": "preview",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "required": [
+                                    "file"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FilePreview"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/bank/razorpay/sync": {
+            "post": {
+                "tags": [
+                    "admin-razorpay-settlement-controller"
+                ],
+                "operationId": "sync",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RazorpaySyncOutcome"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/bank/lines/{id}/undo": {
+            "post": {
+                "tags": [
+                    "bank-controller"
+                ],
+                "operationId": "undo",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BankLineView"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/bank/lines/{id}/post": {
+            "post": {
+                "tags": [
+                    "bank-controller"
+                ],
+                "operationId": "post",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BankPostForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BankLineView"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/bank/lines/{id}/match": {
+            "post": {
+                "tags": [
+                    "bank-controller"
+                ],
+                "operationId": "match",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BankMatchForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BankLineView"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/bank/lines/{id}/ignore": {
+            "post": {
+                "tags": [
+                    "bank-controller"
+                ],
+                "operationId": "ignore",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BankIgnoreForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BankLineView"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/bank/cod-remittances": {
+            "get": {
+                "tags": [
+                    "bank-controller"
+                ],
+                "operationId": "listRemittances",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/CodRemittanceView"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "bank-controller"
+                ],
+                "operationId": "importRemittance",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "mapping": {
+                                        "$ref": "#/components/schemas/ColumnMapping"
+                                    }
+                                },
+                                "required": [
+                                    "file",
+                                    "mapping"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CodImportSummary"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/bank/cod-remittances/preview": {
+            "post": {
+                "tags": [
+                    "bank-controller"
+                ],
+                "operationId": "previewRemittance",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "required": [
+                                    "file"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FilePreview"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/accounts/accounts": {
             "get": {
                 "tags": [
@@ -8234,6 +8610,167 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/JournalEntry"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/bank/statements/{id}": {
+            "get": {
+                "tags": [
+                    "bank-controller"
+                ],
+                "operationId": "getStatement",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BankStatementDetail"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/bank/statements/{id}/report": {
+            "get": {
+                "tags": [
+                    "bank-controller"
+                ],
+                "operationId": "getReport_1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BankReconciliation"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/bank/statements/{id}/report.csv": {
+            "get": {
+                "tags": [
+                    "bank-controller"
+                ],
+                "operationId": "reportCsv",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/csv": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/bank/razorpay/settlements": {
+            "get": {
+                "tags": [
+                    "bank-controller"
+                ],
+                "operationId": "listRazorpaySettlements",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/RazorpaySettlementView"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/bank/lines/{id}/candidates": {
+            "get": {
+                "tags": [
+                    "bank-controller"
+                ],
+                "operationId": "candidates",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/MatchCandidate"
+                                    }
                                 }
                             }
                         }
@@ -17798,6 +18335,317 @@
                     "type"
                 ]
             },
+            "BankImportForm": {
+                "type": "object",
+                "properties": {
+                    "mapping": {
+                        "$ref": "#/components/schemas/ColumnMapping"
+                    },
+                    "openingRupees": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "closingRupees": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "closingRupees",
+                    "mapping",
+                    "openingRupees"
+                ]
+            },
+            "ColumnMapping": {
+                "type": "object",
+                "properties": {
+                    "headerRow": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "columns": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    "dateFormat": {
+                        "type": "string"
+                    },
+                    "amountStyle": {
+                        "type": "string",
+                        "enum": [
+                            "DEBIT_CREDIT",
+                            "SIGNED"
+                        ]
+                    }
+                },
+                "required": [
+                    "amountStyle",
+                    "columns",
+                    "dateFormat",
+                    "headerRow"
+                ]
+            },
+            "BankImportSummary": {
+                "type": "object",
+                "properties": {
+                    "statementId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "added": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "duplicates": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "autoMatched": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "skipped": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SkippedFileRow"
+                        }
+                    }
+                },
+                "required": [
+                    "added",
+                    "autoMatched",
+                    "duplicates",
+                    "skipped",
+                    "statementId"
+                ]
+            },
+            "SkippedFileRow": {
+                "type": "object",
+                "properties": {
+                    "rowNumber": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "reason": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "reason",
+                    "rowNumber"
+                ]
+            },
+            "FilePreview": {
+                "type": "object",
+                "properties": {
+                    "rows": {
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "saved": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/ColumnMapping"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "rows",
+                    "saved"
+                ]
+            },
+            "RazorpaySyncOutcome": {
+                "type": "object",
+                "properties": {
+                    "configured": {
+                        "type": "boolean"
+                    },
+                    "added": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "error": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "added",
+                    "configured",
+                    "error"
+                ]
+            },
+            "BankLineView": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "reference": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "debitRupees": {
+                        "type": "number"
+                    },
+                    "creditRupees": {
+                        "type": "number"
+                    },
+                    "balanceRupees": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "journalEntryId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "journalNumber": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "ignoreReason": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "balanceRupees",
+                    "creditRupees",
+                    "date",
+                    "debitRupees",
+                    "description",
+                    "id",
+                    "ignoreReason",
+                    "journalEntryId",
+                    "journalNumber",
+                    "reference",
+                    "status"
+                ]
+            },
+            "BankPostForm": {
+                "type": "object",
+                "properties": {
+                    "accountId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "narration": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "accountId",
+                    "narration"
+                ]
+            },
+            "BankMatchForm": {
+                "type": "object",
+                "properties": {
+                    "journalEntryId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "differenceAccountId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "differenceAccountId",
+                    "journalEntryId"
+                ]
+            },
+            "BankIgnoreForm": {
+                "type": "object",
+                "properties": {
+                    "reason": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "reason"
+                ]
+            },
+            "CodImportSummary": {
+                "type": "object",
+                "properties": {
+                    "added": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "duplicates": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "unknownAwbs": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "skipped": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SkippedFileRow"
+                        }
+                    }
+                },
+                "required": [
+                    "added",
+                    "duplicates",
+                    "skipped",
+                    "unknownAwbs"
+                ]
+            },
             "ShopContact": {
                 "type": "object",
                 "properties": {
@@ -20887,6 +21735,317 @@
                     "page",
                     "size",
                     "total"
+                ]
+            },
+            "BankStatementSummary": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "fileName": {
+                        "type": "string"
+                    },
+                    "periodFrom": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "periodTo": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "openingRupees": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "closingRupees": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "lineCount": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "unmatchedCount": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "uploadedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "closingRupees",
+                    "fileName",
+                    "id",
+                    "lineCount",
+                    "openingRupees",
+                    "periodFrom",
+                    "periodTo",
+                    "unmatchedCount",
+                    "uploadedAt"
+                ]
+            },
+            "BankStatementDetail": {
+                "type": "object",
+                "properties": {
+                    "statement": {
+                        "$ref": "#/components/schemas/BankStatementSummary"
+                    },
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BankLineView"
+                        }
+                    }
+                },
+                "required": [
+                    "lines",
+                    "statement"
+                ]
+            },
+            "BankReconciliation": {
+                "type": "object",
+                "properties": {
+                    "statement": {
+                        "$ref": "#/components/schemas/BankStatementSummary"
+                    },
+                    "statementClosingRupees": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "ledgerBalanceRupees": {
+                        "type": "number"
+                    },
+                    "differenceRupees": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
+                    "unmatchedLines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BankLineView"
+                        }
+                    },
+                    "ledgerOnly": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LedgerOnlyMovement"
+                        }
+                    },
+                    "razorpayClearingRupees": {
+                        "type": "number"
+                    },
+                    "codClearingRupees": {
+                        "type": "number"
+                    },
+                    "oldestUnsettledWebPayment": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "openingMismatch": {
+                        "type": "boolean"
+                    },
+                    "ignoredLines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BankLineView"
+                        }
+                    }
+                },
+                "required": [
+                    "codClearingRupees",
+                    "differenceRupees",
+                    "ignoredLines",
+                    "ledgerBalanceRupees",
+                    "ledgerOnly",
+                    "oldestUnsettledWebPayment",
+                    "openingMismatch",
+                    "razorpayClearingRupees",
+                    "statement",
+                    "statementClosingRupees",
+                    "unmatchedLines"
+                ]
+            },
+            "LedgerOnlyMovement": {
+                "type": "object",
+                "properties": {
+                    "journalEntryId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "number": {
+                        "type": "string"
+                    },
+                    "date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "narration": {
+                        "type": "string"
+                    },
+                    "debitRupees": {
+                        "type": "number"
+                    },
+                    "creditRupees": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "creditRupees",
+                    "date",
+                    "debitRupees",
+                    "journalEntryId",
+                    "narration",
+                    "number"
+                ]
+            },
+            "RazorpaySettlementView": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "utr": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "settledOn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "grossRupees": {
+                        "type": "number"
+                    },
+                    "feeRupees": {
+                        "type": "number"
+                    },
+                    "taxRupees": {
+                        "type": "number"
+                    },
+                    "netRupees": {
+                        "type": "number"
+                    },
+                    "journalEntryId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "journalNumber": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "feeRupees",
+                    "grossRupees",
+                    "id",
+                    "journalEntryId",
+                    "journalNumber",
+                    "netRupees",
+                    "settledOn",
+                    "taxRupees",
+                    "utr"
+                ]
+            },
+            "MatchCandidate": {
+                "type": "object",
+                "properties": {
+                    "journalEntryId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "number": {
+                        "type": "string"
+                    },
+                    "date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "narration": {
+                        "type": "string"
+                    },
+                    "amountRupees": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "amountRupees",
+                    "date",
+                    "journalEntryId",
+                    "narration",
+                    "number"
+                ]
+            },
+            "CodRemittanceView": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "remittanceRef": {
+                        "type": "string"
+                    },
+                    "utr": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "remittedOn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "codRupees": {
+                        "type": "number"
+                    },
+                    "deductionRupees": {
+                        "type": "number"
+                    },
+                    "netRupees": {
+                        "type": "number"
+                    },
+                    "awbCount": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "journalNumber": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "awbCount",
+                    "codRupees",
+                    "deductionRupees",
+                    "id",
+                    "journalNumber",
+                    "netRupees",
+                    "remittanceRef",
+                    "remittedOn",
+                    "utr"
                 ]
             },
             "LedgerStatement": {

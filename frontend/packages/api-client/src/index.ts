@@ -230,6 +230,23 @@ export type ManualEntryLineInput = Schemas["ManualEntryLineInput"];
 export type PostingProblem = Schemas["PostingProblem"];
 export type AccountsStatus = Schemas["AccountsStatus"];
 export type SweepResult = Schemas["SweepResult"];
+export type BankStatementSummary = Schemas["BankStatementSummary"];
+export type BankStatementDetail = Schemas["BankStatementDetail"];
+export type BankLineView = Schemas["BankLineView"];
+export type BankImportSummary = Schemas["BankImportSummary"];
+export type BankImportForm = Schemas["BankImportForm"];
+export type ColumnMapping = Schemas["ColumnMapping"];
+export type FilePreview = Schemas["FilePreview"];
+export type SkippedFileRow = Schemas["SkippedFileRow"];
+export type MatchCandidate = Schemas["MatchCandidate"];
+export type BankMatchForm = Schemas["BankMatchForm"];
+export type BankPostForm = Schemas["BankPostForm"];
+export type BankReconciliation = Schemas["BankReconciliation"];
+export type LedgerOnlyMovement = Schemas["LedgerOnlyMovement"];
+export type RazorpaySettlementView = Schemas["RazorpaySettlementView"];
+export type RazorpaySyncOutcome = Schemas["RazorpaySyncOutcome"];
+export type CodImportSummary = Schemas["CodImportSummary"];
+export type CodRemittanceView = Schemas["CodRemittanceView"];
 
 /** The JSON settings sections, by their API path. */
 export type SettingsSections = {
@@ -363,6 +380,14 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
       headers: body === undefined ? undefined : { "Content-Type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
+
+  // Multipart upload; the browser sets the Content-Type (with its boundary) from the FormData.
+  const upload = <T>(path: string, parts: Record<string, Blob | string>) => {
+    const body = new FormData();
+    for (const [key, value] of Object.entries(parts)) body.append(key, value);
+    return request<T>(path, { method: "POST", body });
+  };
+
 
   return {
     request,
@@ -814,6 +839,57 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
           send<PeriodStatus[]>("PUT", `/api/v1/admin/accounts/periods/${encodeURIComponent(month)}/lock`),
         unlock: (month: string) =>
           send<PeriodStatus[]>("DELETE", `/api/v1/admin/accounts/periods/${encodeURIComponent(month)}/lock`),
+        /** Bank statements, COD remittances and Razorpay settlements, matched to the books. */
+        bank: {
+          previewStatement: (file: File) =>
+            upload<FilePreview>("/api/v1/admin/accounts/bank/statements/preview", { file }),
+          importStatement: (file: File, form: BankImportForm) =>
+            upload<BankImportSummary>("/api/v1/admin/accounts/bank/statements", {
+              file,
+              mapping: new Blob([JSON.stringify(form)], { type: "application/json" }),
+            }),
+          statements: () => request<BankStatementSummary[]>("/api/v1/admin/accounts/bank/statements"),
+          statement: (id: number, status?: string) =>
+            request<BankStatementDetail>(`/api/v1/admin/accounts/bank/statements/${id}${queryString({ status })}`),
+          report: (id: number) => request<BankReconciliation>(`/api/v1/admin/accounts/bank/statements/${id}/report`),
+          /** The reconciliation CSV as a Blob; fetched with the bearer token, since a plain link would not carry it. */
+          reportCsv: async (id: number): Promise<Blob> => {
+            const token = getToken?.();
+            const response = await fetch(
+              `${baseUrl.replace(/\/$/, "")}/api/v1/admin/accounts/bank/statements/${id}/report.csv`,
+              { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+            );
+            if (!response.ok) {
+              const problem = await problemOf(response);
+              throw new ApiError(
+                response.status,
+                `GET bank report ${id}.csv failed with ${response.status}`,
+                problem.errors,
+                problem.detail,
+              );
+            }
+            return response.blob();
+          },
+          candidates: (lineId: number) =>
+            request<MatchCandidate[]>(`/api/v1/admin/accounts/bank/lines/${lineId}/candidates`),
+          match: (lineId: number, form: BankMatchForm) =>
+            send<BankLineView>("POST", `/api/v1/admin/accounts/bank/lines/${lineId}/match`, form),
+          post: (lineId: number, form: BankPostForm) =>
+            send<BankLineView>("POST", `/api/v1/admin/accounts/bank/lines/${lineId}/post`, form),
+          ignore: (lineId: number, reason: string) =>
+            send<BankLineView>("POST", `/api/v1/admin/accounts/bank/lines/${lineId}/ignore`, { reason }),
+          undo: (lineId: number) => send<BankLineView>("POST", `/api/v1/admin/accounts/bank/lines/${lineId}/undo`),
+          syncRazorpay: () => send<RazorpaySyncOutcome>("POST", "/api/v1/admin/accounts/bank/razorpay/sync"),
+          settlements: () => request<RazorpaySettlementView[]>("/api/v1/admin/accounts/bank/razorpay/settlements"),
+          previewRemittance: (file: File) =>
+            upload<FilePreview>("/api/v1/admin/accounts/bank/cod-remittances/preview", { file }),
+          importRemittance: (file: File, mapping: ColumnMapping) =>
+            upload<CodImportSummary>("/api/v1/admin/accounts/bank/cod-remittances", {
+              file,
+              mapping: new Blob([JSON.stringify(mapping)], { type: "application/json" }),
+            }),
+          remittances: () => request<CodRemittanceView[]>("/api/v1/admin/accounts/bank/cod-remittances"),
+        },
       },
       categories: {
         list: () => request<AdminCategory[]>("/api/v1/admin/categories"),

@@ -206,6 +206,12 @@ export default function AccountsPage() {
               title="Periods"
               subtitle="Lock months that are closed"
             />
+            <ListRow
+              href="/money/accounts/bank/"
+              icon={BankIcon}
+              title="Bank reconciliation"
+              subtitle="Import bank statements and COD remittances, sync Razorpay, match to the books"
+            />
           </ListCard>
           {owner && (
             <>
