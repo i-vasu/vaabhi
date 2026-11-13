@@ -29,6 +29,8 @@ import { DeliveryCheck } from "./delivery-check";
 import { ProductGallery } from "./product-gallery";
 
 const rupees = (amount: number) => formatPrice(amount);
+const addButtonClass =
+  "inline-flex flex-1 items-center justify-center gap-2 rounded-sm bg-brand-primary px-6 py-3.5 text-sm font-medium uppercase tracking-[0.04em] text-text-on-brand hover:bg-brand-primary-hover";
 const chip = (checked: boolean, disabled = false) =>
   cn(
     "inline-flex min-w-11 cursor-pointer items-center justify-center rounded-full border px-3.5 py-1.5 text-sm tabular-nums",
@@ -290,6 +292,7 @@ export function ProductView({
                                   onChange={() => {
                                     setBlouseSize(s);
                                     setProblem(null);
+                                    setAdded(false);
                                   }}
                                 />
                                 {s}
@@ -346,27 +349,29 @@ export function ProductView({
           {wishButton(
             "grid place-items-center rounded-sm border border-brand-primary px-3.5 text-brand-primary hover:bg-brand-primary-soft",
           )}
-          <button
-            type="button"
-            onClick={add}
-            disabled={variant ? !variant.inStock : false}
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm bg-brand-primary px-6 py-3.5 text-sm font-medium uppercase tracking-[0.04em] text-text-on-brand hover:bg-brand-primary-hover disabled:opacity-50"
-          >
-            <BagIcon size={20} />
-            {variant && !variant.inStock ? "Out of stock" : "Add to bag"}
-          </button>
+          {added ? (
+            <Link href="/bag" className={addButtonClass}>
+              <BagIcon size={20} />
+              View bag
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={add}
+              disabled={variant ? !variant.inStock : false}
+              className={cn(addButtonClass, "disabled:opacity-50")}
+            >
+              <BagIcon size={20} />
+              {variant && !variant.inStock ? "Out of stock" : "Add to bag"}
+            </button>
+          )}
         </div>
         <div aria-live="polite" className="-mt-2 min-h-5 text-sm">
           {problem && <p className="text-feedback-error">{problem}</p>}
-          {added && (
-            <p className="text-feedback-success">
-              Added to bag.{" "}
-              <Link href="/bag" className="underline">
-                View bag
-              </Link>
-            </p>
-          )}
         </div>
+        <span aria-live="polite" className="sr-only">
+          {added ? "Added to bag" : ""}
+        </span>
         <p className="-mt-3 flex flex-wrap gap-x-3.5 gap-y-1 text-xs text-text-muted">
           {REASSURANCE.map((r) => (
             <span key={r}>{r}</span>
@@ -385,14 +390,24 @@ export function ProductView({
           <strong>{rupees(total)}</strong>
           <span className="text-xs text-text-muted">{addonPrice ? "incl. blouse stitching" : "incl. all taxes"}</span>
         </span>
-        <button
-          type="button"
-          tabIndex={showSticky ? 0 : -1}
-          onClick={add}
-          className="flex-1 rounded-sm bg-brand-primary px-6 py-3.5 text-sm font-medium uppercase tracking-[0.04em] text-text-on-brand"
-        >
-          Add to bag
-        </button>
+        {added ? (
+          <Link
+            href="/bag"
+            tabIndex={showSticky ? 0 : -1}
+            className="flex-1 rounded-sm bg-brand-primary px-6 py-3.5 text-center text-sm font-medium uppercase tracking-[0.04em] text-text-on-brand"
+          >
+            View bag
+          </Link>
+        ) : (
+          <button
+            type="button"
+            tabIndex={showSticky ? 0 : -1}
+            onClick={add}
+            className="flex-1 rounded-sm bg-brand-primary px-6 py-3.5 text-sm font-medium uppercase tracking-[0.04em] text-text-on-brand"
+          >
+            Add to bag
+          </button>
+        )}
       </div>
 
       {sizeGuide && (

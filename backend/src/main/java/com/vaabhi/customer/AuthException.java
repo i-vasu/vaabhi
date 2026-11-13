@@ -33,6 +33,10 @@ class AuthException extends ErrorResponseException {
         return new AuthException(HttpStatus.UNAUTHORIZED, message, null, null);
     }
 
+    static AuthException conflict(String message) {
+        return new AuthException(HttpStatus.CONFLICT, message, null, null);
+    }
+
     static AuthException tooManyRequests(String message, Duration retryAfter) {
         return new AuthException(HttpStatus.TOO_MANY_REQUESTS, message, null, retryAfter);
     }

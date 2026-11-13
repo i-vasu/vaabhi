@@ -6,7 +6,7 @@
     },
     "servers": [
         {
-            "url": "http://localhost:8081",
+            "url": "http://localhost:8080",
             "description": "Generated server url"
         }
     ],
@@ -40,6 +40,36 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/ProfileUpdate"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomerProfile"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/customer/me/phone": {
+            "put": {
+                "tags": [
+                    "customer-controller"
+                ],
+                "operationId": "updatePhone",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PhoneChangeVerification"
                             }
                         }
                     },
@@ -2309,6 +2339,36 @@
                 }
             }
         },
+        "/api/v1/customer/me/phone/otp": {
+            "post": {
+                "tags": [
+                    "customer-controller"
+                ],
+                "operationId": "requestPhoneOtp",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PhoneChangeRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OtpSent"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/customer/checkout": {
             "post": {
                 "tags": [
@@ -2332,6 +2392,36 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/CheckoutStart"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/customer/checkout/coupon": {
+            "post": {
+                "tags": [
+                    "checkout-controller"
+                ],
+                "operationId": "quoteCoupon",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CouponQuoteRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CouponQuote"
                                 }
                             }
                         }
@@ -7494,6 +7584,25 @@
                     "phone"
                 ]
             },
+            "PhoneChangeVerification": {
+                "type": "object",
+                "properties": {
+                    "phone": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 0
+                    },
+                    "code": {
+                        "type": "string",
+                        "minLength": 1,
+                        "pattern": "\\d{6}"
+                    }
+                },
+                "required": [
+                    "code",
+                    "phone"
+                ]
+            },
             "CustomerDetails": {
                 "type": "object",
                 "properties": {
@@ -12629,6 +12738,15 @@
                     "shippingRupees": {
                         "type": "number"
                     },
+                    "couponCode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "discountRupees": {
+                        "type": "number"
+                    },
                     "totalRupees": {
                         "type": "number"
                     },
@@ -12764,9 +12882,11 @@
                     "contactEmail",
                     "contactName",
                     "contactPhone",
+                    "couponCode",
                     "courier",
                     "createdAt",
                     "deliveredAt",
+                    "discountRupees",
                     "itemsRupees",
                     "lines",
                     "number",
@@ -12905,6 +13025,41 @@
                     "reason"
                 ]
             },
+            "PhoneChangeRequest": {
+                "type": "object",
+                "properties": {
+                    "phone": {
+                        "type": "string",
+                        "example": "98765 43210",
+                        "maxLength": 20,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "phone"
+                ]
+            },
+            "OtpSent": {
+                "type": "object",
+                "properties": {
+                    "phone": {
+                        "type": "string"
+                    },
+                    "expiresInSeconds": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "resendAfterSeconds": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "expiresInSeconds",
+                    "phone",
+                    "resendAfterSeconds"
+                ]
+            },
             "Address": {
                 "type": "object",
                 "properties": {
@@ -12980,12 +13135,73 @@
                             "ONLINE",
                             "COD"
                         ]
+                    },
+                    "couponCode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 40,
+                        "minLength": 0
                     }
                 },
                 "required": [
                     "address",
+                    "couponCode",
                     "lines",
                     "paymentMethod"
+                ]
+            },
+            "CouponQuoteRequest": {
+                "type": "object",
+                "properties": {
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Line"
+                        },
+                        "maxItems": 100,
+                        "minItems": 1
+                    },
+                    "code": {
+                        "type": "string",
+                        "maxLength": 40,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "code",
+                    "lines"
+                ]
+            },
+            "CouponQuote": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "valid": {
+                        "type": "boolean"
+                    },
+                    "reason": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "discountRupees": {
+                        "type": "number"
+                    },
+                    "itemsRupees": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "code",
+                    "discountRupees",
+                    "itemsRupees",
+                    "reason",
+                    "valid"
                 ]
             },
             "StaffLoginRequest": {
@@ -13157,27 +13373,6 @@
                 },
                 "required": [
                     "phone"
-                ]
-            },
-            "OtpSent": {
-                "type": "object",
-                "properties": {
-                    "phone": {
-                        "type": "string"
-                    },
-                    "expiresInSeconds": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "resendAfterSeconds": {
-                        "type": "integer",
-                        "format": "int64"
-                    }
-                },
-                "required": [
-                    "expiresInSeconds",
-                    "phone",
-                    "resendAfterSeconds"
                 ]
             },
             "GoogleSignIn": {
@@ -16258,6 +16453,9 @@
                     "imageKey": {
                         "type": "string"
                     },
+                    "videoKey": {
+                        "type": "string"
+                    },
                     "postedAt": {
                         "type": "string",
                         "format": "date-time"
@@ -16268,7 +16466,8 @@
                     "id",
                     "imageKey",
                     "permalink",
-                    "postedAt"
+                    "postedAt",
+                    "videoKey"
                 ]
             },
             "HomeContent": {

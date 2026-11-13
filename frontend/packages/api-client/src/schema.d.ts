@@ -20,6 +20,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/customer/me/phone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updatePhone"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/customer/me/details": {
         parameters: {
             query?: never;
@@ -740,6 +756,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/customer/me/phone/otp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["requestPhoneOtp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/customer/checkout": {
         parameters: {
             query?: never;
@@ -750,6 +782,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["startCheckout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customer/checkout/coupon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["quoteCoupon"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2658,6 +2706,10 @@ export interface components {
             email: string | null;
             phone: string | null;
         };
+        PhoneChangeVerification: {
+            phone: string;
+            code: string;
+        };
         CustomerDetails: {
             /** Format: date */
             dateOfBirth: string | null;
@@ -3733,6 +3785,8 @@ export interface components {
             pincode: string;
             itemsRupees: number;
             shippingRupees: number;
+            couponCode: string | null;
+            discountRupees: number;
             totalRupees: number;
             razorpayPaymentId: string | null;
             /** Format: date-time */
@@ -3785,6 +3839,17 @@ export interface components {
         CancelWebOrderForm: {
             reason: string | null;
         };
+        PhoneChangeRequest: {
+            /** @example 98765 43210 */
+            phone: string;
+        };
+        OtpSent: {
+            phone: string;
+            /** Format: int64 */
+            expiresInSeconds: number;
+            /** Format: int64 */
+            resendAfterSeconds: number;
+        };
         Address: {
             name: string;
             phone: string;
@@ -3799,6 +3864,18 @@ export interface components {
             address: components["schemas"]["Address"];
             /** @enum {string|null} */
             paymentMethod: "ONLINE" | "COD" | null;
+            couponCode: string | null;
+        };
+        CouponQuoteRequest: {
+            lines: components["schemas"]["Line"][];
+            code: string;
+        };
+        CouponQuote: {
+            code: string;
+            valid: boolean;
+            reason: string | null;
+            discountRupees: number;
+            itemsRupees: number;
         };
         StaffLoginRequest: {
             /** Format: email */
@@ -3840,13 +3917,6 @@ export interface components {
         OtpRequest: {
             /** @example 98765 43210 */
             phone: string;
-        };
-        OtpSent: {
-            phone: string;
-            /** Format: int64 */
-            expiresInSeconds: number;
-            /** Format: int64 */
-            resendAfterSeconds: number;
         };
         GoogleSignIn: {
             credential: string;
@@ -4548,6 +4618,7 @@ export interface components {
             permalink: string;
             caption: string | null;
             imageKey: string;
+            videoKey: string;
             /** Format: date-time */
             postedAt: string;
         };
@@ -5041,6 +5112,30 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ProfileUpdate"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomerProfile"];
+                };
+            };
+        };
+    };
+    updatePhone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhoneChangeVerification"];
             };
         };
         responses: {
@@ -6733,6 +6828,30 @@ export interface operations {
             };
         };
     };
+    requestPhoneOtp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhoneChangeRequest"];
+            };
+        };
+        responses: {
+            /** @description Accepted */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["OtpSent"];
+                };
+            };
+        };
+    };
     startCheckout: {
         parameters: {
             query?: never;
@@ -6753,6 +6872,30 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CheckoutStart"];
+                };
+            };
+        };
+    };
+    quoteCoupon: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CouponQuoteRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CouponQuote"];
                 };
             };
         };

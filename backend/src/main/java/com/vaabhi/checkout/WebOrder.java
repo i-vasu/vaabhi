@@ -8,6 +8,8 @@ import org.jspecify.annotations.Nullable;
 /**
  * An online order with the prices it was placed at.
  *
+ * @param couponCode the coupon applied at checkout (upper case), when there was one
+ * @param discountRupees what the coupon took off the items (zero when there was none)
  * @param paidAt when the money came in: at payment for ONLINE, on delivery for COD
  * @param refundedRupees what is refunded through Razorpay when a paid order was cancelled
  * @param refundId Razorpay's refund id; null until Razorpay has accepted the refund
@@ -33,6 +35,8 @@ public record WebOrder(
         String pincode,
         BigDecimal itemsRupees,
         BigDecimal shippingRupees,
+        @Nullable String couponCode,
+        BigDecimal discountRupees,
         BigDecimal totalRupees,
         @Nullable String razorpayPaymentId,
         @Nullable OffsetDateTime paidAt,

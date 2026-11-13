@@ -24,6 +24,8 @@ public class CouponService {
             SELECT c.id, c.code, c.description, c.kind, c.value, c.min_order_rupees, c.valid_from, c.valid_to,
                    c.max_uses, c.active,
                    (SELECT COUNT(*) FROM shop_order o WHERE upper(o.coupon_code) = c.code AND o.status <> 'CANCELLED')
+                       + (SELECT COUNT(*) FROM web_order w WHERE upper(w.coupon_code) = c.code
+                               AND w.status NOT IN ('CANCELLED', 'FAILED'))
                        AS uses
             FROM coupon c
             """;
