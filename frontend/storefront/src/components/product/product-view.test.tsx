@@ -31,8 +31,9 @@ describe("ProductView", () => {
 
     fireEvent.click(radio("36"));
     fireEvent.click(addButton());
-    expect(screen.getByText(/Added to bag/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "View bag" })).toHaveAttribute("href", "/bag");
+    expect(screen.queryByRole("button", { name: /add to bag/i })).not.toBeInTheDocument();
+    expect(screen.getByText("Added to bag")).toBeInTheDocument();
     expect(bagStore.read()).toEqual([
       expect.objectContaining({
         sku: "VB-RANI",
@@ -44,6 +45,10 @@ describe("ProductView", () => {
         quantity: 1,
       }),
     ]);
+
+    fireEvent.click(radio("34"));
+    expect(screen.getByRole("button", { name: "Add to bag" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "View bag" })).not.toBeInTheDocument();
 
     fireEvent.click(radio(/made to measure/));
     expect(screen.getByText(/we call you within a day/)).toBeInTheDocument();
