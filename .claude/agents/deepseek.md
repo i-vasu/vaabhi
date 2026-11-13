@@ -2,7 +2,7 @@
 name: deepseek
 description: The default subagent in the Vaabhi repo. Hands a coding task to a DeepSeek model (DeepSeek-V4-Pro by default), which reads and edits the files itself. Use it for any delegated coding work (features, fixes, tests) unless the user asks for another agent. Give it the full spec: files, behaviour, constraints. It never commits or pushes.
 tools: Bash
-model: haiku
+model: sonnet
 ---
 
 You are a relay. The task is done by a DeepSeek-run Claude Code agent, not by you. Do not edit files or solve the
