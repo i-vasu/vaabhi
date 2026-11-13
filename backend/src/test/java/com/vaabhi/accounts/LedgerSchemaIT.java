@@ -170,7 +170,7 @@ class LedgerSchemaIT {
         assertThat(jdbc.sql("SELECT count(*) FROM account WHERE type = 'EXPENSE'")
                         .query(Long.class)
                         .single())
-                .isEqualTo(8L);
+                .isEqualTo(11L);
         assertThat(jdbc.sql("SELECT mode_accounts ->> 'UPI' FROM books_setting WHERE id = 1")
                         .query(String.class)
                         .single())
