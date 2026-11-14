@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,8 +26,11 @@ import tools.jackson.databind.json.JsonMapper;
  * sold online or in the shop). Each run first makes any missing JPEG photo copies, then sends Meta only the items
  * whose fields changed since the last send, and deletes items that are no longer for sale. Without the Catalog API
  * settings it only makes the JPEG copies, and Meta reads the scheduled CSV feed instead.
+ *
+ * <p>{@code META_CATALOG_SYNC=false} switches all of it off (no JPEG copies, no pushes) without a new release.
  */
 @Component
+@ConditionalOnBooleanProperty(name = "vaabhi.meta-catalog.sync-enabled", matchIfMissing = true)
 @EnableConfigurationProperties(MetaCatalogProperties.class)
 class MetaCatalogSync {
 

@@ -16,8 +16,12 @@ import org.springframework.stereotype.Component;
 
 /**
  * Meta catalogues (Instagram Shopping, WhatsApp) take JPEG photos, but the shop stores WebP renditions. Every minute
- * this copies the largest rendition of each published product's photos to {@code <key>/feed.jpg}, a few at
- * a time so the small VPS is never busy for long. The feed only lists photos whose copy is done.
+ * this copies the {@value #SOURCE_WIDTH} px rendition of each published product's photos to {@code <key>/feed.jpg}, a
+ * few at a time so the small VPS is never busy for long. The feed only lists photos whose copy is done.
+ *
+ * <p>Not the 1600 px rendition: decoding one (about 4 megapixels) and copying it for the JPEG writer held 40 MB or
+ * more at once, which pushed the backend past its container memory limit and got it killed every time the sync ran.
+ * 800 px is above Meta's 500 px minimum and needs about a quarter of that.
  */
 @Component
 class CatalogFeedImages {
@@ -25,6 +29,7 @@ class CatalogFeedImages {
     private static final Logger log = LoggerFactory.getLogger(CatalogFeedImages.class);
     static final int BATCH = 10;
     private static final float QUALITY = 0.88f;
+    static final int SOURCE_WIDTH = 800;
 
     private final JdbcClient jdbc;
     private final ObjectStorage storage;
@@ -54,8 +59,7 @@ class CatalogFeedImages {
                         """).param("limit", BATCH).query(Pending.class).list();
         for (var media : pending) {
             try {
-                var largest = ProductMediaService.RENDITIONS.getLast();
-                var jpeg = toJpeg(storage.get(ProductMediaService.renditionKey(media.storageKey(), largest)));
+                var jpeg = toJpeg(storage.get(ProductMediaService.renditionKey(media.storageKey(), SOURCE_WIDTH)));
                 storage.put(feedImageKey(media.storageKey()), jpeg, "image/jpeg");
                 jdbc.sql("UPDATE product_media SET feed_image = TRUE WHERE id = :id")
                         .param("id", media.id())
@@ -77,16 +81,7 @@ class CatalogFeedImages {
         } finally {
             reader.dispose();
         }
-        // JPEG has no transparency: draw onto white so a transparent edge does not turn black.
-        var rgb = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_RGB);
-        var graphics = rgb.createGraphics();
-        try {
-            graphics.setColor(java.awt.Color.WHITE);
-            graphics.fillRect(0, 0, rgb.getWidth(), rgb.getHeight());
-            graphics.drawImage(source, 0, 0, null);
-        } finally {
-            graphics.dispose();
-        }
+        var rgb = opaqueRgb(source);
 
         var writer = ImageIO.getImageWritersByFormatName("jpeg").next();
         var out = new ByteArrayOutputStream();
@@ -100,5 +95,27 @@ class CatalogFeedImages {
             writer.dispose();
         }
         return out.toByteArray();
+    }
+
+    /**
+     * The JPEG writer needs an image without alpha. An opaque photo is drawn into a plain RGB image as is; one with
+     * transparency is drawn onto white so a transparent edge does not turn black.
+     */
+    private static BufferedImage opaqueRgb(BufferedImage source) {
+        if (source.getType() == BufferedImage.TYPE_INT_RGB) {
+            return source;
+        }
+        var rgb = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_RGB);
+        var graphics = rgb.createGraphics();
+        try {
+            if (source.getColorModel().hasAlpha()) {
+                graphics.setColor(java.awt.Color.WHITE);
+                graphics.fillRect(0, 0, rgb.getWidth(), rgb.getHeight());
+            }
+            graphics.drawImage(source, 0, 0, null);
+        } finally {
+            graphics.dispose();
+        }
+        return rgb;
     }
 }
