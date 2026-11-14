@@ -577,7 +577,7 @@ function BillForm({
           {action.busy ? "Saving…" : "Save bill"}
         </button>
         {liveId && (
-          <Link href={`/money/purchases/supplier/?id=${supplierId}`} className={buttonSecondary}>
+          <Link href={`/money/purchases/supplier/?id=${encodeURIComponent(supplierId)}`} className={buttonSecondary}>
             Supplier statement
           </Link>
         )}

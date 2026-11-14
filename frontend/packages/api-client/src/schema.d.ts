@@ -14031,7 +14031,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": string;
+                    "text/csv": string;
                 };
             };
         };
@@ -14364,7 +14364,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": string;
+                    "text/csv": string;
                 };
             };
         };

@@ -174,7 +174,7 @@ class MoneyController {
         return gstr1.month(parseMonth(month));
     }
 
-    @GetMapping("/gstr1/{section}.csv")
+    @GetMapping(value = "/gstr1/{section}.csv", produces = "text/csv")
     ResponseEntity<String> getGstr1Csv(@PathVariable String section, @RequestParam String month) {
         var yearMonth = parseMonth(month);
         var csv = gstr1.csv(yearMonth, section);

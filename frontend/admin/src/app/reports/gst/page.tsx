@@ -222,7 +222,10 @@ export default function GstReportPage() {
         onChange={(e) => e.target.value && setMonth(e.target.value)}
       />
       <p className="-mt-2 mb-4 text-sm">
-        <Link href={`/money/accounts/gstr3b/?month=${month}`} className="font-medium text-accent-ink underline">
+        <Link
+          href={`/money/accounts/gstr3b/?month=${encodeURIComponent(month)}`}
+          className="font-medium text-accent-ink underline"
+        >
           GSTR-3B for this month
         </Link>
       </p>

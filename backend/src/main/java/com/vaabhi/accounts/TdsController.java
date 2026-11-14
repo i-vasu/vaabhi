@@ -81,7 +81,7 @@ class TdsController {
         return returns.quarter(FiscalYears.parse(fy), quarter);
     }
 
-    @GetMapping("/returns.csv")
+    @GetMapping(value = "/returns.csv", produces = "text/csv")
     ResponseEntity<String> returnsCsv(@RequestParam String fy, @RequestParam int quarter, @RequestParam String part) {
         var fyStart = FiscalYears.parse(fy);
         var csv = returns.csv(fyStart, quarter, part);

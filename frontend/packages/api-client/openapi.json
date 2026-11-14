@@ -9435,7 +9435,7 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "*/*": {
+                            "text/csv": {
                                 "schema": {
                                     "type": "string"
                                 }
@@ -9970,7 +9970,7 @@
                     "200": {
                         "description": "OK",
                         "content": {
-                            "*/*": {
+                            "text/csv": {
                                 "schema": {
                                     "type": "string"
                                 }
