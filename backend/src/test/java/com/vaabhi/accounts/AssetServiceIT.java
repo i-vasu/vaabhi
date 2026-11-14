@@ -173,7 +173,8 @@ class AssetServiceIT extends BooksFixtures {
         assertThat(netInEntry(disposal.id(), accdepAccount)).isEqualByComparingTo(after.accumulatedRupees());
         assertThat(after.accumulatedRupees()).isGreaterThanOrEqualTo(before.accumulatedRupees());
         assertThat(netInEntry(disposal.id(), accountId("ASSET_GAIN"))).isEqualByComparingTo(gain.negate());
-        assertThat(netInEntry(disposal.id(), settings.accountFor("BANK"))).isEqualByComparingTo(proceeds); // money in: a debit
+        assertThat(netInEntry(disposal.id(), settings.accountFor("BANK")))
+                .isEqualByComparingTo(proceeds); // money in: a debit
     }
 
     @Test

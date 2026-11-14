@@ -77,7 +77,8 @@ class BackupServiceIT {
             jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_OWNER"));
 
     @Container
-    private static final GenericContainer<?> MINIO = new GenericContainer<>("adobe/s3mock:4.7.0") // MinIO images are no longer public
+    private static final GenericContainer<?> MINIO = new GenericContainer<>(
+                    "adobe/s3mock:4.7.0") // MinIO images are no longer public
             .withExposedPorts(9090)
             .waitingFor(Wait.forListeningPort());
 

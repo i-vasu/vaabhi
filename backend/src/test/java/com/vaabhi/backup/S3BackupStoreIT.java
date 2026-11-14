@@ -37,7 +37,8 @@ class S3BackupStoreIT {
     private static final String EMPTY_SHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 
     @Container
-    private static final GenericContainer<?> MINIO = new GenericContainer<>("adobe/s3mock:4.7.0") // MinIO images are no longer public
+    private static final GenericContainer<?> MINIO = new GenericContainer<>(
+                    "adobe/s3mock:4.7.0") // MinIO images are no longer public
             .withExposedPorts(9090)
             .waitingFor(Wait.forListeningPort());
 

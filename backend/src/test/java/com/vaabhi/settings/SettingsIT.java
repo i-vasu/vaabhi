@@ -74,8 +74,7 @@ class SettingsIT {
         put("/billing", """
                         {"chargeGst":false,"defaultGstRate":5,"pricesIncludeTax":true,"showHsnCodes":false,
                          "discountAppliesTo":"ORDER_TOTAL","autoInvoice":true}
-                        """)
-                .andExpect(status().isOk());
+                        """).andExpect(status().isOk());
         mockMvc.perform(get("/api/v1/admin/settings/billing").with(OWNER))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.chargeGst").value(false))
