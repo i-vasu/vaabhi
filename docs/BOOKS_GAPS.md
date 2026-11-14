@@ -74,3 +74,10 @@ phase by hand at the end (see each phase spec's "Owner checks by hand").
   listed in `infra/vps-setup.md`.
 - Owner hand checks: AceCloud bucket + keys in `/opt/vaabhi/.env`; first "Back up now" and first nightly run show OK;
   restore drill per `docs/RESTORE.md`, then "Mark restore drill done".
+
+## Found in the end-to-end run (2026-11-14)
+
+- With the company card's state empty, every supplier bill is treated as intra-state (CGST + SGST), even from
+  another state. Set the state on the company card; the bill form should warn when it is missing.
+- Playwright: `admin-products` assumes R2 is not configured (dev has keys, so the upload runs for real), and two
+  storefront tests expect demo-catalogue counts and prices; they pass only on a fresh demo database.
