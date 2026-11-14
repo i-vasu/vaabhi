@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import type { PaymentMode, TdsSectionView } from "@vaabhi/api-client";
 import { ReceiptIcon } from "@/components/icons";
 import { ErrorNote, Pill } from "@/components/tailoring";
@@ -11,6 +12,7 @@ import {
   LoadState,
   PageHeader,
   SectionLabel,
+  SegmentedControl,
   SelectField,
   Sheet,
   TextField,
@@ -21,7 +23,14 @@ import {
 import { fyLabel, fyRange, monthTitle, useIsOwner } from "@/lib/accounts";
 import { api } from "@/lib/api";
 import { parseRupees, rupees } from "@/lib/settings";
-import { PAYMENT_MODES, today, useAction, useLoad } from "@/lib/tailoring";
+import { PAYMENT_MODES, formatDate, today, useAction, useLoad } from "@/lib/tailoring";
+
+type Tab = "deducted" | "returns";
+
+const TABS: { value: Tab; label: string }[] = [
+  { value: "deducted", label: "Deducted and paid" },
+  { value: "returns", label: "Returns" },
+];
 
 function fyOptions(): { value: string; label: string }[] {
   const startYear = Number(fyRange(today()).from.slice(0, 4));
@@ -233,7 +242,7 @@ function SectionSheet({
 }
 
 /** TDS deducted by section and month, against the challans paid, with the sections' settings. */
-export default function TdsPage() {
+function DeductedView({ tab, onTab }: { tab: Tab; onTab: (tab: Tab) => void }) {
   const owner = useIsOwner();
   const [fyFrom, setFyFrom] = useState(() => fyRange(today()).from);
   const range = fyRange(fyFrom);
@@ -262,6 +271,9 @@ export default function TdsPage() {
           )
         }
       />
+      <div className="mb-6">
+        <SegmentedControl label="TDS view" options={TABS} value={tab} onChange={onTab} />
+      </div>
       <div className="mb-4">
         <SelectField label="Financial year" options={fyOptions()} value={fyFrom} onChange={setFyFrom} />
       </div>
@@ -364,5 +376,243 @@ export default function TdsPage() {
         />
       )}
     </section>
+  );
+}
+
+/** The API's label for the financial year starting in `startYear`: "2026-27". */
+function fyLabelOf(startYear: number): string {
+  return `${startYear}-${String((startYear + 1) % 100).padStart(2, "0")}`;
+}
+
+/** "2026-27" → "2026-04-01". */
+function fyStart(label: string): string {
+  return `${label.slice(0, 4)}-04-01`;
+}
+
+/** The last day of a quarter (1–4) of the financial year starting in `startYear`. */
+function quarterEnd(startYear: number, quarter: number): string {
+  return new Date(Date.UTC(startYear, 3 + quarter * 3, 0)).toISOString().slice(0, 10);
+}
+
+function returnsFyOptions(): { value: string; label: string }[] {
+  const startYear = Number(fyRange(today()).from.slice(0, 4));
+  return [0, 1, 2, 3, 4].map((back) => {
+    const label = fyLabelOf(startYear - back);
+    return { value: label, label: fyLabel(fyStart(label)) };
+  });
+}
+
+const QUARTERS: { value: string; label: string }[] = [
+  { value: "1", label: "Q1 Apr–Jun" },
+  { value: "2", label: "Q2 Jul–Sep" },
+  { value: "3", label: "Q3 Oct–Dec" },
+  { value: "4", label: "Q4 Jan–Mar" },
+];
+
+/** The latest quarter that has already ended: FY 2026-27 Q2 on 14 Nov 2026, FY 2025-26 Q4 on 10 May 2026. */
+function latestQuarter(now: string): { fy: string; quarter: string } {
+  const startYear = Number(fyRange(now).from.slice(0, 4));
+  for (let back = 0; back <= 4; back++) {
+    for (let quarter = 4; quarter >= 1; quarter--) {
+      if (quarterEnd(startYear - back, quarter) <= now) {
+        return { fy: fyLabelOf(startYear - back), quarter: String(quarter) };
+      }
+    }
+  }
+  return { fy: fyLabelOf(startYear - 1), quarter: "4" };
+}
+
+/** The 26Q deductees, challans and per-section totals of one quarter, with a CSV for each part. */
+function ReturnsView({ tab, onTab }: { tab: Tab; onTab: (tab: Tab) => void }) {
+  const [defaults] = useState(() => latestQuarter(today()));
+  const [fy, setFy] = useState(defaults.fy);
+  const [quarter, setQuarter] = useState(defaults.quarter);
+  const data = useLoad(() => api.admin.accounts.tds.returns(fy, Number(quarter)), [fy, quarter]);
+  const download = useAction();
+  const q = data.value;
+
+  async function downloadCsv(part: "deductees" | "challans") {
+    await download.run(async () => {
+      const blob = await api.admin.accounts.tds.returnsCsv(fy, Number(quarter), part);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `26q-${fy}-q${quarter}-${part}.csv`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+    });
+  }
+
+  return (
+    <section className="mx-auto max-w-3xl">
+      <PageHeader title="TDS" backHref="/money/accounts/" />
+      <div className="mb-6">
+        <SegmentedControl label="TDS view" options={TABS} value={tab} onChange={onTab} />
+      </div>
+      <div className="mb-4 flex flex-wrap items-end gap-3">
+        <SelectField className="w-44" label="Financial year" options={returnsFyOptions()} value={fy} onChange={setFy} />
+        <SelectField className="w-40" label="Quarter" options={QUARTERS} value={quarter} onChange={setQuarter} />
+        <button
+          type="button"
+          className={buttonSecondary}
+          disabled={download.busy}
+          onClick={() => downloadCsv("deductees")}
+        >
+          Deductees CSV
+        </button>
+        <button
+          type="button"
+          className={buttonSecondary}
+          disabled={download.busy}
+          onClick={() => downloadCsv("challans")}
+        >
+          Challans CSV
+        </button>
+      </div>
+      <ErrorNote>{data.error ?? download.error}</ErrorNote>
+      {!q ? (
+        <LoadState loading={data.loading} error={null} />
+      ) : q.deductees.length === 0 && q.challans.length === 0 ? (
+        <EmptyState icon={ReceiptIcon} title="No TDS deducted this quarter" />
+      ) : (
+        <>
+          {q.deductees.length > 0 && (
+            <>
+              <SectionLabel>Deductees</SectionLabel>
+              <div className="overflow-x-auto rounded-2xl border border-line bg-panel">
+                <table className="w-full min-w-[46rem] text-left text-sm">
+                  <thead className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
+                    <tr>
+                      <th className="px-4 py-2 font-medium">Section</th>
+                      <th className="px-4 py-2 font-medium">Party</th>
+                      <th className="px-4 py-2 font-medium">PAN</th>
+                      <th className="px-4 py-2 font-medium">Bill no</th>
+                      <th className="px-4 py-2 font-medium">Credited on</th>
+                      <th className="px-4 py-2 text-right font-medium">Amount</th>
+                      <th className="px-4 py-2 text-right font-medium">Rate %</th>
+                      <th className="px-4 py-2 text-right font-medium">TDS</th>
+                      <th className="px-4 py-2 font-medium">Challan no</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-line">
+                    {q.deductees.map((row) => (
+                      <tr key={row.billId}>
+                        <td className="whitespace-nowrap px-4 py-3 font-medium">{row.sectionCode}</td>
+                        <td className="px-4 py-3">{row.partyName}</td>
+                        <td className="whitespace-nowrap px-4 py-3">
+                          {row.pan ?? <Pill tone="warn">PAN missing</Pill>}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3">{row.billNo}</td>
+                        <td className="whitespace-nowrap px-4 py-3">{formatDate(row.creditedOn)}</td>
+                        <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+                          {rupees(row.amountRupees)}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">{row.ratePercent}%</td>
+                        <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">{rupees(row.tdsRupees)}</td>
+                        <td className="whitespace-nowrap px-4 py-3">{row.challanNo ?? "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+
+          {q.challans.length > 0 && (
+            <>
+              <SectionLabel>Challans</SectionLabel>
+              <div className="overflow-x-auto rounded-2xl border border-line bg-panel">
+                <table className="w-full min-w-[40rem] text-left text-sm">
+                  <thead className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
+                    <tr>
+                      <th className="px-4 py-2 font-medium">Section</th>
+                      <th className="px-4 py-2 font-medium">Month</th>
+                      <th className="px-4 py-2 text-right font-medium">Amount</th>
+                      <th className="px-4 py-2 text-right font-medium">Interest</th>
+                      <th className="px-4 py-2 font-medium">Challan no</th>
+                      <th className="px-4 py-2 font-medium">BSR code</th>
+                      <th className="px-4 py-2 font-medium">Paid on</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-line">
+                    {q.challans.map((challan) => (
+                      <tr key={challan.id}>
+                        <td className="whitespace-nowrap px-4 py-3 font-medium">{challan.sectionCode}</td>
+                        <td className="whitespace-nowrap px-4 py-3">{monthTitle(challan.periodMonth)}</td>
+                        <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+                          {rupees(challan.amountRupees)}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+                          {rupees(challan.interestRupees)}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3">{challan.challanNo}</td>
+                        <td className="whitespace-nowrap px-4 py-3">{challan.bsrCode}</td>
+                        <td className="whitespace-nowrap px-4 py-3">{formatDate(challan.paidOn)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+
+          {q.totals.length > 0 && (
+            <>
+              <SectionLabel>Section totals</SectionLabel>
+              <div className="overflow-x-auto rounded-2xl border border-line bg-panel">
+                <table className="w-full text-left text-sm">
+                  <thead className="border-b border-line text-xs uppercase tracking-wide text-ink-faint">
+                    <tr>
+                      <th className="px-4 py-2 font-medium">Section</th>
+                      <th className="px-4 py-2 text-right font-medium">Deducted</th>
+                      <th className="px-4 py-2 text-right font-medium">Deposited</th>
+                      <th className="px-4 py-2 text-right font-medium">Difference</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-line">
+                    {q.totals.map((total) => (
+                      <tr key={total.sectionCode}>
+                        <td className="whitespace-nowrap px-4 py-3 font-medium">{total.sectionCode}</td>
+                        <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+                          {rupees(total.deductedRupees)}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+                          {rupees(total.depositedRupees)}
+                        </td>
+                        <td
+                          className={`whitespace-nowrap px-4 py-3 text-right tabular-nums ${
+                            total.differenceRupees !== 0 ? "text-bad" : ""
+                          }`}
+                        >
+                          {rupees(total.differenceRupees)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </>
+      )}
+    </section>
+  );
+}
+
+function Route() {
+  const router = useRouter();
+  const tab: Tab = useSearchParams().get("tab") === "returns" ? "returns" : "deducted";
+  const selectTab = (next: Tab) => {
+    router.replace(next === "returns" ? "/money/accounts/tds/?tab=returns" : "/money/accounts/tds/");
+  };
+  return tab === "returns" ? <ReturnsView tab={tab} onTab={selectTab} /> : <DeductedView tab={tab} onTab={selectTab} />;
+}
+
+/** TDS deducted and paid, and the quarterly 26Q returns. */
+export default function TdsPage() {
+  return (
+    <Suspense fallback={<p className="text-ink-soft">Loading…</p>}>
+      <Route />
+    </Suspense>
   );
 }

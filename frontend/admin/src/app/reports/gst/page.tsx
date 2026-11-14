@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { DownloadIcon } from "@/components/icons";
 import { ErrorNote } from "@/components/tailoring";
@@ -220,6 +221,11 @@ export default function GstReportPage() {
         value={month}
         onChange={(e) => e.target.value && setMonth(e.target.value)}
       />
+      <p className="-mt-2 mb-4 text-sm">
+        <Link href={`/money/accounts/gstr3b/?month=${month}`} className="font-medium text-accent-ink underline">
+          GSTR-3B for this month
+        </Link>
+      </p>
       <ErrorNote>{report.error ?? downloadError}</ErrorNote>
       {!r ? (
         <LoadState loading={report.loading} error={null} />
