@@ -10,7 +10,19 @@ import { LoadState, PageHeader, SegmentedControl, SelectField, TextField, button
 import { fyLabel, fyRange } from "@/lib/accounts";
 import { api } from "@/lib/api";
 import { rupees } from "@/lib/settings";
-import { formatDate, today, useAction, useLoad } from "@/lib/tailoring";
+import { today, useAction, useLoad } from "@/lib/tailoring";
+
+const fullDateFormat = new Intl.DateTimeFormat("en-IN", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+/** "2026-03-31" → "31 Mar 2026": statement headers always carry the year. */
+function fullDate(isoDate: string): string {
+  return fullDateFormat.format(new Date(`${isoDate.slice(0, 10)}T00:00:00Z`));
+}
 
 type Tab = "pl" | "bs";
 
@@ -228,7 +240,7 @@ function StatementsView({ tab, onTab }: { tab: Tab; onTab: (tab: Tab) => void })
               ]}
               headings={{
                 current: "This period",
-                previous: `${formatDate(p.previousFrom)} – ${formatDate(p.previousTo)}`,
+                previous: `${fullDate(p.previousFrom)} – ${fullDate(p.previousTo)}`,
               }}
               totals={[
                 {
@@ -283,8 +295,8 @@ function StatementsView({ tab, onTab }: { tab: Tab; onTab: (tab: Tab) => void })
                     { title: "Assets", lines: b.assets },
                   ]}
                   headings={{
-                    current: `As at ${formatDate(b.asOf)}`,
-                    previous: `As at ${formatDate(b.previousAsOf)}`,
+                    current: `As at ${fullDate(b.asOf)}`,
+                    previous: `As at ${fullDate(b.previousAsOf)}`,
                   }}
                   totals={[
                     {
