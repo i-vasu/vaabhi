@@ -22,6 +22,25 @@ Done when: a restore of yesterday's backup works, and the auditor pack names whe
 | Retention | Daily backups locked 35 days; the month's last backup also stored under `monthly/`, locked 8 years | Each backup holds all history, so month-ends suffice for the long tail. ~₹5/month at today's size. |
 | Provider lock-in | Plain S3 API via SigV4 over `HttpClient`; endpoint, region, bucket, keys from env | Switch to AIC or another India S3 store with config only. |
 
+## Amendment 2026-11-14: provider AceCloud
+
+The owner chose **AceCloud object storage (India: Noida/Mumbai)** over AWS for a rupee bill with no usage
+surprises. AceCloud documents S3 compatibility but not Object Lock, India-only replication ("triple replication
+across India and US regions") or `x-amz-checksum-sha256`. So:
+- `vaabhi.backup.lock-mode`: `NONE` (default, AceCloud) | `GOVERNANCE` | `COMPLIANCE`. Lock headers are sent only
+  when not `NONE`.
+- `vaabhi.backup.checksum`: `MD5` (default; `Content-MD5` header, accepted by every S3-compatible store) | `SHA256`
+  (`x-amz-checksum-sha256`). The read-back check compares size always, and the checksum only when the store
+  returns one; otherwise it downloads nothing extra and relies on `Content-MD5` having been verified on upload.
+- Endpoint, region and bucket come from env as before; no AWS defaults in code (`s3Endpoint` and `s3Region`
+  required when enabled; `locationLabel` default `AceCloud object storage, India`).
+- Protection without Object Lock: the backup key gets no delete permission if AceCloud's access policies allow it;
+  otherwise the risk is listed in Gaps. Retention via AceCloud lifecycle rules if offered; without them dailies
+  accumulate (~18 GB a year at today's size, ~₹20/month per year kept).
+- Open questions for AceCloud (owner): bucket pinned to India only? Object Lock available? Lifecycle expiry?
+  Read-only/no-delete keys?
+The AWS sections below stay valid for `lock-mode COMPLIANCE` stores.
+
 ## Units
 
 New Modulith module `backup` (`com.vaabhi.backup`). Allowed dependencies: `settings`, `shared :: storage`,

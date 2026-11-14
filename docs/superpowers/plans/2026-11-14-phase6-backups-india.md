@@ -259,3 +259,31 @@ Testcontainers (Postgres, MinIO); Next.js 16 static-export admin.
   hand checks (AWS setup, first nightly run, restore drill, CA question on live DB location).
 - [ ] **Step 2:** Whole-branch review of the Phase 6 diff; spotless + prettier on changed files; compile.
 - [ ] **Step 3:** Commit `docs(backup): phase 6 gaps` (+ `style:` if needed); push.
+
+---
+
+## Amendment 2026-11-14: AceCloud (see spec "Amendment")
+
+### Task 2b: Lock and checksum modes
+
+**Files:** Modify `backup/BackupProperties.java` (+ `LockMode lockMode` default `NONE`, `ChecksumMode checksum`
+default `MD5`; enums `BackupLockMode`, `BackupChecksumMode` in own files; `s3Endpoint`/`s3Region` no AWS defaults,
+`configured()` also needs both; `locationLabel` default `AceCloud object storage, India`), `S3BackupStore.java`,
+`application.yml` (`BACKUP_LOCK_MODE`, `BACKUP_CHECKSUM`), `S3BackupStoreIT.java`, `BackupServiceIT.java`
+(construct properties with the new fields).
+- `put`: `MD5` → header `Content-MD5` = Base64 of the file's MD5 (computed alongside SHA-256; `BackupService`
+  passes both digests or `put` computes MD5 itself — keep `put(key, file, sha256Hex, retainUntil)` and compute MD5
+  inside); `SHA256` → `x-amz-checksum-sha256` as now. Lock headers only when `lockMode != NONE`, mode name =
+  `lockMode.name()`. SSE header `AES256` only when `lockMode != NONE` (AWS-style stores); otherwise omitted.
+- `head`: unchanged; `BackupService` upload check compares size, and the SHA-256 only when `S3ObjectInfo.sha256Base64`
+  is non-null.
+- IT: MinIO put with `MD5` mode and `NONE` lock succeeds on a bucket without object lock; a corrupted MD5 is
+  rejected.
+
+### Task 6 (revised): AceCloud setup guide
+`infra/vps-setup.md` section becomes "Books backups (AceCloud object storage, India)": create bucket in an India
+region (Noida or Mumbai), versioning on if offered, lifecycle rule `db/` expire after 36 days if offered, access key
+(no-delete policy if offered), the env keys (`BACKUP_S3_ENDPOINT`, `BACKUP_S3_REGION`, `BACKUP_S3_BUCKET`, keys,
+`BACKUP_LOCK_MODE=NONE`, `BACKUP_CHECKSUM=MD5`), the four questions to ask AceCloud support, and a short note how
+to switch to AWS Mumbai (`COMPLIANCE`, `SHA256`). `docs/RESTORE.md`: download via the AceCloud console or any S3
+client (`aws s3 cp --endpoint-url …` / `rclone`), no AWS-only wording.
