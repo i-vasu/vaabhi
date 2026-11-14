@@ -25,11 +25,12 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-/** The backup bucket over the plain S3 API, against MinIO with object lock. */
+/** The backup bucket over the plain S3 API, against MinIO with and without object lock. */
 @Testcontainers(disabledWithoutDocker = true)
 class S3BackupStoreIT {
 
     private static final String BUCKET = "vaabhi-backups";
+    private static final String NO_LOCK_BUCKET = "vaabhi-backups-md5";
     private static final String ACCESS_KEY = "minioadmin";
     private static final String SECRET_KEY = "minioadmin";
     private static final String REGION = "us-east-1";
@@ -50,10 +51,14 @@ class S3BackupStoreIT {
     private static String endpoint;
 
     @BeforeAll
-    static void createBucketWithObjectLock() throws Exception {
+    static void createBuckets() throws Exception {
         endpoint = "http://" + MINIO.getHost() + ":" + MINIO.getMappedPort(9000);
-        var uri = URI.create(endpoint + "/" + BUCKET);
-        var headers = Map.of("x-amz-bucket-object-lock-enabled", "true");
+        createBucket(BUCKET, Map.of("x-amz-bucket-object-lock-enabled", "true"));
+        createBucket(NO_LOCK_BUCKET, Map.of());
+    }
+
+    private static void createBucket(String bucket, Map<String, String> headers) throws Exception {
+        var uri = URI.create(endpoint + "/" + bucket);
         var request = HttpRequest.newBuilder(uri).PUT(HttpRequest.BodyPublishers.noBody());
         SigV4Signer.sign("PUT", uri, headers, EMPTY_SHA256, REGION, "s3", ACCESS_KEY, SECRET_KEY, Instant.now())
                 .forEach(request::header);
@@ -63,7 +68,7 @@ class S3BackupStoreIT {
         assertThat(response.statusCode()).isBetween(200, 299);
     }
 
-    private S3BackupStore store() {
+    private static S3BackupStore store(String bucket, BackupLockMode lockMode, BackupChecksumMode checksum) {
         return new S3BackupStore(new BackupProperties(
                 true,
                 "jdbc:postgresql://localhost/vaabhi",
@@ -71,13 +76,19 @@ class S3BackupStoreIT {
                 "secret",
                 endpoint,
                 REGION,
-                BUCKET,
+                bucket,
                 ACCESS_KEY,
                 SECRET_KEY,
+                lockMode,
+                checksum,
                 "MinIO test",
                 "pg_dump",
                 "pg_restore",
                 null));
+    }
+
+    private S3BackupStore store() {
+        return store(BUCKET, BackupLockMode.COMPLIANCE, BackupChecksumMode.SHA256);
     }
 
     @Test
@@ -96,6 +107,25 @@ class S3BackupStoreIT {
         assertThat(info.sha256Base64()).isEqualTo(Base64.getEncoder().encodeToString(sha256(bytes)));
 
         var copy = tempDir.resolve("copy.dump");
+        store.get(key, copy);
+        assertThat(Files.readAllBytes(copy)).isEqualTo(bytes);
+    }
+
+    @Test
+    void md5ModeUploadsToABucketWithoutObjectLock() throws Exception {
+        var bytes = new byte[4096];
+        new Random(7).nextBytes(bytes);
+        var file = tempDir.resolve("md5.dump");
+        Files.write(file, bytes);
+        var key = "db/2026/11/vaabhi-2026-11-14T0101.dump";
+        var store = store(NO_LOCK_BUCKET, BackupLockMode.NONE, BackupChecksumMode.MD5);
+
+        store.put(key, file, sha256Hex(bytes), Instant.now().plus(Duration.ofDays(35)));
+
+        var info = store.head(key).orElseThrow();
+        assertThat(info.sizeBytes()).isEqualTo(4096);
+
+        var copy = tempDir.resolve("md5-copy.dump");
         store.get(key, copy);
         assertThat(Files.readAllBytes(copy)).isEqualTo(bytes);
     }

@@ -10,11 +10,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.HexFormat;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -42,20 +45,25 @@ class S3BackupStore {
     }
 
     /**
-     * Uploads {@code file}, whose SHA-256 is {@code sha256Hex}, and locks it until {@code retainUntil}. S3
-     * rejects the body when it does not match {@code x-amz-checksum-sha256}.
+     * Uploads {@code file}, whose SHA-256 is {@code sha256Hex}, and locks it until {@code retainUntil} where the
+     * provider supports Object Lock. The store rejects the body when it does not match the checksum header.
      */
     void put(String key, Path file, String sha256Hex, Instant retainUntil) {
         var uri = uri(key);
-        var headers = Map.of(
-                "x-amz-checksum-sha256",
-                checksumBase64(sha256Hex),
-                "x-amz-object-lock-mode",
-                "COMPLIANCE",
-                "x-amz-object-lock-retain-until-date",
-                retainUntil.truncatedTo(ChronoUnit.SECONDS).toString(),
-                "x-amz-server-side-encryption",
-                "AES256");
+        var lockMode = properties.lockMode();
+        var headers = new LinkedHashMap<String, String>();
+        if (properties.checksum() == BackupChecksumMode.MD5) {
+            headers.put("Content-MD5", md5Base64(file));
+        } else {
+            headers.put("x-amz-checksum-sha256", checksumBase64(sha256Hex));
+        }
+        if (lockMode != BackupLockMode.NONE) {
+            headers.put("x-amz-object-lock-mode", lockMode.name());
+            headers.put(
+                    "x-amz-object-lock-retain-until-date",
+                    retainUntil.truncatedTo(ChronoUnit.SECONDS).toString());
+            headers.put("x-amz-server-side-encryption", "AES256");
+        }
         HttpRequest.BodyPublisher body;
         try {
             body = HttpRequest.BodyPublishers.ofFile(file);
@@ -147,6 +155,26 @@ class S3BackupStore {
     /** S3 takes the checksum as Base64 of the raw 32-byte digest, not of its hex text. */
     private static String checksumBase64(String sha256Hex) {
         return Base64.getEncoder().encodeToString(HexFormat.of().parseHex(sha256Hex));
+    }
+
+    /** {@code Content-MD5} is Base64 of the raw 16-byte MD5 digest of the file, streamed rather than loaded. */
+    private static String md5Base64(Path file) {
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("MD5 is not available", e);
+        }
+        try (var in = Files.newInputStream(file)) {
+            var buffer = new byte[64 * 1024];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                digest.update(buffer, 0, read);
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not read " + file, e);
+        }
+        return Base64.getEncoder().encodeToString(digest.digest());
     }
 
     private static String first300(String body) {

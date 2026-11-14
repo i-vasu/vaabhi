@@ -19,7 +19,8 @@ import javax.crypto.spec.SecretKeySpec;
 /**
  * AWS Signature Version 4 header signing for S3-compatible storage. The backup job sends a file with one
  * signed PUT instead of pulling in the AWS SDK. The {@code host}, {@code x-amz-content-sha256} and
- * {@code x-amz-date} headers and every {@code x-amz-*} header given by the caller are signed.
+ * {@code x-amz-date} headers, every {@code x-amz-*} header given by the caller and {@code Content-MD5} are
+ * signed.
  */
 public final class SigV4Signer {
 
@@ -54,9 +55,10 @@ public final class SigV4Signer {
         signed.put("x-amz-date", amzDate);
         headers.forEach((name, value) -> {
             var lower = name.toLowerCase(Locale.ROOT);
-            if (lower.startsWith("x-amz-")
-                    && !lower.equals("x-amz-date")
-                    && !lower.equals("x-amz-content-sha256")) {
+            if ((lower.startsWith("x-amz-")
+                            && !lower.equals("x-amz-date")
+                            && !lower.equals("x-amz-content-sha256"))
+                    || lower.equals("content-md5")) {
                 signed.put(lower, normalize(value));
             }
         });

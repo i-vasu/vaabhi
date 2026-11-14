@@ -97,6 +97,8 @@ class BackupServiceIT {
                     BUCKET,
                     ACCESS_KEY,
                     SECRET_KEY,
+                    BackupLockMode.COMPLIANCE,
+                    BackupChecksumMode.SHA256,
                     "MinIO test",
                     "pg_dump",
                     "pg_restore",
