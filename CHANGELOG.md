@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.0](https://github.com/i-vasu/vaabhi/compare/vaabhi-v0.3.0...vaabhi-v0.4.0) (2026-11-14)
+
+
+### Features
+
+* **catalog:** Meta catalogue feed + instant Catalog API sync ([#60](https://github.com/i-vasu/vaabhi/issues/60)) ([8ffeb48](https://github.com/i-vasu/vaabhi/commit/8ffeb48b59d0a5cb645198e6ac6b11d227794add))
+* ID engine, parties, web invoices, GST engine and general ledger (books phases 0–2) ([#48](https://github.com/i-vasu/vaabhi/issues/48)) ([f5e5e0c](https://github.com/i-vasu/vaabhi/commit/f5e5e0cc4797751406ba667045b5eafadb5ff58a))
+* **storefront:** View bag button, checkout coupons, mobile number on profile, best Instagram reels ([#58](https://github.com/i-vasu/vaabhi/issues/58)) ([16c8b71](https://github.com/i-vasu/vaabhi/commit/16c8b7196d64db455ced0f743cf54892bfbbd3fe))
+
+
+### Bug fixes
+
+* **catalog:** stop the Meta catalogue sync from crash-looping the backend ([#61](https://github.com/i-vasu/vaabhi/issues/61)) ([b4017c1](https://github.com/i-vasu/vaabhi/commit/b4017c1db73acb15be7a775da078cdec27ca1470))
+
 ## [0.3.0](https://github.com/i-vasu/vaabhi/compare/vaabhi-v0.2.0...vaabhi-v0.3.0) (2026-11-13)
 
 
