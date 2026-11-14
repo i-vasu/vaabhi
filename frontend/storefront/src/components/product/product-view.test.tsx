@@ -127,22 +127,15 @@ describe("ProductView", () => {
     expect(player.tagName).toBe("VIDEO");
     expect(player).toHaveAttribute("src", "https://media.test/products/1/clip/video");
     expect(player).toHaveAttribute("poster", "https://media.test/products/1/mustard/800.webp");
-    expect(screen.getByRole("button", { name: "Play video 1" })).toBeInTheDocument();
-    expect(
-      screen.getAllByRole("button", { name: /^Show photo|^Play video/ }).map((b) => b.getAttribute("aria-label")),
-    ).toEqual(["Show photo 1", "Play video 1", "Show photo 2"]);
+    expect(screen.getByText("1 / 3")).toBeInTheDocument();
     vi.unstubAllEnvs();
   });
 
-  it("steps through photos and checks delivery", () => {
+  it("shows a photo counter without arrows or thumbnails, and checks delivery", () => {
     render(<ProductView product={saree()} colour="Mustard" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Next photo" }));
-    expect(screen.getByRole("button", { name: "Show photo 2" })).toHaveAttribute("aria-current", "true");
-    fireEvent.click(screen.getByRole("button", { name: "Previous photo" }));
-    expect(screen.getByRole("button", { name: "Show photo 1" })).toHaveAttribute("aria-current", "true");
-    fireEvent.click(screen.getByRole("button", { name: "Show photo 2" }));
-    expect(screen.getByText("2 / 2")).toBeInTheDocument();
+    expect(screen.getByText("1 / 2")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /photo/i })).not.toBeInTheDocument();
 
     const pincode = screen.getByRole("textbox", { name: "Pincode" });
     fireEvent.change(pincode, { target: { value: "12a" } });
