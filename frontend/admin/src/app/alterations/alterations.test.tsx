@@ -115,4 +115,47 @@ describe("alteration page", () => {
       }),
     );
   });
+
+  it("cancelling after money was collected asks how to settle, then refunds by mode", async () => {
+    search = new URLSearchParams("id=10");
+    render(<AlterationPage />);
+    expect(await screen.findByRole("heading", { name: "ALT-110" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Cancel alteration" }));
+
+    const dialog = screen.getByRole("dialog", { name: "Cancel ALT-110?" });
+    // "Give it back" is the default settlement; the refund mode defaults to Cash.
+    expect(within(dialog).getByLabelText("₹ 200 was collected")).toHaveValue("REFUND");
+    fireEvent.change(within(dialog).getByLabelText("Given back by"), { target: { value: "UPI" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel alteration" }));
+
+    await waitFor(() =>
+      expect(lastSent(sent, "POST", "/alterations/10/progress")?.body).toEqual({
+        status: "CANCELLED",
+        collectRupees: 0,
+        mode: "UPI",
+        settlement: "REFUND",
+      }),
+    );
+    expect(await screen.findByText("Cancelled")).toBeInTheDocument();
+  });
+
+  it("keeping the collected money keeps it without a refund mode", async () => {
+    search = new URLSearchParams("id=10");
+    render(<AlterationPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Cancel alteration" }));
+
+    const dialog = screen.getByRole("dialog", { name: "Cancel ALT-110?" });
+    fireEvent.change(within(dialog).getByLabelText("₹ 200 was collected"), { target: { value: "KEEP" } });
+    expect(within(dialog).queryByLabelText("Given back by")).not.toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel alteration" }));
+
+    await waitFor(() =>
+      expect(lastSent(sent, "POST", "/alterations/10/progress")?.body).toEqual({
+        status: "CANCELLED",
+        collectRupees: 0,
+        mode: null,
+        settlement: "KEEP",
+      }),
+    );
+  });
 });

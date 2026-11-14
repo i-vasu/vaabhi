@@ -324,6 +324,8 @@ export type CustomerProfile = Schemas["CustomerProfile"];
 export type AuthOptions = Schemas["AuthOptions"];
 export type CheckoutRequest = Schemas["CheckoutRequest"];
 export type CheckoutStart = Schemas["CheckoutStart"];
+export type CouponQuoteRequest = Schemas["CouponQuoteRequest"];
+export type CouponQuote = Schemas["CouponQuote"];
 export type PaymentConfirmation = Schemas["PaymentConfirmation"];
 export type WebOrder = Schemas["WebOrder"];
 export type StoreInvoice = Schemas["StoreInvoice"];
@@ -528,12 +530,34 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
           headers: { ...bearer(accessToken), "Content-Type": "application/json" },
           body: JSON.stringify(details),
         }),
+      /** Sends a WhatsApp code to add or change the customer's mobile number. */
+      requestPhoneChange: (accessToken: string, form: { phone: string }) =>
+        request<OtpSent>("/api/v1/customer/me/phone/otp", {
+          method: "POST",
+          headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        }),
+      /** Verifies the code and saves the customer's mobile number. */
+      changePhone: (accessToken: string, form: { phone: string; code: string }) =>
+        request<CustomerProfile>("/api/v1/customer/me/phone", {
+          method: "PUT",
+          headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        }),
       /** Places the order from the bag; the answer opens Razorpay Checkout. */
       startCheckout: (accessToken: string, checkout: CheckoutRequest) =>
         request<CheckoutStart>("/api/v1/customer/checkout", {
           method: "POST",
           headers: { ...bearer(accessToken), "Content-Type": "application/json" },
           body: JSON.stringify(checkout),
+          cache: "no-store",
+        }),
+      /** Quotes a coupon against the current bag lines; the answer shows the discount or why it does not apply. */
+      quoteCoupon: (accessToken: string, body: CouponQuoteRequest) =>
+        request<CouponQuote>("/api/v1/customer/checkout/coupon", {
+          method: "POST",
+          headers: { ...bearer(accessToken), "Content-Type": "application/json" },
+          body: JSON.stringify(body),
           cache: "no-store",
         }),
       /** Confirms the payment Razorpay Checkout returned. */

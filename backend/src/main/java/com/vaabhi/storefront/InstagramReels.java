@@ -2,6 +2,7 @@ package com.vaabhi.storefront;
 
 import com.vaabhi.shared.storage.ObjectStorage;
 import java.sql.Timestamp;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -14,9 +15,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 /**
- * The home page's Instagram reels. Every hour the latest reels are read from the shop's account and each new
- * cover is copied once to R2, so the home page loads small images from our own media domain and never waits on
- * Instagram. Reels that drop out of the latest few are removed with their covers.
+ * The home page's Instagram reels. Every hour the account's reels are read and the most engaged few are kept,
+ * each new cover (and video, when Instagram exposes one) copied once to R2, so the home page loads from our own
+ * media domain and never waits on Instagram. Reels that drop out of the best few are removed with their files.
  */
 @Service
 @EnableConfigurationProperties(InstagramProperties.class)
@@ -37,10 +38,11 @@ class InstagramReels {
         this.jdbc = jdbc;
     }
 
-    /** The synced reels, newest first. */
+    /** The synced reels, newest first (the set is already the best few, so insertion order by recency is enough). */
     List<InstagramReel> latest() {
         return jdbc.sql("""
-                        SELECT media_id AS id, permalink, caption, image_key, posted_at
+                        SELECT media_id AS id, permalink, caption, image_key,
+                               'instagram/' || media_id || '.mp4' AS video_key, posted_at
                         FROM instagram_reel
                         ORDER BY posted_at DESC
                         LIMIT :limit
@@ -69,6 +71,9 @@ class InstagramReels {
                         Objects.requireNonNull(properties.accessToken()))
                 .stream()
                 .filter(m -> m.reel() && m.thumbnailUrl() != null)
+                .sorted(Comparator.comparingLong(InstagramClient.Media::engagement)
+                        .reversed()
+                        .thenComparing(InstagramClient.Media::postedAt, Comparator.reverseOrder()))
                 .limit(properties.limit())
                 .toList();
 
@@ -77,10 +82,17 @@ class InstagramReels {
                 .list());
         for (var reel : reels) {
             if (have.contains(reel.id())) {
+                // Reels synced before videos were copied get theirs now (one cheap HEAD per kept reel).
+                if (reel.mediaUrl() != null && !storage.exists(videoKey(reel.id()))) {
+                    copyVideo(reel);
+                }
                 continue;
             }
             var key = "instagram/" + reel.id() + ".jpg";
             storage.put(key, instagram.download(Objects.requireNonNull(reel.thumbnailUrl())), "image/jpeg");
+            if (reel.mediaUrl() != null) {
+                copyVideo(reel);
+            }
             jdbc.sql("""
                             INSERT INTO instagram_reel (media_id, permalink, caption, image_key, posted_at)
                             VALUES (:id, :permalink, :caption, :key, :postedAt)
@@ -102,7 +114,21 @@ class InstagramReels {
                         .query(String.class)
                         .optional()
                         .ifPresent(storage::delete);
+                storage.delete(videoKey(id));
             }
+        }
+    }
+
+    private static String videoKey(String mediaId) {
+        return "instagram/" + mediaId + ".mp4";
+    }
+
+    /** Copies a reel's MP4 to R2; a failure keeps the reel with its cover only (the page then shows no video). */
+    private void copyVideo(InstagramClient.Media reel) {
+        try {
+            storage.put(videoKey(reel.id()), instagram.download(Objects.requireNonNull(reel.mediaUrl())), "video/mp4");
+        } catch (RuntimeException e) {
+            log.warn("Could not copy reel {} video; keeping the cover only: {}", reel.id(), e.getMessage());
         }
     }
 

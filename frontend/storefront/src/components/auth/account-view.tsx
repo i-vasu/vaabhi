@@ -75,6 +75,225 @@ export function AccountView({ measurementForms }: Readonly<{ measurementForms: S
   );
 }
 
+/** 98765 43210 → +91 98765 43210, for "we sent a code to …". */
+const pretty = (e164: string) => `+91 ${e164.slice(3, 8)} ${e164.slice(8)}`;
+
+/** A seconds counter that ticks down to 0; start it with the returned setter. */
+function useCountdown(): [number, (seconds: number) => void] {
+  const [left, setLeft] = useState(0);
+  useEffect(() => {
+    if (left <= 0) return;
+    const timer = setTimeout(() => setLeft((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [left]);
+  return [left, setLeft];
+}
+
+type PhoneProblem = { field?: "phone" | "code"; message: string };
+
+/** The mobile number row: shows the number, or a 2-step form to add or change it (verified by a WhatsApp code). */
+function PhoneEditor({ phone, id }: Readonly<{ phone: string | null; id: string }>) {
+  const [editing, setEditing] = useState(false);
+  const [step, setStep] = useState<{ kind: "number" } | { kind: "code"; phone: string }>({ kind: "number" });
+  const [number, setNumber] = useState("");
+  const [code, setCode] = useState("");
+  const [problem, setProblem] = useState<PhoneProblem | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [resendIn, startResendTimer] = useCountdown();
+
+  const cancel = () => {
+    setEditing(false);
+    setStep({ kind: "number" });
+    setNumber("");
+    setCode("");
+    setProblem(null);
+    setBusy(false);
+  };
+
+  async function run(action: () => Promise<void>, field: PhoneProblem["field"]) {
+    setBusy(true);
+    setProblem(null);
+    try {
+      await action();
+    } catch (error) {
+      if (error instanceof AuthError) {
+        setProblem({
+          field: error.forField(field ?? "") ? field : undefined,
+          message: error.forField(field ?? "") ?? error.message,
+        });
+        if (error.retryAfterSeconds) startResendTimer(error.retryAfterSeconds);
+      } else {
+        setProblem({ message: "Something went wrong. Please try again." });
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const sendCode = (to: string) =>
+    run(async () => {
+      const sent = await auth.requestPhoneChange(to);
+      setCode("");
+      setStep({ kind: "code", phone: sent.phone });
+      startResendTimer(sent.resendAfterSeconds);
+    }, "phone");
+
+  const verify = (phoneToVerify: string) =>
+    run(async () => {
+      const { customer } = await auth.changePhone(phoneToVerify, code);
+      sessionStore.write(toSession(customer));
+      cancel();
+    }, "code");
+
+  const submitNumber = () => {
+    if (number.replaceAll(/\D/g, "").length < 10) {
+      setProblem({ field: "phone", message: "Enter a valid 10-digit Indian mobile number" });
+      return;
+    }
+    void sendCode(number);
+  };
+  const submitCode = (phoneToVerify: string) => {
+    if (!/^\d{6}$/.test(code)) {
+      setProblem({ field: "code", message: "Enter the 6-digit code" });
+      return;
+    }
+    void verify(phoneToVerify);
+  };
+
+  const message = (field?: PhoneProblem["field"]) =>
+    problem && problem.field === field ? (
+      <p role="alert" className="mt-1.5 text-sm text-feedback-error">
+        {problem.message}
+      </p>
+    ) : null;
+
+  if (!editing) {
+    return (
+      <div>
+        <label htmlFor={`${id}-phone`} className={label}>
+          Mobile
+        </label>
+        <div className="flex items-start gap-2">
+          <input id={`${id}-phone`} value={phone ? `+91 ${phone.slice(3)}` : "Not added"} disabled className={input} />
+          <button
+            type="button"
+            onClick={() => {
+              setProblem(null);
+              setStep({ kind: "number" });
+              setNumber("");
+              setEditing(true);
+            }}
+            className="mt-3 shrink-0 text-sm font-medium text-brand-primary underline"
+          >
+            {phone ? "Change" : "Add mobile number"}
+          </button>
+        </div>
+        <p className="mt-1.5 text-xs text-text-muted">
+          {phone
+            ? "Your login number, verified by WhatsApp."
+            : "Add your mobile number to place orders and get updates on WhatsApp."}
+        </p>
+      </div>
+    );
+  }
+
+  if (step.kind === "number") {
+    return (
+      <div>
+        <label htmlFor={`${id}-new-phone`} className={label}>
+          New mobile number
+        </label>
+        <div className="flex items-stretch rounded-sm border border-border-strong bg-bg-surface focus-within:border-brand-primary">
+          <span className="flex items-center border-r border-border-default px-3 text-text-secondary">+91</span>
+          <input
+            id={`${id}-new-phone`}
+            type="tel"
+            inputMode="numeric"
+            autoComplete="tel-national"
+            maxLength={14}
+            placeholder="98765 43210"
+            value={number}
+            onChange={(e) => setNumber(e.target.value.replaceAll(/[^\d ]/g, ""))}
+            onKeyDown={(e) => {
+              // Inside the account form: Enter sends the code instead of saving the other fields.
+              if (e.key === "Enter") {
+                e.preventDefault();
+                submitNumber();
+              }
+            }}
+            className="min-w-0 flex-1 bg-transparent px-3 py-3 text-base tabular-nums outline-none"
+          />
+        </div>
+        {message("phone")}
+        {message()}
+        <div className="mt-2 flex items-center gap-3">
+          <Button variant="secondary" disabled={busy} onClick={submitNumber}>
+            {busy ? "Sending…" : "Send code"}
+          </Button>
+          <button type="button" onClick={cancel} className="text-sm text-text-secondary underline">
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <label htmlFor={`${id}-code`} className={label}>
+        Verification code
+      </label>
+      <p className="mb-1.5 text-sm text-text-secondary">
+        We sent a 6-digit code on WhatsApp to{" "}
+        <span className="font-medium text-text-primary">{pretty(step.phone)}</span>.{" "}
+        <button type="button" className="text-brand-primary underline" onClick={() => setStep({ kind: "number" })}>
+          Change
+        </button>
+      </p>
+      <input
+        id={`${id}-code`}
+        inputMode="numeric"
+        autoComplete="one-time-code"
+        maxLength={6}
+        value={code}
+        onChange={(e) => setCode(e.target.value.replaceAll(/\D/g, ""))}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            submitCode(step.phone);
+          }
+        }}
+        className={`${input} text-center text-xl tracking-[0.5em] tabular-nums`}
+      />
+      {message("code")}
+      {message("phone")}
+      {message()}
+      <div className="mt-2 flex items-center gap-3">
+        <Button variant="secondary" disabled={busy} onClick={() => submitCode(step.phone)}>
+          {busy ? "Verifying…" : "Verify"}
+        </Button>
+        <button type="button" onClick={cancel} className="text-sm text-text-secondary underline">
+          Cancel
+        </button>
+      </div>
+      <p className="mt-2 text-center text-sm text-text-secondary">
+        {resendIn > 0 ? (
+          `Resend code in ${resendIn}s`
+        ) : (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void sendCode(step.phone)}
+            className="text-brand-primary underline"
+          >
+            Resend code
+          </button>
+        )}
+      </p>
+    </div>
+  );
+}
+
 type SaveState = { status: "idle" | "saving" | "saved" } | { status: "error"; message: string };
 
 function AccountForm({
@@ -178,20 +397,7 @@ function AccountForm({
             className={input}
           />
         </div>
-        <div>
-          <label htmlFor={`${id}-phone`} className={label}>
-            Mobile
-          </label>
-          <input
-            id={`${id}-phone`}
-            value={session.phone ? `+91 ${session.phone.slice(3)}` : "Not added"}
-            disabled
-            className={input}
-          />
-          <p className="mt-1.5 text-xs text-text-muted">
-            {session.phone ? "Your login number, verified by OTP." : "Log in with your mobile number to add it."}
-          </p>
-        </div>
+        <PhoneEditor phone={session.phone} id={id} />
         <div>
           <label htmlFor={`${id}-email`} className={label}>
             Email

@@ -38,6 +38,19 @@ class OrderEmailTemplatesTest {
             String trackingUrl,
             BigDecimal refunded,
             List<WebOrder.OrderReturn> returns) {
+        return order(status, method, courier, tracking, trackingUrl, refunded, returns, null, BigDecimal.ZERO);
+    }
+
+    private static WebOrder order(
+            WebOrder.Status status,
+            WebOrder.PaymentMethod method,
+            String courier,
+            String tracking,
+            String trackingUrl,
+            BigDecimal refunded,
+            List<WebOrder.OrderReturn> returns,
+            String couponCode,
+            BigDecimal discountRupees) {
         return new WebOrder(
                 "WEB-1001",
                 status,
@@ -52,6 +65,8 @@ class OrderEmailTemplatesTest {
                 "110001",
                 new BigDecimal("18500.00"),
                 new BigDecimal("0.00"),
+                couponCode,
+                discountRupees,
                 new BigDecimal("18500.50"),
                 null,
                 null,
@@ -120,6 +135,32 @@ class OrderEmailTemplatesTest {
                 order(WebOrder.Status.PLACED, WebOrder.PaymentMethod.ONLINE, null, null, null, null, List.of()),
                 SITE);
         assertThat(online.text()).contains("We have received your payment of ₹18,500.50.");
+    }
+
+    @Test
+    void couponDiscountListsTheCodeAndAmount() {
+        var discounted = OrderEmailTemplates.forOrder(
+                WebOrderEvent.Type.PLACED,
+                order(
+                        WebOrder.Status.PLACED,
+                        WebOrder.PaymentMethod.ONLINE,
+                        null,
+                        null,
+                        null,
+                        null,
+                        List.of(),
+                        "SAVE10",
+                        new BigDecimal("1850.00")),
+                SITE);
+        assertThat(discounted.text()).contains("Coupon SAVE10: -₹1,850");
+        assertThat(discounted.html()).contains("Coupon SAVE10").contains("-₹1,850");
+
+        var none = OrderEmailTemplates.forOrder(
+                WebOrderEvent.Type.PLACED,
+                order(WebOrder.Status.PLACED, WebOrder.PaymentMethod.ONLINE, null, null, null, null, List.of()),
+                SITE);
+        assertThat(none.text()).doesNotContain("Coupon");
+        assertThat(none.html()).doesNotContain("Coupon");
     }
 
     @Test

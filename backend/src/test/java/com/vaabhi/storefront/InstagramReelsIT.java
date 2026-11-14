@@ -27,8 +27,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
- * The hourly reels sync against real Postgres, with Instagram and R2 replaced by fakes: new reels are stored with
- * their covers copied once, reels that drop out are removed with their covers, and the storefront lists them.
+ * The hourly reels sync against real Postgres, with Instagram and R2 replaced by fakes: the most engaged reels are
+ * stored with their covers (and videos) copied once, reels that drop out are removed with their files, and the
+ * storefront lists them.
  */
 @Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest
@@ -57,77 +58,103 @@ class InstagramReelsIT {
         return new InstagramReels(properties, instagram, storage, jdbc);
     }
 
-    private static InstagramClient.Media reel(String id, String postedAt, @Nullable String caption) {
+    private static InstagramClient.Media reel(String id, String postedAt, @Nullable String caption, long engagement) {
         return new InstagramClient.Media(
                 id,
                 true,
                 "https://cdn.test/" + id + ".jpg",
+                "https://cdn.test/" + id + ".mp4",
                 "https://instagram.com/reel/" + id,
                 caption,
-                Instant.parse(postedAt));
+                Instant.parse(postedAt),
+                engagement);
     }
 
     @Test
-    void storesTheLatestReelsWithTheirCoversCopiedOnce() throws Exception {
+    void storesTheBestReelsWithCoversAndVideosCopiedOnce() throws Exception {
         instagram.media = List.of(
-                reel("3", "2026-11-03T10:00:00Z", "  Festive edit  "),
+                reel("3", "2026-11-03T10:00:00Z", "  Festive edit  ", 30),
                 new InstagramClient.Media(
                         "photo",
                         false,
                         null,
+                        null,
                         "https://instagram.com/p/photo",
                         null,
-                        Instant.parse("2026-11-02T00:00:00Z")),
+                        Instant.parse("2026-11-02T00:00:00Z"),
+                        0),
                 new InstagramClient.Media(
                         "no-cover",
                         true,
                         null,
+                        "https://cdn.test/no-cover.mp4",
                         "https://instagram.com/reel/x",
                         null,
-                        Instant.parse("2026-11-02T00:00:00Z")),
-                reel("2", "2026-11-02T10:00:00Z", "x".repeat(400)),
-                reel("1", "2026-11-01T10:00:00Z", null));
+                        Instant.parse("2026-11-02T00:00:00Z"),
+                        0),
+                reel("2", "2026-11-02T10:00:00Z", "x".repeat(400), 20),
+                // Oldest but least engaged, so it loses its slot to the more popular reels.
+                new InstagramClient.Media(
+                        "1",
+                        true,
+                        "https://cdn.test/1.jpg",
+                        null,
+                        "https://instagram.com/reel/1",
+                        null,
+                        Instant.parse("2026-11-01T10:00:00Z"),
+                        10));
         var sync = reels(CONFIGURED);
 
         sync.sync();
 
-        assertThat(storage.objects).containsOnlyKeys("instagram/3.jpg", "instagram/2.jpg");
-        assertThat(storage.contentTypes).containsOnly("image/jpeg");
+        assertThat(storage.objects)
+                .containsOnlyKeys("instagram/3.jpg", "instagram/3.mp4", "instagram/2.jpg", "instagram/2.mp4");
+        assertThat(storage.contentTypes).containsOnly("image/jpeg", "video/mp4");
         var latest = sync.latest();
         assertThat(latest).extracting(InstagramReel::id).containsExactly("3", "2");
         assertThat(latest.get(0).caption()).isEqualTo("Festive edit");
         assertThat(latest.get(0).imageKey()).isEqualTo("instagram/3.jpg");
+        assertThat(latest.get(0).videoKey()).isEqualTo("instagram/3.mp4");
         assertThat(latest.get(0).permalink()).isEqualTo("https://instagram.com/reel/3");
         assertThat(latest.get(0).postedAt()).isEqualTo(Instant.parse("2026-11-03T10:00:00Z"));
         assertThat(latest.get(1).caption()).hasSize(300).endsWith("…");
 
         sync.sync();
-        assertThat(instagram.downloads).containsExactly("https://cdn.test/3.jpg", "https://cdn.test/2.jpg");
+        assertThat(instagram.downloads)
+                .containsExactly(
+                        "https://cdn.test/3.jpg",
+                        "https://cdn.test/3.mp4",
+                        "https://cdn.test/2.jpg",
+                        "https://cdn.test/2.mp4");
 
         mockMvc.perform(get("/api/v1/store/instagram"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value("3"))
                 .andExpect(jsonPath("$[0].imageKey").value("instagram/3.jpg"))
+                .andExpect(jsonPath("$[0].videoKey").value("instagram/3.mp4"))
                 .andExpect(jsonPath("$[1].id").value("2"));
     }
 
     @Test
-    void removesReelsThatDropOutWithTheirCovers() {
+    void removesReelsThatDropOutWithTheirCoversAndVideos() {
         var sync = reels(CONFIGURED);
-        instagram.media = List.of(reel("2", "2026-11-02T10:00:00Z", null), reel("1", "2026-11-01T10:00:00Z", null));
+        instagram.media =
+                List.of(reel("2", "2026-11-02T10:00:00Z", null, 20), reel("1", "2026-11-01T10:00:00Z", null, 10));
         sync.sync();
 
-        instagram.media = List.of(reel("4", "2026-11-04T10:00:00Z", "New"), reel("2", "2026-11-02T10:00:00Z", null));
+        instagram.media =
+                List.of(reel("4", "2026-11-04T10:00:00Z", "New", 40), reel("2", "2026-11-02T10:00:00Z", null, 20));
         sync.sync();
 
         assertThat(sync.latest()).extracting(InstagramReel::id).containsExactly("4", "2");
-        assertThat(storage.objects).containsOnlyKeys("instagram/4.jpg", "instagram/2.jpg");
-        assertThat(storage.deleted).containsExactly("instagram/1.jpg");
+        assertThat(storage.objects)
+                .containsOnlyKeys("instagram/4.jpg", "instagram/4.mp4", "instagram/2.jpg", "instagram/2.mp4");
+        assertThat(storage.deleted).containsExactlyInAnyOrder("instagram/1.jpg", "instagram/1.mp4");
     }
 
     @Test
     void doesNothingUntilInstagramAndStorageAreSetUp() {
-        instagram.media = List.of(reel("1", "2026-11-01T10:00:00Z", null));
+        instagram.media = List.of(reel("1", "2026-11-01T10:00:00Z", null, 10));
 
         reels(new InstagramProperties(null, null, null, null)).sync();
         storage.configured = false;
@@ -146,7 +173,7 @@ class InstagramReelsIT {
         assertThat(reels(CONFIGURED).latest()).isEmpty();
     }
 
-    /** Answers with {@link #media} and records the cover downloads. */
+    /** Answers with {@link #media} and records the cover and video downloads. */
     static class FakeInstagram extends InstagramClient {
         List<Media> media = List.of();
         final List<String> downloads = new ArrayList<>();

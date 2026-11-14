@@ -73,7 +73,9 @@ public class WebInvoiceService {
                 request.buyer(),
                 null,
                 request.buyerStateCode(),
-                Rupees.sum(lines, line -> Rupees.times(line.unitRupees(), line.quantity())),
+                // What the buyer was charged; anything below the lines is spread as a discount over the goods.
+                Rupees.sum(lines, line -> Rupees.times(line.unitRupees(), line.quantity()))
+                        .subtract(request.discountRupees()),
                 lines,
                 null,
                 true));

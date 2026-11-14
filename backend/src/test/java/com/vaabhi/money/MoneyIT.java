@@ -323,4 +323,41 @@ class MoneyIT {
                 .andExpect(status().isNotFound());
         read("/expenses", march).andExpect(jsonPath("$.totalRupees").value(200));
     }
+
+    @Test
+    void payrollOwnedExpensesCannotBeEditedOrDeleted() throws Exception {
+        var created = send(post("/api/v1/admin/money/expenses"), """
+                        {"spentOn":"2001-06-02","category":"SALARY","description":"Salary — Payroll, June 2001",
+                         "amountRupees":12000,"mode":"BANK","paidTo":"Payroll"}
+                        """).andExpect(status().isCreated());
+        long expenseId = id(created, "$.id");
+
+        // A payslip owns the expense, exactly as when Payroll marks a slip paid.
+        int n = PHONES.incrementAndGet();
+        long staffId = jdbc.sql("""
+                        INSERT INTO staff_account (name, email, role, password_hash)
+                        VALUES (:name, :email, 'STAFF', 'not-a-real-hash') RETURNING id
+                        """)
+                .param("name", "Payroll " + n)
+                .param("email", "payroll" + n + "@example.test")
+                .query(Long.class)
+                .single();
+        jdbc.sql("""
+                        INSERT INTO payslip (staff_id, month, pay_type, rate_rupees, days_paid, days_unpaid,
+                            base_rupees, piece_rupees, pieces, overtime_minutes, overtime_rupees, late_minutes,
+                            late_rupees, advance_rupees, net_rupees, expense_id)
+                        VALUES (:staff, :month, 'MONTHLY', 12000, 30, 0, 12000, 0, 0, 0, 0, 0, 0, 0, 12000, :expense)
+                        """)
+                .param("staff", staffId)
+                .param("month", LocalDate.of(2001, 6, 1))
+                .param("expense", expenseId)
+                .update();
+
+        send(put("/api/v1/admin/money/expenses/" + expenseId), """
+                        {"spentOn":"2001-06-02","category":"SALARY","description":"Changed","amountRupees":1,
+                         "mode":"CASH"}
+                        """).andExpect(status().isConflict());
+        mockMvc.perform(delete("/api/v1/admin/money/expenses/" + expenseId).with(OWNER))
+                .andExpect(status().isConflict());
+    }
 }

@@ -1,15 +1,18 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import type { InstagramReel } from "@vaabhi/api-client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mediaFileUrl } from "@/lib/listing";
 import { InstagramReels } from "./instagram-reels";
 
-const reels: InstagramReel[] = [
+type ReelWithVideo = InstagramReel & { videoKey: string };
+
+const reels: ReelWithVideo[] = [
   {
     id: "3",
     permalink: "https://instagram.com/reel/3",
     caption: "Festive edit",
     imageKey: "instagram/3.jpg",
+    videoKey: "instagram/3.mp4",
     postedAt: "2026-11-03T10:00:00Z",
   },
   {
@@ -17,6 +20,7 @@ const reels: InstagramReel[] = [
     permalink: "https://instagram.com/reel/2",
     caption: null,
     imageKey: "instagram/2.jpg",
+    videoKey: "instagram/2.mp4",
     postedAt: "2026-11-02T10:00:00Z",
   },
 ];
@@ -26,23 +30,53 @@ describe("InstagramReels", () => {
     vi.stubEnv("NEXT_PUBLIC_MEDIA_URL", "");
     vi.stubEnv("MEDIA_URL", "https://media.vaabhi.com/");
   });
-  afterEach(() => vi.unstubAllEnvs());
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
 
-  it("links each cover to its reel on Instagram", () => {
+  it("links each cover to its reel and layers the reel video over it, with no caption", () => {
     const { container } = render(<InstagramReels reels={reels} profileUrl="https://instagram.com/vaabhi" />);
 
     expect(screen.getByRole("heading", { name: "On Instagram" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Follow us" })).toHaveAttribute("href", "https://instagram.com/vaabhi");
-    const captioned = screen.getByRole("link", { name: "Watch on Instagram: Festive edit" });
-    expect(captioned).toHaveAttribute("href", "https://instagram.com/reel/3");
-    expect(captioned).toHaveAttribute("target", "_blank");
-    expect(screen.getByRole("link", { name: "Watch this reel on Instagram" })).toHaveAttribute(
-      "href",
-      "https://instagram.com/reel/2",
-    );
+
+    const tiles = screen.getAllByRole("link", { name: "Watch this reel on Instagram" });
+    expect(tiles).toHaveLength(2);
+    expect(tiles[0]).toHaveAttribute("href", "https://instagram.com/reel/3");
+    expect(tiles[0]).toHaveAttribute("target", "_blank");
+    expect(tiles[1]).toHaveAttribute("href", "https://instagram.com/reel/2");
+
     const covers = [...container.querySelectorAll("img")].map((img) => img.getAttribute("src"));
     expect(covers).toEqual(["https://media.vaabhi.com/instagram/3.jpg", "https://media.vaabhi.com/instagram/2.jpg"]);
-    expect(screen.getByText("Festive edit")).toBeInTheDocument();
+    const videos = [...container.querySelectorAll("video")].map((video) => video.getAttribute("src"));
+    expect(videos).toEqual(["https://media.vaabhi.com/instagram/3.mp4", "https://media.vaabhi.com/instagram/2.mp4"]);
+    expect(screen.queryByText("Festive edit")).not.toBeInTheDocument();
+  });
+
+  it("plays the reel video on hover", () => {
+    const play = vi.spyOn(HTMLMediaElement.prototype, "play").mockImplementation(() => Promise.resolve());
+    render(<InstagramReels reels={reels} />);
+
+    const tile = screen.getAllByRole("link", { name: "Watch this reel on Instagram" })[0]!;
+    fireEvent.pointerEnter(tile);
+
+    expect(play).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows at most six reels", () => {
+    const eight: ReelWithVideo[] = Array.from({ length: 8 }, (_, i) => ({
+      id: String(i + 1),
+      permalink: `https://instagram.com/reel/${i + 1}`,
+      caption: null,
+      imageKey: `instagram/${i + 1}.jpg`,
+      videoKey: `instagram/${i + 1}.mp4`,
+      postedAt: `2026-11-${String(i + 1).padStart(2, "0")}T10:00:00Z`,
+    }));
+
+    render(<InstagramReels reels={eight} />);
+
+    expect(screen.getAllByRole("link", { name: "Watch this reel on Instagram" })).toHaveLength(6);
   });
 
   it("leaves out the follow link without a profile", () => {

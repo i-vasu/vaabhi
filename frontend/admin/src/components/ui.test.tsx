@@ -138,4 +138,42 @@ describe("dashboard building blocks", () => {
     fireEvent.keyDown(document, { key: "Enter" });
     expect(onClose).toHaveBeenCalledTimes(2);
   });
+
+  it("calls the latest onClose on Escape after a rerender", () => {
+    const first = vi.fn();
+    const latest = vi.fn();
+    const { rerender } = render(
+      <Sheet open title="New request" onClose={first}>
+        form
+      </Sheet>,
+    );
+
+    rerender(
+      <Sheet open title="New request" onClose={latest}>
+        form
+      </Sheet>,
+    );
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    expect(latest).toHaveBeenCalledTimes(1);
+    expect(first).not.toHaveBeenCalled();
+  });
+
+  it("keeps focus in a field the user is typing in when the parent rerenders", () => {
+    const { rerender } = render(
+      <Sheet open title="New request" onClose={() => {}}>
+        <input aria-label="Client name" />
+      </Sheet>,
+    );
+    const input = screen.getByLabelText("Client name");
+    input.focus();
+
+    rerender(
+      <Sheet open title="New request" onClose={() => {}}>
+        <input aria-label="Client name" />
+      </Sheet>,
+    );
+
+    expect(document.activeElement).toBe(input);
+  });
 });

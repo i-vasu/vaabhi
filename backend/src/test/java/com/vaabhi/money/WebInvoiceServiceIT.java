@@ -112,7 +112,8 @@ class WebInvoiceServiceIT {
                 new InvoiceParties.Buyer("Test", "+919876200000", "1 Street, Pune, 411001", "Maharashtra"),
                 buyerStateCode,
                 List.of(lines),
-                new BigDecimal(shipping));
+                new BigDecimal(shipping),
+                BigDecimal.ZERO);
     }
 
     /** Switches GST on for the seller in Telangana (36), with Garments as the default tax class. */

@@ -120,7 +120,8 @@ class CreditNoteServiceIT {
                 new InvoiceParties.Buyer("Test", "+919876200000", "1 Street, Pune, 411001", "Maharashtra"),
                 "36",
                 List.of(lines),
-                new BigDecimal(shipping)));
+                new BigDecimal(shipping),
+                BigDecimal.ZERO));
     }
 
     private Invoice twoLineInvoice(Order order) {

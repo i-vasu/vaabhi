@@ -8,6 +8,7 @@ import org.jspecify.annotations.Nullable;
  * What checkout hands over to invoice a web order: who bought, what, and the delivery charge.
  *
  * @param buyerStateCode the buyer's two-digit GST state code; null when the state is unknown
+ * @param discountRupees what a coupon took off the items (zero when none); spread over the goods, not delivery
  */
 public record WebInvoiceRequest(
         long webOrderId,
@@ -16,7 +17,8 @@ public record WebInvoiceRequest(
         InvoiceParties.Buyer buyer,
         @Nullable String buyerStateCode,
         List<Line> lines,
-        BigDecimal shippingRupees) {
+        BigDecimal shippingRupees,
+        BigDecimal discountRupees) {
 
     /** One item line; the amount is quantity times unit. */
     public record Line(

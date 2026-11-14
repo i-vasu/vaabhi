@@ -79,6 +79,10 @@ export const auth = {
     call<SignedIn>("/api/auth/google", "POST", { credential }, fetcher),
   updateName: (name: string, fetcher?: typeof fetch) =>
     call<{ customer: CustomerProfile }>("/api/auth/profile", "PUT", { name }, fetcher),
+  requestPhoneChange: (phone: string, fetcher?: typeof fetch) =>
+    call<OtpSent>("/api/auth/phone/otp", "POST", { phone }, fetcher),
+  changePhone: (phone: string, code: string, fetcher?: typeof fetch) =>
+    call<{ customer: CustomerProfile }>("/api/auth/phone", "PUT", { phone, code }, fetcher),
   details: (fetcher?: typeof fetch) =>
     call<{ details: CustomerDetails }>("/api/auth/details", "GET", undefined, fetcher),
   saveDetails: (details: CustomerDetails, fetcher?: typeof fetch) =>

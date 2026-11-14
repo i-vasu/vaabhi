@@ -36,19 +36,27 @@ class InstagramClient {
         this.properties = properties;
     }
 
-    /** One post from the account; {@code reel} is true for reels (Instagram's media_product_type REELS). */
+    /**
+     * One post from the account; {@code reel} is true for reels (Instagram's media_product_type REELS).
+     *
+     * @param mediaUrl the reel's MP4 on Instagram's CDN; null when the media is not a video
+     * @param engagement like_count + comments_count, each treated as 0 when absent (owners can hide likes)
+     */
     record Media(
             String id,
             boolean reel,
             @Nullable String thumbnailUrl,
+            @Nullable String mediaUrl,
             String permalink,
             @Nullable String caption,
-            Instant postedAt) {}
+            Instant postedAt,
+            long engagement) {}
 
     /** The account's latest posts, newest first (Graph API {@code GET /{ig-account-id}/media}). */
     List<Media> recentMedia(String accountId, String token) {
         var body = get("/" + encode(accountId)
-                + "/media?fields=id,media_type,media_product_type,thumbnail_url,permalink,caption,timestamp"
+                + "/media?fields=id,media_type,media_product_type,thumbnail_url,media_url,permalink,caption,timestamp,"
+                + "like_count,comments_count"
                 + "&limit=50&access_token=" + encode(token));
         List<Media> media = new ArrayList<>();
         for (JsonNode node : JSON.readTree(body).path("data")) {
@@ -62,9 +70,11 @@ class InstagramClient {
                     id,
                     "REELS".equals(text(node.path("media_product_type"))),
                     text(node.path("thumbnail_url")),
+                    text(node.path("media_url")),
                     permalink,
                     text(node.path("caption")),
-                    OffsetDateTime.parse(timestamp, TIMESTAMP).toInstant()));
+                    OffsetDateTime.parse(timestamp, TIMESTAMP).toInstant(),
+                    number(node.path("like_count")) + number(node.path("comments_count"))));
         }
         return media;
     }
@@ -109,5 +119,13 @@ class InstagramClient {
         }
         var value = node.asString();
         return value.isBlank() ? null : value;
+    }
+
+    /** A count field from the Graph API; 0 when the field is missing (owners can hide like counts). */
+    private static long number(JsonNode node) {
+        if (node == null || node.isNull() || !node.isNumber()) {
+            return 0;
+        }
+        return node.asLong();
     }
 }

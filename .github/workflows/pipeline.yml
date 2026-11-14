@@ -219,10 +219,13 @@ jobs:
   sonar:
     name: sonar
     needs: [changes, backend, frontend]
-    # Runs even when backend or frontend was skipped (unchanged), but not after a failure.
+    # Runs even when backend or frontend was skipped (unchanged), but not after a failure. On main, a push that
+    # changes no app code (docs, Claude settings…) is skipped: without fresh coverage reports Sonar would score its
+    # new code at 0 % and fail the gate, turning main red for a commit that deploys nothing.
     if: >-
       !cancelled() && needs.changes.result == 'success' &&
-      needs.backend.result != 'failure' && needs.frontend.result != 'failure'
+      needs.backend.result != 'failure' && needs.frontend.result != 'failure' &&
+      (github.event_name == 'pull_request' || needs.changes.outputs.deployable == 'true')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -243,12 +246,12 @@ jobs:
           distribution: temurin
           java-version: "21"
           cache: maven
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         if: env.SONAR_TOKEN != '' && needs.backend.result == 'success'
         with:
           name: backend-build
           path: backend/target
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         if: env.SONAR_TOKEN != '' && needs.frontend.result == 'success'
         with:
           name: frontend-coverage
@@ -304,7 +307,7 @@ jobs:
       IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/vaabhi
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         if: needs.backend.result == 'success'
         with:
           name: backend-build

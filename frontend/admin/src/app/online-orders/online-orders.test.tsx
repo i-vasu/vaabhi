@@ -34,6 +34,8 @@ function order(patch: Partial<WebOrder> = {}): WebOrder {
     pincode: "110001",
     itemsRupees: 18500,
     shippingRupees: 0,
+    couponCode: null,
+    discountRupees: 0,
     totalRupees: 18500,
     razorpayPaymentId: "pay_A1",
     paidAt: "2026-11-04T05:00:00Z",
@@ -201,6 +203,75 @@ describe("online order page", () => {
     fireEvent.click(screen.getByRole("button", { name: "Cancel & refund" }));
     expect(await screen.findByText(/refund ₹ 18,500 on its way \(rfnd_1\)/)).toBeInTheDocument();
     expect(lastPost("cancel")?.body).toEqual({ reason: "Customer called" });
+  });
+
+  it("shows a cancelled refund that never reached Razorpay with a Retry button", async () => {
+    current = order({
+      status: "CANCELLED",
+      refundedRupees: 18500,
+      refundId: null,
+      refundStatus: "PENDING",
+    });
+    serve({});
+    render(<OnlineOrderPage />);
+
+    expect(await screen.findByText(/not sent to Razorpay yet/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Retry refund" })).toBeInTheDocument();
+  });
+
+  it("retries a failed Razorpay refund and shows the new refund id", async () => {
+    current = order({
+      status: "CANCELLED",
+      refundedRupees: 18500,
+      refundId: null,
+      refundStatus: "FAILED",
+      refundError: "The amount is invalid",
+    });
+    serve({
+      refund: order({
+        status: "CANCELLED",
+        refundedRupees: 18500,
+        refundId: "rfnd_2",
+        refundStatus: "PENDING",
+      }),
+    });
+    render(<OnlineOrderPage />);
+
+    expect(await screen.findByText("Razorpay: The amount is invalid")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Retry refund" }));
+    expect(await screen.findByText(/\(rfnd_2\)/)).toBeInTheDocument();
+    expect(lastPost("refund")?.path).toBe("/api/v1/admin/online-orders/WEB-1001/refund");
+    expect(screen.queryByRole("button", { name: "Retry refund" })).not.toBeInTheDocument();
+  });
+
+  it("shows a pending refund id without a Retry button", async () => {
+    current = order({
+      status: "CANCELLED",
+      refundedRupees: 18500,
+      refundId: "rfnd_1",
+      refundStatus: "PENDING",
+    });
+    serve({});
+    render(<OnlineOrderPage />);
+
+    expect(await screen.findByText(/\(rfnd_1\)/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Retry refund" })).not.toBeInTheDocument();
+  });
+
+  it("does not offer the Retry refund button to counter staff", async () => {
+    role = "STAFF";
+    current = order({
+      status: "CANCELLED",
+      refundedRupees: 18500,
+      refundId: null,
+      refundStatus: "FAILED",
+      refundError: "The amount is invalid",
+    });
+    serve({});
+    render(<OnlineOrderPage />);
+
+    expect(await screen.findByText("Razorpay: The amount is invalid")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Retry refund" })).not.toBeInTheDocument();
   });
 
   it("does not offer cancelling or refunds to counter staff", async () => {

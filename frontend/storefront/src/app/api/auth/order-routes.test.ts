@@ -13,6 +13,7 @@ vi.mock("next/headers", () => ({
 }));
 
 const checkout = await import("./checkout/route");
+const coupon = await import("./checkout/coupon/route");
 const payment = await import("./checkout/[number]/payment/route");
 const orders = await import("./orders/route");
 const pay = await import("./orders/[number]/pay/route");
@@ -53,6 +54,7 @@ describe("/api/auth order routes", () => {
 
   it("refuses cross-site posts", async () => {
     expect((await checkout.POST(req("checkout", "{}", evil))).status).toBe(403);
+    expect((await coupon.POST(req("checkout/coupon", "{}", evil))).status).toBe(403);
     expect((await payment.POST(req("checkout/WEB-1001/payment", "{}", evil), params)).status).toBe(403);
     expect((await pay.POST(req("orders/WEB-1001/pay", undefined, evil), params)).status).toBe(403);
     expect((await cancel.POST(req("orders/WEB-1001/cancel", "{}", evil), params)).status).toBe(403);
@@ -61,12 +63,14 @@ describe("/api/auth order routes", () => {
 
   it("rejects bodies without the required fields", async () => {
     expect((await checkout.POST(req("checkout", '{"lines":[]}'))).status).toBe(400);
+    expect((await coupon.POST(req("checkout/coupon", '{"lines":[]}'))).status).toBe(400);
     expect((await payment.POST(req("checkout/WEB-1001/payment", '{"razorpayOrderId":"o"}'), params)).status).toBe(400);
     expect((await returns.POST(req("orders/WEB-1001/returns", '{"reason":"x","items":[]}'), params)).status).toBe(400);
   });
 
   it("asks a signed-out shopper to sign in", async () => {
     expect((await checkout.POST(req("checkout", '{"lines":[],"address":{}}'))).status).toBe(401);
+    expect((await coupon.POST(req("checkout/coupon", '{"lines":[],"code":"SAVE10"}'))).status).toBe(401);
     expect((await orders.GET()).status).toBe(401);
     expect((await invoice.GET(new Request("http://localhost/api/auth/orders/WEB-1001/invoice"), params)).status).toBe(
       401,
@@ -95,6 +99,10 @@ describe("/api/auth order routes", () => {
     jar.set("vb_at", "access-1");
     server.use(
       http.post(`${CUSTOMER}/checkout`, answer({ orderNumber: "WEB-1001" }, 201)),
+      http.post(
+        `${CUSTOMER}/checkout/coupon`,
+        answer({ code: "SAVE10", valid: true, reason: null, discountRupees: 500, itemsRupees: 18500 }),
+      ),
       http.post(`${CUSTOMER}/orders/WEB-1001/payment`, answer(ORDER)),
       http.get(`${CUSTOMER}/orders`, answer([ORDER])),
       http.post(`${CUSTOMER}/orders/WEB-1001/pay`, answer({ orderNumber: "WEB-1001" })),
@@ -103,6 +111,19 @@ describe("/api/auth order routes", () => {
     );
 
     expect((await checkout.POST(req("checkout", '{"lines":[],"address":{}}'))).status).toBe(201);
+    const quoted = await coupon.POST(
+      req(
+        "checkout/coupon",
+        '{"lines":[{"sku":"VB-RANI","addonCode":null,"blouseSize":null,"quantity":1}],"code":"SAVE10"}',
+      ),
+    );
+    expect(await quoted.json()).toEqual({
+      code: "SAVE10",
+      valid: true,
+      reason: null,
+      discountRupees: 500,
+      itemsRupees: 18500,
+    });
     const paid = await payment.POST(
       req("checkout/WEB-1001/payment", '{"razorpayOrderId":"o","razorpayPaymentId":"p","razorpaySignature":"s"}'),
       params,
@@ -119,6 +140,10 @@ describe("/api/auth order routes", () => {
     expect(asked.status).toBe(201);
 
     expect(seen.every((s) => s.auth === "Bearer access-1")).toBe(true);
+    expect(seen.find((s) => s.path.endsWith("/coupon"))?.body).toEqual({
+      lines: [{ sku: "VB-RANI", addonCode: null, blouseSize: null, quantity: 1 }],
+      code: "SAVE10",
+    });
     expect(seen.find((s) => s.path.endsWith("/cancel"))?.body).toEqual({ reason: "Twice" });
     expect(seen.find((s) => s.path.endsWith("/returns"))?.body).toEqual({
       reason: "Too long",
