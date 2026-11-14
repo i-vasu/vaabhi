@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { api as realApi } from "@/lib/api";
+import Gstr1Page from "../../reports/gst/page";
 import CreditNotesPage from "../credit-notes/page";
 import PurchasesPage from "../purchases/page";
 import BillsPage from "../purchases/bills/page";
@@ -10,7 +11,9 @@ import BackupsPage from "./backups/page";
 import BankPage from "./bank/page";
 import ChartPage from "./chart/page";
 import Gstr3bPage from "./gstr3b/page";
+import InputGstPage from "./input-gst/page";
 import JournalPage from "./journal/page";
+import LedgerPage from "./ledger/page";
 import ProblemsPage from "./problems/page";
 import StatementsPage from "./statements/page";
 import YearEndPage from "./year-end/page";
@@ -27,6 +30,9 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn() }), use
 const mocks = vi.hoisted(() => ({
   accounts: {
     chart: vi.fn(),
+    ledger: vi.fn(),
+    inputGst: vi.fn(),
+    inputGstCsv: vi.fn(),
     journal: vi.fn(),
     problems: vi.fn(),
     sweep: vi.fn(),
@@ -40,10 +46,90 @@ const mocks = vi.hoisted(() => ({
   },
   purchases: { suppliers: vi.fn(), supplier: vi.fn(), bills: vi.fn(), createPayment: vi.fn() },
   creditNotes: { list: vi.fn() },
+  gstr1: { month: vi.fn(), csv: vi.fn() },
 }));
 vi.mock("@/lib/api", () => ({
-  api: { admin: { accounts: mocks.accounts, purchases: mocks.purchases, money: { creditNotes: mocks.creditNotes } } },
+  api: {
+    admin: {
+      accounts: mocks.accounts,
+      purchases: mocks.purchases,
+      money: { creditNotes: mocks.creditNotes, gstr1: mocks.gstr1 },
+    },
+  },
 }));
+
+const ledger: Of<Accounts["ledger"]> = {
+  accountId: 1,
+  accountCode: "1000",
+  accountName: "Cash in hand",
+  type: "ASSET",
+  from: "2026-11-01",
+  to: "2026-11-30",
+  openingRupees: 1000,
+  totalDebitRupees: 500,
+  totalCreditRupees: 200,
+  closingRupees: 1300,
+  lines: [
+    {
+      entryId: 3,
+      number: "JV-3",
+      date: "2026-11-05",
+      narration: "Fabric purchase paid",
+      partyName: "Lakshmi Silks",
+      memo: null,
+      debitRupees: 0,
+      creditRupees: 200,
+      balanceRupees: 800,
+    },
+  ],
+};
+
+const inputGst: Of<Accounts["inputGst"]> = [
+  {
+    month: "2026-11",
+    taxableRupees: 10000,
+    cgstRupees: 250,
+    sgstRupees: 250,
+    igstRupees: 0,
+    gatewayGstRupees: 36,
+    totalRupees: 536,
+  },
+];
+
+const gstr1: Of<Api["admin"]["money"]["gstr1"]["month"]> = {
+  month: "2026-11",
+  gstOn: true,
+  b2b: [
+    {
+      columns: { "Invoice Number": "INV-305", "GSTIN/UIN of Recipient": "36ABCDE1234F1Z5" },
+      taxable: 1000,
+      igst: 0,
+      cgst: 25,
+      sgst: 25,
+      value: 1050,
+    },
+  ],
+  b2cl: [],
+  b2cs: [],
+  cdnr: [],
+  cdnur: [],
+  hsn: [
+    {
+      hsn: "6204",
+      description: "Blouses",
+      uqc: "NOS",
+      quantity: 2,
+      value: 1050,
+      rate: 5,
+      taxable: 1000,
+      igst: 0,
+      cgst: 25,
+      sgst: 25,
+      cess: 0,
+    },
+  ],
+  docs: [{ nature: "Invoices for outward supply", from: "INV-301", to: "INV-305", total: 5, cancelled: 0 }],
+};
 
 const chart: Of<Accounts["chart"]> = [
   {
@@ -290,6 +376,9 @@ beforeEach(() => {
   search = new URLSearchParams();
   vi.clearAllMocks();
   mocks.accounts.chart.mockResolvedValue(chart);
+  mocks.accounts.ledger.mockResolvedValue(ledger);
+  mocks.accounts.inputGst.mockResolvedValue(inputGst);
+  mocks.gstr1.month.mockResolvedValue(gstr1);
   mocks.accounts.journal.mockResolvedValue(journal);
   mocks.accounts.problems.mockResolvedValue(problems);
   mocks.accounts.gstr3b.mockResolvedValue(gstr3b);
@@ -372,6 +461,26 @@ describe("books pages", () => {
     render(<SupplierPage />);
     expect((await screen.findAllByText(/B-101/)).length).toBeGreaterThan(0);
     await waitFor(() => expect(mocks.purchases.supplier).toHaveBeenCalledWith(4));
+  });
+
+  it("shows an account's ledger lines", async () => {
+    search = new URLSearchParams({ id: "1" });
+    render(<LedgerPage />);
+    expect((await screen.findAllByText(/Fabric purchase paid/)).length).toBeGreaterThan(0);
+    expect(mocks.accounts.ledger).toHaveBeenCalled();
+  });
+
+  it("totals input GST by month", async () => {
+    render(<InputGstPage />);
+    // The footer row only renders once there are months, so two "Total" cells means the data is in.
+    await waitFor(() => expect(screen.getAllByText("Total")).toHaveLength(2));
+    expect(mocks.accounts.inputGst).toHaveBeenCalled();
+  });
+
+  it("shows the GSTR-1 sections for the month", async () => {
+    render(<Gstr1Page />);
+    expect((await screen.findAllByText("B2B invoices")).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/Blouses/)).length).toBeGreaterThan(0);
   });
 
   it("lists credit notes", async () => {
