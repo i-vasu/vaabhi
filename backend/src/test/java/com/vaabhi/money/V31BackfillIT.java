@@ -17,9 +17,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /**
- * V31 spreads each old invoice's tax over its lines. Runs the migrations up to V30 in a scratch database on the same
+ * V40 (the GST engine, first written as V31) spreads each old invoice's tax over its lines. Runs the migrations up to V39 in a scratch database on the same
  * container (the migrations name the public schema, so a separate schema would not work), adds invoices, migrates to
- * V31 and checks the lines add up to their invoice.
+ * V40 and checks the lines add up to their invoice.
  */
 @Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest
@@ -101,12 +101,12 @@ class V31BackfillIT {
                     postgres.getJdbcUrl().replace("/" + postgres.getDatabaseName(), "/" + SCRATCH),
                     postgres.getUsername(),
                     postgres.getPassword());
-            flyway(dataSource, "30").migrate();
+            flyway(dataSource, "39").migrate();
             var db = JdbcClient.create(dataSource);
             invoice(db, "OLD-1", "WEB-V31-1", "25.00", "25.01", List.of("333.33", "333.33", "383.35"));
             invoice(db, "OLD-2", "WEB-V31-2", "25.00", "25.00", List.of("1050.00"));
 
-            flyway(dataSource, "31").migrate();
+            flyway(dataSource, "40").migrate();
 
             var rows = db.sql("""
                             SELECT i.number, i.taxable_rupees, i.cgst_rupees, i.sgst_rupees, i.igst_rupees,

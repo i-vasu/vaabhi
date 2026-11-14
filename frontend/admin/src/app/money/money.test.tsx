@@ -180,7 +180,7 @@ describe("invoices", () => {
     search = new URLSearchParams("id=7");
     render(<CreditNotePage />);
     expect(await screen.findByRole("heading", { name: "Credit Note" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "INV-305" })).toHaveAttribute("href", "/money/invoices/view/?id=5");
+    expect(await screen.findByRole("link", { name: "INV-305" })).toHaveAttribute("href", "/money/invoices/view/?id=5");
   });
 
   it("prints seller CIN and state code", async () => {
