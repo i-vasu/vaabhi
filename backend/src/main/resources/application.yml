@@ -77,6 +77,12 @@ vaabhi:
     access-token: ${INSTAGRAM_ACCESS_TOKEN:}
     account-id: ${INSTAGRAM_ACCOUNT_ID:}
 
+  # Product feed for Meta Commerce Manager (Instagram Shopping + WhatsApp catalogue):
+  # https://api.vaabhi.com/api/v1/store/catalog/meta-feed.csv. Rows link to these public addresses.
+  catalog-feed:
+    storefront-url: ${STOREFRONT_URL:https://vaabhi.com}
+    media-url: ${MEDIA_URL:https://media.vaabhi.com}
+
   # Storefront shipping: free from this order value (items, in rupees), otherwise the flat fee.
   checkout:
     free-shipping-from-rupees: ${FREE_SHIPPING_FROM_RUPEES:1999}

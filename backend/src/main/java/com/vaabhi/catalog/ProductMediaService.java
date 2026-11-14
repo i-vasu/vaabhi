@@ -129,6 +129,7 @@ public class ProductMediaService {
                 storage.delete(videoKey(media.key()));
             } else {
                 RENDITIONS.forEach(width -> storage.delete(renditionKey(media.key(), width)));
+                storage.delete(CatalogFeedImages.feedImageKey(media.key()));
             }
         }
         return store.list(productId);
