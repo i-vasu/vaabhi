@@ -82,7 +82,7 @@ Next.js 16 static-export admin, Tailwind 4.
   static YearMonth[] months(LocalDate fyStart) }`.
 
 - [ ] **Step 1: Tests.** `ScheduleLineTest`: `defaultFor(INCOME) == OTHER_INCOME`, `defaultFor(ASSET) ==
-  OTHER_CURRENT_ASSETS`; `PPE.fits(ASSET)`, `!SALES… REVENUE_FROM_OPERATIONS.fits(EXPENSE)`. `FiscalYearsTest`:
+  OTHER_CURRENT_ASSETS`; `PPE.fits(ASSET)` is true, `REVENUE_FROM_OPERATIONS.fits(EXPENSE)` is false. `FiscalYearsTest`:
   `startOf(2027-03-31) == 2026-04-01`, `startOf(2026-04-01) == 2026-04-01`, `label(2026-04-01) == "2026-27"`,
   `parse("2026-27") == 2026-04-01`, `parse("2026-28")` and `parse("x")` throw `ResponseStatusException` 400,
   `months(2026-04-01)` has 12 entries from 2026-04 to 2027-03. Add to `ChartService`'s IT (or a new
