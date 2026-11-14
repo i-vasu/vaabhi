@@ -37,7 +37,7 @@ describe("accounts", () => {
 
   it("enables manual Save only when debits equal credits", async () => {
     render(<ManualJournalPage />);
-    await screen.findByRole("option", { name: "1000 · Cash", hidden: true });
+    await screen.findAllByRole("option", { name: "1000 · Cash", hidden: true });
     fireEvent.change(screen.getByLabelText("Narration"), { target: { value: "Owner top-up" } });
     fireEvent.change(screen.getByLabelText("Account 1"), { target: { value: "1" } });
     fireEvent.change(screen.getByLabelText("Account 2"), { target: { value: "2" } });

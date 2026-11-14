@@ -1,10 +1,16 @@
 import { render, screen } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Gstr1 } from "@vaabhi/api-client";
 import { API, server } from "@/test/server";
 import { serveTailoring } from "@/test/tailoring-fixtures";
 import GstReportPage from "./gst/page";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn(), prefetch: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => "/reports/gst/",
+}));
 
 const gstr1: Gstr1 = {
   month: "2026-11",

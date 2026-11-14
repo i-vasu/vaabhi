@@ -95,6 +95,7 @@ describe("alteration page", () => {
         status: "DELIVERED",
         collectRupees: 400,
         mode: "UPI",
+        settlement: null,
       }),
     );
     expect(await screen.findByText("Delivered")).toBeInTheDocument();
@@ -110,6 +111,7 @@ describe("alteration page", () => {
         status: "CANCELLED",
         collectRupees: 0,
         mode: null,
+        settlement: null,
       }),
     );
   });
