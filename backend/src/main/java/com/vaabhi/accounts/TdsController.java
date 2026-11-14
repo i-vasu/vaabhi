@@ -5,7 +5,10 @@ import java.time.LocalDate;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,9 +27,11 @@ import org.springframework.web.bind.annotation.RestController;
 class TdsController {
 
     private final TdsService tds;
+    private final TdsReturnService returns;
 
-    TdsController(TdsService tds) {
+    TdsController(TdsService tds, TdsReturnService returns) {
         this.tds = tds;
+        this.returns = returns;
     }
 
     private static @Nullable String actor(@Nullable Jwt jwt) {
@@ -67,5 +72,25 @@ class TdsController {
     @ResponseStatus(HttpStatus.CREATED)
     TdsChallanView createChallan(@Valid @RequestBody TdsChallanForm form, @AuthenticationPrincipal @Nullable Jwt jwt) {
         return tds.createChallan(form, actor(jwt));
+    }
+
+    // --- 26Q return ---------------------------------------------------------------------------------------------
+
+    @GetMapping("/returns")
+    TdsQuarter returns(@RequestParam String fy, @RequestParam int quarter) {
+        return returns.quarter(FiscalYears.parse(fy), quarter);
+    }
+
+    @GetMapping("/returns.csv")
+    ResponseEntity<String> returnsCsv(@RequestParam String fy, @RequestParam int quarter, @RequestParam String part) {
+        var fyStart = FiscalYears.parse(fy);
+        var csv = returns.csv(fyStart, quarter, part);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"26q-" + FiscalYears.label(fyStart) + "-q" + quarter + "-" + part
+                                + ".csv\"")
+                .body(csv);
     }
 }
