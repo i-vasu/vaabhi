@@ -6,6 +6,8 @@ RUN java -Djarmode=tools -jar app.jar extract --layers --launcher --destination 
 
 FROM eclipse-temurin:21-jre-alpine
 RUN addgroup -S app && adduser -S app -G app
+# pg_dump/pg_restore for the nightly books backup.
+RUN apk add --no-cache postgresql17-client
 USER app
 WORKDIR /app
 COPY --from=extract /build/extracted/dependencies/ ./
