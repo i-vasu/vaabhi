@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { api as realApi } from "@/lib/api";
 import Gstr1Page from "../../reports/gst/page";
@@ -41,10 +41,19 @@ const mocks = vi.hoisted(() => ({
     statements: { profitAndLoss: vi.fn(), balanceSheet: vi.fn() },
     yearEnd: { get: vi.fn(), auditorPack: vi.fn(), close: vi.fn(), reopen: vi.fn(), saveStock: vi.fn() },
     backups: { status: vi.fn(), runNow: vi.fn(), recordDrill: vi.fn() },
+    tds: { sections: vi.fn() },
     assets: { classes: vi.fn(), list: vi.fn(), createOpening: vi.fn(), dispose: vi.fn(), updateClass: vi.fn() },
     bank: { statements: vi.fn(), settlements: vi.fn(), remittances: vi.fn(), syncRazorpay: vi.fn() },
   },
-  purchases: { suppliers: vi.fn(), supplier: vi.fn(), bills: vi.fn(), createPayment: vi.fn() },
+  purchases: {
+    suppliers: vi.fn(),
+    supplier: vi.fn(),
+    bills: vi.fn(),
+    createPayment: vi.fn(),
+    createSupplier: vi.fn(),
+    updateSupplier: vi.fn(),
+  },
+  settings: { states: vi.fn() },
   creditNotes: { list: vi.fn() },
   gstr1: { month: vi.fn(), csv: vi.fn() },
 }));
@@ -53,6 +62,7 @@ vi.mock("@/lib/api", () => ({
     admin: {
       accounts: mocks.accounts,
       purchases: mocks.purchases,
+      settings: mocks.settings,
       money: { creditNotes: mocks.creditNotes, gstr1: mocks.gstr1 },
     },
   },
@@ -395,6 +405,9 @@ beforeEach(() => {
   mocks.purchases.bills.mockResolvedValue(bills);
   mocks.purchases.supplier.mockResolvedValue(supplier);
   mocks.creditNotes.list.mockResolvedValue(creditNotes);
+  mocks.settings.states.mockResolvedValue([{ code: "36", name: "Telangana" }]);
+  mocks.accounts.tds.sections.mockResolvedValue([]);
+  mocks.accounts.yearEnd.saveStock.mockResolvedValue(yearEnd);
 });
 
 describe("books pages", () => {
@@ -486,5 +499,39 @@ describe("books pages", () => {
   it("lists credit notes", async () => {
     render(<CreditNotesPage />);
     expect((await screen.findAllByText(/CN-9 · Ravi Kumar/)).length).toBeGreaterThan(0);
+  });
+
+  it("opens the supplier's details for editing", async () => {
+    search = new URLSearchParams({ id: "4" });
+    render(<SupplierPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Edit" }));
+    await waitFor(() => expect(mocks.settings.states).toHaveBeenCalled());
+    expect(mocks.accounts.tds.sections).toHaveBeenCalled();
+  });
+
+  it("opens the payment sheet with the supplier's open bills", async () => {
+    search = new URLSearchParams({ id: "4" });
+    render(<SupplierPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Pay" }));
+    expect(await screen.findByRole("button", { name: "Record payment" })).toBeInTheDocument();
+    await waitFor(() => expect(mocks.purchases.bills).toHaveBeenCalledWith({ partyId: 4, status: "OPEN" }));
+  });
+
+  it("opens the opening-asset sheet", async () => {
+    render(<AssetsPage />);
+    fireEvent.click(await screen.findByRole("button", { name: /Add opening asset/ }));
+    expect((await screen.findAllByText("Add opening asset")).length).toBeGreaterThan(1);
+  });
+
+  it("opens the dispose sheet for an asset", async () => {
+    render(<AssetsPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Dispose" }));
+    expect((await screen.findAllByText("Dispose Cutting table")).length).toBeGreaterThan(0);
+  });
+
+  it("saves the year-end stock list", async () => {
+    render(<YearEndPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Save stock list" }));
+    await waitFor(() => expect(mocks.accounts.yearEnd.saveStock).toHaveBeenCalled());
   });
 });

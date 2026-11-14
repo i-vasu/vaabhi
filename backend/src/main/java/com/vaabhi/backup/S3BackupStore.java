@@ -157,11 +157,12 @@ class S3BackupStore {
     }
 
     /** {@code Content-MD5} is Base64 of the raw 16-byte MD5 digest of the file, streamed rather than loaded. */
+    // Sonar java:S4790: S3 requires Content-MD5 on object-lock uploads; it checks integrity, it is not security.
+    @SuppressWarnings("java:S4790")
     private static String md5Base64(Path file) {
         MessageDigest digest;
         try {
-            digest = MessageDigest.getInstance(
-                    "MD5"); // NOSONAR java:S4790 - S3 Content-MD5 integrity check, not security
+            digest = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("MD5 is not available", e);
         }

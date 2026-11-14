@@ -75,6 +75,8 @@ public class BankMatcher {
 
     /** Entries a line could be matched to by hand: same side, near in date, closest amount first. 404 if no line. */
     @Transactional(readOnly = true)
+    // Sonar java:S2077: the SQL is assembled only from fixed fragments in this class; every value is a bound parameter.
+    @SuppressWarnings("java:S2077")
     public List<MatchCandidate> candidates(long lineId) {
         var line = jdbc.sql("""
                         SELECT id, line_date AS date, debit_rupees, credit_rupees
@@ -86,8 +88,7 @@ public class BankMatcher {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Line not found"));
         var signed = line.creditRupees().subtract(line.debitRupees());
         String sign = signed.signum() > 0 ? "> 0" : "< 0";
-        return jdbc.sql( // NOSONAR java:S2077 - SQL built only from fixed fragments; every value is a bound parameter
-                        """
+        return jdbc.sql("""
                         SELECT e.id AS journal_entry_id, e.number, e.entry_date AS date, e.narration,
                                ABS(SUM(l.debit_rupees - l.credit_rupees)) AS amount_rupees
                         FROM journal_entry e
@@ -130,11 +131,12 @@ public class BankMatcher {
     }
 
     /** Entries the Razorpay or COD remittance the line's reference names posted; at most two are needed. */
+    // Sonar java:S2077: the SQL is assembled only from fixed fragments in this class; every value is a bound parameter.
+    @SuppressWarnings("java:S2077")
     private List<Long> referenceCandidates(AutoLine line) {
         var amount = line.creditRupees().subtract(line.debitRupees());
         String sign = amount.signum() > 0 ? "> 0" : "< 0";
-        return jdbc.sql( // NOSONAR java:S2077 - SQL built only from fixed fragments; every value is a bound parameter
-                        """
+        return jdbc.sql("""
                         SELECT e.id
                         FROM journal_entry e
                         WHERE ((e.source_type = 'RAZORPAY_SETTLEMENT'
@@ -153,11 +155,12 @@ public class BankMatcher {
     }
 
     /** Entries with the line's signed amount on the Bank account within the auto-match window. */
+    // Sonar java:S2077: the SQL is assembled only from fixed fragments in this class; every value is a bound parameter.
+    @SuppressWarnings("java:S2077")
     private List<Long> exactAmountCandidates(AutoLine line) {
         var amount = line.creditRupees().subtract(line.debitRupees());
         String sign = amount.signum() > 0 ? "> 0" : "< 0";
-        return jdbc.sql( // NOSONAR java:S2077 - SQL built only from fixed fragments; every value is a bound parameter
-                        """
+        return jdbc.sql("""
                         SELECT e.id
                         FROM journal_entry e
                         JOIN journal_line l ON l.entry_id = e.id

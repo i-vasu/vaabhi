@@ -229,6 +229,8 @@ public class JournalService {
     }
 
     @Transactional(readOnly = true)
+    // Sonar java:S2077: the SQL is assembled only from fixed fragments in this class; every value is a bound parameter.
+    @SuppressWarnings("java:S2077")
     public JournalPage list(@Nullable String q, @Nullable LocalDate from, @Nullable LocalDate to, int page, int size) {
         int safePage = Math.max(1, page);
         int safeSize = Math.min(Math.max(1, size), MAX_PAGE_SIZE);
@@ -238,17 +240,13 @@ public class JournalService {
                   AND (CAST(:from AS date) IS NULL OR e.entry_date >= :from)
                   AND (CAST(:to AS date) IS NULL OR e.entry_date <= :to)
                 """;
-        long total = jdbc.sql("SELECT COUNT(*) FROM journal_entry e "
-                        + where) // NOSONAR java:S2077 - SQL built only from fixed fragments; every value is a bound
-                // parameter
+        long total = jdbc.sql("SELECT COUNT(*) FROM journal_entry e " + where)
                 .param("q", like)
                 .param("from", from)
                 .param("to", to)
                 .query(Long.class)
                 .single();
-        var items =
-                jdbc.sql( // NOSONAR java:S2077 - SQL built only from fixed fragments; every value is a bound parameter
-                                """
+        var items = jdbc.sql("""
                         SELECT e.id, e.number, e.entry_date AS date, e.narration, e.source_type, e.source_step,
                                (SELECT COALESCE(SUM(l.debit_rupees), 0) FROM journal_line l
                                 WHERE l.entry_id = e.id) AS total_rupees,
@@ -257,13 +255,13 @@ public class JournalService {
                         """ + where + """
                         ORDER BY e.entry_date DESC, e.id DESC LIMIT :limit OFFSET :offset
                         """)
-                        .param("q", like)
-                        .param("from", from)
-                        .param("to", to)
-                        .param("limit", safeSize)
-                        .param("offset", (safePage - 1) * safeSize)
-                        .query(JournalListItem.class)
-                        .list();
+                .param("q", like)
+                .param("from", from)
+                .param("to", to)
+                .param("limit", safeSize)
+                .param("offset", (safePage - 1) * safeSize)
+                .query(JournalListItem.class)
+                .list();
         return new JournalPage(items, total, safePage, safeSize);
     }
 
@@ -339,6 +337,8 @@ public class JournalService {
 
     /** The trial balance as at a date; closing entries can be left out to show the year before it was closed. */
     @Transactional(readOnly = true)
+    // Sonar java:S2077: the SQL is assembled only from fixed fragments in this class; every value is a bound parameter.
+    @SuppressWarnings("java:S2077")
     public TrialBalance trialBalance(LocalDate asOf, boolean excludeClosing) {
         String excluding = excludeClosing ? """
                   AND NOT (e.source_type = 'YEAR_END' AND e.source_step = 'CLOSE')
@@ -346,9 +346,7 @@ public class JournalService {
                                   WHERE c.id = e.reverses_id
                                     AND c.source_type = 'YEAR_END' AND c.source_step = 'CLOSE')
                   """ : "";
-        var rows =
-                jdbc.sql( // NOSONAR java:S2077 - SQL built only from fixed fragments; every value is a bound parameter
-                                """
+        var rows = jdbc.sql("""
                         SELECT a.id, a.code, a.name, a.type, SUM(l.debit_rupees) AS debits,
                                SUM(l.credit_rupees) AS credits
                         FROM account a
@@ -360,9 +358,9 @@ public class JournalService {
                         HAVING SUM(l.debit_rupees) <> SUM(l.credit_rupees)
                         ORDER BY a.code
                         """)
-                        .param("asOf", asOf)
-                        .query(TrialRow.class)
-                        .list();
+                .param("asOf", asOf)
+                .query(TrialRow.class)
+                .list();
         var lines = new ArrayList<TrialBalanceLine>();
         var totalDebit = Rupees.ZERO;
         var totalCredit = Rupees.ZERO;

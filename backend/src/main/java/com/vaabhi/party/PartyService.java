@@ -109,10 +109,10 @@ public class PartyService {
         return existing.id();
     }
 
+    // Sonar java:S2077: the SQL is assembled only from fixed fragments in this class; every value is a bound parameter.
+    @SuppressWarnings("java:S2077")
     private @Nullable Existing find(String where, Object key) {
-        return jdbc.sql(EXISTING
-                        + where) // NOSONAR java:S2077 - SQL built only from fixed fragments; every value is a bound
-                // parameter
+        return jdbc.sql(EXISTING + where)
                 .param("key", key)
                 .query(Existing.class)
                 .optional()

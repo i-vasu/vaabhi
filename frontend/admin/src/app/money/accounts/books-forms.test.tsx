@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { api as realApi } from "@/lib/api";
 import BillPage from "../purchases/bill/page";
@@ -264,6 +264,10 @@ beforeEach(() => {
   mocks.purchases.bill.mockResolvedValue(bill);
   mocks.purchases.suppliers.mockResolvedValue([supplier]);
   mocks.stock.list.mockResolvedValue([]);
+  mocks.purchases.updateBill.mockResolvedValue(bill);
+  mocks.accounts.bank.candidates.mockResolvedValue([
+    { journalEntryId: 7, number: "PAY-7", date: "2026-11-04", narration: "Paid Lakshmi Silks", amountRupees: 10500 },
+  ] satisfies Of<Accounts["bank"]["candidates"]>);
 });
 
 describe("books forms", () => {
@@ -315,5 +319,41 @@ describe("books forms", () => {
   it("asks for a Shiprocket invoice file", async () => {
     render(<ShiprocketPage />);
     expect(await screen.findByLabelText("Shiprocket invoice file")).toBeInTheDocument();
+  });
+
+  it("rejects a new bill without a supplier", async () => {
+    render(<BillPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Save bill" }));
+    expect(await screen.findByText("Pick a supplier.")).toBeInTheDocument();
+    expect(mocks.purchases.createBill).not.toHaveBeenCalled();
+  });
+
+  it("saves changes to a saved bill", async () => {
+    search = new URLSearchParams({ id: "9" });
+    render(<BillPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Save bill" }));
+    await waitFor(() => expect(mocks.purchases.updateBill).toHaveBeenCalled());
+    expect(mocks.purchases.updateBill.mock.calls[0]?.[0]).toBe(9);
+  });
+
+  it("opens the challan sheet", async () => {
+    render(<TdsPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Record challan" }));
+    expect((await screen.findAllByRole("button", { name: "Record challan" })).length).toBeGreaterThan(1);
+  });
+
+  it("opens a TDS section for editing", async () => {
+    render(<TdsPage />);
+    const edit = await screen.findAllByRole("button", { name: "Edit" });
+    fireEvent.click(edit[0] as HTMLElement);
+    expect(await screen.findByRole("button", { name: "Save section" })).toBeInTheDocument();
+  });
+
+  it("opens an unmatched bank line and suggests entries", async () => {
+    search = new URLSearchParams({ id: "1" });
+    render(<BankStatementPage />);
+    fireEvent.click(await screen.findByRole("button", { name: /NEFT LAKSHMI SILKS/ }));
+    await waitFor(() => expect(mocks.accounts.bank.candidates).toHaveBeenCalledWith(11));
+    expect((await screen.findAllByText("PAY-7")).length).toBeGreaterThan(0);
   });
 });

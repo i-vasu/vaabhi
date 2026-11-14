@@ -201,9 +201,10 @@ public class Gstr1Service {
                 month, settings.billing().gstApplies(), b2b, b2cl, b2cs, cdnr, cdnur, hsn(from, to), docs(from, to));
     }
 
+    // Sonar java:S2077: the SQL is assembled only from fixed fragments in this class; every value is a bound parameter.
+    @SuppressWarnings("java:S2077")
     private List<Entry> entries(String fromAndGroup, String select, LocalDate from, LocalDate to) {
-        return jdbc.sql( // NOSONAR java:S2077 - SQL built only from fixed fragments; every value is a bound parameter
-                        """
+        return jdbc.sql("""
                         SELECT %s,
                                l.gst_rate AS rate, SUM(l.taxable_rupees) AS taxable, SUM(l.cgst_rupees) AS cgst,
                                SUM(l.sgst_rupees) AS sgst, SUM(l.igst_rupees) AS igst

@@ -93,6 +93,8 @@ public class DailyBooksCheck {
      * Order numbers of live invoices (issued on or after the start) whose order took money before the start date.
      * The owner settles these with the overall Debtors and advances opening amounts.
      */
+    // Sonar java:S2077: the SQL is assembled only from fixed fragments in this class; every value is a bound parameter.
+    @SuppressWarnings("java:S2077")
     public List<String> preStartOrders(LocalDate start) {
         var sql = """
                 SELECT COALESCE(o.number, w.number) AS number
@@ -105,10 +107,7 @@ public class DailyBooksCheck {
                        OR (w.paid_at IS NOT NULL AND %2$s < :start))
                 ORDER BY 1
                 """.formatted(SHOP_DAY.formatted("p.received_at"), SHOP_DAY.formatted("w.paid_at"));
-        return jdbc.sql(sql)
-                .param("start", start)
-                .query(String.class)
-                .list(); // NOSONAR java:S2077 - SQL built only from fixed fragments; every value is a bound parameter
+        return jdbc.sql(sql).param("start", start).query(String.class).list();
     }
 
     /**
@@ -116,6 +115,8 @@ public class DailyBooksCheck {
      * what is really due: total, less payments on the order, plus refunds, less credit notes. Only money moved on or
      * after the start counts; what was received or refunded before it is part of the opening balances.
      */
+    // Sonar java:S2077: the SQL is assembled only from fixed fragments in this class; every value is a bound parameter.
+    @SuppressWarnings("java:S2077")
     private List<DebtorsRow> debtorsMismatches(LocalDate start) {
         var sql = """
                 SELECT * FROM (
@@ -156,9 +157,6 @@ public class DailyBooksCheck {
                         SHOP_DAY.formatted("w.paid_at"),
                         SHOP_DAY.formatted("w.refunded_at"),
                         SHOP_DAY.formatted("r.refunded_at"));
-        return jdbc.sql(sql)
-                .param("start", start)
-                .query(DebtorsRow.class)
-                .list(); // NOSONAR java:S2077 - SQL built only from fixed fragments; every value is a bound parameter
+        return jdbc.sql(sql).param("start", start).query(DebtorsRow.class).list();
     }
 }
