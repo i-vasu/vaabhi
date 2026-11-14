@@ -62,7 +62,7 @@ class AssetDisposalPosting implements PostingRule {
                                             AND NOT EXISTS (SELECT 1 FROM journal_entry j
                                                             WHERE j.source_type = 'ASSET_DEPRECIATION'
                                                               AND j.source_id = d.id))
-                          AND """ + RuleSupport.NOT_POSTED + " ORDER BY s.id LIMIT :limit", sourceType(), step(), start, limit);
+                          AND\s""" + RuleSupport.NOT_POSTED + " ORDER BY s.id LIMIT :limit", sourceType(), step(), start, limit);
     }
 
     @Override

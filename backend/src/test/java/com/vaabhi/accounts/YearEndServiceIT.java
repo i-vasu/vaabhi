@@ -44,7 +44,7 @@ class YearEndServiceIT extends BooksFixtures {
     }
 
     private long stockItem() {
-        return jdbc.sql("INSERT INTO stock_item (name, unit, cost_paise) VALUES (:name, 'PCS', 5000) RETURNING id")
+        return jdbc.sql("INSERT INTO stock_item (name, unit, cost_rupees) VALUES (:name, 'PCS', 50.00) RETURNING id")
                 .param("name", unique("Year end item "))
                 .query(Long.class)
                 .single();

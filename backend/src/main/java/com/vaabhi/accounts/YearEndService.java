@@ -69,7 +69,7 @@ public class YearEndService {
     record RunRow(
             long id, @Nullable Long stockEntryId, @Nullable Long closingEntryId) {}
 
-    record PrefillRow(long id, String name, String unit, long costPaise, BigDecimal quantity) {}
+    record PrefillRow(long id, String name, String unit, BigDecimal costRupees, BigDecimal quantity) {}
 
     record BalanceRow(long accountId, BigDecimal net) {}
 
@@ -408,7 +408,7 @@ public class YearEndService {
     private List<ClosingStockLine> prefillStock(LocalDate end) {
         var cutoff = end.atTime(23, 59, 59).atZone(SHOP_ZONE).toOffsetDateTime();
         return jdbc.sql("""
-                        SELECT i.id, i.name, i.unit, i.cost_paise, SUM(m.quantity) AS quantity
+                        SELECT i.id, i.name, i.unit, i.cost_rupees, SUM(m.quantity) AS quantity
                         FROM stock_item i
                         JOIN stock_movement m ON m.item_id = i.id
                         WHERE m.moved_at <= :cutoff
@@ -417,7 +417,7 @@ public class YearEndService {
                         ORDER BY i.name
                         """).param("cutoff", cutoff).query(PrefillRow.class).list().stream()
                 .map(row -> {
-                    var rate = BigDecimal.valueOf(row.costPaise(), 2);
+                    var rate = Rupees.of(row.costRupees());
                     var value = Rupees.of(row.quantity().multiply(rate));
                     return new ClosingStockLine(row.id(), row.name(), row.unit(), row.quantity(), rate, value);
                 })
