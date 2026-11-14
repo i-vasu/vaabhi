@@ -19,6 +19,11 @@ public interface ObjectStorage {
         throw new UnsupportedOperationException("Server uploads are not supported here");
     }
 
+    /** Downloads an object from the server (e.g. a photo rendition to convert); throws when it is missing. */
+    default byte[] get(String key) {
+        throw new UnsupportedOperationException("Server downloads are not supported here");
+    }
+
     /** Best effort: a failure is logged, not thrown, because the database row is already gone. */
     void delete(String key);
 }

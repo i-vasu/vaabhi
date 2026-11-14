@@ -15,8 +15,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Component;
 
 /**
- * Cloudflare R2 through its S3-compatible endpoint. The server only signs URLs and makes tiny HEAD/DELETE
- * calls; photo bytes go straight from the admin's browser to R2, never through the VPS.
+ * Cloudflare R2 through its S3-compatible endpoint. The server mostly signs URLs and makes tiny HEAD/DELETE
+ * calls; photo uploads go straight from the admin's browser to R2. The server itself only copies Instagram covers
+ * and makes JPEG copies of product photos for the Meta catalogue.
  */
 @Component
 @EnableConfigurationProperties(MediaStorageProperties.class)
@@ -88,6 +89,26 @@ class R2ObjectStorage implements ObjectStorage {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Interrupted while uploading to photo storage", e);
+        }
+    }
+
+    @Override
+    public byte[] get(String key) {
+        var request = HttpRequest.newBuilder(presign("GET", key, SERVER_CALL_VALIDITY))
+                .GET()
+                .timeout(Duration.ofSeconds(30))
+                .build();
+        try {
+            var response = http.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            if (response.statusCode() != 200) {
+                throw new IllegalStateException("Photo storage returned " + response.statusCode() + " for " + key);
+            }
+            return response.body();
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not reach photo storage", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while downloading from photo storage", e);
         }
     }
 

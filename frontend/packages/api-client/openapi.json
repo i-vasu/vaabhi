@@ -5609,6 +5609,28 @@
                 }
             }
         },
+        "/api/v1/store/catalog/meta-feed.csv": {
+            "get": {
+                "tags": [
+                    "store-catalog-feed-controller"
+                ],
+                "summary": "Product feed for Meta Commerce Manager",
+                "description": "Every published product, one row per variant, in Meta's catalogue CSV format. Commerce Manager fetches it on a schedule; the same catalogue feeds Instagram Shopping and WhatsApp.",
+                "operationId": "metaFeed",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/csv": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/store/shop": {
             "get": {
                 "tags": [

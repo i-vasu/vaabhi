@@ -133,6 +133,46 @@ class R2ObjectStorageTest {
         };
         assertThatThrownBy(() -> readOnly.put("k", new byte[0], "image/jpeg"))
                 .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() -> readOnly.get("k")).isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void downloadsFromTheServerWithASignedGet() throws Exception {
+        HttpResponse<byte[]> response = mock(HttpResponse.class);
+        given(response.statusCode()).willReturn(200);
+        given(response.body()).willReturn(new byte[] {7, 8});
+        given(http.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .willReturn(response);
+
+        assertThat(storage.get("products/a/1600.webp")).isEqualTo(new byte[] {7, 8});
+
+        var request = ArgumentCaptor.forClass(HttpRequest.class);
+        verify(http).send(request.capture(), any());
+        assertThat(request.getValue().method()).isEqualTo("GET");
+        assertThat(request.getValue().uri().getPath()).isEqualTo("/vaabhi-media/products/a/1600.webp");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void reportsAFailedDownload() throws Exception {
+        respond(404);
+        assertThatThrownBy(() -> storage.get("k"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("returned 404 for k");
+
+        given(http.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .willThrow(new IOException("down"));
+        assertThatThrownBy(() -> storage.get("k"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Could not reach photo storage");
+
+        given(http.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .willThrow(new InterruptedException("stop"));
+        assertThatThrownBy(() -> storage.get("k"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Interrupted while downloading from photo storage");
+        assertThat(Thread.interrupted()).isTrue();
     }
 
     @Test

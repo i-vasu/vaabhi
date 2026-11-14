@@ -1892,6 +1892,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/store/catalog/meta-feed.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Product feed for Meta Commerce Manager
+         * @description Every published product, one row per variant, in Meta's catalogue CSV format. Commerce Manager fetches it on a schedule; the same catalogue feeds Instagram Shopping and WhatsApp.
+         */
+        get: operations["metaFeed"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/store/shop": {
         parameters: {
             query?: never;
@@ -8959,6 +8979,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["Alteration"];
+                };
+            };
+        };
+    };
+    metaFeed: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
                 };
             };
         };

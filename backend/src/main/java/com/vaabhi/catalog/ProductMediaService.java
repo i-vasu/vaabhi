@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.stereotype.Service;
@@ -37,10 +38,12 @@ public class ProductMediaService {
 
     private final ProductMediaStore store;
     private final ObjectStorage storage;
+    private final ApplicationEventPublisher events;
 
-    ProductMediaService(ProductMediaStore store, ObjectStorage storage) {
+    ProductMediaService(ProductMediaStore store, ObjectStorage storage, ApplicationEventPublisher events) {
         this.store = store;
         this.storage = storage;
+        this.events = events;
     }
 
     @Transactional
@@ -101,6 +104,7 @@ public class ProductMediaService {
             }
         }
         store.markReady(mediaId);
+        events.publishEvent(new CatalogChanged(productId));
         return store.list(productId);
     }
 
@@ -116,6 +120,7 @@ public class ProductMediaService {
                     HttpStatus.BAD_REQUEST, "media", "Send every photo and video of the product exactly once");
         }
         store.update(productId, updates);
+        events.publishEvent(new CatalogChanged(productId));
         return store.list(productId);
     }
 
@@ -129,8 +134,10 @@ public class ProductMediaService {
                 storage.delete(videoKey(media.key()));
             } else {
                 RENDITIONS.forEach(width -> storage.delete(renditionKey(media.key(), width)));
+                storage.delete(CatalogFeedImages.feedImageKey(media.key()));
             }
         }
+        events.publishEvent(new CatalogChanged(productId));
         return store.list(productId);
     }
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { SearchResults } from "@vaabhi/api-client";
-import { buttonClasses, chipClasses, CloseIcon, ProductCard, SearchIcon } from "@vaabhi/ui";
+import { buttonClasses, chipClasses, CloseIcon, ProductCard } from "@vaabhi/ui";
 import { ListingToolbar } from "@/components/listing/listing-toolbar";
 import { api } from "@/lib/api";
 import { searchWithRelated, type SearchOutcome } from "@/lib/related-search";
@@ -63,27 +63,7 @@ export default async function SearchPage({ searchParams }: Readonly<Props>) {
 
   return (
     <>
-      <div className={`${container} flex flex-col gap-4 pt-6 pb-2`}>
-        <h1 className="font-serif text-[32px] font-semibold leading-10 text-text-primary">{title}</h1>
-        <form action={PATH} role="search" className="flex max-w-xl gap-2">
-          <label htmlFor="search-q" className="sr-only">
-            Search the shop
-          </label>
-          <input
-            id="search-q"
-            name="q"
-            type="search"
-            defaultValue={state.q}
-            maxLength={100}
-            placeholder="Banarasi, lehenga, wedding…"
-            className="min-w-0 flex-1 rounded-sm border border-border-default bg-bg-surface px-4 py-3 text-base text-text-primary outline-none focus:border-brand-primary"
-          />
-          <button type="submit" className={buttonClasses("primary", "gap-2")}>
-            <SearchIcon size={18} />
-            Search
-          </button>
-        </form>
-      </div>
+      <h1 className="sr-only">{title}</h1>
 
       {outcome === null ? (
         <div className={`${container} py-16 text-center`}>
