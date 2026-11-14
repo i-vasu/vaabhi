@@ -53,7 +53,8 @@ export function ReelCarousel({ reels }: Readonly<{ reels: Reel[] }>) {
       if (!video) return;
       if (i === active && visible) {
         video.muted = muted;
-        video.play().catch(() => {});
+        // play() returns undefined in some browsers (and jsdom); autoplay can also be refused. Either is fine.
+        Promise.resolve(video.play()).catch(() => {});
       } else {
         video.pause();
       }
