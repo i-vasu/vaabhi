@@ -1,5 +1,6 @@
 package com.vaabhi.accounts;
 
+import com.vaabhi.backup.BackupStatusService;
 import com.vaabhi.shared.rupees.Rupees;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -36,6 +37,7 @@ public class YearEndService {
     private final BooksSettingsService settings;
     private final ChartService chart;
     private final StatementService statements;
+    private final BackupStatusService backups;
 
     YearEndService(
             JdbcClient jdbc,
@@ -45,7 +47,8 @@ public class YearEndService {
             PeriodService periods,
             BooksSettingsService settings,
             ChartService chart,
-            StatementService statements) {
+            StatementService statements,
+            BackupStatusService backups) {
         this.jdbc = jdbc;
         this.journal = journal;
         this.sweeper = sweeper;
@@ -54,6 +57,7 @@ public class YearEndService {
         this.settings = settings;
         this.chart = chart;
         this.statements = statements;
+        this.backups = backups;
     }
 
     record FiscalYearRow(
@@ -189,6 +193,9 @@ public class YearEndService {
         sweeper.sweepNow();
         var yearEnd = get(fyStart);
         for (var check : yearEnd.checks()) {
+            if ("BACKUPS".equals(check.key())) {
+                continue;
+            }
             if (!check.ok()) {
                 throw conflict(check.message() == null ? check.label() : check.message());
             }
@@ -356,6 +363,19 @@ public class YearEndService {
         int problemCount = problems.count();
         boolean problemsOk = problemCount == 0;
         boolean trialOk = journal.trialBalance(end).balanced();
+        var backup = backups.status();
+        boolean backupsOk = backup.configured() && backup.missedDaysLast7() == 0;
+        String backupsMessage = null;
+        if (!backupsOk) {
+            if (!backup.configured()) {
+                backupsMessage = "Backups aren't set up";
+            } else {
+                int missed = backup.missedDaysLast7();
+                backupsMessage = missed + (missed == 1
+                        ? " night in the last week has no backup"
+                        : " nights in the last week have no backup");
+            }
+        }
         return List.of(
                 new YearEndCheck(
                         "START_DATE", "Books start date", startOk, startOk ? null : "Set the books start date first"),
@@ -380,7 +400,8 @@ public class YearEndService {
                         "STOCK_SAVED",
                         "Closing stock saved",
                         stockSaved,
-                        stockSaved ? null : "Save the closing stock list first"));
+                        stockSaved ? null : "Save the closing stock list first"),
+                new YearEndCheck("BACKUPS", "Backups running", backupsOk, backupsMessage));
     }
 
     private List<ClosingStockLine> prefillStock(LocalDate end) {

@@ -84,7 +84,7 @@ class AuditorPackServiceIT extends BooksFixtures {
                 new ReadableWorkbook(new ByteArrayInputStream(out.toByteArray()), new ReadingOptions(true, false))) {
             var sheets = workbook.getSheets().toList();
             assertThat(sheets).extracting(Sheet::getName).containsExactlyElementsOf(SHEETS);
-            assertThat(textCells(sheets.get(0))).contains("Draft: year not closed");
+            assertThat(textCells(sheets.get(0))).contains("Draft: year not closed", "Electronic books backup");
             assertThat(rowCount(sheets.get(4))).isGreaterThanOrEqualTo(5);
             var total = totalDebitAndCredit(sheets.get(1));
             assertThat(total[0]).isEqualByComparingTo(total[1]);

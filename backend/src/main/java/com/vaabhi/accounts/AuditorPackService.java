@@ -1,5 +1,7 @@
 package com.vaabhi.accounts;
 
+import com.vaabhi.backup.BackupRunView;
+import com.vaabhi.backup.BackupStatusService;
 import com.vaabhi.settings.SettingsService;
 import com.vaabhi.shared.rupees.Rupees;
 import java.io.IOException;
@@ -30,6 +32,10 @@ public class AuditorPackService {
     private static final DateTimeFormatter DAY_MONTH_YEAR = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
     private static final DateTimeFormatter GENERATED_AT =
             DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm", Locale.ENGLISH);
+    private static final DateTimeFormatter BACKUP_TIME =
+            DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm", Locale.ENGLISH);
+    private static final DateTimeFormatter BACKUP_DATE =
+            DateTimeFormatter.ofPattern("dd-MM-yyyy", Locale.ENGLISH);
 
     private final JdbcClient jdbc;
     private final StatementService statements;
@@ -40,6 +46,7 @@ public class AuditorPackService {
     private final BankReconciliationService reconciliations;
     private final AssetService assets;
     private final SettingsService settings;
+    private final BackupStatusService backups;
 
     AuditorPackService(
             JdbcClient jdbc,
@@ -50,7 +57,8 @@ public class AuditorPackService {
             JournalService journal,
             BankReconciliationService reconciliations,
             AssetService assets,
-            SettingsService settings) {
+            SettingsService settings,
+            BackupStatusService backups) {
         this.jdbc = jdbc;
         this.statements = statements;
         this.yearEnds = yearEnds;
@@ -60,6 +68,7 @@ public class AuditorPackService {
         this.reconciliations = reconciliations;
         this.assets = assets;
         this.settings = settings;
+        this.backups = backups;
     }
 
     /** Writes the year starting at {@code fyStart} as an xlsx workbook, one sheet per part of the pack. */
@@ -99,6 +108,26 @@ public class AuditorPackService {
         if (!yearEnd.closed()) {
             w.row("Draft: year not closed");
         }
+        var backup = backups.status();
+        w.row(
+                "Electronic books backup",
+                backup.configured()
+                        ? "Daily to " + backup.locationLabel() + ", bucket " + backup.bucket()
+                        : "Backups aren't set up");
+        w.row("Last backup", lastBackupText(backup.lastBackup()));
+        w.row(
+                "Last restore drill",
+                backup.lastDrill() == null || backup.lastDrill().drilledOn() == null
+                        ? "Not done"
+                        : BACKUP_DATE.format(backup.lastDrill().drilledOn()));
+    }
+
+    private static String lastBackupText(@Nullable BackupRunView run) {
+        if (run == null || run.finishedAt() == null) {
+            return "None";
+        }
+        var text = BACKUP_TIME.format(run.finishedAt().atZoneSameInstant(SHOP_ZONE));
+        return "OK".equals(run.status()) ? text : text + " (failed)";
     }
 
     private void trialBalance(Workbook workbook, LocalDate end) {

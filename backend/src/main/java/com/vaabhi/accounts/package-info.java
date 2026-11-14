@@ -6,5 +6,5 @@
  */
 @org.springframework.modulith.ApplicationModule(
         displayName = "Accounts",
-        allowedDependencies = {"settings", "party", "money", "shared :: rupees"})
+        allowedDependencies = {"settings", "party", "money", "backup", "shared :: rupees"})
 package com.vaabhi.accounts;

@@ -255,6 +255,28 @@ class YearEndServiceIT extends BooksFixtures {
     }
 
     @Test
+    void theChecklistEndsWithABackupsWarningThatDoesNotBlockClosing() {
+        var fyStart = LocalDate.of(2086, 4, 1);
+        try {
+            startBooksAt(fyStart);
+            clearProblems();
+            yearEnd.saveStock(fyStart, stockForm(List.of(), "0"), "test");
+
+            var checks = yearEnd.get(fyStart).checks();
+
+            assertThat(checks).hasSize(6);
+            var backups = checks.getLast();
+            assertThat(backups.key()).isEqualTo("BACKUPS");
+            assertThat(backups.ok()).isFalse();
+            assertThat(backups.message()).isEqualTo("Backups aren't set up");
+
+            assertThat(yearEnd.close(fyStart, "test").closed()).isTrue();
+        } finally {
+            reopenIfClosed(fyStart);
+        }
+    }
+
+    @Test
     void closeNeedsSavedStockAndSavingNeedsAnOpenYear() {
         var fyStart = LocalDate.of(2085, 4, 1);
         try {
