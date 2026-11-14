@@ -1,12 +1,11 @@
 import type { InstagramReel } from "@vaabhi/api-client";
 import { SectionHeader } from "@vaabhi/ui";
 import { mediaFileUrl } from "@/lib/listing";
-import { ReelTile } from "./reel-tile";
+import { ReelCarousel } from "./reel-carousel";
 
 /**
  * "On Instagram": the best reels from the shop's account, as cover images copied to our media domain (small JPEGs,
- * lazy-loaded). The row scrolls right-to-left — the best reel sits at the right and scrolling left reveals the
- * rest. On hover a reel's MP4 plays over its cover; a tap opens the reel on Instagram (the app on phones).
+ * lazy-loaded), in a centred carousel: the reel in the middle plays on its own, its neighbours peek in at the sides.
  */
 export function InstagramReels({
   reels,
@@ -27,13 +26,9 @@ export function InstagramReels({
         title="On Instagram"
         action={profileUrl ? { label: "Follow us", href: profileUrl } : undefined}
       />
-      <ul dir="rtl" className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1">
-        {shown.map((reel) => (
-          <li key={reel.id} dir="ltr" className="w-[42%] shrink-0 snap-start sm:w-[28%] md:w-[22%] lg:w-[18%]">
-            <ReelTile permalink={reel.permalink} cover={reel.cover} video={reel.video} />
-          </li>
-        ))}
-      </ul>
+      <div className="-mx-4">
+        <ReelCarousel reels={shown} />
+      </div>
     </section>
   );
 }

@@ -54,14 +54,26 @@ describe("InstagramReels", () => {
     expect(screen.queryByText("Festive edit")).not.toBeInTheDocument();
   });
 
-  it("plays the reel video on hover", () => {
+  it("autoplays only the centre reel, muted, with a sound toggle", () => {
     const play = vi.spyOn(HTMLMediaElement.prototype, "play").mockImplementation(() => Promise.resolve());
+    vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+    const { container } = render(<InstagramReels reels={reels} />);
+
+    expect(play).toHaveBeenCalled();
+    expect(play.mock.contexts.every((video) => video === container.querySelector("video"))).toBe(true);
+
+    const sound = screen.getByRole("button", { name: "Turn sound on" });
+    fireEvent.click(sound);
+    expect(screen.getByRole("button", { name: "Turn sound off" })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("brings a side reel to the centre instead of leaving the page", () => {
+    vi.spyOn(HTMLMediaElement.prototype, "play").mockImplementation(() => Promise.resolve());
+    vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
     render(<InstagramReels reels={reels} />);
 
-    const tile = screen.getAllByRole("link", { name: "Watch this reel on Instagram" })[0]!;
-    fireEvent.pointerEnter(tile);
-
-    expect(play).toHaveBeenCalledTimes(1);
+    const side = screen.getAllByRole("link", { name: "Watch this reel on Instagram" })[1]!;
+    expect(fireEvent.click(side)).toBe(false);
   });
 
   it("shows at most six reels", () => {
