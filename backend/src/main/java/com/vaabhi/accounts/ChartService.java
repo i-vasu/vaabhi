@@ -3,6 +3,7 @@ package com.vaabhi.accounts;
 import com.vaabhi.shared.rupees.Rupees;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Locale;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -15,7 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class ChartService {
 
     private static final String SELECT = """
-            SELECT a.id, a.code, a.name, a.type, a.parent_id, a.system_key, a.active,
+            SELECT a.id, a.code, a.name, a.type, a.schedule_line, a.parent_id, a.system_key, a.active,
                    COALESCE(SUM(l.debit_rupees), 0) AS debits, COALESCE(SUM(l.credit_rupees), 0) AS credits
             FROM account a LEFT JOIN journal_line l ON l.account_id = a.id
             """;
@@ -32,6 +33,7 @@ public class ChartService {
             String code,
             String name,
             AccountType type,
+            ScheduleLine scheduleLine,
             @Nullable Long parentId,
             @Nullable String systemKey,
             boolean active,
@@ -40,7 +42,7 @@ public class ChartService {
 
         Account toAccount() {
             var balance = type.debitNormal() ? debits.subtract(credits) : credits.subtract(debits);
-            return new Account(id, code, name, type, parentId, systemKey, active, Rupees.of(balance));
+            return new Account(id, code, name, type, scheduleLine, parentId, systemKey, active, Rupees.of(balance));
         }
     }
 
@@ -65,14 +67,16 @@ public class ChartService {
     public Account create(AccountForm form) {
         checkParent(form.parentId());
         checkCodeFree(form.code(), -1);
+        var line = lineFor(form.type(), form.scheduleLine(), null);
         long id = jdbc.sql("""
-                        INSERT INTO account (code, name, type, parent_id)
-                        VALUES (:code, :name, :type, :parentId) RETURNING id
+                        INSERT INTO account (code, name, type, parent_id, schedule_line)
+                        VALUES (:code, :name, :type, :parentId, :line) RETURNING id
                         """)
                 .param("code", form.code())
                 .param("name", form.name().trim())
                 .param("type", form.type().name())
                 .param("parentId", form.parentId())
+                .param("line", line.name())
                 .query(Long.class)
                 .single();
         return get(id);
@@ -85,8 +89,10 @@ public class ChartService {
             if (Boolean.FALSE.equals(form.active())) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "System accounts can't be turned off");
             }
-            jdbc.sql("UPDATE account SET name = :name WHERE id = :id")
+            var line = lineFor(current.type(), form.scheduleLine(), current.scheduleLine());
+            jdbc.sql("UPDATE account SET name = :name, schedule_line = :line WHERE id = :id")
                     .param("name", form.name().trim())
+                    .param("line", line.name())
                     .param("id", id)
                     .update();
             return get(id);
@@ -116,9 +122,11 @@ public class ChartService {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "An account with postings can't change type");
             }
         }
+        var keptLine = form.type() == current.type() ? current.scheduleLine() : null;
+        var line = lineFor(form.type(), form.scheduleLine(), keptLine);
         jdbc.sql("""
                         UPDATE account SET code = :code, name = :name, type = :type, parent_id = :parentId,
-                                           active = :active
+                                           active = :active, schedule_line = :line
                         WHERE id = :id
                         """)
                 .param("code", form.code())
@@ -126,6 +134,7 @@ public class ChartService {
                 .param("type", form.type().name())
                 .param("parentId", form.parentId())
                 .param("active", form.active() == null ? current.active() : form.active())
+                .param("line", line.name())
                 .param("id", id)
                 .update();
         return get(id);
@@ -138,6 +147,21 @@ public class ChartService {
                 .query(Long.class)
                 .optional()
                 .orElseThrow(() -> new IllegalStateException("No account with system key " + systemKey));
+    }
+
+    private static ScheduleLine lineFor(
+            AccountType type, @Nullable ScheduleLine requested, @Nullable ScheduleLine current) {
+        var line = requested != null ? requested : current;
+        if (line == null) {
+            line = ScheduleLine.defaultFor(type);
+        }
+        if (!line.fits(type)) {
+            var article = type == AccountType.LIABILITY ? "a" : "an";
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    line.label() + " is not " + article + " " + type.name().toLowerCase(Locale.ROOT) + " line");
+        }
+        return line;
     }
 
     private void checkParent(@Nullable Long parentId) {

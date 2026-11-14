@@ -104,9 +104,15 @@ public class AssetService {
         var name = form.name().trim();
         checkNameFree(name, -1);
         var codes = nextCodes();
-        var assetAccount = chart.create(new AccountForm(codes.asset(), name, AccountType.ASSET, null, true));
+        var assetAccount = chart.create(
+                new AccountForm(codes.asset(), name, AccountType.ASSET, null, true, ScheduleLine.PPE));
         var accdepAccount = chart.create(new AccountForm(
-                codes.accdep(), "Acc. depreciation – " + name.toLowerCase(Locale.ROOT), AccountType.ASSET, null, true));
+                codes.accdep(),
+                "Acc. depreciation – " + name.toLowerCase(Locale.ROOT),
+                AccountType.ASSET,
+                null,
+                true,
+                ScheduleLine.PPE));
         long id = jdbc.sql("""
                         INSERT INTO asset_class (name, life_years, residual_percent, asset_account_id, accdep_account_id,
                                                  active)

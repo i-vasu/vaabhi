@@ -9,6 +9,7 @@ public record Account(
         String code,
         String name,
         AccountType type,
+        ScheduleLine scheduleLine,
         @Nullable Long parentId,
         @Nullable String systemKey,
         boolean active,

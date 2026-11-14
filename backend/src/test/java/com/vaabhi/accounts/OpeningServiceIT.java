@@ -60,7 +60,7 @@ class OpeningServiceIT {
 
     private Account newAccount(AccountType type) {
         var code = "%04d".formatted(CODES.incrementAndGet());
-        return chart.create(new AccountForm(code, "Opening test " + code, type, null, null));
+        return chart.create(new AccountForm(code, "Opening test " + code, type, null, null, null));
     }
 
     private void startBooks(LocalDate date) {

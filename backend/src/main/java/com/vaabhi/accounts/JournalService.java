@@ -29,7 +29,7 @@ public class JournalService {
 
     private static final ZoneId SHOP_ZONE = ZoneId.of("Asia/Kolkata");
     private static final DateTimeFormatter MONTH_YEAR = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);
-    private static final Set<String> REVERSIBLE = Set.of("MANUAL", "OPENING", "BANK_LINE");
+    private static final Set<String> REVERSIBLE = Set.of("MANUAL", "OPENING", "BANK_LINE", "YEAR_END");
     private static final int MAX_NARRATION = 200;
     private static final int MAX_MEMO = 120;
     private static final int MAX_PAGE_SIZE = 100;

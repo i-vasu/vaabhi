@@ -156,6 +156,9 @@ class AccountsController {
     @PostMapping("/journal/{id}/reverse")
     @ResponseStatus(HttpStatus.CREATED)
     JournalEntry reverse(@PathVariable long id, @AuthenticationPrincipal @Nullable Jwt jwt) {
+        if ("YEAR_END".equals(journal.get(id).sourceType())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Reopen the year instead");
+        }
         return journal.reverse(id, actor(jwt));
     }
 

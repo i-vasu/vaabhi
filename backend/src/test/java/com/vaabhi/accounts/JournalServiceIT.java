@@ -64,7 +64,7 @@ class JournalServiceIT {
 
     private Account newAccount(AccountType type) {
         var code = "%04d".formatted(CODES.incrementAndGet());
-        return chart.create(new AccountForm(code, "Test " + code, type, null, null));
+        return chart.create(new AccountForm(code, "Test " + code, type, null, null, null));
     }
 
     private static NewEntryLine debit(long account, String amount) {
@@ -141,7 +141,7 @@ class JournalServiceIT {
     void rejectsInactiveAccount() {
         var cash = newAccount(AccountType.ASSET);
         var off = newAccount(AccountType.INCOME);
-        chart.update(off.id(), new AccountForm(off.code(), off.name(), off.type(), null, false));
+        chart.update(off.id(), new AccountForm(off.code(), off.name(), off.type(), null, false, null));
 
         assertRejected(
                 () -> journal.post(
@@ -292,7 +292,8 @@ class JournalServiceIT {
         settings.save(new BooksSettings(original.startDate(), Map.copyOf(modes), null), null);
         try {
             assertRejected(
-                    () -> chart.update(bank.id(), new AccountForm(bank.code(), bank.name(), bank.type(), null, false)),
+                    () -> chart.update(
+                            bank.id(), new AccountForm(bank.code(), bank.name(), bank.type(), null, false, null)),
                     HttpStatus.CONFLICT,
                     "This account is used for CARD payments; pick another account there first");
         } finally {
@@ -311,5 +312,18 @@ class JournalServiceIT {
                 () -> settings.save(new BooksSettings(current.startDate(), Map.copyOf(modes), null), null),
                 HttpStatus.BAD_REQUEST,
                 "Pick an asset account for CASH");
+    }
+
+    @Test
+    void rejectsScheduleLineOnTheWrongSide() {
+        assertRejected(
+                () -> chart.create(new AccountForm("4999", "Bad", AccountType.INCOME, null, null, ScheduleLine.PPE)),
+                HttpStatus.BAD_REQUEST,
+                "Property, plant and equipment is not an income line");
+    }
+
+    @Test
+    void expenseAccountDefaultsToOtherExpenses() {
+        assertThat(newAccount(AccountType.EXPENSE).scheduleLine()).isEqualTo(ScheduleLine.OTHER_EXPENSES);
     }
 }
