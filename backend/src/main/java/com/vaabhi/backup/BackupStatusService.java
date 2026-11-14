@@ -88,11 +88,7 @@ public class BackupStatusService {
                         SELECT finished_at
                         FROM backup_run
                         WHERE kind = 'DB' AND status = 'OK' AND finished_at >= :from
-                        """)
-                .param("from", Timestamp.from(from))
-                .query(Timestamp.class)
-                .list()
-                .stream()
+                        """).param("from", Timestamp.from(from)).query(Timestamp.class).list().stream()
                 .map(timestamp -> timestamp.toInstant().atZone(BackupKeys.IST).toLocalDate())
                 .collect(Collectors.toSet());
         return (int) days.stream().filter(day -> !okDays.contains(day)).count();

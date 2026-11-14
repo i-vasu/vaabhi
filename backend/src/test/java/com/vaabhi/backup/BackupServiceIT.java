@@ -77,8 +77,7 @@ class BackupServiceIT {
             jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_OWNER"));
 
     @Container
-    private static final GenericContainer<?> MINIO = new GenericContainer<>(
-                    "minio/minio:RELEASE.2025-04-22T22-12-26Z")
+    private static final GenericContainer<?> MINIO = new GenericContainer<>("minio/minio:RELEASE.2025-04-22T22-12-26Z")
             .withCommand("server", "/data")
             .withEnv("MINIO_ROOT_USER", ACCESS_KEY)
             .withEnv("MINIO_ROOT_PASSWORD", SECRET_KEY)
@@ -255,10 +254,7 @@ class BackupServiceIT {
                         SELECT status, size_bytes, sha256, object_key, monthly_key, attachments_copied, message, notes
                         FROM backup_run
                         WHERE id = :id
-                        """)
-                .param("id", id)
-                .query(RunRow.class)
-                .single();
+                        """).param("id", id).query(RunRow.class).single();
     }
 
     /** A supplier bill with (or without) an attachment key, enough for the copier's query. */
@@ -329,9 +325,7 @@ class BackupServiceIT {
                         INSERT INTO backup_run (kind, status, started_at)
                         VALUES ('DB', 'RUNNING', now() - interval '3 hours')
                         RETURNING id
-                        """)
-                .query(Long.class)
-                .single();
+                        """).query(Long.class).single();
 
         var id = backup.runNow(null);
 
@@ -347,9 +341,7 @@ class BackupServiceIT {
                         INSERT INTO backup_run (kind, status, started_at)
                         VALUES ('DB', 'RUNNING', now() - interval '5 minutes')
                         RETURNING id
-                        """)
-                .query(Long.class)
-                .single();
+                        """).query(Long.class).single();
 
         assertThatThrownBy(() -> backup.runNow(null))
                 .isInstanceOf(ResponseStatusException.class)
@@ -359,8 +351,9 @@ class BackupServiceIT {
 
     @Test
     void anOlderClientCannotBackUpANewerServer() {
-        var serverMajor = Integer.parseInt(
-                        jdbc.sql("SELECT current_setting('server_version_num')").query(String.class).single())
+        var serverMajor = Integer.parseInt(jdbc.sql("SELECT current_setting('server_version_num')")
+                        .query(String.class)
+                        .single())
                 / 10000;
         dumper.major = 15;
 
@@ -384,7 +377,9 @@ class BackupServiceIT {
         assertThat(first.attachmentsCopied()).isEqualTo(2);
         assertThat(first.notes()).isNull();
         assertThat(store.head("attachments/it/bill-1.pdf")).isPresent();
-        assertThat(jdbc.sql("SELECT count(*) FROM backup_file").query(Long.class).single())
+        assertThat(jdbc.sql("SELECT count(*) FROM backup_file")
+                        .query(Long.class)
+                        .single())
                 .isEqualTo(2);
 
         var second = run(backup.runNow(null));
@@ -404,7 +399,9 @@ class BackupServiceIT {
         var second = run(backup.runNow(null));
         assertThat(second.status()).isEqualTo("OK");
         assertThat(second.notes()).contains("it/missing.pdf");
-        assertThat(jdbc.sql("SELECT count(*) FROM backup_file").query(Long.class).single())
+        assertThat(jdbc.sql("SELECT count(*) FROM backup_file")
+                        .query(Long.class)
+                        .single())
                 .isZero();
     }
 

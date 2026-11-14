@@ -371,9 +371,10 @@ public class YearEndService {
                 backupsMessage = "Backups aren't set up";
             } else {
                 int missed = backup.missedDaysLast7();
-                backupsMessage = missed + (missed == 1
-                        ? " night in the last week has no backup"
-                        : " nights in the last week have no backup");
+                backupsMessage = missed
+                        + (missed == 1
+                                ? " night in the last week has no backup"
+                                : " nights in the last week have no backup");
             }
         }
         return List.of(

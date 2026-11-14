@@ -55,17 +55,15 @@ public final class SigV4Signer {
         signed.put("x-amz-date", amzDate);
         headers.forEach((name, value) -> {
             var lower = name.toLowerCase(Locale.ROOT);
-            if ((lower.startsWith("x-amz-")
-                            && !lower.equals("x-amz-date")
-                            && !lower.equals("x-amz-content-sha256"))
+            if ((lower.startsWith("x-amz-") && !lower.equals("x-amz-date") && !lower.equals("x-amz-content-sha256"))
                     || lower.equals("content-md5")) {
                 signed.put(lower, normalize(value));
             }
         });
         var signedHeaders = String.join(";", signed.keySet());
         var canonicalHeaders = signed.entrySet().stream()
-                .map(e -> e.getKey() + ":" + e.getValue())
-                .collect(Collectors.joining("\n"))
+                        .map(e -> e.getKey() + ":" + e.getValue())
+                        .collect(Collectors.joining("\n"))
                 + "\n";
 
         var canonicalPath = encode(uri.getPath() == null ? "" : uri.getPath(), false);

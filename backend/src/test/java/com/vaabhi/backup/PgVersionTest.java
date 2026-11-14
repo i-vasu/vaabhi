@@ -10,7 +10,9 @@ class PgVersionTest {
     @Test
     void clientVersionTakesTheMajor() {
         assertThat(PgVersion.ofClient("pg_dump (PostgreSQL) 17.2").major()).isEqualTo(17);
-        assertThat(PgVersion.ofClient("pg_dump (PostgreSQL) 16.4 (Debian 16.4-1)").major()).isEqualTo(16);
+        assertThat(PgVersion.ofClient("pg_dump (PostgreSQL) 16.4 (Debian 16.4-1)")
+                        .major())
+                .isEqualTo(16);
     }
 
     @Test

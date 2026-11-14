@@ -34,8 +34,7 @@ public class AuditorPackService {
             DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm", Locale.ENGLISH);
     private static final DateTimeFormatter BACKUP_TIME =
             DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm", Locale.ENGLISH);
-    private static final DateTimeFormatter BACKUP_DATE =
-            DateTimeFormatter.ofPattern("dd-MM-yyyy", Locale.ENGLISH);
+    private static final DateTimeFormatter BACKUP_DATE = DateTimeFormatter.ofPattern("dd-MM-yyyy", Locale.ENGLISH);
 
     private final JdbcClient jdbc;
     private final StatementService statements;

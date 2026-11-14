@@ -103,8 +103,10 @@ public class BackupService {
             if (!properties.configured()) {
                 return null;
             }
-            if (onlyIfMissing && runs.hasOkSince(LocalDate.now(BackupKeys.IST).atStartOfDay(BackupKeys.IST)
-                    .toInstant())) {
+            if (onlyIfMissing
+                    && runs.hasOkSince(LocalDate.now(BackupKeys.IST)
+                            .atStartOfDay(BackupKeys.IST)
+                            .toInstant())) {
                 return null;
             }
             return run(null);
@@ -206,8 +208,7 @@ public class BackupService {
     private void verifyUpload(String key, long size, String sha) {
         var expected = Base64.getEncoder().encodeToString(HexFormat.of().parseHex(sha));
         var info = store.head(key).orElseThrow(() -> new IllegalStateException("Upload check failed"));
-        if (info.sizeBytes() != size
-                || (info.sha256Base64() != null && !expected.equals(info.sha256Base64()))) {
+        if (info.sizeBytes() != size || (info.sha256Base64() != null && !expected.equals(info.sha256Base64()))) {
             throw new IllegalStateException("Upload check failed");
         }
     }
@@ -249,5 +250,6 @@ public class BackupService {
         }
     }
 
-    private record RunOutcome(long id, boolean failed, @Nullable String message) {}
+    private record RunOutcome(
+            long id, boolean failed, @Nullable String message) {}
 }

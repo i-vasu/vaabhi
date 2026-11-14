@@ -9,8 +9,21 @@ class PgDumpDumperTest {
 
     private static BackupProperties properties(String databaseUrl) {
         return new BackupProperties(
-                true, databaseUrl, "vaabhi", "s3cret", null, null, "vaabhi-backups", "key", "secret", null, null, null,
-                null, null, null);
+                true,
+                databaseUrl,
+                "vaabhi",
+                "s3cret",
+                null,
+                null,
+                "vaabhi-backups",
+                "key",
+                "secret",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
     }
 
     @Test

@@ -109,10 +109,7 @@ class BackupCheck {
         jdbc.sql("""
                         INSERT INTO backup_run (kind, status, finished_at, message)
                         VALUES ('CHECK', :status, now(), :message)
-                        """)
-                .param("status", status)
-                .param("message", message)
-                .update();
+                        """).param("status", status).param("message", message).update();
     }
 
     private static void drain(Process process, StringBuilder output) {

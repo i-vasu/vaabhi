@@ -103,8 +103,8 @@ class R2ObjectStorage implements ObjectStorage {
         if (!configured()) {
             throw new IllegalStateException("Photo storage is not configured");
         }
-        var uri = URI.create("https://" + properties.accountId() + ".r2.cloudflarestorage.com/"
-                + properties.bucket() + "/" + key);
+        var uri = URI.create(
+                "https://" + properties.accountId() + ".r2.cloudflarestorage.com/" + properties.bucket() + "/" + key);
         var signedHeaders = SigV4Signer.sign(
                 "GET",
                 uri,

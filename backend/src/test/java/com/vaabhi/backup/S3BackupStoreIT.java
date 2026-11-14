@@ -37,8 +37,7 @@ class S3BackupStoreIT {
     private static final String EMPTY_SHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 
     @Container
-    private static final GenericContainer<?> MINIO = new GenericContainer<>(
-                    "minio/minio:RELEASE.2025-04-22T22-12-26Z")
+    private static final GenericContainer<?> MINIO = new GenericContainer<>("minio/minio:RELEASE.2025-04-22T22-12-26Z")
             .withCommand("server", "/data")
             .withEnv("MINIO_ROOT_USER", ACCESS_KEY)
             .withEnv("MINIO_ROOT_PASSWORD", SECRET_KEY)
@@ -63,8 +62,7 @@ class S3BackupStoreIT {
         SigV4Signer.sign("PUT", uri, headers, EMPTY_SHA256, REGION, "s3", ACCESS_KEY, SECRET_KEY, Instant.now())
                 .forEach(request::header);
         headers.forEach(request::header);
-        var response =
-                HttpClient.newHttpClient().send(request.build(), HttpResponse.BodyHandlers.ofString());
+        var response = HttpClient.newHttpClient().send(request.build(), HttpResponse.BodyHandlers.ofString());
         assertThat(response.statusCode()).isBetween(200, 299);
     }
 
@@ -142,7 +140,10 @@ class S3BackupStoreIT {
         var store = store();
 
         assertThatThrownBy(() -> store.put(
-                        "db/2026/11/wrong.dump", file, "0".repeat(64), Instant.now().plus(Duration.ofDays(1))))
+                        "db/2026/11/wrong.dump",
+                        file,
+                        "0".repeat(64),
+                        Instant.now().plus(Duration.ofDays(1))))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageStartingWith("S3 ");
     }

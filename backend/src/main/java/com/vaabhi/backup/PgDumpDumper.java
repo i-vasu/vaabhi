@@ -61,7 +61,8 @@ class PgDumpDumper implements DatabaseDumper {
         }
         if (process.exitValue() != 0) {
             var detail = oneLine(stderr.toString());
-            throw new IOException("pg_dump failed: " + (detail.isEmpty() ? "exit code " + process.exitValue() : detail));
+            throw new IOException(
+                    "pg_dump failed: " + (detail.isEmpty() ? "exit code " + process.exitValue() : detail));
         }
     }
 
@@ -83,7 +84,8 @@ class PgDumpDumper implements DatabaseDumper {
             if (process.exitValue() != 0) {
                 throw new IllegalStateException("pg_dump --version failed: " + oneLine(output));
             }
-            var major = PgVersion.ofClient(output.lines().findFirst().orElse("")).major();
+            var major =
+                    PgVersion.ofClient(output.lines().findFirst().orElse("")).major();
             clientMajor = major;
             return major;
         } catch (IOException e) {
@@ -109,7 +111,8 @@ class PgDumpDumper implements DatabaseDumper {
     }
 
     private String libpqUri() {
-        var url = Objects.requireNonNull(properties.databaseUrl(), "vaabhi.backup.database-url is not set").trim();
+        var url = Objects.requireNonNull(properties.databaseUrl(), "vaabhi.backup.database-url is not set")
+                .trim();
         if (url.startsWith("jdbc:")) {
             url = url.substring("jdbc:".length());
         }

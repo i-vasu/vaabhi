@@ -39,9 +39,8 @@ class S3BackupStore {
 
     S3BackupStore(BackupProperties properties) {
         this.properties = properties;
-        this.http = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
-                .build();
+        this.http =
+                HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
     }
 
     /**
@@ -75,8 +74,7 @@ class S3BackupStore {
         sign("PUT", uri, headers, sha256Hex).forEach(request::header);
         var response = send(request.build(), HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() >= 300) {
-            throw new IllegalStateException(
-                    "S3 " + response.statusCode() + ": " + first300(response.body()));
+            throw new IllegalStateException("S3 " + response.statusCode() + ": " + first300(response.body()));
         }
     }
 
@@ -84,7 +82,8 @@ class S3BackupStore {
     Optional<S3ObjectInfo> head(String key) {
         var uri = uri(key);
         var headers = Map.of("x-amz-checksum-mode", "ENABLED");
-        var request = HttpRequest.newBuilder(uri).method("HEAD", HttpRequest.BodyPublishers.noBody())
+        var request = HttpRequest.newBuilder(uri)
+                .method("HEAD", HttpRequest.BodyPublishers.noBody())
                 .timeout(HEAD_TIMEOUT);
         headers.forEach(request::header);
         sign("HEAD", uri, headers, EMPTY_SHA256).forEach(request::header);

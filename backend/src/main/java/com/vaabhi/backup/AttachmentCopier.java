@@ -41,9 +41,7 @@ class AttachmentCopier {
                         WHERE attachment_key IS NOT NULL
                           AND attachment_key NOT IN (SELECT source_key FROM backup_file)
                         ORDER BY id
-                        """)
-                .query(String.class)
-                .list();
+                        """).query(String.class).list();
         var copied = 0;
         var problems = new ArrayList<String>();
         for (var sourceKey : bills) {
