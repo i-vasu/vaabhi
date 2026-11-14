@@ -2,22 +2,33 @@ package com.vaabhi.backup;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.vaabhi.TestcontainersConfiguration;
+import com.vaabhi.shared.storage.ObjectStorage;
 import com.vaabhi.shared.storage.SigV4Signer;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.security.MessageDigest;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HexFormat;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeAll;
@@ -27,11 +38,16 @@ import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.web.server.ResponseStatusException;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -41,10 +57,12 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /**
  * The nightly backup against real Postgres and MinIO with object lock: the dump is uploaded and checked, failures
- * leave a FAILED row, a crashed run is expired, a live one blocks a second run, and the temp dump never survives.
+ * leave a FAILED row, a crashed run is expired, a live one blocks a second run, attachments are copied once, and
+ * the temp files never survive.
  */
 @Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest
+@AutoConfigureMockMvc
 @ActiveProfiles("dev")
 @Import({TestcontainersConfiguration.class, BackupServiceIT.Stubs.class})
 class BackupServiceIT {
@@ -55,6 +73,8 @@ class BackupServiceIT {
     private static final String REGION = "us-east-1";
     private static final String EMPTY_SHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
     private static final int DUMP_BYTES = 10 * 1024;
+    private static final RequestPostProcessor OWNER =
+            jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_OWNER"));
 
     @Container
     private static final GenericContainer<?> MINIO = new GenericContainer<>(
@@ -79,6 +99,12 @@ class BackupServiceIT {
 
     @Autowired
     private StubDumper dumper;
+
+    @Autowired
+    private StubObjectStorage objects;
+
+    @Autowired
+    private MockMvc mockMvc;
 
     /** The real {@code pg_dump} is not on every test host; the stub writes bytes, fails or reports a version. */
     @TestConfiguration(proxyBeanMethods = false)
@@ -110,6 +136,12 @@ class BackupServiceIT {
         StubDumper stubDumper() {
             return new StubDumper();
         }
+
+        @Bean
+        @Primary
+        StubObjectStorage stubObjectStorage() {
+            return new StubObjectStorage();
+        }
     }
 
     static class StubDumper implements DatabaseDumper {
@@ -139,6 +171,49 @@ class BackupServiceIT {
         }
     }
 
+    /** R2 stand-in: keys put here can be read; any other key reports a missing object. */
+    static class StubObjectStorage implements ObjectStorage {
+
+        private final Map<String, byte[]> objects = new ConcurrentHashMap<>();
+
+        @Override
+        public boolean configured() {
+            return true;
+        }
+
+        @Override
+        public URI presignPut(String key, Duration validFor) {
+            throw new UnsupportedOperationException("Not needed by the backup");
+        }
+
+        @Override
+        public boolean exists(String key) {
+            return objects.containsKey(key);
+        }
+
+        @Override
+        public InputStream open(String key) throws IOException {
+            var bytes = objects.get(key);
+            if (bytes == null) {
+                throw new NoSuchFileException(key);
+            }
+            return new ByteArrayInputStream(bytes);
+        }
+
+        @Override
+        public void delete(String key) {
+            objects.remove(key);
+        }
+
+        void store(String key, String body) {
+            objects.put(key, body.getBytes(StandardCharsets.UTF_8));
+        }
+
+        void clear() {
+            objects.clear();
+        }
+    }
+
     private static String minioEndpoint() {
         MINIO.start();
         return "http://" + MINIO.getHost() + ":" + MINIO.getMappedPort(9000);
@@ -157,9 +232,12 @@ class BackupServiceIT {
     }
 
     @BeforeEach
-    void cleanRuns() {
-        jdbc.sql("DELETE FROM backup_run WHERE kind = 'DB'").update();
+    void cleanState() {
+        jdbc.sql("DELETE FROM backup_run").update();
+        jdbc.sql("DELETE FROM backup_file").update();
+        jdbc.sql("DELETE FROM supplier_bill WHERE attachment_key LIKE 'it/%'").update();
         dumper.reset();
+        objects.clear();
     }
 
     private record RunRow(
@@ -168,17 +246,36 @@ class BackupServiceIT {
             @Nullable String sha256,
             @Nullable String objectKey,
             @Nullable String monthlyKey,
-            @Nullable String message) {}
+            int attachmentsCopied,
+            @Nullable String message,
+            @Nullable String notes) {}
 
     private RunRow run(long id) {
         return jdbc.sql("""
-                        SELECT status, size_bytes, sha256, object_key, monthly_key, message
+                        SELECT status, size_bytes, sha256, object_key, monthly_key, attachments_copied, message, notes
                         FROM backup_run
                         WHERE id = :id
                         """)
                 .param("id", id)
                 .query(RunRow.class)
                 .single();
+    }
+
+    /** A supplier bill with (or without) an attachment key, enough for the copier's query. */
+    private void supplierBill(String billNo, String attachmentKey) {
+        var partyId = jdbc.sql("INSERT INTO party (name, is_supplier) VALUES ('IT Backup Supplier', TRUE) RETURNING id")
+                .query(Long.class)
+                .single();
+        jdbc.sql("""
+                        INSERT INTO supplier_bill
+                            (party_id, bill_no, bill_date, taxable_rupees, tax_rupees, total_rupees,
+                             payable_rupees, attachment_key)
+                        VALUES (:party, :billNo, current_date, 100, 18, 118, 118, :key)
+                        """)
+                .param("party", partyId)
+                .param("billNo", billNo)
+                .param("key", attachmentKey)
+                .update();
     }
 
     private static Set<Path> dumpFiles() throws IOException {
@@ -273,5 +370,52 @@ class BackupServiceIT {
         assertThat(row.status()).isEqualTo("FAILED");
         assertThat(row.message())
                 .isEqualTo("pg_dump 15 can't back up Postgres " + serverMajor + "; update the backend image");
+    }
+
+    @Test
+    void attachmentsAreCopiedOnceOnly() {
+        objects.store("it/bill-1.pdf", "first bill");
+        objects.store("it/bill-2.pdf", "second bill");
+        supplierBill("IT-1", "it/bill-1.pdf");
+        supplierBill("IT-2", "it/bill-2.pdf");
+
+        var first = run(backup.runNow(null));
+        assertThat(first.status()).isEqualTo("OK");
+        assertThat(first.attachmentsCopied()).isEqualTo(2);
+        assertThat(first.notes()).isNull();
+        assertThat(store.head("attachments/it/bill-1.pdf")).isPresent();
+        assertThat(jdbc.sql("SELECT count(*) FROM backup_file").query(Long.class).single())
+                .isEqualTo(2);
+
+        var second = run(backup.runNow(null));
+        assertThat(second.status()).isEqualTo("OK");
+        assertThat(second.attachmentsCopied()).isZero();
+    }
+
+    @Test
+    void aMissingAttachmentIsNotedAndRetriedNextNight() {
+        supplierBill("IT-3", "it/missing.pdf");
+
+        var first = run(backup.runNow(null));
+        assertThat(first.status()).isEqualTo("OK");
+        assertThat(first.attachmentsCopied()).isZero();
+        assertThat(first.notes()).contains("it/missing.pdf").contains("missing in R2");
+
+        var second = run(backup.runNow(null));
+        assertThat(second.status()).isEqualTo("OK");
+        assertThat(second.notes()).contains("it/missing.pdf");
+        assertThat(jdbc.sql("SELECT count(*) FROM backup_file").query(Long.class).single())
+                .isZero();
+    }
+
+    @Test
+    void theOwnerRecordsARestoreDrillThroughTheApi() throws Exception {
+        mockMvc.perform(post("/api/v1/admin/accounts/backups/drills")
+                        .with(OWNER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"drilledOn\":\"2026-11-14\",\"note\":\"IT restore drill\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lastDrill.drilledOn").value("2026-11-14"))
+                .andExpect(jsonPath("$.lastDrill.message").value("IT restore drill"));
     }
 }
