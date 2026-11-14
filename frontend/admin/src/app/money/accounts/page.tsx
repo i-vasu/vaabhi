@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type { Account, BooksSettings } from "@vaabhi/api-client";
+import type { Account, BooksSettings, BackupStatus } from "@vaabhi/api-client";
 import { ActivityIcon, BankIcon, DocumentIcon, ReceiptIcon } from "@/components/icons";
 import { ErrorNote } from "@/components/tailoring";
 import {
@@ -20,6 +20,34 @@ import { api } from "@/lib/api";
 import { MODE_ACCOUNTS, relativeTime, useIsOwner } from "@/lib/accounts";
 import { rupees } from "@/lib/settings";
 import { formatDate, today, useAction, useLoad } from "@/lib/tailoring";
+
+/** Bytes as megabytes to one decimal place, or a dash when the run has no size. */
+function megabytes(bytes: number | null): string {
+  return bytes === null ? "—" : (bytes / 1024 / 1024).toFixed(1);
+}
+
+/** The browser-local calendar day of a date-time, as yyyy-mm-dd. */
+function localDay(iso: string): string {
+  const date = new Date(iso);
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
+}
+
+/** The one line that says how backups are doing, and in which colour. */
+function backupHeadline(status: BackupStatus): { text: string; tone: string } {
+  if (!status.configured) return { text: "Backups aren't set up", tone: "text-warn" };
+  const last = status.lastBackup;
+  if (last?.status === "FAILED")
+    return { text: `Last backup failed: ${last.message ?? "no reason given"}`, tone: "text-bad" };
+  if (status.missedLastNight) return { text: "Last night's backup didn't run", tone: "text-bad" };
+  if (!last) return { text: "No backup yet", tone: "text-warn" };
+  const size = last.sizeBytes === null ? null : `${megabytes(last.sizeBytes)} MB`;
+  return {
+    text: [`Last backup ${relativeTime(last.finishedAt ?? last.startedAt)}`, size, status.locationLabel]
+      .filter(Boolean)
+      .join(" · "),
+    tone: "text-ink",
+  };
+}
 
 function StartDate({ settings, owner, onSaved }: { settings: BooksSettings; owner: boolean; onSaved: () => void }) {
   const [date, setDate] = useState(today());
@@ -169,6 +197,39 @@ function ShiprocketSupplier({ settings, onSaved }: { settings: BooksSettings; on
   );
 }
 
+/** Backups at a glance; quiet when they run, amber before setup, red after a missed or failed night. */
+function BackupsCard() {
+  const backups = useLoad(() => api.admin.accounts.backups.status(), []);
+  const s = backups.value;
+  const headline = s ? backupHeadline(s) : null;
+
+  return (
+    <Link
+      href="/money/accounts/backups/"
+      className="mb-4 block rounded-2xl border border-line bg-panel p-4 transition-colors hover:bg-panel-2"
+    >
+      <p className="font-medium">Backups</p>
+      {!s ? (
+        <p className="mt-1 text-sm text-ink-faint">
+          {backups.error ? `Couldn't load backups: ${backups.error}` : "Checking…"}
+        </p>
+      ) : (
+        <>
+          {headline && <p className={`mt-1 text-sm font-medium ${headline.tone}`}>{headline.text}</p>}
+          {!s.configured ? (
+            <p className="mt-1 text-sm text-ink-soft">See the setup guide in infra/vps-setup.md.</p>
+          ) : (
+            <p className="mt-1 text-sm text-ink-faint">
+              Checked {s.lastCheck ? formatDate(localDay(s.lastCheck.startedAt)) : "never"} · Restore drill{" "}
+              {s.lastDrill?.drilledOn ? formatDate(s.lastDrill.drilledOn) : "not done"}
+            </p>
+          )}
+        </>
+      )}
+    </Link>
+  );
+}
+
 /** Books at a glance: when they start, whether they balance, what is stuck, and where to go next. */
 export default function AccountsPage() {
   const owner = useIsOwner();
@@ -195,6 +256,7 @@ export default function AccountsPage() {
     <section className="mx-auto max-w-3xl">
       <PageHeader title="Accounts" backHref="/money/" />
       <ErrorNote>{status.error ?? settings.error ?? chart.error}</ErrorNote>
+      <BackupsCard />
       {!b || !s ? (
         <LoadState loading={status.loading || settings.loading} error={null} />
       ) : (
