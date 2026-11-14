@@ -36,3 +36,20 @@ phase by hand at the end (see each phase spec's "Owner checks by hand").
 - Renaming an asset class does not rename its two chart accounts.
 - The bill form's IGST preview is a manual toggle; the backend decides the stored split from the supplier's state.
 - Phase 4 owner checks by hand: spec `docs/superpowers/specs/2026-11-13-phase4-purchases-payables-design.md`.
+
+## Phase 5: statements, returns, year end
+
+- Overdrawn bank and debit-balance creditors are not reclassified across the balance sheet.
+- GSTR-3B 3.1(c) nil/exempt and 3.1(b) zero-rated depend on what GSTR-1 rows expose; 4(B) reversals and 4(D)
+  ineligible ITC are always zero. Razorpay fee GST is treated as IGST input credit.
+- 26Q export is a CSV for the CA, not an FVU file; no Form 16A.
+- Finished-goods closing stock is one typed figure.
+- Reopen unlocks only March; the other eleven months stay locked.
+- The close checklist's "every document posted" item counts all posting problems, not only the year's (problems
+  carry no date). Close runs "Post now" first.
+- The auditor pack's bank reconciliation sheet lists one report per bank statement whose period ends in the year,
+  not one "as at 31 March" view.
+- The ledgers sheet runs one query per account; fine for a year's export, slow if the chart grows very large.
+- Year-end ITs share the database with other ITs, so they use far-future years and assert changes, not absolute
+  balances; close can still fail there if another test leaves posting problems behind.
+- Phase 5 owner checks by hand: spec `docs/superpowers/specs/2026-11-14-phase5-statements-returns-year-end-design.md`.
