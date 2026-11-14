@@ -248,7 +248,7 @@ class MetaCatalogIT {
     void copiesTheLargestRenditionToAJpegAndSkipsBrokenPhotos() {
         var good = photo("products/" + SLUG + "/copy-good", false);
         var broken = photo("products/" + SLUG + "/copy-broken", false);
-        storage.objects.put("products/" + SLUG + "/copy-good/1600.webp", WEBP);
+        storage.objects.put("products/" + SLUG + "/copy-good/" + CatalogFeedImages.SOURCE_WIDTH + ".webp", WEBP);
 
         assertThat(images.copyPending()).isGreaterThanOrEqualTo(2);
 

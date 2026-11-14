@@ -87,6 +87,8 @@ vaabhi:
   meta-catalog:
     catalog-id: ${META_CATALOG_ID:}
     access-token: ${META_CATALOG_TOKEN:}
+    # false stops the background sync and the JPEG photo copies (the CSV feed still answers).
+    sync-enabled: ${META_CATALOG_SYNC:true}
 
   # Storefront shipping: free from this order value (items, in rupees), otherwise the flat fee.
   checkout:

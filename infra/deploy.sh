@@ -67,10 +67,25 @@ healthy() {
   return 1
 }
 
+# Healthy right after start is not enough: background jobs first run a minute after start-up, and a job that
+# crashes the backend (as the Meta catalogue sync once did) would otherwise pass. Check again once they have run.
+stays_healthy() {
+  healthy || return 1
+  local backend restarts
+  backend=$($COMPOSE ps -q backend)
+  restarts=$(docker inspect --format '{{.RestartCount}}' "$backend")
+  sleep 100
+  if [ "$(docker inspect --format '{{.RestartCount}}' "$backend")" != "$restarts" ]; then
+    echo "Backend restarted after start-up" >&2
+    return 1
+  fi
+  healthy
+}
+
 echo "Deploying $IMAGE_TAG (previous: ${PREVIOUS_TAG:-none})"
 deploy "$IMAGE_TAG"
 
-if healthy; then
+if stays_healthy; then
   echo "$IMAGE_TAG" > .current-tag
   docker image prune -f >/dev/null
   echo "Deploy OK"
