@@ -53,3 +53,24 @@ phase by hand at the end (see each phase spec's "Owner checks by hand").
 - Year-end ITs share the database with other ITs, so they use far-future years and assert changes, not absolute
   balances; close can still fail there if another test leaves posting problems behind.
 - Phase 5 owner checks by hand: spec `docs/superpowers/specs/2026-11-14-phase5-statements-returns-year-end-design.md`.
+
+## Phase 6: daily backups in India
+
+- Provider is AceCloud object storage (owner's choice for flat rupee billing). Not yet confirmed with AceCloud in
+  writing: bucket stored only in India (their page says "triple replication across India and US regions"), S3
+  Object Lock, lifecycle expiry, keys without delete. Until then backups run with `BACKUP_LOCK_MODE=NONE`: anyone
+  with the backup key can delete them.
+- The live database stays on Neon in Singapore; only the daily backups are in India. CA to confirm this is enough.
+- Without lifecycle rules, daily backups accumulate (~18 GB a year at today's size).
+- Single PUT per file (5 GB limit); no multipart upload.
+- The WhatsApp failure alert needs an approved MSG91 template; until then a failed backup shows only in the admin
+  and the logs.
+- Attachment copy reads `supplier_bill.attachment_key` with SQL from the `backup` module (cross-module read).
+- The monthly check proves the newest dump is complete and readable (`pg_restore --list`), not that every row
+  restores; the full drill is manual (`docs/RESTORE.md`).
+- REST lives under `/api/v1/admin/accounts/backups` to reuse the books' access rules; `pg_dump` sits behind
+  `DatabaseDumper` so ITs use a stub.
+- `infra/.env.example` lacks the `BACKUP_*` block (edits to `.env*` files are blocked for the agent); the keys are
+  listed in `infra/vps-setup.md`.
+- Owner hand checks: AceCloud bucket + keys in `/opt/vaabhi/.env`; first "Back up now" and first nightly run show OK;
+  restore drill per `docs/RESTORE.md`, then "Mark restore drill done".
