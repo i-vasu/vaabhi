@@ -283,6 +283,24 @@ export type OpeningAssetForm = Schemas["OpeningAssetForm"];
 export type AssetUpdateForm = Schemas["AssetUpdateForm"];
 export type AssetDisposalForm = Schemas["AssetDisposalForm"];
 export type InputGstMonth = Schemas["InputGstMonth"];
+export type ScheduleLine = Schemas["StatementLine"]["line"];
+export type StatementAccount = Schemas["StatementAccount"];
+export type StatementLine = Schemas["StatementLine"];
+export type ProfitAndLoss = Schemas["ProfitAndLoss"];
+export type BalanceSheet = Schemas["BalanceSheet"];
+export type Gstr3b = Schemas["Gstr3b"];
+export type Gstr3bRow = Schemas["Gstr3bRow"];
+export type Gstr3bSetOff = Schemas["Gstr3bSetOff"];
+export type TdsQuarter = Schemas["TdsQuarter"];
+export type TdsDeducteeRow = Schemas["TdsDeducteeRow"];
+export type TdsQuarterChallan = Schemas["TdsQuarterChallan"];
+export type TdsSectionTotal = Schemas["TdsSectionTotal"];
+export type YearEnd = Schemas["YearEnd"];
+export type YearEndCheck = Schemas["YearEndCheck"];
+export type ClosingStockLine = Schemas["ClosingStockLine"];
+export type YearCloseRunView = Schemas["YearCloseRunView"];
+export type YearEndStockForm = Schemas["YearEndStockForm"];
+export type YearEndStockItemInput = Schemas["YearEndStockItemInput"];
 
 /** The JSON settings sections, by their API path. */
 export type SettingsSections = {
@@ -416,6 +434,24 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
       headers: body === undefined ? undefined : { "Content-Type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
+
+  /** A file download as a Blob; fetched with the bearer token, since a plain link would not carry it. */
+  const download = async (path: string): Promise<Blob> => {
+    const token = getToken?.();
+    const response = await fetch(`${baseUrl.replace(/\/$/, "")}${path}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!response.ok) {
+      const problem = await problemOf(response);
+      throw new ApiError(
+        response.status,
+        `GET ${path} failed with ${response.status}`,
+        problem.errors,
+        problem.detail,
+      );
+    }
+    return response.blob();
+  };
 
   // Multipart upload; the browser sets the Content-Type (with its boundary) from the FormData.
   const upload = <T>(path: string, parts: Record<string, Blob | string>) => {
@@ -977,6 +1013,29 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
             request<TdsChallanView[]>(`/api/v1/admin/accounts/tds/challans${queryString({ from, to })}`),
           createChallan: (form: TdsChallanForm) =>
             send<TdsChallanView>("POST", "/api/v1/admin/accounts/tds/challans", form),
+          returns: (fy: string, quarter: number) =>
+            request<TdsQuarter>(`/api/v1/admin/accounts/tds/returns${queryString({ fy, quarter })}`),
+          returnsCsv: (fy: string, quarter: number, part: "deductees" | "challans") =>
+            download(`/api/v1/admin/accounts/tds/returns.csv${queryString({ fy, quarter, part })}`),
+        },
+        statements: {
+          profitAndLoss: (from: string, to: string) =>
+            request<ProfitAndLoss>(`/api/v1/admin/accounts/statements/profit-and-loss${queryString({ from, to })}`),
+          balanceSheet: (asOf: string) =>
+            request<BalanceSheet>(`/api/v1/admin/accounts/statements/balance-sheet${queryString({ asOf })}`),
+        },
+        gstr3b: (month: string) => request<Gstr3b>(`/api/v1/admin/accounts/gstr3b${queryString({ month })}`),
+        gstr3bCsv: (month: string) => download(`/api/v1/admin/accounts/gstr3b.csv${queryString({ month })}`),
+        yearEnd: {
+          get: (fy: string) => request<YearEnd>(`/api/v1/admin/accounts/year-end/${encodeURIComponent(fy)}`),
+          saveStock: (fy: string, form: YearEndStockForm) =>
+            send<YearEnd>("PUT", `/api/v1/admin/accounts/year-end/${encodeURIComponent(fy)}/stock`, form),
+          close: (fy: string) =>
+            send<YearEnd>("POST", `/api/v1/admin/accounts/year-end/${encodeURIComponent(fy)}/close`),
+          reopen: (fy: string) =>
+            send<YearEnd>("POST", `/api/v1/admin/accounts/year-end/${encodeURIComponent(fy)}/reopen`),
+          auditorPack: (fy: string) =>
+            download(`/api/v1/admin/accounts/year-end/${encodeURIComponent(fy)}/auditor-pack.xlsx`),
         },
         assets: {
           classes: () => request<AssetClassView[]>("/api/v1/admin/accounts/assets/classes"),

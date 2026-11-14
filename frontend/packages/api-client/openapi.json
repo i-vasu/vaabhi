@@ -2348,6 +2348,46 @@
                 }
             }
         },
+        "/api/v1/admin/accounts/year-end/{fy}/stock": {
+            "put": {
+                "tags": [
+                    "year-end-controller"
+                ],
+                "operationId": "saveStock",
+                "parameters": [
+                    {
+                        "name": "fy",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/YearEndStockForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/YearEnd"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/accounts/tds/sections/{id}": {
             "put": {
                 "tags": [
@@ -6692,6 +6732,66 @@
                 }
             }
         },
+        "/api/v1/admin/accounts/year-end/{fy}/reopen": {
+            "post": {
+                "tags": [
+                    "year-end-controller"
+                ],
+                "operationId": "reopen",
+                "parameters": [
+                    {
+                        "name": "fy",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/YearEnd"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/year-end/{fy}/close": {
+            "post": {
+                "tags": [
+                    "year-end-controller"
+                ],
+                "operationId": "close",
+                "parameters": [
+                    {
+                        "name": "fy",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/YearEnd"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/accounts/tds/sections": {
             "get": {
                 "tags": [
@@ -9495,6 +9595,66 @@
                 }
             }
         },
+        "/api/v1/admin/accounts/year-end/{fy}": {
+            "get": {
+                "tags": [
+                    "year-end-controller"
+                ],
+                "operationId": "get",
+                "parameters": [
+                    {
+                        "name": "fy",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/YearEnd"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/year-end/{fy}/auditor-pack.xlsx": {
+            "get": {
+                "tags": [
+                    "year-end-controller"
+                ],
+                "operationId": "auditorPack",
+                "parameters": [
+                    {
+                        "name": "fy",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StreamingResponseBody"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/accounts/trial-balance": {
             "get": {
                 "tags": [
@@ -9572,6 +9732,92 @@
                 }
             }
         },
+        "/api/v1/admin/accounts/tds/returns": {
+            "get": {
+                "tags": [
+                    "tds-controller"
+                ],
+                "operationId": "returns",
+                "parameters": [
+                    {
+                        "name": "fy",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "quarter",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TdsQuarter"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/tds/returns.csv": {
+            "get": {
+                "tags": [
+                    "tds-controller"
+                ],
+                "operationId": "returnsCsv",
+                "parameters": [
+                    {
+                        "name": "fy",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "quarter",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    {
+                        "name": "part",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/accounts/status": {
             "get": {
                 "tags": [
@@ -9585,6 +9831,77 @@
                             "*/*": {
                                 "schema": {
                                     "$ref": "#/components/schemas/AccountsStatus"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/statements/profit-and-loss": {
+            "get": {
+                "tags": [
+                    "statements-controller"
+                ],
+                "operationId": "profitAndLoss",
+                "parameters": [
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProfitAndLoss"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/statements/balance-sheet": {
+            "get": {
+                "tags": [
+                    "statements-controller"
+                ],
+                "operationId": "balanceSheet",
+                "parameters": [
+                    {
+                        "name": "asOf",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BalanceSheet"
                                 }
                             }
                         }
@@ -9743,6 +10060,66 @@
                         "description": "OK",
                         "content": {
                             "text/csv": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/gstr3b": {
+            "get": {
+                "tags": [
+                    "gst-returns-controller"
+                ],
+                "operationId": "getGstr3b",
+                "parameters": [
+                    {
+                        "name": "month",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Gstr3b"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/gstr3b.csv": {
+            "get": {
+                "tags": [
+                    "gst-returns-controller"
+                ],
+                "operationId": "getGstr3bCsv",
+                "parameters": [
+                    {
+                        "name": "month",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
                                 "schema": {
                                     "type": "string"
                                 }
@@ -15647,6 +16024,250 @@
                     "taxClassId"
                 ]
             },
+            "YearEndStockForm": {
+                "type": "object",
+                "properties": {
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/YearEndStockItemInput"
+                        }
+                    },
+                    "finishedGoodsRupees": {
+                        "type": "number",
+                        "minimum": 0
+                    },
+                    "note": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 300,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "finishedGoodsRupees",
+                    "lines",
+                    "note"
+                ]
+            },
+            "YearEndStockItemInput": {
+                "type": "object",
+                "properties": {
+                    "stockItemId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "quantity": {
+                        "type": "number",
+                        "minimum": 0
+                    },
+                    "rateRupees": {
+                        "type": "number",
+                        "minimum": 0
+                    }
+                },
+                "required": [
+                    "quantity",
+                    "rateRupees",
+                    "stockItemId"
+                ]
+            },
+            "ClosingStockLine": {
+                "type": "object",
+                "properties": {
+                    "stockItemId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "unit": {
+                        "type": "string"
+                    },
+                    "quantity": {
+                        "type": "number"
+                    },
+                    "rateRupees": {
+                        "type": "number"
+                    },
+                    "valueRupees": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "name",
+                    "quantity",
+                    "rateRupees",
+                    "stockItemId",
+                    "unit",
+                    "valueRupees"
+                ]
+            },
+            "YearCloseRunView": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "stockEntryId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "closingEntryId": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "closedBy": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "closedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "reopenedBy": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "reopenedAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "closedAt",
+                    "closedBy",
+                    "closingEntryId",
+                    "id",
+                    "reopenedAt",
+                    "reopenedBy",
+                    "stockEntryId"
+                ]
+            },
+            "YearEnd": {
+                "type": "object",
+                "properties": {
+                    "fy": {
+                        "type": "string"
+                    },
+                    "from": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "to": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "closed": {
+                        "type": "boolean"
+                    },
+                    "stockSaved": {
+                        "type": "boolean"
+                    },
+                    "canReopen": {
+                        "type": "boolean"
+                    },
+                    "stock": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ClosingStockLine"
+                        }
+                    },
+                    "finishedGoodsRupees": {
+                        "type": "number"
+                    },
+                    "stockNote": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "closingStockRupees": {
+                        "type": "number"
+                    },
+                    "stockBalanceRupees": {
+                        "type": "number"
+                    },
+                    "adjustmentRupees": {
+                        "type": "number"
+                    },
+                    "profitRupees": {
+                        "type": "number"
+                    },
+                    "checks": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/YearEndCheck"
+                        }
+                    },
+                    "runs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/YearCloseRunView"
+                        }
+                    }
+                },
+                "required": [
+                    "adjustmentRupees",
+                    "canReopen",
+                    "checks",
+                    "closed",
+                    "closingStockRupees",
+                    "finishedGoodsRupees",
+                    "from",
+                    "fy",
+                    "profitRupees",
+                    "runs",
+                    "stock",
+                    "stockBalanceRupees",
+                    "stockNote",
+                    "stockSaved",
+                    "to"
+                ]
+            },
+            "YearEndCheck": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "ok": {
+                        "type": "boolean"
+                    },
+                    "message": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "key",
+                    "label",
+                    "message",
+                    "ok"
+                ]
+            },
             "TdsSectionForm": {
                 "type": "object",
                 "properties": {
@@ -16135,6 +16756,34 @@
                             "boolean",
                             "null"
                         ]
+                    },
+                    "scheduleLine": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "REVENUE_FROM_OPERATIONS",
+                            "OTHER_INCOME",
+                            "COST_OF_MATERIALS",
+                            "PURCHASES_STOCK_IN_TRADE",
+                            "CHANGE_IN_INVENTORIES",
+                            "EMPLOYEE_BENEFITS",
+                            "FINANCE_COSTS",
+                            "DEPRECIATION",
+                            "OTHER_EXPENSES",
+                            "SHARE_CAPITAL",
+                            "RESERVES_SURPLUS",
+                            "LONG_TERM_BORROWINGS",
+                            "SHORT_TERM_BORROWINGS",
+                            "TRADE_PAYABLES",
+                            "OTHER_CURRENT_LIABILITIES",
+                            "PPE",
+                            "INVENTORIES",
+                            "TRADE_RECEIVABLES",
+                            "CASH_AND_BANK",
+                            "OTHER_CURRENT_ASSETS"
+                        ]
                     }
                 },
                 "required": [
@@ -16142,6 +16791,7 @@
                     "code",
                     "name",
                     "parentId",
+                    "scheduleLine",
                     "type"
                 ]
             },
@@ -16166,6 +16816,31 @@
                             "EQUITY",
                             "INCOME",
                             "EXPENSE"
+                        ]
+                    },
+                    "scheduleLine": {
+                        "type": "string",
+                        "enum": [
+                            "REVENUE_FROM_OPERATIONS",
+                            "OTHER_INCOME",
+                            "COST_OF_MATERIALS",
+                            "PURCHASES_STOCK_IN_TRADE",
+                            "CHANGE_IN_INVENTORIES",
+                            "EMPLOYEE_BENEFITS",
+                            "FINANCE_COSTS",
+                            "DEPRECIATION",
+                            "OTHER_EXPENSES",
+                            "SHARE_CAPITAL",
+                            "RESERVES_SURPLUS",
+                            "LONG_TERM_BORROWINGS",
+                            "SHORT_TERM_BORROWINGS",
+                            "TRADE_PAYABLES",
+                            "OTHER_CURRENT_LIABILITIES",
+                            "PPE",
+                            "INVENTORIES",
+                            "TRADE_RECEIVABLES",
+                            "CASH_AND_BANK",
+                            "OTHER_CURRENT_ASSETS"
                         ]
                     },
                     "parentId": {
@@ -16195,6 +16870,7 @@
                     "id",
                     "name",
                     "parentId",
+                    "scheduleLine",
                     "systemKey",
                     "type"
                 ]
@@ -24211,6 +24887,7 @@
                     "total"
                 ]
             },
+            "StreamingResponseBody": {},
             "TrialBalance": {
                 "type": "object",
                 "properties": {
@@ -24312,6 +24989,173 @@
                     "sectionName"
                 ]
             },
+            "TdsDeducteeRow": {
+                "type": "object",
+                "properties": {
+                    "billId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "sectionCode": {
+                        "type": "string"
+                    },
+                    "partyName": {
+                        "type": "string"
+                    },
+                    "pan": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "billNo": {
+                        "type": "string"
+                    },
+                    "creditedOn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "amountRupees": {
+                        "type": "number"
+                    },
+                    "ratePercent": {
+                        "type": "number"
+                    },
+                    "tdsRupees": {
+                        "type": "number"
+                    },
+                    "challanNo": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "amountRupees",
+                    "billId",
+                    "billNo",
+                    "challanNo",
+                    "creditedOn",
+                    "pan",
+                    "partyName",
+                    "ratePercent",
+                    "sectionCode",
+                    "tdsRupees"
+                ]
+            },
+            "TdsQuarter": {
+                "type": "object",
+                "properties": {
+                    "fy": {
+                        "type": "string"
+                    },
+                    "quarter": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "from": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "to": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "deductees": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TdsDeducteeRow"
+                        }
+                    },
+                    "challans": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TdsQuarterChallan"
+                        }
+                    },
+                    "totals": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TdsSectionTotal"
+                        }
+                    }
+                },
+                "required": [
+                    "challans",
+                    "deductees",
+                    "from",
+                    "fy",
+                    "quarter",
+                    "to",
+                    "totals"
+                ]
+            },
+            "TdsQuarterChallan": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "sectionCode": {
+                        "type": "string"
+                    },
+                    "periodMonth": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "amountRupees": {
+                        "type": "number"
+                    },
+                    "interestRupees": {
+                        "type": "number"
+                    },
+                    "challanNo": {
+                        "type": "string"
+                    },
+                    "bsrCode": {
+                        "type": "string"
+                    },
+                    "paidOn": {
+                        "type": "string",
+                        "format": "date"
+                    }
+                },
+                "required": [
+                    "amountRupees",
+                    "bsrCode",
+                    "challanNo",
+                    "id",
+                    "interestRupees",
+                    "paidOn",
+                    "periodMonth",
+                    "sectionCode"
+                ]
+            },
+            "TdsSectionTotal": {
+                "type": "object",
+                "properties": {
+                    "sectionCode": {
+                        "type": "string"
+                    },
+                    "deductedRupees": {
+                        "type": "number"
+                    },
+                    "depositedRupees": {
+                        "type": "number"
+                    },
+                    "differenceRupees": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "deductedRupees",
+                    "depositedRupees",
+                    "differenceRupees",
+                    "sectionCode"
+                ]
+            },
             "AccountsStatus": {
                 "type": "object",
                 "properties": {
@@ -24342,6 +25186,194 @@
                     "problemCount",
                     "startDate",
                     "trialBalanceDifference"
+                ]
+            },
+            "ProfitAndLoss": {
+                "type": "object",
+                "properties": {
+                    "from": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "to": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "previousFrom": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "previousTo": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "income": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/StatementLine"
+                        }
+                    },
+                    "expenses": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/StatementLine"
+                        }
+                    },
+                    "totalIncomeRupees": {
+                        "type": "number"
+                    },
+                    "totalExpensesRupees": {
+                        "type": "number"
+                    },
+                    "profitRupees": {
+                        "type": "number"
+                    },
+                    "previousProfitRupees": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "expenses",
+                    "from",
+                    "income",
+                    "previousFrom",
+                    "previousProfitRupees",
+                    "previousTo",
+                    "profitRupees",
+                    "to",
+                    "totalExpensesRupees",
+                    "totalIncomeRupees"
+                ]
+            },
+            "StatementAccount": {
+                "type": "object",
+                "properties": {
+                    "accountId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "code": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "amountRupees": {
+                        "type": "number"
+                    },
+                    "previousRupees": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "accountId",
+                    "amountRupees",
+                    "code",
+                    "name",
+                    "previousRupees"
+                ]
+            },
+            "StatementLine": {
+                "type": "object",
+                "properties": {
+                    "line": {
+                        "type": "string",
+                        "enum": [
+                            "REVENUE_FROM_OPERATIONS",
+                            "OTHER_INCOME",
+                            "COST_OF_MATERIALS",
+                            "PURCHASES_STOCK_IN_TRADE",
+                            "CHANGE_IN_INVENTORIES",
+                            "EMPLOYEE_BENEFITS",
+                            "FINANCE_COSTS",
+                            "DEPRECIATION",
+                            "OTHER_EXPENSES",
+                            "SHARE_CAPITAL",
+                            "RESERVES_SURPLUS",
+                            "LONG_TERM_BORROWINGS",
+                            "SHORT_TERM_BORROWINGS",
+                            "TRADE_PAYABLES",
+                            "OTHER_CURRENT_LIABILITIES",
+                            "PPE",
+                            "INVENTORIES",
+                            "TRADE_RECEIVABLES",
+                            "CASH_AND_BANK",
+                            "OTHER_CURRENT_ASSETS"
+                        ]
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "amountRupees": {
+                        "type": "number"
+                    },
+                    "previousRupees": {
+                        "type": "number"
+                    },
+                    "accounts": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/StatementAccount"
+                        }
+                    }
+                },
+                "required": [
+                    "accounts",
+                    "amountRupees",
+                    "label",
+                    "line",
+                    "previousRupees"
+                ]
+            },
+            "BalanceSheet": {
+                "type": "object",
+                "properties": {
+                    "asOf": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "previousAsOf": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "equityAndLiabilities": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/StatementLine"
+                        }
+                    },
+                    "assets": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/StatementLine"
+                        }
+                    },
+                    "totalEquityAndLiabilitiesRupees": {
+                        "type": "number"
+                    },
+                    "totalAssetsRupees": {
+                        "type": "number"
+                    },
+                    "previousTotalEquityAndLiabilitiesRupees": {
+                        "type": "number"
+                    },
+                    "previousTotalAssetsRupees": {
+                        "type": "number"
+                    },
+                    "balanced": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "asOf",
+                    "assets",
+                    "balanced",
+                    "equityAndLiabilities",
+                    "previousAsOf",
+                    "previousTotalAssetsRupees",
+                    "previousTotalEquityAndLiabilitiesRupees",
+                    "totalAssetsRupees",
+                    "totalEquityAndLiabilitiesRupees"
                 ]
             },
             "PostingProblem": {
@@ -24481,6 +25513,104 @@
                     "sgstRupees",
                     "taxableRupees",
                     "totalRupees"
+                ]
+            },
+            "Gstr3b": {
+                "type": "object",
+                "properties": {
+                    "month": {
+                        "type": "string"
+                    },
+                    "gstOn": {
+                        "type": "boolean"
+                    },
+                    "outward": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Gstr3bRow"
+                        }
+                    },
+                    "interState": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Gstr3bRow"
+                        }
+                    },
+                    "itc": {
+                        "$ref": "#/components/schemas/Gstr3bRow"
+                    },
+                    "setOff": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Gstr3bSetOff"
+                        }
+                    }
+                },
+                "required": [
+                    "gstOn",
+                    "interState",
+                    "itc",
+                    "month",
+                    "outward",
+                    "setOff"
+                ]
+            },
+            "Gstr3bRow": {
+                "type": "object",
+                "properties": {
+                    "section": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "taxableRupees": {
+                        "type": "number"
+                    },
+                    "igstRupees": {
+                        "type": "number"
+                    },
+                    "cgstRupees": {
+                        "type": "number"
+                    },
+                    "sgstRupees": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "cgstRupees",
+                    "description",
+                    "igstRupees",
+                    "section",
+                    "sgstRupees",
+                    "taxableRupees"
+                ]
+            },
+            "Gstr3bSetOff": {
+                "type": "object",
+                "properties": {
+                    "head": {
+                        "type": "string"
+                    },
+                    "outputRupees": {
+                        "type": "number"
+                    },
+                    "itcUsedRupees": {
+                        "type": "number"
+                    },
+                    "cashRupees": {
+                        "type": "number"
+                    },
+                    "carriedForwardRupees": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "carriedForwardRupees",
+                    "cashRupees",
+                    "head",
+                    "itcUsedRupees",
+                    "outputRupees"
                 ]
             },
             "BankStatementSummary": {

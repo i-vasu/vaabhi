@@ -692,6 +692,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/accounts/year-end/{fy}/stock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["saveStock"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/accounts/tds/sections/{id}": {
         parameters: {
             query?: never;
@@ -2196,6 +2212,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/accounts/year-end/{fy}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reopen"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/year-end/{fy}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["close"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/accounts/tds/sections": {
         parameters: {
             query?: never;
@@ -3316,6 +3364,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/accounts/year-end/{fy}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/year-end/{fy}/auditor-pack.xlsx": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["auditorPack"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/accounts/trial-balance": {
         parameters: {
             query?: never;
@@ -3348,6 +3428,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/accounts/tds/returns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["returns"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/tds/returns.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["returnsCsv"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/accounts/status": {
         parameters: {
             query?: never;
@@ -3356,6 +3468,38 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/statements/profit-and-loss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["profitAndLoss"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/statements/balance-sheet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["balanceSheet"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3436,6 +3580,38 @@ export interface paths {
             cookie?: never;
         };
         get: operations["inputGstCsv"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/gstr3b": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getGstr3b"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/gstr3b.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getGstr3bCsv"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4787,6 +4963,65 @@ export interface components {
             /** Format: int64 */
             taxClassId: number | null;
         };
+        YearEndStockForm: {
+            lines: components["schemas"]["YearEndStockItemInput"][];
+            finishedGoodsRupees: number;
+            note: string | null;
+        };
+        YearEndStockItemInput: {
+            /** Format: int64 */
+            stockItemId: number;
+            quantity: number;
+            rateRupees: number;
+        };
+        ClosingStockLine: {
+            /** Format: int64 */
+            stockItemId: number;
+            name: string;
+            unit: string;
+            quantity: number;
+            rateRupees: number;
+            valueRupees: number;
+        };
+        YearCloseRunView: {
+            /** Format: int64 */
+            id: number;
+            /** Format: int64 */
+            stockEntryId: number | null;
+            /** Format: int64 */
+            closingEntryId: number | null;
+            closedBy: string | null;
+            /** Format: date-time */
+            closedAt: string;
+            reopenedBy: string | null;
+            /** Format: date-time */
+            reopenedAt: string | null;
+        };
+        YearEnd: {
+            fy: string;
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            closed: boolean;
+            stockSaved: boolean;
+            canReopen: boolean;
+            stock: components["schemas"]["ClosingStockLine"][];
+            finishedGoodsRupees: number;
+            stockNote: string | null;
+            closingStockRupees: number;
+            stockBalanceRupees: number;
+            adjustmentRupees: number;
+            profitRupees: number;
+            checks: components["schemas"]["YearEndCheck"][];
+            runs: components["schemas"]["YearCloseRunView"][];
+        };
+        YearEndCheck: {
+            key: string;
+            label: string;
+            ok: boolean;
+            message: string | null;
+        };
         TdsSectionForm: {
             code: string;
             name: string;
@@ -4911,6 +5146,8 @@ export interface components {
             /** Format: int64 */
             parentId: number | null;
             active: boolean | null;
+            /** @enum {string|null} */
+            scheduleLine: "REVENUE_FROM_OPERATIONS" | "OTHER_INCOME" | "COST_OF_MATERIALS" | "PURCHASES_STOCK_IN_TRADE" | "CHANGE_IN_INVENTORIES" | "EMPLOYEE_BENEFITS" | "FINANCE_COSTS" | "DEPRECIATION" | "OTHER_EXPENSES" | "SHARE_CAPITAL" | "RESERVES_SURPLUS" | "LONG_TERM_BORROWINGS" | "SHORT_TERM_BORROWINGS" | "TRADE_PAYABLES" | "OTHER_CURRENT_LIABILITIES" | "PPE" | "INVENTORIES" | "TRADE_RECEIVABLES" | "CASH_AND_BANK" | "OTHER_CURRENT_ASSETS" | null;
         };
         Account: {
             /** Format: int64 */
@@ -4919,6 +5156,8 @@ export interface components {
             name: string;
             /** @enum {string} */
             type: "ASSET" | "LIABILITY" | "EQUITY" | "INCOME" | "EXPENSE";
+            /** @enum {string} */
+            scheduleLine: "REVENUE_FROM_OPERATIONS" | "OTHER_INCOME" | "COST_OF_MATERIALS" | "PURCHASES_STOCK_IN_TRADE" | "CHANGE_IN_INVENTORIES" | "EMPLOYEE_BENEFITS" | "FINANCE_COSTS" | "DEPRECIATION" | "OTHER_EXPENSES" | "SHARE_CAPITAL" | "RESERVES_SURPLUS" | "LONG_TERM_BORROWINGS" | "SHORT_TERM_BORROWINGS" | "TRADE_PAYABLES" | "OTHER_CURRENT_LIABILITIES" | "PPE" | "INVENTORIES" | "TRADE_RECEIVABLES" | "CASH_AND_BANK" | "OTHER_CURRENT_ASSETS";
             /** Format: int64 */
             parentId: number | null;
             systemKey: string | null;
@@ -6848,6 +7087,7 @@ export interface components {
             /** Format: int32 */
             pageSize: number;
         };
+        StreamingResponseBody: unknown;
         TrialBalance: {
             /** Format: date */
             asOf: string;
@@ -6874,6 +7114,51 @@ export interface components {
             paidRupees: number;
             balanceRupees: number;
         };
+        TdsDeducteeRow: {
+            /** Format: int64 */
+            billId: number;
+            sectionCode: string;
+            partyName: string;
+            pan: string | null;
+            billNo: string;
+            /** Format: date */
+            creditedOn: string;
+            amountRupees: number;
+            ratePercent: number;
+            tdsRupees: number;
+            challanNo: string | null;
+        };
+        TdsQuarter: {
+            fy: string;
+            /** Format: int32 */
+            quarter: number;
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            deductees: components["schemas"]["TdsDeducteeRow"][];
+            challans: components["schemas"]["TdsQuarterChallan"][];
+            totals: components["schemas"]["TdsSectionTotal"][];
+        };
+        TdsQuarterChallan: {
+            /** Format: int64 */
+            id: number;
+            sectionCode: string;
+            /** Format: date */
+            periodMonth: string;
+            amountRupees: number;
+            interestRupees: number;
+            challanNo: string;
+            bsrCode: string;
+            /** Format: date */
+            paidOn: string;
+        };
+        TdsSectionTotal: {
+            sectionCode: string;
+            deductedRupees: number;
+            depositedRupees: number;
+            differenceRupees: number;
+        };
         AccountsStatus: {
             /** Format: date */
             startDate: string | null;
@@ -6882,6 +7167,51 @@ export interface components {
             /** Format: int32 */
             problemCount: number;
             trialBalanceDifference: number;
+        };
+        ProfitAndLoss: {
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            /** Format: date */
+            previousFrom: string;
+            /** Format: date */
+            previousTo: string;
+            income: components["schemas"]["StatementLine"][];
+            expenses: components["schemas"]["StatementLine"][];
+            totalIncomeRupees: number;
+            totalExpensesRupees: number;
+            profitRupees: number;
+            previousProfitRupees: number;
+        };
+        StatementAccount: {
+            /** Format: int64 */
+            accountId: number;
+            code: string;
+            name: string;
+            amountRupees: number;
+            previousRupees: number;
+        };
+        StatementLine: {
+            /** @enum {string} */
+            line: "REVENUE_FROM_OPERATIONS" | "OTHER_INCOME" | "COST_OF_MATERIALS" | "PURCHASES_STOCK_IN_TRADE" | "CHANGE_IN_INVENTORIES" | "EMPLOYEE_BENEFITS" | "FINANCE_COSTS" | "DEPRECIATION" | "OTHER_EXPENSES" | "SHARE_CAPITAL" | "RESERVES_SURPLUS" | "LONG_TERM_BORROWINGS" | "SHORT_TERM_BORROWINGS" | "TRADE_PAYABLES" | "OTHER_CURRENT_LIABILITIES" | "PPE" | "INVENTORIES" | "TRADE_RECEIVABLES" | "CASH_AND_BANK" | "OTHER_CURRENT_ASSETS";
+            label: string;
+            amountRupees: number;
+            previousRupees: number;
+            accounts: components["schemas"]["StatementAccount"][];
+        };
+        BalanceSheet: {
+            /** Format: date */
+            asOf: string;
+            /** Format: date */
+            previousAsOf: string;
+            equityAndLiabilities: components["schemas"]["StatementLine"][];
+            assets: components["schemas"]["StatementLine"][];
+            totalEquityAndLiabilitiesRupees: number;
+            totalAssetsRupees: number;
+            previousTotalEquityAndLiabilitiesRupees: number;
+            previousTotalAssetsRupees: number;
+            balanced: boolean;
         };
         PostingProblem: {
             sourceType: string;
@@ -6923,6 +7253,29 @@ export interface components {
             igstRupees: number;
             gatewayGstRupees: number;
             totalRupees: number;
+        };
+        Gstr3b: {
+            month: string;
+            gstOn: boolean;
+            outward: components["schemas"]["Gstr3bRow"][];
+            interState: components["schemas"]["Gstr3bRow"][];
+            itc: components["schemas"]["Gstr3bRow"];
+            setOff: components["schemas"]["Gstr3bSetOff"][];
+        };
+        Gstr3bRow: {
+            section: string;
+            description: string;
+            taxableRupees: number;
+            igstRupees: number;
+            cgstRupees: number;
+            sgstRupees: number;
+        };
+        Gstr3bSetOff: {
+            head: string;
+            outputRupees: number;
+            itcUsedRupees: number;
+            cashRupees: number;
+            carriedForwardRupees: number;
         };
         BankStatementSummary: {
             /** Format: int64 */
@@ -8784,6 +9137,32 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AdminCategory"];
+                };
+            };
+        };
+    };
+    saveStock: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                fy: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["YearEndStockForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["YearEnd"];
                 };
             };
         };
@@ -11669,6 +12048,50 @@ export interface operations {
             };
         };
     };
+    reopen: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                fy: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["YearEnd"];
+                };
+            };
+        };
+    };
+    close: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                fy: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["YearEnd"];
+                };
+            };
+        };
+    };
     sections: {
         parameters: {
             query?: never;
@@ -13498,6 +13921,50 @@ export interface operations {
             };
         };
     };
+    get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                fy: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["YearEnd"];
+                };
+            };
+        };
+    };
+    auditorPack: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                fy: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StreamingResponseBody"];
+                };
+            };
+        };
+    };
     trialBalance: {
         parameters: {
             query?: {
@@ -13543,6 +14010,53 @@ export interface operations {
             };
         };
     };
+    returns: {
+        parameters: {
+            query: {
+                fy: string;
+                quarter: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TdsQuarter"];
+                };
+            };
+        };
+    };
+    returnsCsv: {
+        parameters: {
+            query: {
+                fy: string;
+                quarter: number;
+                part: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
     getStatus: {
         parameters: {
             query?: never;
@@ -13559,6 +14073,51 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AccountsStatus"];
+                };
+            };
+        };
+    };
+    profitAndLoss: {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProfitAndLoss"];
+                };
+            };
+        };
+    };
+    balanceSheet: {
+        parameters: {
+            query: {
+                asOf: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BalanceSheet"];
                 };
             };
         };
@@ -13667,6 +14226,50 @@ export interface operations {
                 };
                 content: {
                     "text/csv": string;
+                };
+            };
+        };
+    };
+    getGstr3b: {
+        parameters: {
+            query: {
+                month: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Gstr3b"];
+                };
+            };
+        };
+    };
+    getGstr3bCsv: {
+        parameters: {
+            query: {
+                month: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
                 };
             };
         };
