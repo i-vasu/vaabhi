@@ -2468,6 +2468,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/accounts/backups/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["run"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/backups/drills": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["drill"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/accounts/assets": {
         parameters: {
             query?: never;
@@ -3692,6 +3724,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["candidates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/backups/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["status"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6315,6 +6363,43 @@ export interface components {
             duplicates: number;
             unknownAwbs: string[];
             skipped: components["schemas"]["SkippedFileRow"][];
+        };
+        BackupRunView: {
+            /** Format: int64 */
+            id: number;
+            kind: string;
+            status: string;
+            /** Format: date-time */
+            startedAt: string;
+            /** Format: date-time */
+            finishedAt: string | null;
+            /** Format: int64 */
+            sizeBytes: number | null;
+            objectKey: string | null;
+            message: string | null;
+            notes: string | null;
+            /** Format: int32 */
+            attachmentsCopied: number;
+            /** Format: date */
+            drilledOn: string | null;
+            createdBy: string | null;
+        };
+        BackupStatus: {
+            configured: boolean;
+            locationLabel: string;
+            bucket: string | null;
+            lastBackup: components["schemas"]["BackupRunView"] | null;
+            lastCheck: components["schemas"]["BackupRunView"] | null;
+            lastDrill: components["schemas"]["BackupRunView"] | null;
+            missedLastNight: boolean;
+            /** Format: int32 */
+            missedDaysLast7: number;
+            recent: components["schemas"]["BackupRunView"][];
+        };
+        BackupDrillForm: {
+            /** Format: date */
+            drilledOn: string;
+            note: string | null;
         };
         OpeningAssetForm: {
             name: string;
@@ -12545,6 +12630,50 @@ export interface operations {
             };
         };
     };
+    run: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BackupStatus"];
+                };
+            };
+        };
+    };
+    drill: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BackupDrillForm"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BackupStatus"];
+                };
+            };
+        };
+    };
     register: {
         parameters: {
             query?: never;
@@ -14380,6 +14509,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["MatchCandidate"][];
+                };
+            };
+        };
+    };
+    status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BackupStatus"];
                 };
             };
         };

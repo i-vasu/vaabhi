@@ -301,6 +301,9 @@ export type ClosingStockLine = Schemas["ClosingStockLine"];
 export type YearCloseRunView = Schemas["YearCloseRunView"];
 export type YearEndStockForm = Schemas["YearEndStockForm"];
 export type YearEndStockItemInput = Schemas["YearEndStockItemInput"];
+export type BackupStatus = Schemas["BackupStatus"];
+export type BackupRunView = Schemas["BackupRunView"];
+export type BackupDrillForm = Schemas["BackupDrillForm"];
 
 /** The JSON settings sections, by their API path. */
 export type SettingsSections = {
@@ -1031,6 +1034,12 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
             send<YearEnd>("POST", `/api/v1/admin/accounts/year-end/${encodeURIComponent(fy)}/reopen`),
           auditorPack: (fy: string) =>
             download(`/api/v1/admin/accounts/year-end/${encodeURIComponent(fy)}/auditor-pack.xlsx`),
+        },
+        backups: {
+          status: () => request<BackupStatus>("/api/v1/admin/accounts/backups/status"),
+          runNow: () => send<BackupStatus>("POST", "/api/v1/admin/accounts/backups/run"),
+          recordDrill: (form: BackupDrillForm) =>
+            send<BackupStatus>("POST", "/api/v1/admin/accounts/backups/drills", form),
         },
         assets: {
           classes: () => request<AssetClassView[]>("/api/v1/admin/accounts/assets/classes"),

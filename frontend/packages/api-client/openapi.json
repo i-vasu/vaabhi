@@ -7446,6 +7446,56 @@
                 }
             }
         },
+        "/api/v1/admin/accounts/backups/run": {
+            "post": {
+                "tags": [
+                    "backup-controller"
+                ],
+                "operationId": "run",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BackupStatus"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/backups/drills": {
+            "post": {
+                "tags": [
+                    "backup-controller"
+                ],
+                "operationId": "drill",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BackupDrillForm"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BackupStatus"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/accounts/assets": {
             "get": {
                 "tags": [
@@ -10283,6 +10333,26 @@
                                     "items": {
                                         "$ref": "#/components/schemas/MatchCandidate"
                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/admin/accounts/backups/status": {
+            "get": {
+                "tags": [
+                    "backup-controller"
+                ],
+                "operationId": "status",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BackupStatus"
                                 }
                             }
                         }
@@ -21886,6 +21956,180 @@
                     "duplicates",
                     "skipped",
                     "unknownAwbs"
+                ]
+            },
+            "BackupRunView": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "kind": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "startedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "finishedAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "sizeBytes": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "objectKey": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "message": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "notes": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "attachmentsCopied": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "drilledOn": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date"
+                    },
+                    "createdBy": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "attachmentsCopied",
+                    "createdBy",
+                    "drilledOn",
+                    "finishedAt",
+                    "id",
+                    "kind",
+                    "message",
+                    "notes",
+                    "objectKey",
+                    "sizeBytes",
+                    "startedAt",
+                    "status"
+                ]
+            },
+            "BackupStatus": {
+                "type": "object",
+                "properties": {
+                    "configured": {
+                        "type": "boolean"
+                    },
+                    "locationLabel": {
+                        "type": "string"
+                    },
+                    "bucket": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "lastBackup": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/BackupRunView"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "lastCheck": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/BackupRunView"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "lastDrill": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/BackupRunView"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "missedLastNight": {
+                        "type": "boolean"
+                    },
+                    "missedDaysLast7": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "recent": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BackupRunView"
+                        }
+                    }
+                },
+                "required": [
+                    "bucket",
+                    "configured",
+                    "lastBackup",
+                    "lastCheck",
+                    "lastDrill",
+                    "locationLabel",
+                    "missedDaysLast7",
+                    "missedLastNight",
+                    "recent"
+                ]
+            },
+            "BackupDrillForm": {
+                "type": "object",
+                "properties": {
+                    "drilledOn": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "note": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 500,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "drilledOn",
+                    "note"
                 ]
             },
             "OpeningAssetForm": {
