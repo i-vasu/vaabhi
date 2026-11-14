@@ -5,7 +5,6 @@ import { cache } from "react";
 import { ApiError, type ProductDetail, type ProductSummary } from "@vaabhi/api-client";
 import { ChevronDownIcon, ProductCard } from "@vaabhi/ui";
 import { ProductView } from "@/components/product/product-view";
-import { TrustStrip } from "@/components/trust-strip";
 import { api } from "@/lib/api";
 import { mediaUrl, productCardProps, type SearchParams } from "@/lib/listing";
 import { SHIPPING_AND_RETURNS } from "@/lib/policies";
@@ -164,8 +163,6 @@ export default async function ProductPage({ params, searchParams }: Readonly<Pro
           sizeGuide={sizeGuide}
         />
       </div>
-
-      <TrustStrip />
 
       <section aria-label="Product information" className={`${container} px-4 py-2`}>
         {product.description && (
