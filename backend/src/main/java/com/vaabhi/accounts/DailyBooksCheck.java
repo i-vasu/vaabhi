@@ -105,7 +105,10 @@ public class DailyBooksCheck {
                        OR (w.paid_at IS NOT NULL AND %2$s < :start))
                 ORDER BY 1
                 """.formatted(SHOP_DAY.formatted("p.received_at"), SHOP_DAY.formatted("w.paid_at"));
-        return jdbc.sql(sql).param("start", start).query(String.class).list();
+        return jdbc.sql(sql)
+                .param("start", start)
+                .query(String.class)
+                .list(); // NOSONAR java:S2077 - SQL built only from fixed fragments; every value is a bound parameter
     }
 
     /**
@@ -153,6 +156,9 @@ public class DailyBooksCheck {
                         SHOP_DAY.formatted("w.paid_at"),
                         SHOP_DAY.formatted("w.refunded_at"),
                         SHOP_DAY.formatted("r.refunded_at"));
-        return jdbc.sql(sql).param("start", start).query(DebtorsRow.class).list();
+        return jdbc.sql(sql)
+                .param("start", start)
+                .query(DebtorsRow.class)
+                .list(); // NOSONAR java:S2077 - SQL built only from fixed fragments; every value is a bound parameter
     }
 }

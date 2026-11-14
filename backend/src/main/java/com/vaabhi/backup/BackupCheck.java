@@ -56,7 +56,7 @@ class BackupCheck {
         }
         Path file = null;
         try {
-            file = Files.createTempFile("vaabhi-check-", ".dump");
+            file = PrivateTempFiles.create("vaabhi-check-", ".dump");
             store.get(newest.key(), file);
             if (!BackupService.sha256Hex(file).equals(newest.sha256())) {
                 throw new IllegalStateException("Downloaded dump does not match its SHA-256");

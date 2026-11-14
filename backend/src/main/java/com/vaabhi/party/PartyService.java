@@ -110,7 +110,9 @@ public class PartyService {
     }
 
     private @Nullable Existing find(String where, Object key) {
-        return jdbc.sql(EXISTING + where)
+        return jdbc.sql(EXISTING
+                        + where) // NOSONAR java:S2077 - SQL built only from fixed fragments; every value is a bound
+                // parameter
                 .param("key", key)
                 .query(Existing.class)
                 .optional()

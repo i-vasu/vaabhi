@@ -160,7 +160,8 @@ class S3BackupStore {
     private static String md5Base64(Path file) {
         MessageDigest digest;
         try {
-            digest = MessageDigest.getInstance("MD5");
+            digest = MessageDigest.getInstance(
+                    "MD5"); // NOSONAR java:S4790 - S3 Content-MD5 integrity check, not security
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("MD5 is not available", e);
         }

@@ -33,7 +33,7 @@ public record NumberSequence(
         String preview) {
 
     /** Letters, digits, / - _ and the {FY} token. */
-    static final String SAFE = "^([A-Za-z0-9/_\\-]|\\{FY\\})*$";
+    static final String SAFE = "^(?:[A-Za-z0-9/_\\-]++|\\{FY\\})*+$";
 
     static final String SAFE_MESSAGE = "may use letters, digits, / - _ and {FY} only";
 

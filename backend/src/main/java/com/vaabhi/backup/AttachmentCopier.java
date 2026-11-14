@@ -55,7 +55,7 @@ class AttachmentCopier {
     private boolean copy(String sourceKey, List<String> problems) {
         Path temp = null;
         try (var in = objects.open(sourceKey)) {
-            temp = Files.createTempFile("vaabhi-attachment-", ".bin");
+            temp = PrivateTempFiles.create("vaabhi-attachment-", ".bin");
             Files.copy(in, temp, StandardCopyOption.REPLACE_EXISTING);
             var sha = BackupService.sha256Hex(temp);
             var size = Files.size(temp);

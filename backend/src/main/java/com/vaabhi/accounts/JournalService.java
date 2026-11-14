@@ -238,13 +238,17 @@ public class JournalService {
                   AND (CAST(:from AS date) IS NULL OR e.entry_date >= :from)
                   AND (CAST(:to AS date) IS NULL OR e.entry_date <= :to)
                 """;
-        long total = jdbc.sql("SELECT COUNT(*) FROM journal_entry e " + where)
+        long total = jdbc.sql("SELECT COUNT(*) FROM journal_entry e "
+                        + where) // NOSONAR java:S2077 - SQL built only from fixed fragments; every value is a bound
+                // parameter
                 .param("q", like)
                 .param("from", from)
                 .param("to", to)
                 .query(Long.class)
                 .single();
-        var items = jdbc.sql("""
+        var items =
+                jdbc.sql( // NOSONAR java:S2077 - SQL built only from fixed fragments; every value is a bound parameter
+                                """
                         SELECT e.id, e.number, e.entry_date AS date, e.narration, e.source_type, e.source_step,
                                (SELECT COALESCE(SUM(l.debit_rupees), 0) FROM journal_line l
                                 WHERE l.entry_id = e.id) AS total_rupees,
@@ -253,13 +257,13 @@ public class JournalService {
                         """ + where + """
                         ORDER BY e.entry_date DESC, e.id DESC LIMIT :limit OFFSET :offset
                         """)
-                .param("q", like)
-                .param("from", from)
-                .param("to", to)
-                .param("limit", safeSize)
-                .param("offset", (safePage - 1) * safeSize)
-                .query(JournalListItem.class)
-                .list();
+                        .param("q", like)
+                        .param("from", from)
+                        .param("to", to)
+                        .param("limit", safeSize)
+                        .param("offset", (safePage - 1) * safeSize)
+                        .query(JournalListItem.class)
+                        .list();
         return new JournalPage(items, total, safePage, safeSize);
     }
 
@@ -342,7 +346,9 @@ public class JournalService {
                                   WHERE c.id = e.reverses_id
                                     AND c.source_type = 'YEAR_END' AND c.source_step = 'CLOSE')
                   """ : "";
-        var rows = jdbc.sql("""
+        var rows =
+                jdbc.sql( // NOSONAR java:S2077 - SQL built only from fixed fragments; every value is a bound parameter
+                                """
                         SELECT a.id, a.code, a.name, a.type, SUM(l.debit_rupees) AS debits,
                                SUM(l.credit_rupees) AS credits
                         FROM account a
@@ -354,9 +360,9 @@ public class JournalService {
                         HAVING SUM(l.debit_rupees) <> SUM(l.credit_rupees)
                         ORDER BY a.code
                         """)
-                .param("asOf", asOf)
-                .query(TrialRow.class)
-                .list();
+                        .param("asOf", asOf)
+                        .query(TrialRow.class)
+                        .list();
         var lines = new ArrayList<TrialBalanceLine>();
         var totalDebit = Rupees.ZERO;
         var totalCredit = Rupees.ZERO;

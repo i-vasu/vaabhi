@@ -86,7 +86,8 @@ public class BankMatcher {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Line not found"));
         var signed = line.creditRupees().subtract(line.debitRupees());
         String sign = signed.signum() > 0 ? "> 0" : "< 0";
-        return jdbc.sql("""
+        return jdbc.sql( // NOSONAR java:S2077 - SQL built only from fixed fragments; every value is a bound parameter
+                        """
                         SELECT e.id AS journal_entry_id, e.number, e.entry_date AS date, e.narration,
                                ABS(SUM(l.debit_rupees - l.credit_rupees)) AS amount_rupees
                         FROM journal_entry e
@@ -132,7 +133,8 @@ public class BankMatcher {
     private List<Long> referenceCandidates(AutoLine line) {
         var amount = line.creditRupees().subtract(line.debitRupees());
         String sign = amount.signum() > 0 ? "> 0" : "< 0";
-        return jdbc.sql("""
+        return jdbc.sql( // NOSONAR java:S2077 - SQL built only from fixed fragments; every value is a bound parameter
+                        """
                         SELECT e.id
                         FROM journal_entry e
                         WHERE ((e.source_type = 'RAZORPAY_SETTLEMENT'
@@ -154,7 +156,8 @@ public class BankMatcher {
     private List<Long> exactAmountCandidates(AutoLine line) {
         var amount = line.creditRupees().subtract(line.debitRupees());
         String sign = amount.signum() > 0 ? "> 0" : "< 0";
-        return jdbc.sql("""
+        return jdbc.sql( // NOSONAR java:S2077 - SQL built only from fixed fragments; every value is a bound parameter
+                        """
                         SELECT e.id
                         FROM journal_entry e
                         JOIN journal_line l ON l.entry_id = e.id

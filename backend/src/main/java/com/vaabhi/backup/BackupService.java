@@ -133,7 +133,7 @@ public class BackupService {
                 throw new IllegalStateException("pg_dump " + clientMajor + " can't back up Postgres " + serverMajor
                         + "; update the backend image");
             }
-            dump = Files.createTempFile("vaabhi-", ".dump");
+            dump = PrivateTempFiles.create("vaabhi-", ".dump");
             dumper.dump(dump);
             var sha = sha256Hex(dump);
             var size = Files.size(dump);

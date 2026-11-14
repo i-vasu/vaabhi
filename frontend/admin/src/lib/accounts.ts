@@ -97,7 +97,7 @@ export function csvCell(value: string | number): string {
   let text = String(value);
   // A text cell that starts like a formula would be run by a spreadsheet; numbers (even negative) are safe.
   if (typeof value === "string" && /^[=+\-@]/.test(text)) text = `'${text}`;
-  return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+  return /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }
 
 /** Whole paise of what a person typed ("" = 0), or null when it is not a rupee amount; no float drift. */

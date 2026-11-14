@@ -202,7 +202,8 @@ public class Gstr1Service {
     }
 
     private List<Entry> entries(String fromAndGroup, String select, LocalDate from, LocalDate to) {
-        return jdbc.sql("""
+        return jdbc.sql( // NOSONAR java:S2077 - SQL built only from fixed fragments; every value is a bound parameter
+                        """
                         SELECT %s,
                                l.gst_rate AS rate, SUM(l.taxable_rupees) AS taxable, SUM(l.cgst_rupees) AS cgst,
                                SUM(l.sgst_rupees) AS sgst, SUM(l.igst_rupees) AS igst
