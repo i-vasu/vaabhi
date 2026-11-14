@@ -534,4 +534,150 @@ describe("books pages", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Save stock list" }));
     await waitFor(() => expect(mocks.accounts.yearEnd.saveStock).toHaveBeenCalled());
   });
+
+  it("shows a closed year with its closing run and failed checks", async () => {
+    mocks.accounts.yearEnd.get.mockResolvedValue({
+      ...yearEnd,
+      closed: true,
+      stockSaved: true,
+      canReopen: true,
+      stockNote: "Counted on 31 March",
+      checks: [{ key: "PROBLEMS", label: "No posting problems", ok: false, message: "2 problems left" }],
+      runs: [
+        {
+          id: 1,
+          stockEntryId: 10,
+          closingEntryId: 11,
+          closedBy: "Asha Rao",
+          closedAt: "2027-04-02T10:00:00Z",
+          reopenedBy: null,
+          reopenedAt: null,
+        },
+      ],
+    });
+    render(<YearEndPage />);
+    expect((await screen.findAllByText(/No posting problems/)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/2 problems left/)).length).toBeGreaterThan(0);
+  });
+
+  it("warns when backups are not set up", async () => {
+    mocks.accounts.backups.status.mockResolvedValue({
+      ...backups,
+      configured: false,
+      lastBackup: null,
+      lastCheck: null,
+      recent: [],
+    });
+    render(<BackupsPage />);
+    await waitFor(() => expect(mocks.accounts.backups.status).toHaveBeenCalled());
+    expect((await screen.findAllByText(/Not done/)).length).toBeGreaterThan(0);
+  });
+
+  it("flags a missed backup and shows the last restore drill", async () => {
+    mocks.accounts.backups.status.mockResolvedValue({
+      ...backups,
+      missedLastNight: true,
+      missedDaysLast7: 2,
+      lastDrill: {
+        ...backups.recent[0]!,
+        id: 2,
+        kind: "DRILL",
+        drilledOn: "2026-11-01",
+        notes: "Restored to a laptop",
+      },
+      recent: [...backups.recent, { ...backups.recent[0]!, id: 3, status: "FAILED", message: "Bucket refused" }],
+    });
+    render(<BackupsPage />);
+    expect((await screen.findAllByText(/Bucket refused|FAILED/)).length).toBeGreaterThan(0);
+  });
+
+  it("switches between bank statements, Razorpay settlements and COD remittances", async () => {
+    mocks.accounts.bank.settlements.mockResolvedValue([
+      {
+        id: "setl_1",
+        utr: "UTR778",
+        settledOn: "2026-11-03",
+        grossRupees: 1000,
+        feeRupees: 20,
+        taxRupees: 3.6,
+        netRupees: 976.4,
+        journalEntryId: 5,
+        journalNumber: "JV-5",
+      },
+    ] satisfies Of<Accounts["bank"]["settlements"]>);
+    mocks.accounts.bank.remittances.mockResolvedValue([
+      {
+        id: 1,
+        remittanceRef: "COD-REM-9",
+        utr: null,
+        remittedOn: "2026-11-05",
+        codRupees: 2000,
+        deductionRupees: 40,
+        netRupees: 1960,
+        awbCount: 3,
+        journalNumber: null,
+      },
+    ] satisfies Of<Accounts["bank"]["remittances"]>);
+    render(<BankPage />);
+    await screen.findAllByText(/hdfc-november.csv/);
+    fireEvent.click(screen.getByRole("radio", { name: "Razorpay" }));
+    expect((await screen.findAllByText(/UTR UTR778/)).length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole("radio", { name: "COD remittances" }));
+    expect((await screen.findAllByText(/COD-REM-9/)).length).toBeGreaterThan(0);
+  });
+
+  it("expands a statement line and switches to the balance sheet", async () => {
+    render(<StatementsPage />);
+    fireEvent.click(await screen.findByRole("button", { name: /Revenue from operations/ }));
+    expect((await screen.findAllByText(/4000 · Sales/)).length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole("radio", { name: "Balance sheet" }));
+    await waitFor(() => expect(mocks.accounts.statements.balanceSheet).toHaveBeenCalled());
+  });
+
+  it("opens the add and rename account sheets", async () => {
+    render(<ChartPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Rename Cash in hand" }));
+    expect((await screen.findAllByText("Rename account")).length).toBeGreaterThan(0);
+  });
+
+  it("opens a new account sheet", async () => {
+    render(<ChartPage />);
+    await screen.findAllByText(/Cash in hand/);
+    fireEvent.click(screen.getByRole("button", { name: /Add account/ }));
+    expect((await screen.findAllByText("Add account")).length).toBeGreaterThan(1);
+  });
+
+  it("shows a disposed asset and an inactive class", async () => {
+    mocks.accounts.assets.classes.mockResolvedValue([{ ...assetClasses[0]!, active: false }]);
+    mocks.accounts.assets.list.mockResolvedValue([
+      { ...assets[0]!, disposedOn: "2026-10-01", disposalProceedsRupees: 5000, billId: 9, billNo: "B-101" },
+    ]);
+    render(<AssetsPage />);
+    expect((await screen.findAllByText(/Disposed/)).length).toBeGreaterThan(0);
+  });
+
+  it("explains GSTR-3B when GST is off", async () => {
+    mocks.accounts.gstr3b.mockResolvedValue({ ...gstr3b, gstOn: false, outward: [], setOff: [] });
+    render(<Gstr3bPage />);
+    await waitFor(() => expect(mocks.accounts.gstr3b).toHaveBeenCalled());
+    expect((await screen.findAllByText(/Eligible input tax credit/)).length).toBeGreaterThan(0);
+  });
+
+  it("shows empty states", async () => {
+    mocks.creditNotes.list.mockResolvedValue({ ...creditNotes, items: [], total: 0 });
+    mocks.purchases.suppliers.mockResolvedValue([]);
+    mocks.accounts.problems.mockResolvedValue([]);
+    mocks.accounts.journal.mockResolvedValue({ ...journal, items: [], total: 0 });
+    const { unmount } = render(<CreditNotesPage />);
+    await waitFor(() => expect(mocks.creditNotes.list).toHaveBeenCalled());
+    unmount();
+    const purchases = render(<PurchasesPage />);
+    expect(await screen.findByText("No suppliers yet")).toBeInTheDocument();
+    purchases.unmount();
+    const problemsPage = render(<ProblemsPage />);
+    await waitFor(() => expect(mocks.accounts.problems).toHaveBeenCalled());
+    problemsPage.unmount();
+    render(<JournalPage />);
+    await waitFor(() => expect(mocks.accounts.journal).toHaveBeenCalled());
+  });
 });
