@@ -119,8 +119,9 @@ class InputGstReportIT extends BooksFixtures {
     @Test
     void cancelledBillsLeftOut() {
         long party = supplier();
-        bill(party, "GST-CANCELLED", "2019-05-10", "500", "0", "0", "90", "CANCELLED");
+        // June, not May: the other test in this class writes May 2019 rows to the shared database.
+        bill(party, "GST-CANCELLED", "2019-06-10", "500", "0", "0", "90", "CANCELLED");
 
-        assertThat(report.months(FROM, TO)).isEmpty();
+        assertThat(report.months(LocalDate.of(2019, 6, 1), LocalDate.of(2019, 6, 30))).isEmpty();
     }
 }

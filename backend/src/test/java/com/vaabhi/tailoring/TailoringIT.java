@@ -441,7 +441,7 @@ class TailoringIT {
                 .andExpect(status().isBadRequest());
         send(post("/api/v1/admin/alterations/" + id + "/progress"), "{\"status\":\"DELIVERED\",\"collectRupees\":500}")
                 .andExpect(status().isBadRequest());
-        send(post("/api/v1/admin/alterations/" + id + "/progress"), "{\"status\":\"DELIVERED\",\"collectRupees\":400}")
+        send(post("/api/v1/admin/alterations/" + id + "/progress"), "{\"status\":\"DELIVERED\",\"collectRupees\":400,\"mode\":\"CASH\"}")
                 .andExpect(jsonPath("$.status").value("DELIVERED"))
                 .andExpect(jsonPath("$.balanceRupees").value(0))
                 .andExpect(jsonPath("$.deliveredAt").exists());

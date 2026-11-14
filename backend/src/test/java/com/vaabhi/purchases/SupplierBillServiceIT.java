@@ -223,13 +223,22 @@ class SupplierBillServiceIT extends BooksFixtures {
     void updatePostedBillIs409() {
         long party = supplier(null, null);
         var bill = bills.create(form(party, unique("BILL-"), List.of(expenseLine(expenseAccount(), "400"))), null);
+        // One statement: the books refuse a committed entry whose lines don't balance.
         jdbc.sql("""
-                        INSERT INTO journal_entry (number, entry_date, source_type, source_id, source_step, narration)
-                        VALUES (:number, CAST(:date AS date), 'SUPPLIER_BILL', :bill, 'ISSUE', 'Test bill')
+                        WITH e AS (
+                            INSERT INTO journal_entry (number, entry_date, source_type, source_id, source_step,
+                                                       narration)
+                            VALUES (:number, CAST(:date AS date), 'SUPPLIER_BILL', :bill, 'ISSUE', 'Test bill')
+                            RETURNING id)
+                        INSERT INTO journal_line (entry_id, position, account_id, debit_rupees, credit_rupees)
+                        SELECT e.id, 1, :expense, 400, 0 FROM e
+                        UNION ALL
+                        SELECT e.id, 2, (SELECT id FROM account WHERE system_key = 'CREDITORS'), 0, 400 FROM e
                         """)
                 .param("number", unique("JV/BT/") + System.nanoTime())
                 .param("date", today())
                 .param("bill", bill.id())
+                .param("expense", expenseAccount())
                 .update();
 
         assertThatThrownBy(() -> bills.update(

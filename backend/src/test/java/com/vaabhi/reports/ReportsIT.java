@@ -94,7 +94,7 @@ class ReportsIT {
         List<String> names = JsonPath.read(
                 body(mockMvc.perform(get("/api/v1/admin/reports").with(OWNER)).andExpect(status().isOk())),
                 "$[*].name");
-        assertThat(names).hasSize(16);
+        assertThat(names).hasSize(15); // the GST register gave way to the GSTR-1 page
         for (var name : names) {
             var report = report(name);
             assertThat(JsonPath.<String>read(report, "$.name")).isEqualTo(name);

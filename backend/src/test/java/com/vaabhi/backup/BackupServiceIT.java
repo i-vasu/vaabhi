@@ -77,12 +77,9 @@ class BackupServiceIT {
             jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_OWNER"));
 
     @Container
-    private static final GenericContainer<?> MINIO = new GenericContainer<>("minio/minio:RELEASE.2025-04-22T22-12-26Z")
-            .withCommand("server", "/data")
-            .withEnv("MINIO_ROOT_USER", ACCESS_KEY)
-            .withEnv("MINIO_ROOT_PASSWORD", SECRET_KEY)
-            .withExposedPorts(9000)
-            .waitingFor(Wait.forHttp("/minio/health/ready").forPort(9000));
+    private static final GenericContainer<?> MINIO = new GenericContainer<>("adobe/s3mock:4.7.0") // MinIO images are no longer public
+            .withExposedPorts(9090)
+            .waitingFor(Wait.forListeningPort());
 
     @TempDir
     Path tempDir;
@@ -215,7 +212,7 @@ class BackupServiceIT {
 
     private static String minioEndpoint() {
         MINIO.start();
-        return "http://" + MINIO.getHost() + ":" + MINIO.getMappedPort(9000);
+        return "http://" + MINIO.getHost() + ":" + MINIO.getMappedPort(9090);
     }
 
     @BeforeAll

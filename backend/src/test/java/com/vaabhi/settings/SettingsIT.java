@@ -70,6 +70,12 @@ class SettingsIT {
 
     @Test
     void savesAndReadsBackBillingAndAnnouncesTheChange() throws Exception {
+        // Other ITs share this database and switch GST on, so start from known values.
+        put("/billing", """
+                        {"chargeGst":false,"defaultGstRate":5,"pricesIncludeTax":true,"showHsnCodes":false,
+                         "discountAppliesTo":"ORDER_TOTAL","autoInvoice":true}
+                        """)
+                .andExpect(status().isOk());
         mockMvc.perform(get("/api/v1/admin/settings/billing").with(OWNER))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.chargeGst").value(false))

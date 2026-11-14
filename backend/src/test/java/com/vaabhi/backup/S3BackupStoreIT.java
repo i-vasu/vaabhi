@@ -37,12 +37,9 @@ class S3BackupStoreIT {
     private static final String EMPTY_SHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 
     @Container
-    private static final GenericContainer<?> MINIO = new GenericContainer<>("minio/minio:RELEASE.2025-04-22T22-12-26Z")
-            .withCommand("server", "/data")
-            .withEnv("MINIO_ROOT_USER", ACCESS_KEY)
-            .withEnv("MINIO_ROOT_PASSWORD", SECRET_KEY)
-            .withExposedPorts(9000)
-            .waitingFor(Wait.forHttp("/minio/health/ready").forPort(9000));
+    private static final GenericContainer<?> MINIO = new GenericContainer<>("adobe/s3mock:4.7.0") // MinIO images are no longer public
+            .withExposedPorts(9090)
+            .waitingFor(Wait.forListeningPort());
 
     @TempDir
     Path tempDir;
@@ -51,7 +48,7 @@ class S3BackupStoreIT {
 
     @BeforeAll
     static void createBuckets() throws Exception {
-        endpoint = "http://" + MINIO.getHost() + ":" + MINIO.getMappedPort(9000);
+        endpoint = "http://" + MINIO.getHost() + ":" + MINIO.getMappedPort(9090);
         createBucket(BUCKET, Map.of("x-amz-bucket-object-lock-enabled", "true"));
         createBucket(NO_LOCK_BUCKET, Map.of());
     }
