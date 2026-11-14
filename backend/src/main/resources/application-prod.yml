@@ -15,6 +15,10 @@ vaabhi:
   # WHATSAPP_LOGIN_TEMPLATE is set too, phone sign-in answers 503 (Google still works).
   whatsapp:
     provider: ${WHATSAPP_PROVIDER:msg91}
+  # Nightly books backup to AWS S3 Mumbai. On in production; it stays idle until the bucket, its keys and the direct
+  # database URL are in /opt/vaabhi/.env (BACKUP_*).
+  backup:
+    enabled: ${BACKUP_ENABLED:true}
 
 management:
   otlp:
