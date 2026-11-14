@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 /** Shop settings for the admin dashboard. Requires the ADMIN role (see SecurityConfig). */
 @RestController
@@ -65,7 +66,17 @@ class SettingsController {
     @PutMapping("/billing")
     BillingSettings saveBilling(
             @Valid @RequestBody BillingSettings billing, @AuthenticationPrincipal @Nullable Jwt jwt) {
+        String state = billing.company().state();
+        if (state != null && IndianStates.code(state).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "company.state: pick a state from the list");
+        }
+        lists.requireTaxClass(billing.defaultTaxClassId());
         return settings.save(SettingsService.BILLING, billing, actor(jwt));
+    }
+
+    @GetMapping("/states")
+    List<IndianStates.State> getStates() {
+        return IndianStates.all();
     }
 
     @GetMapping("/documents")
@@ -156,7 +167,7 @@ class SettingsController {
     }
 
     @PutMapping("/numbering")
-    List<NumberSequence> saveNumbering(@RequestBody @NotNull @Size(max = 4) List<@Valid NumberSequence> sequences) {
+    List<NumberSequence> saveNumbering(@RequestBody @NotNull @Size(max = 20) List<@Valid NumberSequence> sequences) {
         return numbering.update(sequences);
     }
 

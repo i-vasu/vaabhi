@@ -65,9 +65,10 @@ public class SecurityConfig {
                         // permission (the token's "permissions" claim, set at sign-in from the role).
                         .requestMatchers("/api/v1/admin/me", "/api/v1/admin/me/**")
                         .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/admin/settings/**")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/admin/settings/**", "/api/v1/admin/categories/**")
                         .hasRole("ADMIN")
-                        .requestMatchers("/api/v1/admin/settings/**")
+                        // Tax classes on categories are billing configuration, like the settings they sit beside.
+                        .requestMatchers("/api/v1/admin/settings/**", "/api/v1/admin/categories/**")
                         .access(area("SETTINGS"))
                         // Online orders: cancelling (refunds the payment) and refunding a return are for the owner.
                         .requestMatchers(
@@ -98,8 +99,17 @@ public class SecurityConfig {
                         .access(area("REPORTS"))
                         .requestMatchers("/api/v1/admin/workshop/**")
                         .access(area("WORKSHOP"))
+                        // Any admin can read the tax classes (product and category editors list them).
+                        .requestMatchers(
+                                HttpMethod.GET, "/api/v1/admin/money/tax-classes", "/api/v1/admin/money/tax-classes/**")
+                        .hasRole("ADMIN")
                         .requestMatchers("/api/v1/admin/money/**")
                         .access(area("MONEY"))
+                        // The books: reading needs the MONEY area; every change is for the owner.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/admin/accounts/**")
+                        .access(area("MONEY"))
+                        .requestMatchers("/api/v1/admin/accounts/**")
+                        .hasRole("OWNER")
                         // Changing what a role may do is for the owner alone.
                         .requestMatchers(HttpMethod.PUT, "/api/v1/admin/staff/roles/**")
                         .hasRole("OWNER")

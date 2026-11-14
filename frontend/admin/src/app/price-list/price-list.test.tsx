@@ -41,6 +41,7 @@ describe("price list", () => {
         priceRupees: 900,
         photoKey: null,
         stageCosts: [{ stageId: 2, rupees: 200 }],
+        taxClassId: null,
       }),
     );
   });

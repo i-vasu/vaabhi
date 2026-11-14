@@ -1,5 +1,6 @@
 package com.vaabhi.money;
 
+import com.vaabhi.tailoring.CounterMode;
 import com.vaabhi.tailoring.PaymentMode;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -20,5 +21,5 @@ public record ExpenseForm(
         @DecimalMin("0.01") @DecimalMax("1000000") @Digits(integer = 7, fraction = 2)
         BigDecimal amountRupees,
 
-        @NotNull PaymentMode mode,
+        @NotNull @CounterMode PaymentMode mode,
         @Nullable @Size(max = 120) String paidTo) {}

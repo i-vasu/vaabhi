@@ -8,6 +8,13 @@ import java.util.List;
  *
  * @param totalRupees sum of live (not cancelled) invoices matching the filters
  * @param taxRupees GST on those invoices
+ * @param creditedRupees credit notes issued against the invoices matching the filters
  */
 public record InvoicePage(
-        List<InvoiceSummary> items, long total, int page, int pageSize, BigDecimal totalRupees, BigDecimal taxRupees) {}
+        List<InvoiceSummary> items,
+        long total,
+        int page,
+        int pageSize,
+        BigDecimal totalRupees,
+        BigDecimal taxRupees,
+        BigDecimal creditedRupees) {}

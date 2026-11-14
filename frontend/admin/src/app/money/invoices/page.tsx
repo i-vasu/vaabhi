@@ -74,7 +74,11 @@ export default function InvoicesPage() {
                     href={`/money/invoices/view/?id=${invoice.id}`}
                     title={
                       <>
-                        {invoice.number} · {invoice.clientName} {invoice.cancelled && <Pill tone="bad">Cancelled</Pill>}
+                        {invoice.number} · {invoice.clientName}{" "}
+                        <Pill tone={invoice.source === "WEB" ? "accent" : "default"}>
+                          {invoice.source === "WEB" ? "Web" : "Shop"}
+                        </Pill>{" "}
+                        {invoice.cancelled && <Pill tone="bad">Cancelled</Pill>}
                       </>
                     }
                     subtitle={`${formatDate(invoice.issuedOn)} · ${invoice.orderNumber}${invoice.taxRupees > 0 ? ` · GST ${rupees(invoice.taxRupees)}` : ""}`}

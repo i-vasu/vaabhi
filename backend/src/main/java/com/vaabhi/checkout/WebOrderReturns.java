@@ -1,6 +1,7 @@
 package com.vaabhi.checkout;
 
 import com.vaabhi.catalog.CatalogStock;
+import com.vaabhi.money.CreditNoteService;
 import com.vaabhi.shared.rupees.Rupees;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,13 +32,16 @@ public class WebOrderReturns {
     private final RazorpayClient razorpay;
     private final CatalogStock stock;
     private final ApplicationEventPublisher events;
+    private final CreditNoteService creditNotes;
 
     WebOrderReturns(
             JdbcClient jdbc,
             CheckoutService orders,
             RazorpayClient razorpay,
             CatalogStock stock,
-            ApplicationEventPublisher events) {
+            ApplicationEventPublisher events,
+            CreditNoteService creditNotes) {
+        this.creditNotes = creditNotes;
         this.jdbc = jdbc;
         this.orders = orders;
         this.razorpay = razorpay;
@@ -131,7 +135,13 @@ public class WebOrderReturns {
     @Transactional
     public WebOrder refund(String returnNumber, ReturnRefundForm form) {
         var current = find(returnNumber);
-        if (current.status() != WebOrder.ReturnStatus.REQUESTED && current.status() != WebOrder.ReturnStatus.APPROVED) {
+        // Lock the row and read the status from it, so a double submit cannot refund twice.
+        var lockedStatus = jdbc.sql("SELECT status FROM web_order_return WHERE number = :number FOR UPDATE")
+                .param(NUMBER, returnNumber)
+                .query(String.class)
+                .optional()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No such return"));
+        if (!lockedStatus.equals("REQUESTED") && !lockedStatus.equals("APPROVED")) {
             throw conflict("This return is already closed");
         }
         var order = orders.shopOrder(current.orderNumber());
@@ -146,6 +156,8 @@ public class WebOrderReturns {
         if (amount.compareTo(refundable) > 0) {
             throw conflict("At most " + refundable.toPlainString() + " can still be refunded on this order");
         }
+        // Before any money moves: a failure here aborts the refund, and a later failure rolls the note back too.
+        creditForReturn(returnNumber);
         WebOrder.RefundMethod method;
         String reference;
         String status;
@@ -194,6 +206,25 @@ public class WebOrderReturns {
         stock.restore(back);
         publish(WebOrderReturnEvent.Type.REFUNDED, current.orderNumber(), returnNumber);
         return orders.shopOrder(current.orderNumber());
+    }
+
+    private record ReturnIds(long id, long orderId) {}
+
+    /** The returned items come back on a credit note against the order's invoice (none if it never shipped). */
+    private void creditForReturn(String returnNumber) {
+        var ids = jdbc.sql("SELECT id, order_id FROM web_order_return WHERE number = :number")
+                .param(NUMBER, returnNumber)
+                .query(ReturnIds.class)
+                .single();
+        Map<Long, Integer> byLine = new LinkedHashMap<>();
+        jdbc.sql("SELECT order_line_id, quantity FROM web_order_return_line WHERE return_id = :return")
+                .param("return", ids.id())
+                .query((rs, n) -> {
+                    byLine.merge(rs.getLong("order_line_id"), rs.getInt("quantity"), Integer::sum);
+                    return n;
+                })
+                .list();
+        creditNotes.issueForReturn(ids.id(), ids.orderId(), byLine, null);
     }
 
     // --- for the Shiprocket return pickup ------------------------------------------------------------------------

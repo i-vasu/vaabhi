@@ -11,7 +11,7 @@ import org.jspecify.annotations.Nullable;
  */
 public record CancelForm(
         @Nullable Settlement settlement,
-        @Nullable PaymentMode refundMode,
+        @Nullable @CounterMode PaymentMode refundMode,
         @Nullable @Size(max = 200) String reason) {
 
     public enum Settlement {

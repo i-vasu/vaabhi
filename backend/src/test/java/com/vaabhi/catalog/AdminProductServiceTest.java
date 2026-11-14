@@ -30,8 +30,13 @@ class AdminProductServiceTest {
 
     @Test
     void generatesReadableSkus() {
-        assertThat(AdminProductService.newSku("Free size")).matches("VB-[A-Z2-9]{6}-FREESIZE");
-        assertThat(AdminProductService.newSku(null)).matches("VB-[A-Z2-9]{6}");
-        assertThat(AdminProductService.newSku("M")).isNotEqualTo(AdminProductService.newSku("M"));
+        assertThat(AdminProductService.newSku("VB0142", "Rani pink", "Free size", java.util.Set.of()))
+                .isEqualTo("VB0142-RAN-FREESIZE");
+        assertThat(AdminProductService.newSku("VB0142", "Red", null, java.util.Set.of()))
+                .isEqualTo("VB0142-RED");
+        assertThat(AdminProductService.newSku("VB0142", "Redwood", "M", java.util.Set.of("VB0142-RED-M")))
+                .isEqualTo("VB0142-RED-M-2");
+        assertThat(AdminProductService.newSku("VB0142", "42", "M", java.util.Set.of()))
+                .isEqualTo("VB0142-X-M");
     }
 }

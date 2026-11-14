@@ -4,11 +4,20 @@ import com.vaabhi.catalog.BagQuote;
 import com.vaabhi.catalog.BagQuoteRequest;
 import com.vaabhi.catalog.BagQuoteService;
 import com.vaabhi.catalog.CatalogStock;
+import com.vaabhi.catalog.CatalogTax;
 import com.vaabhi.customer.CustomerService;
 import com.vaabhi.engage.CouponService;
+import com.vaabhi.money.Invoice;
+import com.vaabhi.money.InvoiceParties;
+import com.vaabhi.money.WebInvoiceRequest;
+import com.vaabhi.money.WebInvoiceService;
+import com.vaabhi.settings.IndianStates;
+import com.vaabhi.settings.NumberSequence;
+import com.vaabhi.settings.NumberingService;
 import com.vaabhi.shared.rupees.Rupees;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +62,9 @@ public class CheckoutService {
     private final CheckoutProperties properties;
     private final ApplicationEventPublisher events;
     private final TransactionTemplate transactions;
+    private final NumberingService numbering;
+    private final WebInvoiceService webInvoices;
+    private final CatalogTax catalogTax;
 
     CheckoutService(
             JdbcClient jdbc,
@@ -64,8 +76,14 @@ public class CheckoutService {
             ShiprocketClient shiprocket,
             CheckoutProperties properties,
             ApplicationEventPublisher events,
-            PlatformTransactionManager transactionManager) {
+            PlatformTransactionManager transactionManager,
+            NumberingService numbering,
+            WebInvoiceService webInvoices,
+            CatalogTax catalogTax) {
+        this.catalogTax = catalogTax;
+        this.webInvoices = webInvoices;
         this.transactions = new TransactionTemplate(transactionManager);
+        this.numbering = numbering;
         this.jdbc = jdbc;
         this.quotes = quotes;
         this.stock = stock;
@@ -118,10 +136,7 @@ public class CheckoutService {
             discount = cappedDiscount(applied.discountRupees(), items, shipping);
         }
         var total = items.subtract(discount).add(shipping);
-        var number = "WEB-"
-                + jdbc.sql("SELECT nextval('web_order_number_seq')")
-                        .query(Long.class)
-                        .single();
+        var number = numbering.next(NumberSequence.Kind.WEB_ORDER);
         var address = request.address();
         var phone = "+91" + address.phone();
         var status = method == WebOrder.PaymentMethod.COD ? WebOrder.Status.PLACED : WebOrder.Status.PENDING_PAYMENT;
@@ -455,8 +470,78 @@ public class CheckoutService {
                 .param("tracking", blankToNull(form.trackingNumber()))
                 .param(NUMBER, number)
                 .update();
+        invoiceFor(number);
         publish(WebOrderEvent.Type.SHIPPED, number);
         return byNumber(number);
+    }
+
+    /** The order's live invoice, issued now when it has none (so shipping again reuses the same number). */
+    @Transactional
+    Invoice invoiceFor(String number) {
+        var order = byNumber(number);
+        var row = jdbc.sql("""
+                        SELECT o.id, c.party_id FROM web_order o
+                        LEFT JOIN customer c ON c.id = o.customer_id
+                        WHERE o.number = :number
+                        """)
+                .param(NUMBER, number)
+                .query((rs, n) -> new OrderParty(rs.getLong("id"), rs.getObject("party_id", Long.class)))
+                .single();
+        var address = jdbc.sql("""
+                        SELECT left(concat_ws(', ', address_line1, address_line2, city, pincode), 400)
+                        FROM web_order WHERE id = :id
+                        """).param(ID, row.id()).query(String.class).single();
+        Map<Integer, Long> lineIds = new LinkedHashMap<>();
+        jdbc.sql("SELECT position, id FROM web_order_line WHERE order_id = :id")
+                .param(ID, row.id())
+                .query((rs, n) -> {
+                    lineIds.put(rs.getInt("position"), rs.getLong(ID));
+                    return n;
+                })
+                .list();
+        var lines = new ArrayList<WebInvoiceRequest.Line>();
+        for (var line : order.lines()) {
+            var classId = catalogTax.classFor(line.productSlug());
+            var lineId = lineIds.get(line.position());
+            var detail = line.colourName() != null && line.size() != null
+                    ? " (" + line.colourName() + ", " + line.size() + ")"
+                    : line.colourName() != null
+                            ? " (" + line.colourName() + ")"
+                            : line.size() != null ? " (" + line.size() + ")" : "";
+            lines.add(new WebInvoiceRequest.Line(
+                    line.name() + detail, line.quantity(), line.unitRupees(), classId, lineId));
+            if (line.addonRupees().signum() > 0) {
+                lines.add(new WebInvoiceRequest.Line(
+                        line.addonName() + " for " + line.name(),
+                        line.quantity(),
+                        line.addonRupees(),
+                        classId,
+                        lineId));
+            }
+        }
+        return webInvoices.issueFor(new WebInvoiceRequest(
+                row.id(),
+                number,
+                row.partyId(),
+                new InvoiceParties.Buyer(order.contactName(), order.contactPhone(), address, order.state()),
+                stateCode(order.state()),
+                lines,
+                order.shippingRupees(),
+                order.discountRupees()));
+    }
+
+    private record OrderParty(long id, @Nullable Long partyId) {}
+
+    /** The GST state code for a delivery state; null when it is blank or not an Indian state. */
+    private static @Nullable String stateCode(@Nullable String state) {
+        if (state == null || state.isBlank()) {
+            return null;
+        }
+        var code = IndianStates.code(state);
+        if (code.isEmpty()) {
+            log.info("Unknown delivery state '{}'; invoicing as a same-state supply", state);
+        }
+        return code.orElse(null);
     }
 
     /** Marks the order delivered; for cash on delivery this is when the money came in. */
@@ -466,6 +551,9 @@ public class CheckoutService {
         if (order.status() != WebOrder.Status.PLACED && order.status() != WebOrder.Status.SHIPPED) {
             throw conflict(
                     "Only a placed or shipped order can be delivered (this one is " + label(order.status()) + ")");
+        }
+        if (order.status() == WebOrder.Status.PLACED) {
+            invoiceFor(number);
         }
         jdbc.sql("""
                         UPDATE web_order SET status = 'DELIVERED', delivered_at = now(),
@@ -529,6 +617,7 @@ public class CheckoutService {
                     .optional()
                     .orElseThrow(() -> conflict("This order was cancelled or moved on just now. Reload it."));
             stock.restore(soldBySku(id));
+            webInvoices.creditFor(id, null);
             publish(WebOrderEvent.Type.CANCELLED, number);
         });
         if (refundOwed != null) {
@@ -674,14 +763,11 @@ public class CheckoutService {
 
     @Transactional(readOnly = true)
     public List<WebOrder> orders(long customerId) {
-        return jdbc
-                .sql(SELECT + " WHERE o.customer_id = :customer ORDER BY o.created_at DESC LIMIT 50")
+        var rows = jdbc.sql(SELECT + " WHERE o.customer_id = :customer ORDER BY o.created_at DESC LIMIT 50")
                 .param(CUSTOMER, customerId)
                 .query(OrderRow.class)
-                .list()
-                .stream()
-                .map(this::withLines)
-                .toList();
+                .list();
+        return withLines(rows);
     }
 
     @Transactional(readOnly = true)
@@ -699,8 +785,7 @@ public class CheckoutService {
     /** The shop's view, newest first; optionally only orders in one status, or with a return still open. */
     @Transactional(readOnly = true)
     public List<WebOrder> recent(WebOrder.@Nullable Status status, boolean openReturns, int limit) {
-        return jdbc
-                .sql(SELECT + " WHERE (CAST(:status AS varchar) IS NULL OR o.status = :status)"
+        var rows = jdbc.sql(SELECT + " WHERE (CAST(:status AS varchar) IS NULL OR o.status = :status)"
                         + " AND (NOT :openReturns OR EXISTS (SELECT 1 FROM web_order_return r WHERE r.order_id = o.id"
                         + " AND r.status IN ('REQUESTED', 'APPROVED')))"
                         + " ORDER BY o.created_at DESC LIMIT :limit")
@@ -708,10 +793,8 @@ public class CheckoutService {
                 .param("openReturns", openReturns)
                 .param("limit", limit)
                 .query(OrderRow.class)
-                .list()
-                .stream()
-                .map(this::withLines)
-                .toList();
+                .list();
+        return withLines(rows);
     }
 
     /** Any online order, for the shop. */
@@ -794,10 +877,15 @@ public class CheckoutService {
                 .params(params)
                 .query(OrderRow.class)
                 .optional()
-                .map(this::withLines);
+                .map(o -> withLines(o, webInvoices.liveNumbers(List.of(o.id())).get(o.id())));
     }
 
-    private WebOrder withLines(OrderRow o) {
+    private List<WebOrder> withLines(List<OrderRow> rows) {
+        var numbers = webInvoices.liveNumbers(rows.stream().map(OrderRow::id).toList());
+        return rows.stream().map(o -> withLines(o, numbers.get(o.id()))).toList();
+    }
+
+    private WebOrder withLines(OrderRow o, @Nullable String invoiceNumber) {
         var lines = jdbc.sql("""
                         SELECT position, sku, product_slug, name, colour_name, size, addon_name, blouse_size, quantity,
                                unit_rupees, addon_rupees, amount_rupees, image_key
@@ -843,7 +931,8 @@ public class CheckoutService {
                 returnableUntil,
                 o.createdAt(),
                 lines,
-                returns(o.id()));
+                returns(o.id()),
+                invoiceNumber);
     }
 
     private record ReturnRow(

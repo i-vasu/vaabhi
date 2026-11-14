@@ -20,6 +20,7 @@ import org.jspecify.annotations.Nullable;
  * @param shippingLabelUrl the label to print (PDF), when shipped through Shiprocket
  * @param returnableUntil until when the customer can ask to return items (delivered orders only)
  * @param returns the return requests on this order, oldest first
+ * @param invoiceNumber the live invoice's number once the order has shipped; null before that
  */
 public record WebOrder(
         String number,
@@ -56,7 +57,8 @@ public record WebOrder(
         @Nullable OffsetDateTime returnableUntil,
         OffsetDateTime createdAt,
         List<Line> lines,
-        List<OrderReturn> returns) {
+        List<OrderReturn> returns,
+        @Nullable String invoiceNumber) {
 
     /**
      * PENDING: owed and sent or about to be sent (no refund id until Razorpay accepts it); PROCESSED: the money

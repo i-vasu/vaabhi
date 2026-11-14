@@ -126,8 +126,20 @@ describe("admin client", () => {
     await api.admin.settings.deliveryPackages();
     await api.admin.settings.saveDeliveryPackages([]);
     await api.admin.settings.garmentTemplates();
-    await api.admin.settings.createGarmentTemplate({ id: null, name: "Kurta", businessType: "ALL", fields: [] });
-    await api.admin.settings.updateGarmentTemplate(3, { id: 3, name: "Kurta", businessType: "ALL", fields: [] });
+    await api.admin.settings.createGarmentTemplate({
+      id: null,
+      name: "Kurta",
+      businessType: "ALL",
+      fields: [],
+      taxClassId: null,
+    });
+    await api.admin.settings.updateGarmentTemplate(3, {
+      id: 3,
+      name: "Kurta",
+      businessType: "ALL",
+      fields: [],
+      taxClassId: null,
+    });
     await expect(api.admin.settings.deleteGarmentTemplate(3)).resolves.toBeUndefined();
     await api.admin.settings.startImageUpload("LOGO");
     await api.admin.changePassword({ currentPassword: "a", newPassword: "b" });
@@ -148,6 +160,33 @@ describe("admin client", () => {
       "POST https://api.example.com/api/v1/admin/settings/images",
       "PUT https://api.example.com/api/v1/admin/me/password",
     ]);
+  });
+
+  it("uploads a bank statement as multipart with its mapping", async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(new Response("{}")));
+    vi.stubGlobal("fetch", fetchMock);
+    const api = createApiClient({ baseUrl: "https://api.example.com", getToken: () => "t" });
+    const file = new File(["date,description"], "bank.csv", { type: "text/csv" });
+    const mapping = {
+      headerRow: 0,
+      columns: { date: 0, description: 1 },
+      dateFormat: "dd/MM/yyyy",
+      amountStyle: "SIGNED" as const,
+    };
+
+    await api.admin.accounts.bank.importStatement(file, { mapping, openingRupees: null, closingRupees: null });
+
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe("https://api.example.com/api/v1/admin/accounts/bank/statements");
+    expect(init.method).toBe("POST");
+    expect(init.body).toBeInstanceOf(FormData);
+    const body = init.body as FormData;
+    expect(body.get("file")).toBe(file);
+    expect(JSON.parse(await (body.get("mapping") as File).text())).toEqual({
+      mapping,
+      openingRupees: null,
+      closingRupees: null,
+    });
   });
 
   it("exposes field errors from problem details", async () => {

@@ -1,4 +1,5 @@
 import type {
+  AdminCategory,
   BillingSettings,
   CalendarSettings,
   DeliveryPackage,
@@ -12,6 +13,7 @@ import type {
   ProductionStage,
   SettingsSections,
   ShopProfile,
+  TaxClass,
   WatermarkSettings,
 } from "@vaabhi/api-client";
 import { http, HttpResponse } from "msw";
@@ -54,7 +56,39 @@ export const billing: BillingSettings = {
   showHsnCodes: false,
   discountAppliesTo: "ORDER_TOTAL",
   autoInvoice: true,
+  company: { legalName: null, cin: null, registeredOffice: null, state: null },
+  defaultTaxClassId: 1,
 };
+
+export const taxClasses: TaxClass[] = [
+  {
+    id: 1,
+    name: "Apparel",
+    kind: "GOODS",
+    hsnCode: "6211",
+    ratePercent: 5,
+    slabLimitRupees: 2500,
+    rateAbovePercent: 18,
+    inUse: true,
+  },
+  {
+    id: 2,
+    name: "Tailoring service",
+    kind: "SERVICE",
+    hsnCode: "9988",
+    ratePercent: 5,
+    slabLimitRupees: null,
+    rateAbovePercent: null,
+    inUse: false,
+  },
+];
+
+export const adminCategories: AdminCategory[] = [{ id: 1, name: "Sarees", taxClassId: null }];
+
+export const states = [
+  { name: "Andhra Pradesh", code: "37" },
+  { name: "Telangana", code: "36" },
+];
 
 export const documents: DocumentSettings = {
   slogan: null,
@@ -118,10 +152,10 @@ export const watermark: WatermarkSettings = {
 };
 
 export const numbering: NumberSequence[] = [
-  { kind: "ALTERATION", prefix: "ALT-", nextValue: 1001, suffix: "", pad: 0, preview: "ALT-1001" },
-  { kind: "INVOICE", prefix: "INV-", nextValue: 2042, suffix: "", pad: 0, preview: "INV-2042" },
-  { kind: "ITEM", prefix: "", nextValue: 1, suffix: "", pad: 3, preview: "001" },
-  { kind: "ORDER", prefix: "ORD-", nextValue: 2042, suffix: "", pad: 0, preview: "ORD-2042" },
+  { kind: "ALTERATION", prefix: "ALT-", nextValue: 1001, suffix: "", pad: 0, reset: "NEVER", preview: "ALT-1001" },
+  { kind: "INVOICE", prefix: "INV-", nextValue: 2042, suffix: "", pad: 0, reset: "NEVER", preview: "INV-2042" },
+  { kind: "ITEM", prefix: "", nextValue: 1, suffix: "", pad: 3, reset: "NEVER", preview: "001" },
+  { kind: "ORDER", prefix: "ORD-", nextValue: 2042, suffix: "", pad: 0, reset: "NEVER", preview: "ORD-2042" },
 ];
 
 export const stages: ProductionStage[] = [
@@ -143,6 +177,7 @@ export const garmentTemplates: GarmentTemplate[] = [
       { key: "bust", label: "Bust", unit: "in" },
       { key: "waist", label: "Waist", unit: "in" },
     ],
+    taxClassId: null,
   },
 ];
 
@@ -175,6 +210,7 @@ export function serveSettings(): { saved: Record<string, unknown> } {
       http.get(`${API}/api/v1/admin/settings/${path}`, () => HttpResponse.json(value as never)),
       echo(path),
     ]),
+    http.get(`${API}/api/v1/admin/settings/states`, () => HttpResponse.json(states)),
     http.get(`${API}/api/v1/admin/settings/numbering`, () => HttpResponse.json(numbering)),
     http.put(`${API}/api/v1/admin/settings/numbering`, async ({ request }) => {
       const body = (await request.json()) as NumberSequence[];
@@ -186,6 +222,8 @@ export function serveSettings(): { saved: Record<string, unknown> } {
     http.get(`${API}/api/v1/admin/settings/delivery-packages`, () => HttpResponse.json(deliveryPackages)),
     echo("delivery-packages"),
     http.get(`${API}/api/v1/admin/settings/garment-templates`, () => HttpResponse.json(garmentTemplates)),
+    http.get(`${API}/api/v1/admin/money/tax-classes`, () => HttpResponse.json(taxClasses)),
+    http.get(`${API}/api/v1/admin/categories`, () => HttpResponse.json(adminCategories)),
   );
   return { saved };
 }

@@ -33,7 +33,6 @@ public class ReportService {
 
     static final List<Report.ReportInfo> CATALOGUE = List.of(
             new Report.ReportInfo("sales", "Sales", "Invoiced per day: taxable value, GST and total"),
-            new Report.ReportInfo("gst", "GST register", "Every invoice with GSTIN, taxable value, CGST and SGST"),
             new Report.ReportInfo("sales-orders", "Sales orders", "Orders booked with what is paid and owed"),
             new Report.ReportInfo("orders", "Orders by status", "How many orders are where, and their value"),
             new Report.ReportInfo("deliveries", "Deliveries", "Orders handed over, on time or late"),
@@ -132,11 +131,18 @@ public class ReportService {
         return switch (name) {
             case "sales" -> {
                 var rows = rows("""
-                        SELECT to_char(v.issued_on, 'YYYY-MM-DD') AS day, COUNT(*) AS invoices,
-                               SUM(v.taxable_rupees) AS taxable, SUM(v.cgst_rupees + v.sgst_rupees) AS gst,
-                               SUM(v.total_rupees) AS total
-                        FROM invoice v WHERE v.cancelled_at IS NULL AND v.issued_on BETWEEN :from AND :to
-                        GROUP BY v.issued_on ORDER BY v.issued_on
+                        SELECT to_char(s.issued_on, 'YYYY-MM-DD') AS day, SUM(s.invoices) AS invoices,
+                               SUM(s.taxable) AS taxable, SUM(s.gst) AS gst, SUM(s.total) AS total
+                        FROM (
+                            SELECT v.issued_on, 1 AS invoices, v.taxable_rupees AS taxable,
+                                   v.cgst_rupees + v.sgst_rupees + v.igst_rupees AS gst, v.total_rupees AS total
+                            FROM invoice v WHERE v.cancelled_at IS NULL AND v.issued_on BETWEEN :from AND :to
+                            UNION ALL
+                            SELECT c.issued_on, 0, -c.taxable_rupees,
+                                   -(c.cgst_rupees + c.sgst_rupees + c.igst_rupees), -c.total_rupees
+                            FROM credit_note c WHERE c.issued_on BETWEEN :from AND :to
+                        ) s
+                        GROUP BY s.issued_on ORDER BY s.issued_on
                         """, p);
                 yield new Report(
                         name,
@@ -151,35 +157,7 @@ public class ReportService {
                                 money("total", "Total")),
                         rows,
                         totals(rows, "invoices", "taxable", "gst", "total"),
-                        "Cancelled invoices are left out.");
-            }
-            case "gst" -> {
-                var rows = rows("""
-                        SELECT v.number, to_char(v.issued_on, 'YYYY-MM-DD') AS date, %s AS customer,
-                               v.client_gstin AS gstin, v.gst_rate AS rate, v.taxable_rupees AS taxable,
-                               v.cgst_rupees AS cgst, v.sgst_rupees AS sgst, v.total_rupees AS total
-                        FROM invoice v JOIN client c ON c.id = v.client_id
-                        WHERE v.cancelled_at IS NULL AND v.issued_on BETWEEN :from AND :to
-                        ORDER BY v.issued_on, v.number
-                        """.formatted(CUSTOMER), p);
-                yield new Report(
-                        name,
-                        info.title(),
-                        from,
-                        to,
-                        List.of(
-                                text("number", "Invoice"),
-                                col("date", "Date", Report.Type.DATE),
-                                text("customer", "Customer"),
-                                text("gstin", "Customer GSTIN"),
-                                col("rate", "GST %", Report.Type.PERCENT),
-                                money("taxable", "Taxable"),
-                                money("cgst", "CGST"),
-                                money("sgst", "SGST"),
-                                money("total", "Total")),
-                        rows,
-                        totals(rows, "taxable", "cgst", "sgst", "total"),
-                        null);
+                        "Cancelled invoices are left out; credit notes are subtracted on the day they were issued.");
             }
             case "sales-orders" -> {
                 var rows = rows("""

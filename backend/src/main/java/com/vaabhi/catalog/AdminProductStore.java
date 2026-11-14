@@ -376,6 +376,22 @@ class AdminProductStore {
         }
     }
 
+    /** The product's style code (VB0142), if it has one yet. */
+    Optional<String> code(long id) {
+        return jdbc.sql("SELECT code FROM product WHERE id = :id AND code IS NOT NULL")
+                .param("id", id)
+                .query(String.class)
+                .optional();
+    }
+
+    /** Gives the product its style code; a code once given never changes. */
+    void setCode(long id, String code) {
+        jdbc.sql("UPDATE product SET code = :code WHERE id = :id AND code IS NULL")
+                .param("id", id)
+                .param("code", code)
+                .update();
+    }
+
     boolean setStatus(long id, ProductStatus status) {
         return jdbc.sql("""
                         UPDATE product SET status = :status, updated_at = now(),

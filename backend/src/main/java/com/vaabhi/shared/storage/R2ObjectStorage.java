@@ -1,12 +1,16 @@
 package com.vaabhi.shared.storage;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.NoSuchFileException;
 import java.time.Clock;
 import java.time.Duration;
+import java.util.Map;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,8 +20,9 @@ import org.springframework.stereotype.Component;
 
 /**
  * Cloudflare R2 through its S3-compatible endpoint. The server mostly signs URLs and makes tiny HEAD/DELETE
- * calls; photo uploads go straight from the admin's browser to R2. The server itself only copies Instagram covers
- * and makes JPEG copies of product photos for the Meta catalogue.
+ * calls; photo uploads go straight from the admin's browser to R2. The server itself only copies Instagram covers,
+ * makes JPEG copies of product photos for the Meta catalogue and reads the occasional bill attachment for the
+ * backup.
  */
 @Component
 @EnableConfigurationProperties(MediaStorageProperties.class)
@@ -25,6 +30,8 @@ class R2ObjectStorage implements ObjectStorage {
 
     private static final Logger log = LoggerFactory.getLogger(R2ObjectStorage.class);
     private static final Duration SERVER_CALL_VALIDITY = Duration.ofMinutes(1);
+    private static final Duration READ_TIMEOUT = Duration.ofMinutes(10);
+    private static final String EMPTY_SHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 
     private final MediaStorageProperties properties;
     private final HttpClient http;
@@ -90,6 +97,45 @@ class R2ObjectStorage implements ObjectStorage {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Interrupted while uploading to photo storage", e);
         }
+    }
+
+    @Override
+    public InputStream open(String key) throws IOException {
+        if (!configured()) {
+            throw new IllegalStateException("Photo storage is not configured");
+        }
+        var uri = URI.create(
+                "https://" + properties.accountId() + ".r2.cloudflarestorage.com/" + properties.bucket() + "/" + key);
+        var signedHeaders = SigV4Signer.sign(
+                "GET",
+                uri,
+                Map.of(),
+                EMPTY_SHA256,
+                "auto",
+                "s3",
+                Objects.requireNonNull(properties.accessKeyId()),
+                Objects.requireNonNull(properties.secretAccessKey()),
+                clock.instant());
+        var request = HttpRequest.newBuilder(uri).GET().timeout(READ_TIMEOUT);
+        signedHeaders.forEach(request::header);
+        HttpResponse<InputStream> response;
+        try {
+            response = http.send(request.build(), HttpResponse.BodyHandlers.ofInputStream());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while reading photo storage", e);
+        }
+        if (response.statusCode() == 404) {
+            response.body().close();
+            throw new NoSuchFileException(key);
+        }
+        if (response.statusCode() >= 300) {
+            try (var body = response.body()) {
+                throw new IllegalStateException("Photo storage refused " + key + " (" + response.statusCode() + "): "
+                        + new String(body.readNBytes(300), StandardCharsets.UTF_8));
+            }
+        }
+        return response.body();
     }
 
     @Override

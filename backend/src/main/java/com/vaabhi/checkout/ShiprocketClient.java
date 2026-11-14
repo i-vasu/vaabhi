@@ -68,7 +68,7 @@ class ShiprocketClient {
      *
      * @param weightKg the whole parcel
      */
-    CreatedOrder createOrder(WebOrder order, BigDecimal weightKg) {
+    CreatedOrder createOrder(WebOrder order, BigDecimal weightKg, String invoiceNumber) {
         var phone = order.contactPhone().replaceFirst("^\\+91", "");
         var name = order.contactName().trim();
         var space = name.indexOf(' ');
@@ -107,6 +107,7 @@ class ShiprocketClient {
         body.put("breadth", properties.breadthCm());
         body.put("height", properties.heightCm());
         body.put("weight", weightKg);
+        body.put("comment", "Invoice " + invoiceNumber);
         var response = call("POST", "/v1/external/orders/create/adhoc", JSON.writeValueAsString(body), order.number());
         var orderId = response.path("order_id").asLong(0);
         var shipmentId = response.path("shipment_id").asLong(0);

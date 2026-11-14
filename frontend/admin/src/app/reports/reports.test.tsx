@@ -38,10 +38,7 @@ describe("reports hub", () => {
     expect(within(chart).getByRole("table", { name: "Booked, collected and spent per month" })).toBeInTheDocument();
     expect(within(chart).getAllByText("Booked").length).toBeGreaterThan(0);
     expect(screen.getByText("1–7 days late")).toBeInTheDocument();
-    expect(await screen.findByRole("link", { name: /GST register/ })).toHaveAttribute(
-      "href",
-      "/reports/view/?name=gst",
-    );
+    expect(await screen.findByRole("link", { name: /GSTR-1/ })).toHaveAttribute("href", "/reports/gst/");
   });
 });
 

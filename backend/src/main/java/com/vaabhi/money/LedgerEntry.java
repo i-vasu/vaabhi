@@ -27,6 +27,8 @@ public record LedgerEntry(
         ORDER_PAYMENT,
         REFUND,
         ALTERATION_PAYMENT,
-        EXPENSE
+        EXPENSE,
+        WEB_PAYMENT,
+        WEB_REFUND
     }
 }

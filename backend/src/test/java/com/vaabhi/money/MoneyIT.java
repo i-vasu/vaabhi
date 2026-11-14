@@ -154,8 +154,13 @@ class MoneyIT {
         try {
             send(put("/api/v1/admin/settings/billing"), """
                             {"chargeGst":true,"gstin":"27ABCDE1234F1Z5","defaultGstRate":12,"pricesIncludeTax":false,
-                             "showHsnCodes":false,"discountAppliesTo":"ORDER_TOTAL","autoInvoice":false}
-                            """).andExpect(status().isOk());
+                             "showHsnCodes":false,"discountAppliesTo":"ORDER_TOTAL","autoInvoice":false,
+                             "defaultTaxClassId":%d}
+                            """.formatted(
+                                    jdbc.sql("SELECT id FROM tax_class WHERE name = 'Garments'")
+                                            .query(Long.class)
+                                            .single()))
+                    .andExpect(status().isOk());
             long clientId = client("Jaya");
             long orderId = order(clientId, 0);
             send(post("/api/v1/admin/orders/" + orderId + "/deliver"), "").andExpect(status().isOk());
@@ -165,17 +170,18 @@ class MoneyIT {
 
             send(post("/api/v1/admin/money/orders/" + orderId + "/invoice"), "")
                     .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.gstRate").value(12))
+                    .andExpect(jsonPath("$.gstRate").value(5))
                     .andExpect(jsonPath("$.taxableRupees").value(1000))
-                    .andExpect(jsonPath("$.cgstRupees").value(60))
-                    .andExpect(jsonPath("$.sgstRupees").value(60))
-                    .andExpect(jsonPath("$.totalRupees").value(1120))
+                    .andExpect(jsonPath("$.cgstRupees").value(25))
+                    .andExpect(jsonPath("$.sgstRupees").value(25))
+                    .andExpect(jsonPath("$.igstRupees").value(0))
+                    .andExpect(jsonPath("$.totalRupees").value(1050))
                     .andExpect(jsonPath("$.shopGstin").value("27ABCDE1234F1Z5"));
 
             // What is owed follows the invoice, GST included, and is flagged as already handed over.
             read("/outstanding", Map.of("clientId", Long.toString(clientId)))
-                    .andExpect(jsonPath("$.totalRupees").value(1120))
-                    .andExpect(jsonPath("$.handedOverRupees").value(1120))
+                    .andExpect(jsonPath("$.totalRupees").value(1050))
+                    .andExpect(jsonPath("$.handedOverRupees").value(1050))
                     .andExpect(jsonPath("$.items[0].kind").value("ORDER"))
                     .andExpect(jsonPath("$.items[0].invoiceNumber").isNotEmpty());
         } finally {

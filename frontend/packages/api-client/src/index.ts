@@ -89,6 +89,7 @@ export type PaperFormat = PrintSettings["defaultFormat"];
 export type MessageTemplates = Schemas["MessageTemplates"];
 export type WatermarkSettings = Schemas["WatermarkSettings"];
 export type NumberSequence = Schemas["NumberSequence"];
+export type State = Schemas["State"];
 export type ProductionStage = Schemas["ProductionStage"];
 export type DeliveryPackage = Schemas["DeliveryPackage"];
 export type GarmentTemplate = Schemas["GarmentTemplate"];
@@ -150,6 +151,20 @@ export type Invoice = Schemas["Invoice"];
 export type InvoiceLine = Schemas["InvoiceLine"];
 export type InvoiceSummary = Schemas["InvoiceSummary"];
 export type InvoicePage = Schemas["InvoicePage"];
+export type TaxClass = Schemas["TaxClass"];
+export type TaxClassForm = Schemas["TaxClassForm"];
+export type AdminCategory = Schemas["AdminCategory"];
+export type CreditNote = Schemas["CreditNote"];
+export type CreditNoteLine = Schemas["CreditNoteLine"];
+export type CreditNoteForm = Schemas["CreditNoteForm"];
+export type CreditNoteSummary = Schemas["CreditNoteSummary"];
+export type CreditNotePage = Schemas["CreditNotePage"];
+/** A row of the credit-note list (the generated schema names it just `Item`). */
+export type CreditNoteListItem = CreditNotePage["items"][number];
+export type Gstr1 = Schemas["Gstr1"];
+export type Gstr1Row = Schemas["Gstr1Row"];
+export type Gstr1HsnRow = Schemas["Gstr1HsnRow"];
+export type Gstr1DocRange = Schemas["Gstr1DocRange"];
 export type Expense = Schemas["Expense"];
 export type ExpenseForm = Schemas["ExpenseForm"];
 export type ExpenseCategory = ExpenseForm["category"];
@@ -193,6 +208,102 @@ export type ReportInfo = Schemas["ReportInfo"];
 export type ReportsOverview = Schemas["ReportsOverview"];
 export type Dashboard = Schemas["Dashboard"];
 export type TailoringImagePurpose = Schemas["TailoringImageRequest"]["purpose"];
+export type Account = Schemas["Account"];
+export type AccountForm = Schemas["AccountForm"];
+export type JournalEntry = Schemas["JournalEntry"];
+export type JournalEntryLine = Schemas["JournalEntryLine"];
+export type JournalSourceLink = Schemas["JournalSourceLink"];
+export type JournalPage = Schemas["JournalPage"];
+export type JournalListItem = Schemas["JournalListItem"];
+export type LedgerStatement = Schemas["LedgerStatement"];
+export type LedgerStatementLine = Schemas["LedgerStatementLine"];
+export type TrialBalance = Schemas["TrialBalance"];
+export type TrialBalanceLine = Schemas["TrialBalanceLine"];
+export type PeriodStatus = Schemas["PeriodStatus"];
+export type OpeningBalances = Schemas["OpeningBalances"];
+export type OpeningBalancesForm = Schemas["OpeningBalancesForm"];
+export type OpeningBalanceLine = Schemas["OpeningBalanceLine"];
+export type BooksSettings = Schemas["BooksSettings"];
+export type BooksSettingsForm = Schemas["BooksSettingsForm"];
+export type ManualEntryForm = Schemas["ManualEntryForm"];
+export type ManualEntryLineInput = Schemas["ManualEntryLineInput"];
+export type PostingProblem = Schemas["PostingProblem"];
+export type AccountsStatus = Schemas["AccountsStatus"];
+export type SweepResult = Schemas["SweepResult"];
+export type BankStatementSummary = Schemas["BankStatementSummary"];
+export type BankStatementDetail = Schemas["BankStatementDetail"];
+export type BankLineView = Schemas["BankLineView"];
+export type BankImportSummary = Schemas["BankImportSummary"];
+export type BankImportForm = Schemas["BankImportForm"];
+export type ColumnMapping = Schemas["ColumnMapping"];
+export type FilePreview = Schemas["FilePreview"];
+export type SkippedFileRow = Schemas["SkippedFileRow"];
+export type MatchCandidate = Schemas["MatchCandidate"];
+export type BankMatchForm = Schemas["BankMatchForm"];
+export type BankPostForm = Schemas["BankPostForm"];
+export type BankReconciliation = Schemas["BankReconciliation"];
+export type LedgerOnlyMovement = Schemas["LedgerOnlyMovement"];
+export type RazorpaySettlementView = Schemas["RazorpaySettlementView"];
+export type RazorpaySyncOutcome = Schemas["RazorpaySyncOutcome"];
+export type CodImportSummary = Schemas["CodImportSummary"];
+export type CodRemittanceView = Schemas["CodRemittanceView"];
+
+export type SupplierForm = Schemas["SupplierForm"];
+export type SupplierBalance = Schemas["SupplierBalance"];
+export type SupplierStatement = Schemas["SupplierStatement"];
+export type SupplierStatementEntry = Schemas["SupplierStatementEntry"];
+export type SupplierCreated = Schemas["SupplierCreated"];
+export type SupplierBillForm = Schemas["SupplierBillForm"];
+export type SupplierBillLineForm = Schemas["SupplierBillLineForm"];
+export type SupplierBillView = Schemas["SupplierBillView"];
+export type SupplierBillLineView = Schemas["SupplierBillLineView"];
+export type SupplierBillListEntry = Schemas["SupplierBillListEntry"];
+export type PaidNow = Schemas["PaidNow"];
+export type TdsSuggestion = Schemas["TdsSuggestion"];
+export type TdsCheckForm = Schemas["TdsCheckForm"];
+export type BillCancelForm = Schemas["BillCancelForm"];
+export type AttachmentStartForm = Schemas["AttachmentStartForm"];
+export type AttachmentUpload = Schemas["AttachmentUpload"];
+export type AttachmentConfirmForm = Schemas["AttachmentConfirmForm"];
+export type SupplierPaymentForm = Schemas["SupplierPaymentForm"];
+export type SupplierPaymentView = Schemas["SupplierPaymentView"];
+export type PaymentAllocationInput = Schemas["PaymentAllocationInput"];
+export type PaymentAllocationView = Schemas["PaymentAllocationView"];
+export type BankLinePaymentForm = Schemas["BankLinePaymentForm"];
+export type ShiprocketInvoiceSummary = Schemas["ShiprocketInvoiceSummary"];
+export type TdsSectionForm = Schemas["TdsSectionForm"];
+export type TdsSectionView = Schemas["TdsSectionView"];
+export type TdsChallanForm = Schemas["TdsChallanForm"];
+export type TdsChallanView = Schemas["TdsChallanView"];
+export type TdsMonthSummary = Schemas["TdsMonthSummary"];
+export type AssetClassForm = Schemas["AssetClassForm"];
+export type AssetClassView = Schemas["AssetClassView"];
+export type FixedAssetView = Schemas["FixedAssetView"];
+export type OpeningAssetForm = Schemas["OpeningAssetForm"];
+export type AssetUpdateForm = Schemas["AssetUpdateForm"];
+export type AssetDisposalForm = Schemas["AssetDisposalForm"];
+export type InputGstMonth = Schemas["InputGstMonth"];
+export type ScheduleLine = Schemas["StatementLine"]["line"];
+export type StatementAccount = Schemas["StatementAccount"];
+export type StatementLine = Schemas["StatementLine"];
+export type ProfitAndLoss = Schemas["ProfitAndLoss"];
+export type BalanceSheet = Schemas["BalanceSheet"];
+export type Gstr3b = Schemas["Gstr3b"];
+export type Gstr3bRow = Schemas["Gstr3bRow"];
+export type Gstr3bSetOff = Schemas["Gstr3bSetOff"];
+export type TdsQuarter = Schemas["TdsQuarter"];
+export type TdsDeducteeRow = Schemas["TdsDeducteeRow"];
+export type TdsQuarterChallan = Schemas["TdsQuarterChallan"];
+export type TdsSectionTotal = Schemas["TdsSectionTotal"];
+export type YearEnd = Schemas["YearEnd"];
+export type YearEndCheck = Schemas["YearEndCheck"];
+export type ClosingStockLine = Schemas["ClosingStockLine"];
+export type YearCloseRunView = Schemas["YearCloseRunView"];
+export type YearEndStockForm = Schemas["YearEndStockForm"];
+export type YearEndStockItemInput = Schemas["YearEndStockItemInput"];
+export type BackupStatus = Schemas["BackupStatus"];
+export type BackupRunView = Schemas["BackupRunView"];
+export type BackupDrillForm = Schemas["BackupDrillForm"];
 
 /** The JSON settings sections, by their API path. */
 export type SettingsSections = {
@@ -217,6 +328,8 @@ export type CouponQuoteRequest = Schemas["CouponQuoteRequest"];
 export type CouponQuote = Schemas["CouponQuote"];
 export type PaymentConfirmation = Schemas["PaymentConfirmation"];
 export type WebOrder = Schemas["WebOrder"];
+export type StoreInvoice = Schemas["StoreInvoice"];
+export type StoreCreditNote = Schemas["StoreCreditNote"];
 export type RefundStatus = NonNullable<WebOrder["refundStatus"]>;
 export type ShipmentForm = Schemas["ShipmentForm"];
 export type CancelWebOrderForm = Schemas["CancelWebOrderForm"];
@@ -326,6 +439,26 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
       headers: body === undefined ? undefined : { "Content-Type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
+
+  /** A file download as a Blob; fetched with the bearer token, since a plain link would not carry it. */
+  const download = async (path: string): Promise<Blob> => {
+    const token = getToken?.();
+    const response = await fetch(`${baseUrl.replace(/\/$/, "")}${path}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!response.ok) {
+      const problem = await problemOf(response);
+      throw new ApiError(response.status, `GET ${path} failed with ${response.status}`, problem.errors, problem.detail);
+    }
+    return response.blob();
+  };
+
+  // Multipart upload; the browser sets the Content-Type (with its boundary) from the FormData.
+  const upload = <T>(path: string, parts: Record<string, Blob | string>) => {
+    const body = new FormData();
+    for (const [key, value] of Object.entries(parts)) body.append(key, value);
+    return request<T>(path, { method: "POST", body });
+  };
 
   return {
     request,
@@ -439,6 +572,18 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         request<WebOrder[]>("/api/v1/customer/orders", { headers: bearer(accessToken), cache: "no-store" }),
       getOrder: (accessToken: string, number: string) =>
         request<WebOrder>(`/api/v1/customer/orders/${encodeURIComponent(number)}`, {
+          headers: bearer(accessToken),
+          cache: "no-store",
+        }),
+      /** The customer's tax invoice for an order they own; 404 when it has none. */
+      myInvoice: (accessToken: string, number: string) =>
+        request<StoreInvoice>(`/api/v1/customer/orders/${encodeURIComponent(number)}/invoice`, {
+          headers: bearer(accessToken),
+          cache: "no-store",
+        }),
+      /** Credit notes issued against an order the customer owns (empty when none). */
+      myCreditNotes: (accessToken: string, number: string) =>
+        request<StoreCreditNote[]>(`/api/v1/customer/orders/${encodeURIComponent(number)}/credit-notes`, {
           headers: bearer(accessToken),
           cache: "no-store",
         }),
@@ -622,6 +767,7 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
         numbering: () => request<NumberSequence[]>("/api/v1/admin/settings/numbering"),
         saveNumbering: (sequences: NumberSequence[]) =>
           send<NumberSequence[]>("PUT", "/api/v1/admin/settings/numbering", sequences),
+        states: () => request<State[]>("/api/v1/admin/settings/states"),
         stages: () => request<ProductionStage[]>("/api/v1/admin/settings/stages"),
         saveStages: (stages: ProductionStage[]) =>
           send<ProductionStage[]>("PUT", "/api/v1/admin/settings/stages", stages),
@@ -721,6 +867,243 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
           request<Ledger>(`/api/v1/admin/money/ledger${queryString(params)}`),
         outstanding: (params: { clientId?: number } = {}) =>
           request<Outstanding>(`/api/v1/admin/money/outstanding${queryString(params)}`),
+        taxClasses: {
+          list: () => request<TaxClass[]>("/api/v1/admin/money/tax-classes"),
+          create: (form: TaxClassForm) => send<TaxClass>("POST", "/api/v1/admin/money/tax-classes", form),
+          update: (id: number, form: TaxClassForm) =>
+            send<TaxClass>("PUT", `/api/v1/admin/money/tax-classes/${id}`, form),
+          remove: (id: number) => send<void>("DELETE", `/api/v1/admin/money/tax-classes/${id}`),
+        },
+        creditNotes: {
+          list: (params: { q?: string; page?: number; size?: number } = {}) =>
+            request<CreditNotePage>(`/api/v1/admin/money/credit-notes${queryString(params)}`),
+          get: (id: number) => request<CreditNote>(`/api/v1/admin/money/credit-notes/${id}`),
+          forInvoice: (invoiceId: number) =>
+            request<CreditNoteSummary[]>(`/api/v1/admin/money/invoices/${invoiceId}/credit-notes`),
+          issue: (invoiceId: number, form: CreditNoteForm) =>
+            send<CreditNote>("POST", `/api/v1/admin/money/invoices/${invoiceId}/credit-notes`, form),
+        },
+        gstr1: {
+          month: (month: string) => request<Gstr1>(`/api/v1/admin/money/gstr1${queryString({ month })}`),
+          /** The section's CSV as a Blob; fetched with the bearer token, since a plain link would not carry it. */
+          csv: async (month: string, section: string): Promise<Blob> => {
+            const token = getToken?.();
+            const response = await fetch(
+              `${baseUrl.replace(/\/$/, "")}/api/v1/admin/money/gstr1/${encodeURIComponent(section)}.csv${queryString({ month })}`,
+              { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+            );
+            if (!response.ok) {
+              const problem = await problemOf(response);
+              throw new ApiError(
+                response.status,
+                `GET gstr1 ${section}.csv failed with ${response.status}`,
+                problem.errors,
+                problem.detail,
+              );
+            }
+            return response.blob();
+          },
+        },
+      },
+      /** Suppliers, their bills and payments, plus importing Shiprocket's freight invoices. */
+      purchases: {
+        suppliers: (q?: string) =>
+          request<SupplierBalance[]>(`/api/v1/admin/money/purchases/suppliers${queryString({ q })}`),
+        supplier: (id: number) => request<SupplierStatement>(`/api/v1/admin/money/purchases/suppliers/${id}`),
+        createSupplier: (form: SupplierForm) =>
+          send<SupplierCreated>("POST", "/api/v1/admin/money/purchases/suppliers", form),
+        updateSupplier: (id: number, form: SupplierForm) =>
+          send<SupplierStatement>("PUT", `/api/v1/admin/money/purchases/suppliers/${id}`, form),
+        bills: (params: { partyId?: number; status?: string; month?: string; source?: string } = {}) =>
+          request<SupplierBillListEntry[]>(`/api/v1/admin/money/purchases/bills${queryString(params)}`),
+        bill: (id: number) => request<SupplierBillView>(`/api/v1/admin/money/purchases/bills/${id}`),
+        createBill: (form: SupplierBillForm) =>
+          send<SupplierBillView>("POST", "/api/v1/admin/money/purchases/bills", form),
+        updateBill: (id: number, form: SupplierBillForm) =>
+          send<SupplierBillView>("PUT", `/api/v1/admin/money/purchases/bills/${id}`, form),
+        cancelBill: (id: number, form: BillCancelForm) =>
+          send<SupplierBillView>("POST", `/api/v1/admin/money/purchases/bills/${id}/cancel`, form),
+        /** Starts an attachment upload: PUT the file to uploadUrl, then save its key with confirmAttachment. */
+        startAttachment: (id: number, contentType: string) =>
+          send<AttachmentUpload>("POST", `/api/v1/admin/money/purchases/bills/${id}/attachment`, { contentType }),
+        confirmAttachment: (id: number, key: string) =>
+          send<void>("PUT", `/api/v1/admin/money/purchases/bills/${id}/attachment`, { key }),
+        tdsCheck: (form: TdsCheckForm) =>
+          send<TdsSuggestion>("POST", "/api/v1/admin/money/purchases/bills/tds-check", form),
+        payments: (partyId?: number) =>
+          request<SupplierPaymentView[]>(`/api/v1/admin/money/purchases/payments${queryString({ partyId })}`),
+        createPayment: (form: SupplierPaymentForm) =>
+          send<SupplierPaymentView>("POST", "/api/v1/admin/money/purchases/payments", form),
+        deletePayment: (id: number) => send<void>("DELETE", `/api/v1/admin/money/purchases/payments/${id}`),
+        paymentFromBankLine: (form: BankLinePaymentForm) =>
+          send<SupplierPaymentView>("POST", "/api/v1/admin/money/purchases/payments/from-bank-line", form),
+        previewShiprocket: (file: File) =>
+          upload<FilePreview>("/api/v1/admin/money/purchases/shiprocket-invoices/preview", { file }),
+        importShiprocket: (file: File, mapping: ColumnMapping) =>
+          upload<ShiprocketInvoiceSummary>("/api/v1/admin/money/purchases/shiprocket-invoices", {
+            file,
+            mapping: new Blob([JSON.stringify(mapping)], { type: "application/json" }),
+          }),
+      },
+      accounts: {
+        status: () => request<AccountsStatus>("/api/v1/admin/accounts/status"),
+        sweep: () => send<SweepResult>("POST", "/api/v1/admin/accounts/sweep"),
+        problems: () => request<PostingProblem[]>("/api/v1/admin/accounts/problems"),
+        settings: () => request<BooksSettings>("/api/v1/admin/accounts/settings"),
+        saveSettings: (form: BooksSettingsForm) => send<BooksSettings>("PUT", "/api/v1/admin/accounts/settings", form),
+        chart: () => request<Account[]>("/api/v1/admin/accounts/accounts"),
+        createAccount: (form: AccountForm) => send<Account>("POST", "/api/v1/admin/accounts/accounts", form),
+        updateAccount: (id: number, form: AccountForm) =>
+          send<Account>("PUT", `/api/v1/admin/accounts/accounts/${id}`, form),
+        ledger: (id: number, params: { from?: string; to?: string } = {}) =>
+          request<LedgerStatement>(`/api/v1/admin/accounts/accounts/${id}/ledger${queryString(params)}`),
+        journal: (params: { q?: string; from?: string; to?: string; page?: number; size?: number } = {}) =>
+          request<JournalPage>(`/api/v1/admin/accounts/journal${queryString(params)}`),
+        entry: (id: number) => request<JournalEntry>(`/api/v1/admin/accounts/journal/${id}`),
+        postManual: (form: ManualEntryForm) => send<JournalEntry>("POST", "/api/v1/admin/accounts/journal", form),
+        reverse: (id: number) => send<JournalEntry>("POST", `/api/v1/admin/accounts/journal/${id}/reverse`),
+        trialBalance: (asOf?: string) =>
+          request<TrialBalance>(`/api/v1/admin/accounts/trial-balance${queryString({ asOf })}`),
+        opening: () => request<OpeningBalances>("/api/v1/admin/accounts/opening-balances"),
+        saveOpening: (form: OpeningBalancesForm) =>
+          send<OpeningBalances>("PUT", "/api/v1/admin/accounts/opening-balances", form),
+        periods: () => request<PeriodStatus[]>("/api/v1/admin/accounts/periods"),
+        lock: (month: string) =>
+          send<PeriodStatus[]>("PUT", `/api/v1/admin/accounts/periods/${encodeURIComponent(month)}/lock`),
+        unlock: (month: string) =>
+          send<PeriodStatus[]>("DELETE", `/api/v1/admin/accounts/periods/${encodeURIComponent(month)}/lock`),
+        /** Bank statements, COD remittances and Razorpay settlements, matched to the books. */
+        bank: {
+          previewStatement: (file: File) =>
+            upload<FilePreview>("/api/v1/admin/accounts/bank/statements/preview", { file }),
+          importStatement: (file: File, form: BankImportForm) =>
+            upload<BankImportSummary>("/api/v1/admin/accounts/bank/statements", {
+              file,
+              mapping: new Blob([JSON.stringify(form)], { type: "application/json" }),
+            }),
+          statements: () => request<BankStatementSummary[]>("/api/v1/admin/accounts/bank/statements"),
+          statement: (id: number, status?: string) =>
+            request<BankStatementDetail>(`/api/v1/admin/accounts/bank/statements/${id}${queryString({ status })}`),
+          report: (id: number) => request<BankReconciliation>(`/api/v1/admin/accounts/bank/statements/${id}/report`),
+          /** The reconciliation CSV as a Blob; fetched with the bearer token, since a plain link would not carry it. */
+          reportCsv: async (id: number): Promise<Blob> => {
+            const token = getToken?.();
+            const response = await fetch(
+              `${baseUrl.replace(/\/$/, "")}/api/v1/admin/accounts/bank/statements/${id}/report.csv`,
+              { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+            );
+            if (!response.ok) {
+              const problem = await problemOf(response);
+              throw new ApiError(
+                response.status,
+                `GET bank report ${id}.csv failed with ${response.status}`,
+                problem.errors,
+                problem.detail,
+              );
+            }
+            return response.blob();
+          },
+          candidates: (lineId: number) =>
+            request<MatchCandidate[]>(`/api/v1/admin/accounts/bank/lines/${lineId}/candidates`),
+          match: (lineId: number, form: BankMatchForm) =>
+            send<BankLineView>("POST", `/api/v1/admin/accounts/bank/lines/${lineId}/match`, form),
+          post: (lineId: number, form: BankPostForm) =>
+            send<BankLineView>("POST", `/api/v1/admin/accounts/bank/lines/${lineId}/post`, form),
+          ignore: (lineId: number, reason: string) =>
+            send<BankLineView>("POST", `/api/v1/admin/accounts/bank/lines/${lineId}/ignore`, { reason }),
+          undo: (lineId: number) => send<BankLineView>("POST", `/api/v1/admin/accounts/bank/lines/${lineId}/undo`),
+          syncRazorpay: () => send<RazorpaySyncOutcome>("POST", "/api/v1/admin/accounts/bank/razorpay/sync"),
+          settlements: () => request<RazorpaySettlementView[]>("/api/v1/admin/accounts/bank/razorpay/settlements"),
+          previewRemittance: (file: File) =>
+            upload<FilePreview>("/api/v1/admin/accounts/bank/cod-remittances/preview", { file }),
+          importRemittance: (file: File, mapping: ColumnMapping) =>
+            upload<CodImportSummary>("/api/v1/admin/accounts/bank/cod-remittances", {
+              file,
+              mapping: new Blob([JSON.stringify(mapping)], { type: "application/json" }),
+            }),
+          remittances: () => request<CodRemittanceView[]>("/api/v1/admin/accounts/bank/cod-remittances"),
+        },
+        tds: {
+          sections: () => request<TdsSectionView[]>("/api/v1/admin/accounts/tds/sections"),
+          createSection: (form: TdsSectionForm) =>
+            send<TdsSectionView>("POST", "/api/v1/admin/accounts/tds/sections", form),
+          updateSection: (id: number, form: TdsSectionForm) =>
+            send<TdsSectionView>("PUT", `/api/v1/admin/accounts/tds/sections/${id}`, form),
+          summary: (from: string, to: string) =>
+            request<TdsMonthSummary[]>(`/api/v1/admin/accounts/tds/summary${queryString({ from, to })}`),
+          challans: (from: string, to: string) =>
+            request<TdsChallanView[]>(`/api/v1/admin/accounts/tds/challans${queryString({ from, to })}`),
+          createChallan: (form: TdsChallanForm) =>
+            send<TdsChallanView>("POST", "/api/v1/admin/accounts/tds/challans", form),
+          returns: (fy: string, quarter: number) =>
+            request<TdsQuarter>(`/api/v1/admin/accounts/tds/returns${queryString({ fy, quarter })}`),
+          returnsCsv: (fy: string, quarter: number, part: "deductees" | "challans") =>
+            download(`/api/v1/admin/accounts/tds/returns.csv${queryString({ fy, quarter, part })}`),
+        },
+        statements: {
+          profitAndLoss: (from: string, to: string) =>
+            request<ProfitAndLoss>(`/api/v1/admin/accounts/statements/profit-and-loss${queryString({ from, to })}`),
+          balanceSheet: (asOf: string) =>
+            request<BalanceSheet>(`/api/v1/admin/accounts/statements/balance-sheet${queryString({ asOf })}`),
+        },
+        gstr3b: (month: string) => request<Gstr3b>(`/api/v1/admin/accounts/gstr3b${queryString({ month })}`),
+        gstr3bCsv: (month: string) => download(`/api/v1/admin/accounts/gstr3b.csv${queryString({ month })}`),
+        yearEnd: {
+          get: (fy: string) => request<YearEnd>(`/api/v1/admin/accounts/year-end/${encodeURIComponent(fy)}`),
+          saveStock: (fy: string, form: YearEndStockForm) =>
+            send<YearEnd>("PUT", `/api/v1/admin/accounts/year-end/${encodeURIComponent(fy)}/stock`, form),
+          close: (fy: string) =>
+            send<YearEnd>("POST", `/api/v1/admin/accounts/year-end/${encodeURIComponent(fy)}/close`),
+          reopen: (fy: string) =>
+            send<YearEnd>("POST", `/api/v1/admin/accounts/year-end/${encodeURIComponent(fy)}/reopen`),
+          auditorPack: (fy: string) =>
+            download(`/api/v1/admin/accounts/year-end/${encodeURIComponent(fy)}/auditor-pack.xlsx`),
+        },
+        backups: {
+          status: () => request<BackupStatus>("/api/v1/admin/accounts/backups/status"),
+          runNow: () => send<BackupStatus>("POST", "/api/v1/admin/accounts/backups/run"),
+          recordDrill: (form: BackupDrillForm) =>
+            send<BackupStatus>("POST", "/api/v1/admin/accounts/backups/drills", form),
+        },
+        assets: {
+          classes: () => request<AssetClassView[]>("/api/v1/admin/accounts/assets/classes"),
+          createClass: (form: AssetClassForm) =>
+            send<AssetClassView>("POST", "/api/v1/admin/accounts/assets/classes", form),
+          updateClass: (id: number, form: AssetClassForm) =>
+            send<AssetClassView>("PUT", `/api/v1/admin/accounts/assets/classes/${id}`, form),
+          list: () => request<FixedAssetView[]>("/api/v1/admin/accounts/assets"),
+          createOpening: (form: OpeningAssetForm) =>
+            send<FixedAssetView>("POST", "/api/v1/admin/accounts/assets", form),
+          update: (id: number, form: AssetUpdateForm) =>
+            send<FixedAssetView>("PUT", `/api/v1/admin/accounts/assets/${id}`, form),
+          dispose: (id: number, form: AssetDisposalForm) =>
+            send<FixedAssetView>("POST", `/api/v1/admin/accounts/assets/${id}/dispose`, form),
+        },
+        inputGst: (from: string, to: string) =>
+          request<InputGstMonth[]>(`/api/v1/admin/accounts/input-gst${queryString({ from, to })}`),
+        /** The input-GST CSV as a Blob; fetched with the bearer token, since a plain link would not carry it. */
+        inputGstCsv: async (from: string, to: string): Promise<Blob> => {
+          const token = getToken?.();
+          const response = await fetch(
+            `${baseUrl.replace(/\/$/, "")}/api/v1/admin/accounts/input-gst.csv${queryString({ from, to })}`,
+            { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+          );
+          if (!response.ok) {
+            const problem = await problemOf(response);
+            throw new ApiError(
+              response.status,
+              `GET input-gst.csv failed with ${response.status}`,
+              problem.errors,
+              problem.detail,
+            );
+          }
+          return response.blob();
+        },
+      },
+      categories: {
+        list: () => request<AdminCategory[]>("/api/v1/admin/categories"),
+        setTaxClass: (id: number, taxClassId: number | null) =>
+          send<AdminCategory>("PUT", `/api/v1/admin/categories/${id}/tax-class`, { taxClassId }),
       },
       startTailoringImageUpload: (purpose: TailoringImagePurpose) =>
         send<TailoringImageUpload>("POST", "/api/v1/admin/tailoring/images", { purpose }),

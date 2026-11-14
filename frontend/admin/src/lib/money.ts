@@ -18,6 +18,8 @@ export const LEDGER_KINDS: { value: LedgerKind; label: string }[] = [
   { value: "ORDER_PAYMENT", label: "Order payment" },
   { value: "ALTERATION_PAYMENT", label: "Alteration" },
   { value: "REFUND", label: "Refund" },
+  { value: "WEB_PAYMENT", label: "Web payment" },
+  { value: "WEB_REFUND", label: "Web refund" },
   { value: "EXPENSE", label: "Expense" },
 ];
 

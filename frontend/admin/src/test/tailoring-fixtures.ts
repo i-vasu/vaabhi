@@ -12,6 +12,7 @@ import type {
   AlterationPage,
   Client,
   ClientPage,
+  CreditNote,
   ClientSummary,
   Order,
   OrderPage,
@@ -250,6 +251,7 @@ export const serviceProducts: ServiceProduct[] = [
     photoKey: null,
     stageCosts: [{ stageId: 2, rupees: 150 }],
     profitRupees: 350,
+    taxClassId: null,
   },
 ];
 
@@ -303,13 +305,49 @@ export const overview: WorkshopOverview = {
 export const invoice: Invoice = {
   id: 5,
   number: "INV-305",
+  source: "SHOP",
   orderId: 42,
   orderNumber: "ORD-2042",
   client: clientSummary,
+  title: "Tax invoice",
+  seller: {
+    name: "Vaabhi Fashions Private Limited",
+    address: "Road No. 1, Hyderabad",
+    cin: "U14100TS2026PTC123456",
+    state: "Telangana",
+    stateCode: "36",
+  },
+  buyer: { name: "Meera Iyer", phone: "+919876500001", address: null, state: null },
   issuedOn: "2026-11-02",
   lines: [
-    { description: "3 dart blouse (Maroon)", quantity: 2, unitRupees: 500, amountRupees: 1000 },
-    { description: "Fall & pico", quantity: 1, unitRupees: 100, amountRupees: 100 },
+    {
+      id: 1,
+      description: "3 dart blouse (Maroon)",
+      quantity: 2,
+      unitRupees: 500,
+      amountRupees: 1000,
+      discountRupees: 0,
+      hsnCode: "6204",
+      gstRate: 0,
+      taxableRupees: 1000,
+      cgstRupees: 0,
+      sgstRupees: 0,
+      igstRupees: 0,
+    },
+    {
+      id: 2,
+      description: "Fall & pico",
+      quantity: 1,
+      unitRupees: 100,
+      amountRupees: 100,
+      discountRupees: 0,
+      hsnCode: "6204",
+      gstRate: 0,
+      taxableRupees: 100,
+      cgstRupees: 0,
+      sgstRupees: 0,
+      igstRupees: 0,
+    },
   ],
   discountRupees: 110,
   orderTotalRupees: 990,
@@ -318,6 +356,9 @@ export const invoice: Invoice = {
   taxableRupees: 942.86,
   cgstRupees: 23.57,
   sgstRupees: 23.57,
+  igstRupees: 0,
+  placeOfSupply: "36",
+  supplyType: "INTRA",
   totalRupees: 990,
   paidRupees: 300,
   balanceRupees: 690,
@@ -327,6 +368,46 @@ export const invoice: Invoice = {
   createdAt: "2026-11-02T12:00:00+05:30",
   cancelledAt: null,
   cancelledBy: null,
+  creditNotes: [],
+};
+
+export const creditNote: CreditNote = {
+  id: 7,
+  number: "CN-7",
+  invoiceId: 5,
+  invoiceNumber: "INV-305",
+  orderNumber: "ORD-2042",
+  reason: "RETURN",
+  note: null,
+  issuedOn: "2026-11-02",
+  title: "Credit Note",
+  seller: invoice.seller,
+  buyer: invoice.buyer,
+  placeOfSupply: "36",
+  supplyType: "INTRA",
+  lines: [
+    {
+      id: 1,
+      invoiceLineId: 1,
+      description: "3 dart blouse (Maroon)",
+      hsnCode: "6204",
+      quantity: 1,
+      unitRupees: 500,
+      gstRate: 5,
+      taxableRupees: 476.19,
+      cgstRupees: 11.9,
+      sgstRupees: 11.91,
+      igstRupees: 0,
+      amountRupees: 500,
+    },
+  ],
+  taxableRupees: 476.19,
+  cgstRupees: 11.9,
+  sgstRupees: 11.91,
+  igstRupees: 0,
+  totalRupees: 500,
+  createdBy: "Asha Rao",
+  createdAt: "2026-11-02T12:30:00+05:30",
 };
 
 export const invoicePage: InvoicePage = {
@@ -334,6 +415,7 @@ export const invoicePage: InvoicePage = {
     {
       id: 5,
       number: "INV-305",
+      source: "SHOP",
       orderId: 42,
       orderNumber: "ORD-2042",
       clientId: 7,
@@ -351,6 +433,7 @@ export const invoicePage: InvoicePage = {
   pageSize: 20,
   totalRupees: 990,
   taxRupees: 47.14,
+  creditedRupees: 0,
 };
 
 export const expenseList: ExpenseList = {
@@ -537,6 +620,8 @@ export function serveTailoring(): { sent: Sent[] } {
       `${base}/money/invoices/:id/cancel`,
       reply({ ...invoice, cancelledAt: "2026-11-02T13:00:00+05:30", cancelledBy: "Asha Rao" }),
     ),
+    http.get(`${base}/money/credit-notes/:id`, reply(creditNote)),
+    http.get(`${base}/settings/states`, reply([{ code: "36", name: "Telangana" }])),
     http.get(`${base}/money/orders/:id/invoice`, async ({ request }) => {
       await record(request);
       return new HttpResponse(null, { status: 204 });

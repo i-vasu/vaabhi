@@ -21,6 +21,6 @@ public record AlterationProgress(
         @DecimalMin("0") @DecimalMax("1000000") @Digits(integer = 7, fraction = 2)
         BigDecimal collectRupees,
 
-        @Nullable PaymentMode mode,
+        @Nullable @CounterMode PaymentMode mode,
 
         CancelForm.@Nullable Settlement settlement) {}

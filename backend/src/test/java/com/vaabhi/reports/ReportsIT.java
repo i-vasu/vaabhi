@@ -94,7 +94,7 @@ class ReportsIT {
         List<String> names = JsonPath.read(
                 body(mockMvc.perform(get("/api/v1/admin/reports").with(OWNER)).andExpect(status().isOk())),
                 "$[*].name");
-        assertThat(names).hasSize(16);
+        assertThat(names).hasSize(15); // the GST register gave way to the GSTR-1 page
         for (var name : names) {
             var report = report(name);
             assertThat(JsonPath.<String>read(report, "$.name")).isEqualTo(name);
@@ -128,15 +128,31 @@ class ReportsIT {
                 .singleElement()
                 .satisfies(r ->
                         assertThat(((Number) r.get("days_late")).intValue()).isZero());
-        List<Map<String, Object>> gst = JsonPath.read(report("gst"), "$.rows[?(@.customer == 'Rekha')]");
-        assertThat(gst)
-                .singleElement()
-                .satisfies(
-                        r -> assertThat(((Number) r.get("total")).longValue()).isEqualTo(800));
 
         var sales = report("sales");
         long invoiced = ((Number) JsonPath.read(sales, "$.totals.total")).longValue();
         assertThat(invoiced).isGreaterThanOrEqualTo(800);
+    }
+
+    @Test
+    void salesReportSubtractsCreditNotes() throws Exception {
+        var ids = deliveredOrder("Credit", 700, 0);
+        var invoice = body(mockMvc.perform(
+                        get("/api/v1/admin/money/orders/" + ids[0] + "/invoice").with(OWNER))
+                .andExpect(status().isOk()));
+        long invoiceId = ((Number) JsonPath.read(invoice, "$.id")).longValue();
+        long lineId = ((Number) JsonPath.read(invoice, "$.lines[0].id")).longValue();
+        long before = ((Number) JsonPath.read(report("sales"), "$.totals.total")).longValue();
+
+        var note = body(send(post("/api/v1/admin/money/invoices/" + invoiceId + "/credit-notes"), """
+                {"reason":"CORRECTION","note":"Sales report test","lines":[{"invoiceLineId":%d,"quantity":1}]}
+                """.formatted(lineId))
+                .andExpect(status().isCreated()));
+        long credited = ((Number) JsonPath.read(note, "$.totalRupees")).longValue();
+
+        long after = ((Number) JsonPath.read(report("sales"), "$.totals.total")).longValue();
+        assertThat(credited).isPositive();
+        assertThat(after).isEqualTo(before - credited);
     }
 
     @Test

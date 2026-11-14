@@ -108,6 +108,10 @@ final class FakeGateways implements AutoCloseable {
             }
             return ok("{\"id\":\"rfnd_T" + id + "\",\"status\":\"pending\"}");
         }
+        // Refunds already made on a payment: the refund lock looks before refunding. None in these tests.
+        if (method.equals("GET") && path.matches("/v1/payments/[^/]+/refunds")) {
+            return ok("{\"entity\":\"collection\",\"count\":0,\"items\":[]}");
+        }
         // Shiprocket
         if (path.equals("/v1/external/auth/login")) {
             return ok("{\"token\":\"sr-token\"}");

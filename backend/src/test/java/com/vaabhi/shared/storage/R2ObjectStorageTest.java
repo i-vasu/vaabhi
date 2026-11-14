@@ -183,6 +183,64 @@ class R2ObjectStorageTest {
                 .hasMessageContaining("not configured");
     }
 
+    @SuppressWarnings("unchecked")
+    private void respondWithStream(int status, String body) throws Exception {
+        HttpResponse<java.io.InputStream> response = mock(HttpResponse.class);
+        given(response.statusCode()).willReturn(status);
+        given(response.body())
+                .willReturn(new java.io.ByteArrayInputStream(body.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        given(http.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .willReturn(response);
+    }
+
+    @Test
+    void opensAnObjectWithASignedGet() throws Exception {
+        respondWithStream(200, "bill");
+        try (var in = storage.open("bills/1.pdf")) {
+            assertThat(new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8))
+                    .isEqualTo("bill");
+        }
+
+        var request = ArgumentCaptor.forClass(HttpRequest.class);
+        verify(http).send(request.capture(), any());
+        assertThat(request.getValue().method()).isEqualTo("GET");
+        assertThat(request.getValue().uri().getPath()).isEqualTo("/vaabhi-media/bills/1.pdf");
+        assertThat(request.getValue().headers().firstValue("Authorization")).isPresent();
+    }
+
+    @Test
+    void reportsAMissingOrRefusedObject() throws Exception {
+        respondWithStream(404, "");
+        assertThatThrownBy(() -> storage.open("bills/gone.pdf"))
+                .isInstanceOf(java.nio.file.NoSuchFileException.class)
+                .hasMessageContaining("bills/gone.pdf");
+
+        respondWithStream(403, "AccessDenied");
+        assertThatThrownBy(() -> storage.open("bills/1.pdf"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("refused bills/1.pdf (403)")
+                .hasMessageContaining("AccessDenied");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void reportsAnInterruptedRead() throws Exception {
+        given(http.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .willThrow(new InterruptedException("stop"));
+        assertThatThrownBy(() -> storage.open("bills/1.pdf"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Interrupted while reading photo storage");
+        assertThat(Thread.interrupted()).isTrue();
+    }
+
+    @Test
+    void refusesToOpenWithoutCredentials() {
+        var unconfigured = new R2ObjectStorage(new MediaStorageProperties(null, "", null, null));
+        assertThatThrownBy(() -> unconfigured.open("k"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("not configured");
+    }
+
     @Test
     void defaultsTheBucket() {
         assertThat(new MediaStorageProperties(null, null, null, " ").bucket()).isEqualTo("vaabhi-media");

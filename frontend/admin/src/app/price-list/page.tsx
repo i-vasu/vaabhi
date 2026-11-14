@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import type { GarmentTemplate, ProductionStage, ServiceProduct, ServiceProductForm } from "@vaabhi/api-client";
+import type {
+  GarmentTemplate,
+  ProductionStage,
+  ServiceProduct,
+  ServiceProductForm,
+  TaxClass,
+} from "@vaabhi/api-client";
 import { PlusIcon, TagIcon, TrashIcon } from "@/components/icons";
 import { ErrorNote, PhotoInput, SearchBox } from "@/components/tailoring";
 import {
@@ -28,6 +34,8 @@ export default function PriceListPage() {
   const [editing, setEditing] = useState<Editing | null>(null);
   const products = useLoad(() => api.admin.serviceProducts.list({ q: q || undefined }), [q]);
   const setup = useLoad(() => Promise.all([api.admin.settings.garmentTemplates(), api.admin.settings.stages()]), []);
+  const taxClasses = useLoad(() => api.admin.money.taxClasses.list(), []);
+  const billing = useLoad(() => api.admin.settings.get("billing"), []);
 
   const groups = new Map<string, ServiceProduct[]>();
   for (const product of products.value ?? []) {
@@ -89,6 +97,8 @@ export default function PriceListPage() {
         <ProductSheet
           product={editing.product}
           templates={setup.value[0]}
+          taxClasses={taxClasses.value ?? []}
+          defaultTaxClassId={billing.value?.defaultTaxClassId ?? null}
           stages={setup.value[1].filter((stage) => stage.kind === "WORK")}
           onClose={() => setEditing(null)}
           onSaved={() => {
@@ -104,12 +114,16 @@ export default function PriceListPage() {
 function ProductSheet({
   product,
   templates,
+  taxClasses,
+  defaultTaxClassId,
   stages,
   onClose,
   onSaved,
 }: {
   product: ServiceProduct | null;
   templates: GarmentTemplate[];
+  taxClasses: TaxClass[];
+  defaultTaxClassId: number | null;
   stages: ProductionStage[];
   onClose: () => void;
   onSaved: () => void;
@@ -119,6 +133,7 @@ function ProductSheet({
   const [code, setCode] = useState(product?.code ?? "");
   const [price, setPrice] = useState(product ? String(product.priceRupees) : "");
   const [photoKey, setPhotoKey] = useState<string | null>(product?.photoKey ?? null);
+  const [taxClassId, setTaxClassId] = useState<number | null>(product?.taxClassId ?? null);
   const [costs, setCosts] = useState<Record<number, string>>(() =>
     Object.fromEntries((product?.stageCosts ?? []).map((cost) => [cost.stageId, String(cost.rupees)])),
   );
@@ -139,6 +154,7 @@ function ProductSheet({
       stageCosts: stages
         .map((stage) => ({ stageId: stage.id!, rupees: parseRupees(costs[stage.id!] ?? "") ?? 0 }))
         .filter((cost) => cost.rupees > 0),
+      taxClassId,
     };
     const saved = await action.run(() =>
       product ? api.admin.serviceProducts.update(product.id, form) : api.admin.serviceProducts.create(form),
@@ -172,6 +188,15 @@ function ProductSheet({
             onChange={(e) => setCode(e.target.value)}
           />
         </div>
+        <SelectField
+          label="Tax class"
+          options={[
+            { value: "", label: `Default (${taxClasses.find((c) => c.id === defaultTaxClassId)?.name ?? "none"})` },
+            ...taxClasses.map((c) => ({ value: String(c.id), label: c.name })),
+          ]}
+          value={taxClassId === null ? "" : String(taxClassId)}
+          onChange={(value) => setTaxClassId(value === "" ? null : Number(value))}
+        />
         <PhotoInput label="Add photo" purpose="PRODUCT" value={photoKey} onChange={setPhotoKey} />
         {stages.length > 0 && (
           <div>

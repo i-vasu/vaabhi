@@ -7,11 +7,14 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
@@ -33,9 +36,15 @@ class ShiprocketShipping {
     private final WebOrderReturns returns;
     private final ShiprocketClient shiprocket;
     private final CatalogStock catalog;
+    private final TransactionTemplate transactions;
 
     ShiprocketShipping(
-            CheckoutService orders, WebOrderReturns returns, ShiprocketClient shiprocket, CatalogStock catalog) {
+            CheckoutService orders,
+            WebOrderReturns returns,
+            ShiprocketClient shiprocket,
+            CatalogStock catalog,
+            PlatformTransactionManager transactionManager) {
+        this.transactions = new TransactionTemplate(transactionManager);
         this.orders = orders;
         this.returns = returns;
         this.shiprocket = shiprocket;
@@ -49,9 +58,10 @@ class ShiprocketShipping {
                     HttpStatus.CONFLICT, "Only an order that is still to ship can be sent with Shiprocket");
         }
         var shipment = orders.shipment(number);
+        var invoice = Objects.requireNonNull(transactions.execute(status -> orders.invoiceFor(number)));
         long shipmentId;
         if (shipment.shipmentId() == null) {
-            var created = shiprocket.createOrder(order, weightKg(order, null));
+            var created = shiprocket.createOrder(order, weightKg(order, null), invoice.number());
             orders.recordShiprocketOrder(number, created.orderId(), created.shipmentId());
             shipmentId = created.shipmentId();
         } else {

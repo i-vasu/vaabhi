@@ -194,6 +194,13 @@ export const moreSections: { title: string; items: NavItem[] }[] = [
         permission: "MONEY",
       },
       {
+        href: "/money/purchases/",
+        label: "Purchases",
+        icon: TruckIcon,
+        description: "Suppliers, bills and what we owe",
+        permission: "MONEY",
+      },
+      {
         href: "/money/ledger/",
         label: "Ledger",
         icon: ActivityIcon,

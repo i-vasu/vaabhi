@@ -12,7 +12,7 @@ export function SiteHeader() {
       <p className="bg-bg-muted px-4 py-2 text-center text-xs tracking-[0.02em] text-text-secondary">
         Free shipping above ₹1,999 · COD · 7-day easy returns
       </p>
-      <header className="sticky top-0 z-10 border-b border-border-default bg-bg-surface">
+      <header className="sticky top-0 z-10 border-b border-border-default bg-bg-surface print:hidden">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <div className="flex flex-1 items-center">
             <SiteMenu className={iconButton} />

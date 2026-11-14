@@ -42,7 +42,7 @@ public record OrderForm(
         @DecimalMin("0") @DecimalMax("1000000") @Digits(integer = 7, fraction = 2)
         BigDecimal advanceRupees,
 
-        @NotNull PaymentMode advanceMode,
+        @NotNull @CounterMode PaymentMode advanceMode,
         @Nullable @Size(max = 2000) String notes) {
 
     public enum DiscountKind {

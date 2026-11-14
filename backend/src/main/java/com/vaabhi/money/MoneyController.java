@@ -3,9 +3,15 @@ package com.vaabhi.money;
 import jakarta.validation.Valid;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.Locale;
 import org.jspecify.annotations.Nullable;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -19,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 /** Invoices, expenses, the ledger and what customers owe. Requires the ADMIN role (see SecurityConfig). */
 @RestController
@@ -28,12 +35,25 @@ class MoneyController {
     private final InvoiceService invoices;
     private final ExpenseService expenses;
     private final LedgerService ledger;
+    private final TaxClassService taxClasses;
+    private final CreditNoteService creditNotes;
+    private final Gstr1Service gstr1;
     private final Clock clock;
 
-    MoneyController(InvoiceService invoices, ExpenseService expenses, LedgerService ledger, Clock clock) {
+    MoneyController(
+            InvoiceService invoices,
+            ExpenseService expenses,
+            LedgerService ledger,
+            TaxClassService taxClasses,
+            CreditNoteService creditNotes,
+            Gstr1Service gstr1,
+            Clock clock) {
+        this.creditNotes = creditNotes;
+        this.gstr1 = gstr1;
         this.invoices = invoices;
         this.expenses = expenses;
         this.ledger = ledger;
+        this.taxClasses = taxClasses;
         this.clock = clock;
     }
 
@@ -72,6 +92,35 @@ class MoneyController {
         return invoices.cancel(id, actor(jwt));
     }
 
+    // --- credit notes -------------------------------------------------------------------------------------------
+
+    @PostMapping("/invoices/{id}/credit-notes")
+    @ResponseStatus(HttpStatus.CREATED)
+    CreditNote issueCreditNote(
+            @PathVariable long id,
+            @Valid @RequestBody CreditNoteForm form,
+            @AuthenticationPrincipal @Nullable Jwt jwt) {
+        return creditNotes.issue(id, form, actor(jwt));
+    }
+
+    @GetMapping("/invoices/{id}/credit-notes")
+    List<CreditNoteSummary> listInvoiceCreditNotes(@PathVariable long id) {
+        return creditNotes.forInvoice(id);
+    }
+
+    @GetMapping("/credit-notes")
+    CreditNotePage listCreditNotes(
+            @RequestParam(required = false) @Nullable String q,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return creditNotes.list(q, Math.max(1, page), Math.clamp(size, 1, 100));
+    }
+
+    @GetMapping("/credit-notes/{id}")
+    CreditNote getCreditNote(@PathVariable long id) {
+        return creditNotes.get(id);
+    }
+
     /** The order's live invoice; 204 when it has none yet. */
     @GetMapping("/orders/{orderId}/invoice")
     ResponseEntity<Invoice> getOrderInvoice(@PathVariable long orderId) {
@@ -84,6 +133,57 @@ class MoneyController {
     @ResponseStatus(HttpStatus.CREATED)
     Invoice issueOrderInvoice(@PathVariable long orderId, @AuthenticationPrincipal @Nullable Jwt jwt) {
         return invoices.issue(orderId, actor(jwt));
+    }
+
+    // --- tax classes --------------------------------------------------------------------------------------------
+
+    @GetMapping("/tax-classes")
+    List<TaxClass> listTaxClasses() {
+        return taxClasses.list();
+    }
+
+    @PostMapping("/tax-classes")
+    @ResponseStatus(HttpStatus.CREATED)
+    TaxClass createTaxClass(@Valid @RequestBody TaxClassForm form) {
+        return taxClasses.create(form);
+    }
+
+    @PutMapping("/tax-classes/{id}")
+    TaxClass updateTaxClass(@PathVariable long id, @Valid @RequestBody TaxClassForm form) {
+        return taxClasses.update(id, form);
+    }
+
+    @DeleteMapping("/tax-classes/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void deleteTaxClass(@PathVariable long id) {
+        taxClasses.delete(id);
+    }
+
+    // --- GSTR-1 -------------------------------------------------------------------------------------------------
+
+    private static YearMonth parseMonth(String month) {
+        try {
+            return YearMonth.parse(month);
+        } catch (DateTimeParseException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The month must look like 2026-11");
+        }
+    }
+
+    @GetMapping("/gstr1")
+    Gstr1 getGstr1(@RequestParam String month) {
+        return gstr1.month(parseMonth(month));
+    }
+
+    @GetMapping(value = "/gstr1/{section}.csv", produces = "text/csv")
+    ResponseEntity<String> getGstr1Csv(@PathVariable String section, @RequestParam String month) {
+        var yearMonth = parseMonth(month);
+        var csv = gstr1.csv(yearMonth, section);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"gstr1-" + section.toLowerCase(Locale.ROOT) + "-" + yearMonth + ".csv\"")
+                .body(csv);
     }
 
     // --- expenses -----------------------------------------------------------------------------------------------

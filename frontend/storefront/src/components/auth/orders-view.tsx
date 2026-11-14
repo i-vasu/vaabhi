@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import type { CheckoutStart, OrderReturn, WebOrder } from "@vaabhi/api-client";
+import type { CheckoutStart, OrderReturn, StoreCreditNote, WebOrder } from "@vaabhi/api-client";
 import { Button, buttonClasses } from "@vaabhi/ui";
 import { formatPrice } from "@/lib/format";
 import { openRazorpay } from "@/lib/razorpay";
@@ -195,6 +195,15 @@ function OrderItem({
         ))}
       </ul>
 
+      {order.invoiceNumber && (
+        <p className="mt-2 text-sm">
+          <Link href={`/account/orders/${encodeURIComponent(order.number)}/invoice`} className="underline">
+            View invoice
+          </Link>
+        </p>
+      )}
+      {order.invoiceNumber && <CreditNoteLinks orderNumber={order.number} />}
+
       {order.returns.map((r) => (
         <div key={r.number} className="mt-3 rounded-sm bg-bg-muted p-3 text-sm">
           <p>
@@ -254,6 +263,40 @@ function OrderItem({
         </p>
       )}
     </li>
+  );
+}
+
+/** "View credit note" links for an order; shows nothing when there are none or the call fails. */
+function CreditNoteLinks({ orderNumber }: Readonly<{ orderNumber: string }>) {
+  const [numbers, setNumbers] = useState<string[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/auth/orders/${encodeURIComponent(orderNumber)}/credit-notes`)
+      .then(async (response) => {
+        if (!response.ok) return;
+        const notes = (await response.json()) as StoreCreditNote[];
+        if (!cancelled) setNumbers(notes.map((n) => n.number));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [orderNumber]);
+
+  return (
+    <>
+      {numbers.map((number) => (
+        <p key={number} className="mt-1 text-sm">
+          <Link
+            href={`/account/orders/${encodeURIComponent(orderNumber)}/credit-notes/${encodeURIComponent(number)}`}
+            className="underline"
+          >
+            View credit note {number}
+          </Link>
+        </p>
+      ))}
+    </>
   );
 }
 

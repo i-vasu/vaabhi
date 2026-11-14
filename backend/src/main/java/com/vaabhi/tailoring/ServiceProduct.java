@@ -9,6 +9,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @param stageCosts what each production stage costs the shop (piece rate paid to the tailor)
  * @param profitRupees price minus all stage costs
+ * @param taxClassId the tax class this service is billed under; null = the garment's, then the shop default
  */
 public record ServiceProduct(
         long id,
@@ -19,4 +20,5 @@ public record ServiceProduct(
         BigDecimal priceRupees,
         @Nullable String photoKey,
         List<StageCost> stageCosts,
-        BigDecimal profitRupees) {}
+        BigDecimal profitRupees,
+        @Nullable Long taxClassId) {}

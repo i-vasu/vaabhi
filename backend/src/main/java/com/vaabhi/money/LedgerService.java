@@ -46,6 +46,19 @@ public class LedgerService {
             SELECT (e.spent_on::timestamp AT TIME ZONE :zone), 'EXPENSE', e.id, e.description, e.paid_to, e.mode,
                    -e.amount_rupees
             FROM expense e
+            UNION ALL
+            SELECT w.paid_at, 'WEB_PAYMENT', w.id, w.number, w.contact_name,
+                   CASE w.payment_method WHEN 'COD' THEN 'COD' ELSE 'RAZORPAY' END, w.total_rupees
+            FROM web_order w WHERE w.paid_at IS NOT NULL
+            UNION ALL
+            SELECT w.refunded_at, 'WEB_REFUND', w.id, w.number, w.contact_name, 'RAZORPAY', -w.refunded_rupees
+            FROM web_order w WHERE w.refund_status = 'PROCESSED' AND w.refunded_at IS NOT NULL
+            UNION ALL
+            SELECT r.refunded_at, 'WEB_REFUND', r.id, r.number, w.contact_name,
+                   CASE r.refund_method WHEN 'RAZORPAY' THEN 'RAZORPAY' ELSE 'BANK' END, -r.refund_rupees
+            FROM web_order_return r JOIN web_order w ON w.id = r.order_id
+            WHERE r.refunded_at IS NOT NULL AND r.refund_rupees IS NOT NULL
+              AND ((r.refund_method = 'RAZORPAY' AND r.refund_status = 'PROCESSED') OR r.refund_method = 'MANUAL')
             """;
 
     private final JdbcClient jdbc;

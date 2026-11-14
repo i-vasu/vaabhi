@@ -1,5 +1,8 @@
 package com.vaabhi.inventory;
 
+import com.vaabhi.party.PartyService;
+import com.vaabhi.settings.NumberSequence;
+import com.vaabhi.settings.NumberingService;
 import com.vaabhi.shared.rupees.Rupees;
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -26,9 +29,13 @@ public class InventoryService {
             """;
 
     private final JdbcClient jdbc;
+    private final NumberingService numbering;
+    private final PartyService parties;
 
-    InventoryService(JdbcClient jdbc) {
+    InventoryService(JdbcClient jdbc, NumberingService numbering, PartyService parties) {
         this.jdbc = jdbc;
+        this.numbering = numbering;
+        this.parties = parties;
     }
 
     private record ItemRow(
@@ -126,26 +133,44 @@ public class InventoryService {
     @Transactional
     public StockItem save(@Nullable Long id, StockItem.StockItemForm form) {
         try {
+            var params = formParams(form);
             if (id == null) {
+                // Every item gets a code (STK-0001…) for labels and search, unless one was typed.
+                if (params.get("sku") == null) {
+                    params.put("sku", numbering.next(NumberSequence.Kind.STOCK_ITEM));
+                }
                 id = jdbc.sql("""
                                 INSERT INTO stock_item (name, sku, category, unit, reorder_level, cost_rupees,
                                     supplier_name, supplier_phone, material, colour, gsm, thread_count, width_in, notes)
                                 VALUES (:name, :sku, :category, :unit, :reorder, :cost, :supplierName, :supplierPhone,
                                     :material, :colour, :gsm, :threadCount, :widthIn, :notes) RETURNING id
-                                """).params(formParams(form)).query(Long.class).single();
+                                """).params(params).query(Long.class).single();
             } else {
                 get(id);
+                // A code once given stays when the field is left empty.
                 jdbc.sql("""
-                                UPDATE stock_item SET name = :name, sku = :sku, category = :category, unit = :unit,
+                                UPDATE stock_item SET name = :name, sku = COALESCE(:sku, sku), category = :category,
+                                    unit = :unit,
                                     reorder_level = :reorder, cost_rupees = :cost, supplier_name = :supplierName,
                                     supplier_phone = :supplierPhone, material = :material, colour = :colour,
                                     gsm = :gsm, thread_count = :threadCount, width_in = :widthIn, notes = :notes
                                 WHERE id = :id
-                                """).params(formParams(form)).param("id", id).update();
+                                """).params(params).param("id", id).update();
             }
         } catch (DuplicateKeyException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "An item with this name or SKU already exists", e);
         }
+        // The supplier is a party (shared with customers and job workers by phone).
+        var supplier = form.supplierName() == null || form.supplierName().isBlank()
+                ? null
+                : Long.valueOf(parties.save(
+                        null,
+                        PartyService.Details.of(form.supplierName(), form.supplierPhone()),
+                        PartyService.Role.SUPPLIER));
+        jdbc.sql("UPDATE stock_item SET supplier_party_id = :party WHERE id = :id")
+                .param("party", supplier)
+                .param("id", id)
+                .update();
         return get(id);
     }
 
@@ -215,6 +240,18 @@ public class InventoryService {
                 .query(Long.class)
                 .single();
         return ledger(itemId).stream().filter(m -> m.id() == id).findFirst().orElseThrow();
+    }
+
+    /** Sets the cost of one unit, e.g. what a bill paid for it. */
+    @Transactional
+    public void setCost(long itemId, BigDecimal costRupees) {
+        int updated = jdbc.sql("UPDATE stock_item SET cost_rupees = :cost WHERE id = :id")
+                .param("cost", Rupees.of(costRupees))
+                .param("id", itemId)
+                .update();
+        if (updated == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Stock item not found");
+        }
     }
 
     /** One item's movements, newest first, with the balance after each. */

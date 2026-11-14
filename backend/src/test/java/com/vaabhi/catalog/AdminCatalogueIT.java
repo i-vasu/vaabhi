@@ -68,8 +68,8 @@ class AdminCatalogueIT {
         mockMvc.perform(get("/api/v1/admin/products/" + id).with(ADMIN))
                 .andExpect(jsonPath("$.status").value("DRAFT"))
                 .andExpect(jsonPath("$.slug").value("mint-organza-lehenga"))
-                .andExpect(
-                        jsonPath("$.variants[0].sku").value(org.hamcrest.Matchers.matchesPattern("VB-[A-Z2-9]{6}-M")))
+                .andExpect(jsonPath("$.variants[0].sku")
+                        .value(org.hamcrest.Matchers.matchesPattern("VB\\d{4,}-[A-Z0-9]+-M")))
                 .andExpect(jsonPath("$.variants[0].colourHex").value("#BFE3D0"))
                 .andExpect(jsonPath("$.attributes.fabric[0]").value("organza"));
         mockMvc.perform(get("/api/v1/store/products/mint-organza-lehenga")).andExpect(status().isNotFound());

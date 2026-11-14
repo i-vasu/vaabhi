@@ -197,6 +197,7 @@ describe("orders & production", () => {
           { key: "sleeve_length", label: "Sleeve length", unit: "in" },
           { key: "neck_style", label: "Neck style", unit: "" },
         ],
+        taxClassId: null,
       }),
     );
   });
@@ -230,14 +231,17 @@ describe("billing & tax", () => {
 
     fireEvent.click(await screen.findByRole("switch", { name: "Charge GST" }));
     type("GSTIN", "27abcde1234f1z5");
-    type("Default GST rate %", "12");
+    const defaultClass = screen.getByLabelText("Default tax class");
+    await within(defaultClass).findByRole("option", { name: "Tailoring service" });
+    fireEvent.change(defaultClass, { target: { value: "2" } });
     fireEvent.change(screen.getByLabelText("Discount comes off"), { target: { value: "ITEMS_BEFORE_TAX" } });
     click("Save GST settings");
     await waitFor(() =>
       expect(saved.billing).toMatchObject({
         chargeGst: true,
         gstin: "27ABCDE1234F1Z5",
-        defaultGstRate: 12,
+        defaultGstRate: 5,
+        defaultTaxClassId: 2,
         discountAppliesTo: "ITEMS_BEFORE_TAX",
       }),
     );
@@ -253,8 +257,40 @@ describe("billing & tax", () => {
     );
   });
 
+  it("saves company details", async () => {
+    render(<BillingPage />);
+
+    type(await screen.findByLabelText("Legal name"), "Vaabhi Fashions Private Limited");
+    type("CIN", "u14100ts2026ptc123456");
+    type("Registered office", "Road No. 1, Hyderabad");
+    await screen.findByRole("option", { name: "Telangana (36)" });
+    fireEvent.change(screen.getByLabelText("State"), { target: { value: "Telangana" } });
+    click("Save company details");
+
+    await waitFor(() =>
+      expect(saved.billing).toMatchObject({
+        company: {
+          legalName: "Vaabhi Fashions Private Limited",
+          cin: "U14100TS2026PTC123456",
+          registeredOffice: "Road No. 1, Hyderabad",
+          state: "Telangana",
+        },
+      }),
+    );
+  });
+
+  it("lists tax classes with their rate text", async () => {
+    render(<BillingPage />);
+
+    expect(await screen.findByText("5% up to ₹2,500, then 18%")).toBeInTheDocument();
+    expect(screen.getByLabelText("Sarees")).toHaveValue("");
+    expect(screen.getByRole("option", { name: "Default (Apparel)" })).toBeInTheDocument();
+  });
+
   it("previews padded numbers", () => {
-    expect(preview({ kind: "ITEM", prefix: "IT", nextValue: 7, suffix: "/26", pad: 3, preview: "" })).toBe("IT007/26");
+    expect(
+      preview({ kind: "ITEM", prefix: "IT", nextValue: 7, suffix: "/26", pad: 3, reset: "NEVER", preview: "" }),
+    ).toBe("IT007/26");
   });
 
   it("saves bank and document details", async () => {
@@ -403,5 +439,75 @@ describe("holidays, notifications and account", () => {
 
     click("Sign out");
     expect(replace).toHaveBeenCalledWith("/login/");
+  });
+});
+
+describe("billing & tax classes", () => {
+  it("adds a tax class", async () => {
+    let created: unknown;
+    server.use(
+      http.post(`${API}/api/v1/admin/money/tax-classes`, async ({ request }) => {
+        created = await request.json();
+        return HttpResponse.json({
+          id: 9,
+          name: "Lining",
+          kind: "GOODS",
+          hsnCode: "5208",
+          ratePercent: 12,
+          slabLimitRupees: null,
+          rateAbovePercent: null,
+          inUse: false,
+        });
+      }),
+    );
+    render(<BillingPage />);
+    fireEvent.click(await screen.findByRole("button", { name: /Add tax class/ }));
+    click("Save tax class");
+    expect(await screen.findByText("Enter the name.")).toBeInTheDocument();
+    type("Name", "Lining");
+    click("Save tax class");
+    expect(await screen.findByText("Enter the HSN or SAC code.")).toBeInTheDocument();
+    type("HSN / SAC code", "5208");
+    type("Rate %", "12");
+    click("Save tax class");
+    await waitFor(() => expect(created).toMatchObject({ name: "Lining", hsnCode: "5208" }));
+  });
+
+  it("edits and removes a tax class", async () => {
+    let updated = false;
+    let removed = false;
+    server.use(
+      http.put(`${API}/api/v1/admin/money/tax-classes/:id`, () => {
+        updated = true;
+        return HttpResponse.json({});
+      }),
+      http.delete(`${API}/api/v1/admin/money/tax-classes/:id`, () => {
+        removed = true;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    render(<BillingPage />);
+    fireEvent.click((await screen.findAllByRole("button", { name: /Apparel/ }))[0]!);
+    expect(await screen.findByText("Edit tax class")).toBeInTheDocument();
+    click("Save tax class");
+    await waitFor(() => expect(updated).toBe(true));
+
+    fireEvent.click((await screen.findAllByRole("button", { name: /Apparel/ }))[0]!);
+    click(/Remove/);
+    await waitFor(() => expect(removed).toBe(true));
+  });
+
+  it("sets a category's tax class", async () => {
+    let body: unknown;
+    server.use(
+      http.put(`${API}/api/v1/admin/categories/:id/tax-class`, async ({ request }) => {
+        body = await request.json();
+        return HttpResponse.json({ id: 1, name: "Sarees", taxClassId: 1 });
+      }),
+    );
+    render(<BillingPage />);
+    await screen.findAllByRole("option", { name: "Apparel" });
+    fireEvent.change(screen.getByLabelText("Sarees"), { target: { value: "1" } });
+    await waitFor(() => expect(body).toEqual({ taxClassId: 1 }));
   });
 });

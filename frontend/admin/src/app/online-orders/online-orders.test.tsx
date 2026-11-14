@@ -54,6 +54,7 @@ function order(patch: Partial<WebOrder> = {}): WebOrder {
     shippingLabelUrl: null,
     returnableUntil: null,
     createdAt: "2026-11-04T05:00:00Z",
+    invoiceNumber: null,
     lines: [
       {
         position: 0,

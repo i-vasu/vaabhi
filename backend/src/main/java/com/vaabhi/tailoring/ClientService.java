@@ -1,5 +1,6 @@
 package com.vaabhi.tailoring;
 
+import com.vaabhi.party.PartyService;
 import com.vaabhi.settings.GarmentTemplate;
 import com.vaabhi.settings.ShopListService;
 import java.math.BigDecimal;
@@ -33,11 +34,42 @@ public class ClientService {
     private final JdbcClient jdbc;
     private final JsonMapper json;
     private final ShopListService lists;
+    private final PartyService parties;
 
-    ClientService(JdbcClient jdbc, JsonMapper json, ShopListService lists) {
+    ClientService(JdbcClient jdbc, JsonMapper json, ShopListService lists, PartyService parties) {
         this.jdbc = jdbc;
         this.json = json;
         this.lists = lists;
+        this.parties = parties;
+    }
+
+    /** Keeps the client's party (one per phone, shared with a website customer) in step with the client. */
+    private void linkParty(long clientId, ClientForm form) {
+        var current = jdbc.sql("SELECT party_id FROM client WHERE id = :id")
+                .param(ID, clientId)
+                .query(Long.class)
+                .optional()
+                .orElse(null);
+        var name = form.firstName().trim()
+                + (blankToNull(form.lastName()) == null
+                        ? ""
+                        : " " + form.lastName().trim());
+        long partyId = parties.save(
+                current,
+                new PartyService.Details(
+                        name,
+                        Phones.normalize(form.phone()),
+                        form.email(),
+                        form.gstin(),
+                        form.address(),
+                        form.city(),
+                        form.state(),
+                        form.pinCode()),
+                PartyService.Role.CUSTOMER);
+        jdbc.sql("UPDATE client SET party_id = :party WHERE id = :id")
+                .param("party", partyId)
+                .param(ID, clientId)
+                .update();
     }
 
     // --- list ---------------------------------------------------------------------------------------------------
@@ -233,6 +265,7 @@ public class ClientService {
                                 :occasionName, :occasionDate)
                             RETURNING id
                             """).params(params(form)).query(Long.class).single();
+            linkParty(id, form);
             return get(id);
         } catch (DuplicateKeyException e) {
             throw duplicatePhone(e);
@@ -256,6 +289,7 @@ public class ClientService {
             if (updated == 0) {
                 throw notFound();
             }
+            linkParty(id, form);
             return get(id);
         } catch (DuplicateKeyException e) {
             throw duplicatePhone(e);

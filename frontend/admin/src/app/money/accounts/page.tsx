@@ -1,0 +1,380 @@
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+import type { Account, BooksSettings, BackupStatus } from "@vaabhi/api-client";
+import { ActivityIcon, BankIcon, DocumentIcon, ReceiptIcon } from "@/components/icons";
+import { ErrorNote } from "@/components/tailoring";
+import {
+  ListCard,
+  ListRow,
+  LoadState,
+  PageHeader,
+  SectionLabel,
+  SelectField,
+  TextField,
+  buttonPrimary,
+  buttonSecondary,
+} from "@/components/ui";
+import { api } from "@/lib/api";
+import { MODE_ACCOUNTS, relativeTime, useIsOwner } from "@/lib/accounts";
+import { rupees } from "@/lib/settings";
+import { formatDate, today, useAction, useLoad } from "@/lib/tailoring";
+
+/** Bytes as megabytes to one decimal place, or a dash when the run has no size. */
+function megabytes(bytes: number | null): string {
+  return bytes === null ? "—" : (bytes / 1024 / 1024).toFixed(1);
+}
+
+/** The browser-local calendar day of a date-time, as yyyy-mm-dd. */
+function localDay(iso: string): string {
+  const date = new Date(iso);
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
+}
+
+/** The one line that says how backups are doing, and in which colour. */
+function backupHeadline(status: BackupStatus): { text: string; tone: string } {
+  if (!status.configured) return { text: "Backups aren't set up", tone: "text-warn" };
+  const last = status.lastBackup;
+  if (last?.status === "FAILED")
+    return { text: `Last backup failed: ${last.message ?? "no reason given"}`, tone: "text-bad" };
+  if (status.missedLastNight) return { text: "Last night's backup didn't run", tone: "text-bad" };
+  if (!last) return { text: "No backup yet", tone: "text-warn" };
+  const size = last.sizeBytes === null ? null : `${megabytes(last.sizeBytes)} MB`;
+  return {
+    text: [`Last backup ${relativeTime(last.finishedAt ?? last.startedAt)}`, size, status.locationLabel]
+      .filter(Boolean)
+      .join(" · "),
+    tone: "text-ink",
+  };
+}
+
+function StartDate({ settings, owner, onSaved }: { settings: BooksSettings; owner: boolean; onSaved: () => void }) {
+  const [date, setDate] = useState(today());
+  const action = useAction();
+
+  async function set() {
+    const saved = await action.run(() =>
+      api.admin.accounts.saveSettings({
+        startDate: date,
+        modeAccounts: settings.modeAccounts,
+        shiprocketPartyId: settings.shiprocketPartyId ?? null,
+      }),
+    );
+    if (saved) onSaved();
+  }
+
+  return (
+    <div className="mb-4 rounded-2xl border border-line bg-panel p-4">
+      {settings.startDate ? (
+        <p>Books start on {formatDate(settings.startDate)}.</p>
+      ) : (
+        <>
+          <p className="font-medium">Books haven&apos;t started. Set the start date to begin.</p>
+          {owner && (
+            <div className="mt-3 flex flex-wrap items-end gap-3">
+              <TextField label="Start date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+              <button type="button" className={buttonPrimary} disabled={action.busy || !date} onClick={set}>
+                Set
+              </button>
+            </div>
+          )}
+        </>
+      )}
+      <ErrorNote>{action.error}</ErrorNote>
+    </div>
+  );
+}
+
+function PaymentAccounts({
+  settings,
+  assets,
+  onSaved,
+}: {
+  settings: BooksSettings;
+  assets: Account[];
+  onSaved: () => void;
+}) {
+  const [map, setMap] = useState<Record<string, string>>(() =>
+    Object.fromEntries(MODE_ACCOUNTS.map((m) => [m.value, String(settings.modeAccounts[m.value] ?? "")])),
+  );
+  const [saved, setSaved] = useState(false);
+  const action = useAction();
+  const options = assets.map((a) => ({ value: String(a.id), label: `${a.code} · ${a.name}` }));
+
+  async function save() {
+    setSaved(false);
+    const modeAccounts: Record<string, number> = {};
+    for (const mode of MODE_ACCOUNTS) modeAccounts[mode.value] = Number(map[mode.value]);
+    const result = await action.run(() =>
+      api.admin.accounts.saveSettings({
+        startDate: settings.startDate,
+        modeAccounts,
+        shiprocketPartyId: settings.shiprocketPartyId ?? null,
+      }),
+    );
+    if (result) {
+      setSaved(true);
+      onSaved();
+    }
+  }
+
+  return (
+    <div className="rounded-2xl border border-line bg-panel p-4">
+      <p className="mb-3 text-sm text-ink-soft">Which account each way of taking money is posted to.</p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {MODE_ACCOUNTS.map((mode) => (
+          <SelectField
+            key={mode.value}
+            label={mode.label}
+            options={options}
+            value={map[mode.value] ?? ""}
+            onChange={(value) => setMap((current) => ({ ...current, [mode.value]: value }))}
+          />
+        ))}
+      </div>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          className={buttonPrimary}
+          disabled={action.busy || MODE_ACCOUNTS.some((m) => !map[m.value])}
+          onClick={save}
+        >
+          {action.busy ? "Saving…" : "Save payment accounts"}
+        </button>
+        <span role="status" className="text-sm text-ok">
+          {saved ? "Saved" : ""}
+        </span>
+      </div>
+      <ErrorNote>{action.error}</ErrorNote>
+    </div>
+  );
+}
+
+/** Which supplier Shiprocket's deductions and freight bills are booked against. */
+function ShiprocketSupplier({ settings, onSaved }: { settings: BooksSettings; onSaved: () => void }) {
+  const suppliers = useLoad(() => api.admin.purchases.suppliers(), []);
+  const [partyId, setPartyId] = useState(() =>
+    settings.shiprocketPartyId == null ? "" : String(settings.shiprocketPartyId),
+  );
+  const action = useAction();
+
+  const options = [
+    { value: "", label: "Not set" },
+    ...(suppliers.value ?? []).map((supplier) => ({
+      value: String(supplier.partyId),
+      label: supplier.gstin ? `${supplier.name} · ${supplier.gstin}` : supplier.name,
+    })),
+  ];
+
+  async function save() {
+    const saved = await action.run(() =>
+      api.admin.accounts.saveSettings({
+        startDate: settings.startDate,
+        modeAccounts: settings.modeAccounts,
+        shiprocketPartyId: partyId ? Number(partyId) : null,
+      }),
+    );
+    if (saved) onSaved();
+  }
+
+  return (
+    <div className="rounded-2xl border border-line bg-panel p-4">
+      <SelectField
+        label="Shiprocket supplier"
+        hint="COD deductions and freight invoices are booked against this supplier."
+        options={options}
+        value={partyId}
+        onChange={setPartyId}
+      />
+      <div className="mt-4">
+        <button type="button" className={buttonPrimary} disabled={action.busy || !suppliers.value} onClick={save}>
+          {action.busy ? "Saving…" : "Save supplier"}
+        </button>
+      </div>
+      <ErrorNote>{action.error ?? suppliers.error}</ErrorNote>
+    </div>
+  );
+}
+
+/** Backups at a glance; quiet when they run, amber before setup, red after a missed or failed night. */
+function BackupsCard() {
+  const backups = useLoad(() => api.admin.accounts.backups.status(), []);
+  const s = backups.value;
+  const headline = s ? backupHeadline(s) : null;
+
+  return (
+    <Link
+      href="/money/accounts/backups/"
+      className="mb-4 block rounded-2xl border border-line bg-panel p-4 transition-colors hover:bg-panel-2"
+    >
+      <p className="font-medium">Backups</p>
+      {!s ? (
+        <p className="mt-1 text-sm text-ink-faint">
+          {backups.error ? `Couldn't load backups: ${backups.error}` : "Checking…"}
+        </p>
+      ) : (
+        <>
+          {headline && <p className={`mt-1 text-sm font-medium ${headline.tone}`}>{headline.text}</p>}
+          {!s.configured ? (
+            <p className="mt-1 text-sm text-ink-soft">See the setup guide in infra/vps-setup.md.</p>
+          ) : (
+            <p className="mt-1 text-sm text-ink-faint">
+              Checked {s.lastCheck ? formatDate(localDay(s.lastCheck.startedAt)) : "never"} · Restore drill{" "}
+              {s.lastDrill?.drilledOn ? formatDate(s.lastDrill.drilledOn) : "not done"}
+            </p>
+          )}
+        </>
+      )}
+    </Link>
+  );
+}
+
+/** Books at a glance: when they start, whether they balance, what is stuck, and where to go next. */
+export default function AccountsPage() {
+  const owner = useIsOwner();
+  const status = useLoad(() => api.admin.accounts.status(), []);
+  const settings = useLoad(() => api.admin.accounts.settings(), []);
+  const chart = useLoad(() => api.admin.accounts.chart(), []);
+  const sweep = useAction();
+  const s = status.value;
+  const b = settings.value;
+
+  function refresh() {
+    status.reload();
+    settings.reload();
+  }
+
+  async function postNow() {
+    const result = await sweep.run(() => api.admin.accounts.sweep());
+    if (result) refresh();
+  }
+
+  const assets = (chart.value ?? []).filter((a) => a.type === "ASSET" && a.active);
+
+  return (
+    <section className="mx-auto max-w-3xl">
+      <PageHeader title="Accounts" backHref="/money/" />
+      <ErrorNote>{status.error ?? settings.error ?? chart.error}</ErrorNote>
+      <BackupsCard />
+      {!b || !s ? (
+        <LoadState loading={status.loading || settings.loading} error={null} />
+      ) : (
+        <>
+          <StartDate settings={b} owner={owner} onSaved={refresh} />
+          {b.startDate && (
+            <div className="mb-4 rounded-2xl border border-line bg-panel p-4 text-sm">
+              <p>
+                {s.lastSweepAt ? `Posted ${relativeTime(s.lastSweepAt)}` : "Nothing posted yet"}
+                {owner && (
+                  <button type="button" className={`${buttonSecondary} ml-3`} disabled={sweep.busy} onClick={postNow}>
+                    {sweep.busy ? "Posting…" : "Post now"}
+                  </button>
+                )}
+              </p>
+              <p className="mt-2">
+                <Link href="/money/accounts/problems/" className="font-medium text-accent-ink underline">
+                  {s.problemCount === 1 ? "1 problem" : `${s.problemCount} problems`}
+                </Link>
+              </p>
+              <p className={`mt-2 font-medium ${Math.abs(s.trialBalanceDifference) < 0.005 ? "text-ok" : "text-bad"}`}>
+                {Math.abs(s.trialBalanceDifference) < 0.005
+                  ? "Balanced"
+                  : `Out by ${rupees(Math.abs(s.trialBalanceDifference))}`}
+              </p>
+              <ErrorNote>{sweep.error}</ErrorNote>
+            </div>
+          )}
+          <ListCard>
+            <ListRow
+              href="/money/accounts/journal/"
+              icon={DocumentIcon}
+              title="Journal"
+              subtitle="Every entry, newest first"
+            />
+            <ListRow
+              href="/money/accounts/trial-balance/"
+              icon={ActivityIcon}
+              title="Trial balance"
+              subtitle="Debits and credits as at a date"
+            />
+            <ListRow
+              href="/money/accounts/chart/"
+              icon={BankIcon}
+              title="Chart of accounts"
+              subtitle="Accounts and their ledgers"
+            />
+            <ListRow
+              href="/money/accounts/manual/"
+              icon={DocumentIcon}
+              title="Manual journal"
+              subtitle="Post an entry by hand"
+            />
+            <ListRow
+              href="/money/accounts/opening/"
+              icon={BankIcon}
+              title="Opening balances"
+              subtitle="What the books start with"
+            />
+            <ListRow
+              href="/money/accounts/periods/"
+              icon={ActivityIcon}
+              title="Periods"
+              subtitle="Lock months that are closed"
+            />
+            <ListRow
+              href="/money/accounts/bank/"
+              icon={BankIcon}
+              title="Bank reconciliation"
+              subtitle="Import bank statements and COD remittances, sync Razorpay, match to the books"
+            />
+            <ListRow
+              href="/money/accounts/assets/"
+              icon={BankIcon}
+              title="Fixed assets"
+              subtitle="What the shop owns, what it has depreciated, and disposals"
+            />
+            <ListRow
+              href="/money/accounts/tds/"
+              icon={DocumentIcon}
+              title="TDS"
+              subtitle="Deducted on bills, challans paid and the balance by section"
+            />
+            <ListRow
+              href="/money/accounts/input-gst/"
+              icon={ReceiptIcon}
+              title="Input GST"
+              subtitle="GST on supplier bills and gateway fees, month by month"
+            />
+            <ListRow
+              href="/money/accounts/statements/"
+              icon={ActivityIcon}
+              title="Statements"
+              subtitle="Profit and loss and balance sheet, by Schedule III line"
+            />
+            <ListRow
+              href="/money/accounts/gstr3b/"
+              icon={ReceiptIcon}
+              title="GSTR-3B"
+              subtitle="GST for a month, with the set-off against input tax"
+            />
+            <ListRow
+              href="/money/accounts/year-end/"
+              icon={DocumentIcon}
+              title="Year end"
+              subtitle="Closing stock, close the year and the auditor pack"
+            />
+          </ListCard>
+          {owner && (
+            <>
+              <SectionLabel>Payment accounts</SectionLabel>
+              <PaymentAccounts key={assets.length} settings={b} assets={assets} onSaved={refresh} />
+              <SectionLabel>Shiprocket</SectionLabel>
+              <ShiprocketSupplier settings={b} onSaved={refresh} />
+            </>
+          )}
+        </>
+      )}
+    </section>
+  );
+}

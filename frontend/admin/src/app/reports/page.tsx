@@ -1,10 +1,12 @@
 "use client";
 
+import { useStaff } from "@/components/app-shell";
 import { ActivityIcon } from "@/components/icons";
 import { AgeingBars, MonthBars } from "@/components/charts";
 import { ErrorNote } from "@/components/tailoring";
 import { ListCard, ListRow, LoadState, PageHeader, SectionLabel, StatTile } from "@/components/ui";
 import { api } from "@/lib/api";
+import { hasPermission } from "@/lib/nav";
 import { rupees } from "@/lib/settings";
 import { useLoad } from "@/lib/tailoring";
 
@@ -12,6 +14,7 @@ import { useLoad } from "@/lib/tailoring";
 export default function ReportsPage() {
   const overview = useLoad(() => api.admin.reports.overview(), []);
   const reports = useLoad(() => api.admin.reports.list(), []);
+  const staff = useStaff();
   const o = overview.value;
 
   return (
@@ -50,6 +53,14 @@ export default function ReportsPage() {
       <SectionLabel>All reports</SectionLabel>
       {reports.value && (
         <ListCard>
+          {hasPermission(staff, "MONEY") && (
+            <ListRow
+              icon={ActivityIcon}
+              href="/reports/gst/"
+              title="GSTR-1"
+              subtitle="Sales return for the month, ready for the GST offline tool"
+            />
+          )}
           {reports.value.map((r) => (
             <ListRow
               key={r.name}
