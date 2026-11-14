@@ -443,12 +443,7 @@ export function createApiClient({ baseUrl, getToken }: ApiClientOptions) {
     });
     if (!response.ok) {
       const problem = await problemOf(response);
-      throw new ApiError(
-        response.status,
-        `GET ${path} failed with ${response.status}`,
-        problem.errors,
-        problem.detail,
-      );
+      throw new ApiError(response.status, `GET ${path} failed with ${response.status}`, problem.errors, problem.detail);
     }
     return response.blob();
   };

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type { Account, AccountForm } from "@vaabhi/api-client";
+import type { Account, AccountForm, ScheduleLine } from "@vaabhi/api-client";
 import { BankIcon } from "@/components/icons";
 import { ErrorNote, Pill } from "@/components/tailoring";
 import {
@@ -20,6 +20,7 @@ import {
 import { ACCOUNT_TYPES, useIsOwner, type AccountType } from "@/lib/accounts";
 import { api } from "@/lib/api";
 import { rupees } from "@/lib/settings";
+import { defaultLineFor, linesFor, scheduleLineLabel } from "@/lib/statements";
 import { useAction, useLoad } from "@/lib/tailoring";
 
 type Editing = { account: Account | null };
@@ -29,8 +30,16 @@ function AccountSheet({ editing, onClose, onSaved }: { editing: Editing; onClose
   const [code, setCode] = useState(account?.code ?? "");
   const [name, setName] = useState(account?.name ?? "");
   const [type, setType] = useState<AccountType>(account?.type ?? "ASSET");
+  const [scheduleLine, setScheduleLine] = useState<ScheduleLine>(
+    account?.scheduleLine ?? defaultLineFor(account?.type ?? "ASSET"),
+  );
   const action = useAction();
   const title = account ? "Rename account" : "Add account";
+
+  function changeType(next: AccountType) {
+    setType(next);
+    setScheduleLine(defaultLineFor(next));
+  }
 
   async function save() {
     const form: AccountForm = {
@@ -39,6 +48,7 @@ function AccountSheet({ editing, onClose, onSaved }: { editing: Editing; onClose
       type,
       parentId: account?.parentId ?? null,
       active: account?.active ?? true,
+      scheduleLine,
     };
     const saved = await action.run(() =>
       account ? api.admin.accounts.updateAccount(account.id, form) : api.admin.accounts.createAccount(form),
@@ -54,7 +64,13 @@ function AccountSheet({ editing, onClose, onSaved }: { editing: Editing; onClose
       <div className="flex flex-col gap-4">
         <TextField label="Code" value={code} onChange={(e) => setCode(e.target.value)} />
         <TextField label="Name" value={name} onChange={(e) => setName(e.target.value)} />
-        {!account && <SelectField label="Type" options={ACCOUNT_TYPES} value={type} onChange={setType} />}
+        {!account && <SelectField label="Type" options={ACCOUNT_TYPES} value={type} onChange={changeType} />}
+        <SelectField
+          label="Schedule III line"
+          options={linesFor(type)}
+          value={scheduleLine}
+          onChange={setScheduleLine}
+        />
         <ErrorNote>{action.error}</ErrorNote>
         <button
           type="button"
@@ -85,6 +101,7 @@ export default function ChartPage() {
         type: account.type,
         parentId: account.parentId,
         active,
+        scheduleLine: account.scheduleLine,
       }),
     );
     if (saved) chart.reload();
@@ -125,6 +142,7 @@ export default function ChartPage() {
                         {account.code} · {account.name}
                       </span>{" "}
                       {!account.active && <Pill>Off</Pill>}
+                      <span className="block text-sm text-ink-soft">{scheduleLineLabel(account.scheduleLine)}</span>
                     </Link>
                     <span className="tabular-nums text-sm">{rupees(account.balanceRupees)}</span>
                     {owner && (

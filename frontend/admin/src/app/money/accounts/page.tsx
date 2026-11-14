@@ -284,6 +284,24 @@ export default function AccountsPage() {
               title="Input GST"
               subtitle="GST on supplier bills and gateway fees, month by month"
             />
+            <ListRow
+              href="/money/accounts/statements/"
+              icon={ActivityIcon}
+              title="Statements"
+              subtitle="Profit and loss and balance sheet, by Schedule III line"
+            />
+            <ListRow
+              href="/money/accounts/gstr3b/"
+              icon={ReceiptIcon}
+              title="GSTR-3B"
+              subtitle="GST for a month, with the set-off against input tax"
+            />
+            <ListRow
+              href="/money/accounts/year-end/"
+              icon={DocumentIcon}
+              title="Year end"
+              subtitle="Closing stock, close the year and the auditor pack"
+            />
           </ListCard>
           {owner && (
             <>
