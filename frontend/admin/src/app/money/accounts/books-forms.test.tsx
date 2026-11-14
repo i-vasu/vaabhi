@@ -358,4 +358,168 @@ describe("books forms", () => {
     await waitFor(() => expect(mocks.accounts.bank.candidates).toHaveBeenCalledWith(11));
     expect((await screen.findAllByText("PAY-7")).length).toBeGreaterThan(0);
   });
+
+  describe("bill states", () => {
+    const stockLine = {
+      ...bill.lines[0]!,
+      id: 2,
+      position: 1,
+      kind: "STOCK",
+      description: "Silk thread",
+      stockItemId: 31,
+      stockItemName: "Silk thread",
+      quantity: 5,
+      igstRupees: 50,
+      cgstRupees: 0,
+      sgstRupees: 0,
+    };
+    const assetLine = {
+      ...bill.lines[0]!,
+      id: 3,
+      position: 2,
+      kind: "ASSET",
+      description: "Cutting table",
+      assetClassId: 1,
+      assetClassName: "Furniture",
+      fixedAssetId: 6,
+      igstRupees: 1250,
+      cgstRupees: 0,
+      sgstRupees: 0,
+    };
+    const interState = {
+      ...bill,
+      supplyStateCode: "29",
+      cgstRupees: 0,
+      sgstRupees: 0,
+      igstRupees: 1800,
+      tdsSectionId: 1,
+      tdsRupees: 300,
+      attachmentKey: "bills/9.pdf",
+      tdsWarning: "PAN missing: TDS at 20%",
+      lines: [{ ...bill.lines[0]!, cgstRupees: 0, sgstRupees: 0, igstRupees: 500 }, stockLine, assetLine],
+    };
+
+    it("shows a posted inter-state bill with its TDS warning and attachment", async () => {
+      mocks.purchases.bill.mockResolvedValue(interState);
+      search = new URLSearchParams({ id: "9" });
+      render(<BillPage />);
+      expect((await screen.findAllByText("PAN missing: TDS at 20%")).length).toBeGreaterThan(0);
+      expect((await screen.findAllByText(/Silk thread/)).length).toBeGreaterThan(0);
+    });
+
+    it("shows a cancelled bill", async () => {
+      mocks.purchases.bill.mockResolvedValue({ ...bill, status: "CANCELLED", posted: false, notes: null });
+      search = new URLSearchParams({ id: "9" });
+      render(<BillPage />);
+      expect((await screen.findAllByText("Cancelled")).length).toBeGreaterThan(0);
+    });
+
+    it("edits an unposted bill with stock and asset lines and shows the saved totals", async () => {
+      mocks.purchases.bill.mockResolvedValue({ ...interState, posted: false });
+      mocks.purchases.updateBill.mockResolvedValue({ ...interState, posted: false });
+      search = new URLSearchParams({ id: "9" });
+      render(<BillPage />);
+      fireEvent.click(await screen.findByRole("button", { name: "Save bill" }));
+      await waitFor(() => expect(mocks.purchases.updateBill).toHaveBeenCalled());
+      expect((await screen.findAllByText(/PAN missing: TDS at 20%/)).length).toBeGreaterThan(0);
+    });
+
+    it("starts a new bill for a chosen supplier", async () => {
+      search = new URLSearchParams({ supplier: "4" });
+      render(<BillPage />);
+      fireEvent.click(await screen.findByRole("button", { name: "Save bill" }));
+      expect(await screen.findByText("Enter the supplier's bill number.")).toBeInTheDocument();
+    });
+  });
+
+  describe("uploads", () => {
+    const file = new File(["Date,Narration"], "hdfc.csv", { type: "text/csv" });
+
+    it("previews, maps and imports a bank statement", async () => {
+      mocks.accounts.bank.previewStatement.mockResolvedValue({
+        rows: [
+          ["Date", "Narration", "Debit", "Credit", "Balance"],
+          ["04/11/2026", "NEFT", "10500", "", "500"],
+        ],
+        saved: {
+          headerRow: 0,
+          columns: { date: 0, description: 1, debit: 2, credit: 3, balance: 4 },
+          dateFormat: "dd/MM/yyyy",
+          amountStyle: "DEBIT_CREDIT",
+        },
+      } satisfies Of<Accounts["bank"]["previewStatement"]>);
+      mocks.accounts.bank.importStatement.mockResolvedValue({
+        statementId: 1,
+        added: 2,
+        duplicates: 1,
+        autoMatched: 1,
+        skipped: [{ rowNumber: 4, reason: "No date" }],
+      } satisfies Of<Accounts["bank"]["importStatement"]>);
+      render(<BankUploadPage />);
+      fireEvent.change(await screen.findByLabelText("Statement file"), { target: { files: [file] } });
+      fireEvent.change(await screen.findByLabelText("Opening balance"), { target: { value: "abc" } });
+      expect(screen.getByRole("button", { name: "Import" })).toBeDisabled();
+      fireEvent.change(screen.getByLabelText("Opening balance"), { target: { value: "1000" } });
+      fireEvent.change(screen.getByLabelText("Closing balance"), { target: { value: "2000" } });
+      fireEvent.click(screen.getByRole("button", { name: "Import" }));
+      expect((await screen.findAllByText(/2 new lines/)).length).toBeGreaterThan(0);
+      expect((await screen.findAllByText(/No date/)).length).toBeGreaterThan(0);
+    });
+
+    it("imports a COD remittance report and posts it", async () => {
+      search = new URLSearchParams({ kind: "cod" });
+      mocks.accounts.bank.previewRemittance.mockResolvedValue({
+        rows: [["Remittance", "Date", "AWB", "COD"]],
+        saved: {
+          headerRow: 0,
+          columns: { remittanceRef: 0, remittedOn: 1, awb: 2, cod: 3 },
+          dateFormat: "dd/MM/yyyy",
+          amountStyle: "DEBIT_CREDIT",
+        },
+      } satisfies Of<Accounts["bank"]["previewRemittance"]>);
+      mocks.accounts.bank.importRemittance.mockResolvedValue({
+        added: 1,
+        duplicates: 0,
+        unknownAwbs: ["AWB-404"],
+        skipped: [],
+      } satisfies Of<Accounts["bank"]["importRemittance"]>);
+      mocks.accounts.sweep.mockResolvedValue({ posted: 1, problems: 0 });
+      render(<BankUploadPage />);
+      fireEvent.change(await screen.findByLabelText("Statement file"), { target: { files: [file] } });
+      fireEvent.click(await screen.findByRole("button", { name: "Import" }));
+      await waitFor(() => expect(mocks.accounts.sweep).toHaveBeenCalled());
+      expect((await screen.findAllByText(/AWB-404/)).length).toBeGreaterThan(0);
+    });
+
+    it("tells you which columns are missing", async () => {
+      mocks.accounts.bank.previewStatement.mockResolvedValue({ rows: [["x", "y"]], saved: null });
+      render(<BankUploadPage />);
+      fireEvent.change(await screen.findByLabelText("Statement file"), { target: { files: [file] } });
+      expect((await screen.findAllByText(/Map both the Date and Description columns/)).length).toBeGreaterThan(0);
+    });
+
+    it("imports Shiprocket invoices", async () => {
+      mocks.purchases.previewShiprocket.mockResolvedValue({
+        rows: [["Invoice", "Date", "Freight"]],
+        saved: {
+          headerRow: 0,
+          columns: { invoiceNo: 0, invoiceDate: 1, taxable: 2 },
+          dateFormat: "dd/MM/yyyy",
+          amountStyle: "DEBIT_CREDIT",
+        },
+      } satisfies Of<Purchases["previewShiprocket"]>);
+      mocks.purchases.importShiprocket.mockResolvedValue({
+        invoicesCreated: 1,
+        invoicesSkipped: 1,
+        skippedInvoiceNos: ["SR-1"],
+        badRows: [{ rowNumber: 5, reason: "No freight" }],
+        totalRupees: 500,
+      } satisfies Of<Purchases["importShiprocket"]>);
+      render(<ShiprocketPage />);
+      fireEvent.change(await screen.findByLabelText("Shiprocket invoice file"), { target: { files: [file] } });
+      fireEvent.click(await screen.findByRole("button", { name: /Import/ }));
+      expect((await screen.findAllByText(/1 invoice created/)).length).toBeGreaterThan(0);
+      expect((await screen.findAllByText(/No freight/)).length).toBeGreaterThan(0);
+    });
+  });
 });

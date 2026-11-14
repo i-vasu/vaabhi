@@ -441,3 +441,73 @@ describe("holidays, notifications and account", () => {
     expect(replace).toHaveBeenCalledWith("/login/");
   });
 });
+
+describe("billing & tax classes", () => {
+  it("adds a tax class", async () => {
+    let created: unknown;
+    server.use(
+      http.post(`${API}/api/v1/admin/money/tax-classes`, async ({ request }) => {
+        created = await request.json();
+        return HttpResponse.json({
+          id: 9,
+          name: "Lining",
+          kind: "GOODS",
+          hsnCode: "5208",
+          ratePercent: 12,
+          slabLimitRupees: null,
+          rateAbovePercent: null,
+          inUse: false,
+        });
+      }),
+    );
+    render(<BillingPage />);
+    fireEvent.click(await screen.findByRole("button", { name: /Add tax class/ }));
+    click("Save tax class");
+    expect(await screen.findByText("Enter the name.")).toBeInTheDocument();
+    type("Name", "Lining");
+    click("Save tax class");
+    expect(await screen.findByText("Enter the HSN or SAC code.")).toBeInTheDocument();
+    type("HSN / SAC code", "5208");
+    type("Rate %", "12");
+    click("Save tax class");
+    await waitFor(() => expect(created).toMatchObject({ name: "Lining", hsnCode: "5208" }));
+  });
+
+  it("edits and removes a tax class", async () => {
+    let updated = false;
+    let removed = false;
+    server.use(
+      http.put(`${API}/api/v1/admin/money/tax-classes/:id`, () => {
+        updated = true;
+        return HttpResponse.json({});
+      }),
+      http.delete(`${API}/api/v1/admin/money/tax-classes/:id`, () => {
+        removed = true;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    render(<BillingPage />);
+    fireEvent.click((await screen.findAllByRole("button", { name: /Apparel/ }))[0]!);
+    expect(await screen.findByText("Edit tax class")).toBeInTheDocument();
+    click("Save tax class");
+    await waitFor(() => expect(updated).toBe(true));
+
+    fireEvent.click((await screen.findAllByRole("button", { name: /Apparel/ }))[0]!);
+    click(/Remove/);
+    await waitFor(() => expect(removed).toBe(true));
+  });
+
+  it("sets a category's tax class", async () => {
+    let body: unknown;
+    server.use(
+      http.put(`${API}/api/v1/admin/categories/:id/tax-class`, async ({ request }) => {
+        body = await request.json();
+        return HttpResponse.json({ id: 1, name: "Sarees", taxClassId: 1 });
+      }),
+    );
+    render(<BillingPage />);
+    await screen.findAllByRole("option", { name: "Apparel" });
+    fireEvent.change(screen.getByLabelText("Sarees"), { target: { value: "1" } });
+    await waitFor(() => expect(body).toEqual({ taxClassId: 1 }));
+  });
+});
