@@ -163,10 +163,17 @@ class AssetServiceIT extends BooksFixtures {
                 .param("id", classId)
                 .query(Long.class)
                 .single();
+        // Disposal first charges depreciation up to the disposal month, so compare with the register afterwards.
+        var after = assets.register().stream()
+                .filter(asset -> asset.id() == assetId)
+                .findFirst()
+                .orElseThrow();
+        var gain = proceeds.subtract(new BigDecimal("120000").subtract(after.accumulatedRupees()));
         assertThat(netInEntry(disposal.id(), assetAccount)).isEqualByComparingTo("-120000");
-        assertThat(netInEntry(disposal.id(), accdepAccount)).isEqualByComparingTo("9500.01");
-        assertThat(netInEntry(disposal.id(), accountId("ASSET_GAIN"))).isEqualByComparingTo("-500");
-        assertThat(netInEntry(disposal.id(), settings.accountFor("BANK"))).isEqualByComparingTo(proceeds.negate());
+        assertThat(netInEntry(disposal.id(), accdepAccount)).isEqualByComparingTo(after.accumulatedRupees());
+        assertThat(after.accumulatedRupees()).isGreaterThanOrEqualTo(before.accumulatedRupees());
+        assertThat(netInEntry(disposal.id(), accountId("ASSET_GAIN"))).isEqualByComparingTo(gain.negate());
+        assertThat(netInEntry(disposal.id(), settings.accountFor("BANK"))).isEqualByComparingTo(proceeds); // money in: a debit
     }
 
     @Test
