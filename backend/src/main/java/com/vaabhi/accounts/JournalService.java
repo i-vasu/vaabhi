@@ -330,6 +330,20 @@ public class JournalService {
 
     @Transactional(readOnly = true)
     public TrialBalance trialBalance(LocalDate asOf) {
+        return trialBalance(asOf, false);
+    }
+
+    /** The trial balance as at a date; closing entries can be left out to show the year before it was closed. */
+    @Transactional(readOnly = true)
+    public TrialBalance trialBalance(LocalDate asOf, boolean excludeClosing) {
+        String excluding = excludeClosing
+                ? """
+                  AND NOT (e.source_type = 'YEAR_END' AND e.source_step = 'CLOSE')
+                  AND NOT EXISTS (SELECT 1 FROM journal_entry c
+                                  WHERE c.id = e.reverses_id
+                                    AND c.source_type = 'YEAR_END' AND c.source_step = 'CLOSE')
+                  """
+                : "";
         var rows = jdbc.sql("""
                         SELECT a.id, a.code, a.name, a.type, SUM(l.debit_rupees) AS debits,
                                SUM(l.credit_rupees) AS credits
@@ -337,6 +351,7 @@ public class JournalService {
                         JOIN journal_line l ON l.account_id = a.id
                         JOIN journal_entry e ON e.id = l.entry_id
                         WHERE e.entry_date <= :asOf
+                        """ + excluding + """
                         GROUP BY a.id
                         HAVING SUM(l.debit_rupees) <> SUM(l.credit_rupees)
                         ORDER BY a.code

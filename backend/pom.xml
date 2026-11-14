@@ -171,7 +171,6 @@
             <groupId>org.dhatim</groupId>
             <artifactId>fastexcel</artifactId>
             <version>${fastexcel.version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 
