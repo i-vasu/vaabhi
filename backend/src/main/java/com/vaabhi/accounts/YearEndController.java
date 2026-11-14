@@ -21,8 +21,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 @RequestMapping("/api/v1/admin/accounts/year-end")
 class YearEndController {
 
-    private static final String AUDITOR_PACK_TYPE =
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    private static final String AUDITOR_PACK_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
     private final YearEndService yearEnd;
     private final AuditorPackService pack;
@@ -46,9 +45,7 @@ class YearEndController {
         var fyStart = FiscalYears.parse(fy);
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(AUDITOR_PACK_TYPE))
-                .header(
-                        HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"vaabhi-books-" + fy + ".xlsx\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"vaabhi-books-" + fy + ".xlsx\"")
                 .body(out -> pack.write(fyStart, out));
     }
 

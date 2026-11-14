@@ -80,8 +80,8 @@ class AuditorPackServiceIT extends BooksFixtures {
         var out = new ByteArrayOutputStream();
         pack.write(FY_START, out);
 
-        try (var workbook = new ReadableWorkbook(
-                new ByteArrayInputStream(out.toByteArray()), new ReadingOptions(true, false))) {
+        try (var workbook =
+                new ReadableWorkbook(new ByteArrayInputStream(out.toByteArray()), new ReadingOptions(true, false))) {
             var sheets = workbook.getSheets().toList();
             assertThat(sheets).extracting(Sheet::getName).containsExactlyElementsOf(SHEETS);
             assertThat(textCells(sheets.get(0))).contains("Draft: year not closed");

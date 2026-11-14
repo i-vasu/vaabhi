@@ -35,12 +35,7 @@ public class StatementService {
     }
 
     record StatementRow(
-            long accountId,
-            String code,
-            String name,
-            AccountType type,
-            ScheduleLine scheduleLine,
-            BigDecimal net) {}
+            long accountId, String code, String name, AccountType type, ScheduleLine scheduleLine, BigDecimal net) {}
 
     /** Profit and loss for a period, with the preceding period of the same length (or the previous year) beside it. */
     @Transactional(readOnly = true)
@@ -85,8 +80,8 @@ public class StatementService {
         var previousAsOf = asOf.minusYears(1);
         var current = balanceSheetRows(asOf);
         var previous = balanceSheetRows(previousAsOf);
-        var equityAndLiabilities = new ArrayList<>(
-                lines(Set.of(AccountType.EQUITY, AccountType.LIABILITY), current, previous));
+        var equityAndLiabilities =
+                new ArrayList<>(lines(Set.of(AccountType.EQUITY, AccountType.LIABILITY), current, previous));
         var assets = List.copyOf(lines(Set.of(AccountType.ASSET), current, previous));
         var unclosed = unclosedProfit(asOf);
         var previousUnclosed = unclosedProfit(previousAsOf);
@@ -121,10 +116,7 @@ public class StatementService {
                         JOIN journal_entry e ON e.id = l.entry_id
                         JOIN account a ON a.id = l.account_id
                         WHERE e.entry_date <= :asOf AND a.type IN ('INCOME', 'EXPENSE')
-                        """)
-                .param("asOf", asOf)
-                .query(BigDecimal.class)
-                .single();
+                        """).param("asOf", asOf).query(BigDecimal.class).single();
         return Rupees.of(net);
     }
 

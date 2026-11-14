@@ -15,6 +15,7 @@ class ScheduleLineTest {
     @Test
     void fitsOnlyItsOwnSide() {
         assertThat(ScheduleLine.PPE.fits(AccountType.ASSET)).isTrue();
-        assertThat(ScheduleLine.REVENUE_FROM_OPERATIONS.fits(AccountType.EXPENSE)).isFalse();
+        assertThat(ScheduleLine.REVENUE_FROM_OPERATIONS.fits(AccountType.EXPENSE))
+                .isFalse();
     }
 }

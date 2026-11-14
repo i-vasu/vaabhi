@@ -90,7 +90,8 @@ class StatementServiceIT extends BooksFixtures {
                 List.of(debit(accountId("EXPENSE_RENT"), "300"), credit(accountId("CASH"), "300")));
 
         var profitAndLoss = statements.profitAndLoss(FY_START, FY_END);
-        assertThat(line(profitAndLoss.income(), ScheduleLine.REVENUE_FROM_OPERATIONS).amountRupees())
+        assertThat(line(profitAndLoss.income(), ScheduleLine.REVENUE_FROM_OPERATIONS)
+                        .amountRupees())
                 .isEqualByComparingTo("1000.00");
         assertThat(line(profitAndLoss.expenses(), ScheduleLine.OTHER_EXPENSES).amountRupees())
                 .isEqualByComparingTo("300.00");
@@ -129,9 +130,7 @@ class StatementServiceIT extends BooksFixtures {
     @Test
     void balanceSheetCarriesLaterProfitNotYetClosed() {
         var atYearEnd = statements.balanceSheet(FY_END);
-        post(
-                LocalDate.of(2072, 5, 10),
-                List.of(debit(accountId("DEBTORS"), "200"), credit(accountId("SALES"), "200")));
+        post(LocalDate.of(2072, 5, 10), List.of(debit(accountId("DEBTORS"), "200"), credit(accountId("SALES"), "200")));
 
         var later = statements.balanceSheet(LocalDate.of(2072, 6, 30));
 

@@ -104,8 +104,8 @@ public class AssetService {
         var name = form.name().trim();
         checkNameFree(name, -1);
         var codes = nextCodes();
-        var assetAccount = chart.create(
-                new AccountForm(codes.asset(), name, AccountType.ASSET, null, true, ScheduleLine.PPE));
+        var assetAccount =
+                chart.create(new AccountForm(codes.asset(), name, AccountType.ASSET, null, true, ScheduleLine.PPE));
         var accdepAccount = chart.create(new AccountForm(
                 codes.accdep(),
                 "Acc. depreciation – " + name.toLowerCase(Locale.ROOT),

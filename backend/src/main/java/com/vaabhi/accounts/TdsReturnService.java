@@ -85,20 +85,22 @@ public class TdsReturnService {
         }
         var from = fyStart.plusMonths(3L * (quarter - 1));
         var to = from.plusMonths(3).minusDays(1);
-        var deductees = jdbc.sql(DEDUCTEE_SELECT + """
+        var deductees =
+                jdbc
+                        .sql(DEDUCTEE_SELECT + """
                         WHERE b.tds_rupees > 0 AND b.status = 'OPEN' AND b.bill_date BETWEEN :from AND :to
                           AND EXISTS (SELECT 1 FROM journal_entry e
                                       WHERE e.source_type = 'SUPPLIER_BILL' AND e.source_id = b.id
                                         AND e.source_step = 'ISSUE')
                         ORDER BY s.code, b.bill_date, b.id
                         """)
-                .param("from", from)
-                .param("to", to)
-                .query(DeducteeRow.class)
-                .list()
-                .stream()
-                .map(DeducteeRow::toRow)
-                .toList();
+                        .param("from", from)
+                        .param("to", to)
+                        .query(DeducteeRow.class)
+                        .list()
+                        .stream()
+                        .map(DeducteeRow::toRow)
+                        .toList();
         var challans = jdbc.sql(CHALLAN_SELECT + """
                         WHERE c.period_month BETWEEN :from AND :to
                         ORDER BY s.code, c.period_month, c.paid_on, c.id
@@ -165,10 +167,7 @@ public class TdsReturnService {
                     var deductedRupees = Rupees.of(deducted.getOrDefault(code, BigDecimal.ZERO));
                     var depositedRupees = Rupees.of(deposited.getOrDefault(code, BigDecimal.ZERO));
                     return new TdsSectionTotal(
-                            code,
-                            deductedRupees,
-                            depositedRupees,
-                            Rupees.of(deductedRupees.subtract(depositedRupees)));
+                            code, deductedRupees, depositedRupees, Rupees.of(deductedRupees.subtract(depositedRupees)));
                 })
                 .toList();
     }

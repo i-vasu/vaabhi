@@ -97,10 +97,7 @@ class YearEndServiceIT extends BooksFixtures {
                             GROUP BY a.id
                             HAVING SUM(l.debit_rupees) - SUM(l.credit_rupees) <> 0
                         ) open_accounts
-                        """)
-                .param("asOf", asOf)
-                .query(Integer.class)
-                .single();
+                        """).param("asOf", asOf).query(Integer.class).single();
     }
 
     private void post(LocalDate date, List<NewEntryLine> lines) {
@@ -132,8 +129,13 @@ class YearEndServiceIT extends BooksFixtures {
         try {
             startBooksAt(fyStart);
             long item = stockItem();
-            movement(item, "IN", "10", end.minusDays(21).atTime(10, 0).atZone(IST).toOffsetDateTime());
-            movement(item, "OUT", "-4", end.plusDays(2).atTime(10, 0).atZone(IST).toOffsetDateTime());
+            movement(
+                    item,
+                    "IN",
+                    "10",
+                    end.minusDays(21).atTime(10, 0).atZone(IST).toOffsetDateTime());
+            movement(
+                    item, "OUT", "-4", end.plusDays(2).atTime(10, 0).atZone(IST).toOffsetDateTime());
 
             var view = yearEnd.get(fyStart);
 
@@ -158,7 +160,11 @@ class YearEndServiceIT extends BooksFixtures {
         try {
             startBooksAt(fyStart);
             long item = stockItem();
-            movement(item, "IN", "10", end.minusDays(21).atTime(10, 0).atZone(IST).toOffsetDateTime());
+            movement(
+                    item,
+                    "IN",
+                    "10",
+                    end.minusDays(21).atTime(10, 0).atZone(IST).toOffsetDateTime());
             post(
                     fyStart.plusMonths(1),
                     List.of(debit(accountId("DEBTORS"), "1000"), credit(accountId("SALES"), "1000")));

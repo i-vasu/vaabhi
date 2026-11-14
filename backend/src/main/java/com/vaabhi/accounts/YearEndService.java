@@ -62,7 +62,8 @@ public class YearEndService {
             @Nullable OffsetDateTime stockSavedAt,
             boolean closed) {}
 
-    record RunRow(long id, @Nullable Long stockEntryId, @Nullable Long closingEntryId) {}
+    record RunRow(
+            long id, @Nullable Long stockEntryId, @Nullable Long closingEntryId) {}
 
     record PrefillRow(long id, String name, String unit, long costPaise, BigDecimal quantity) {}
 
@@ -76,7 +77,8 @@ public class YearEndService {
         boolean stockSaved = row != null && row.stockSavedAt() != null;
         var finishedGoods = row == null ? Rupees.ZERO : Rupees.of(row.finishedGoodsRupees());
         var stock = stockSaved ? savedStock(fyStart) : prefillStock(end);
-        var closingStock = Rupees.of(Rupees.sum(stock, ClosingStockLine::valueRupees).add(finishedGoods));
+        var closingStock =
+                Rupees.of(Rupees.sum(stock, ClosingStockLine::valueRupees).add(finishedGoods));
         var stockBalance = stockBalance(fyStart, end, closed);
         var adjustment = Rupees.of(closingStock.subtract(stockBalance));
         var profit = statements.profitAndLoss(fyStart, end).profitRupees();
@@ -112,10 +114,7 @@ public class YearEndService {
                         JOIN stock_item i ON i.id = l.stock_item_id
                         WHERE l.fy_start = :fy
                         ORDER BY i.name
-                        """)
-                .param("fy", fyStart)
-                .query(ClosingStockLine.class)
-                .list();
+                        """).param("fy", fyStart).query(ClosingStockLine.class).list();
     }
 
     @Transactional
@@ -127,7 +126,10 @@ public class YearEndService {
         }
         var existing = new HashSet<Long>();
         if (!form.lines().isEmpty()) {
-            var ids = form.lines().stream().map(YearEndStockItemInput::stockItemId).distinct().toList();
+            var ids = form.lines().stream()
+                    .map(YearEndStockItemInput::stockItemId)
+                    .distinct()
+                    .toList();
             existing.addAll(jdbc.sql("SELECT id FROM stock_item WHERE id IN (:ids)")
                     .param("ids", ids)
                     .query(Long.class)
@@ -229,8 +231,7 @@ public class YearEndService {
                             new NewEntryLine(changeId, null, amount, Rupees.ZERO, null),
                             new NewEntryLine(stockId, null, Rupees.ZERO, amount, null));
             stockEntryId = journal.post(
-                            new NewEntry(
-                                    end, "YEAR_END", runId, "STOCK", "Closing stock " + label, null, null, lines),
+                            new NewEntry(end, "YEAR_END", runId, "STOCK", "Closing stock " + label, null, null, lines),
                             actor)
                     .id();
         }
@@ -296,8 +297,7 @@ public class YearEndService {
     }
 
     /** Posts the entry that closes every income and expense balance into retained earnings, or null when there is none. */
-    private @Nullable Long closingEntry(
-            LocalDate end, String label, long runId, @Nullable String actor) {
+    private @Nullable Long closingEntry(LocalDate end, String label, long runId, @Nullable String actor) {
         var balances = jdbc.sql("""
                         SELECT a.id AS account_id, SUM(l.debit_rupees) - SUM(l.credit_rupees) AS net
                         FROM account a
@@ -307,10 +307,7 @@ public class YearEndService {
                         GROUP BY a.id
                         HAVING SUM(l.debit_rupees) - SUM(l.credit_rupees) <> 0
                         ORDER BY a.id
-                        """)
-                .param("end", end)
-                .query(BalanceRow.class)
-                .list();
+                        """).param("end", end).query(BalanceRow.class).list();
         if (balances.isEmpty()) {
             return null;
         }
@@ -361,10 +358,7 @@ public class YearEndService {
         boolean trialOk = journal.trialBalance(end).balanced();
         return List.of(
                 new YearEndCheck(
-                        "START_DATE",
-                        "Books start date",
-                        startOk,
-                        startOk ? null : "Set the books start date first"),
+                        "START_DATE", "Books start date", startOk, startOk ? null : "Set the books start date first"),
                 new YearEndCheck(
                         "PREVIOUS_YEAR",
                         "Previous year closed",
@@ -376,8 +370,7 @@ public class YearEndService {
                         problemsOk,
                         problemsOk
                                 ? null
-                                : problemCount
-                                        + " documents aren't posted yet. Fix them under Posting problems"),
+                                : problemCount + " documents aren't posted yet. Fix them under Posting problems"),
                 new YearEndCheck(
                         "TRIAL_BALANCE",
                         "Trial balance agrees",
@@ -400,11 +393,7 @@ public class YearEndService {
                         GROUP BY i.id
                         HAVING SUM(m.quantity) > 0
                         ORDER BY i.name
-                        """)
-                .param("cutoff", cutoff)
-                .query(PrefillRow.class)
-                .list()
-                .stream()
+                        """).param("cutoff", cutoff).query(PrefillRow.class).list().stream()
                 .map(row -> {
                     var rate = BigDecimal.valueOf(row.costPaise(), 2);
                     var value = Rupees.of(row.quantity().multiply(rate));
@@ -447,10 +436,7 @@ public class YearEndService {
                         FROM year_close_run
                         WHERE fy_start = :fy
                         ORDER BY closed_at DESC, id DESC
-                        """)
-                .param("fy", fyStart)
-                .query(YearCloseRunView.class)
-                .list();
+                        """).param("fy", fyStart).query(YearCloseRunView.class).list();
     }
 
     private @Nullable FiscalYearRow fiscalYear(LocalDate fyStart) {
@@ -468,11 +454,7 @@ public class YearEndService {
         return jdbc.sql("""
                         SELECT id, stock_entry_id, closing_entry_id
                         FROM year_close_run WHERE fy_start = :fy AND reopened_at IS NULL
-                        """)
-                .param("fy", fyStart)
-                .query(RunRow.class)
-                .optional()
-                .orElse(null);
+                        """).param("fy", fyStart).query(RunRow.class).optional().orElse(null);
     }
 
     private static ResponseStatusException conflict(String message) {

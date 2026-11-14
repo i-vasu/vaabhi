@@ -106,12 +106,7 @@ public class AuditorPackService {
         w.header("Code", "Account", "Type", "Debit", "Credit");
         var balance = journal.trialBalance(end, true);
         for (var line : balance.lines()) {
-            w.row(
-                    line.code().trim(),
-                    line.name(),
-                    line.type().name(),
-                    line.debitRupees(),
-                    line.creditRupees());
+            w.row(line.code().trim(), line.name(), line.type().name(), line.debitRupees(), line.creditRupees());
         }
         w.row("Total", null, null, balance.totalDebitRupees(), balance.totalCreditRupees());
     }
@@ -149,24 +144,14 @@ public class AuditorPackService {
                 null,
                 sheet.totalEquityAndLiabilitiesRupees(),
                 sheet.previousTotalEquityAndLiabilitiesRupees());
-        w.row(
-                null,
-                "Total assets",
-                null,
-                sheet.totalAssetsRupees(),
-                sheet.previousTotalAssetsRupees());
+        w.row(null, "Total assets", null, sheet.totalAssetsRupees(), sheet.previousTotalAssetsRupees());
     }
 
     private static void statementRows(Writer w, String section, List<StatementLine> lines) {
         for (var line : lines) {
             w.row(section, line.label(), null, line.amountRupees(), line.previousRupees());
             for (var account : line.accounts()) {
-                w.row(
-                        section,
-                        line.label(),
-                        accountLabel(account),
-                        account.amountRupees(),
-                        account.previousRupees());
+                w.row(section, line.label(), accountLabel(account), account.amountRupees(), account.previousRupees());
             }
         }
     }
@@ -272,10 +257,7 @@ public class AuditorPackService {
                         GROUP BY p.id, p.name
                         HAVING SUM(l.debit_rupees - l.credit_rupees) <> 0
                         ORDER BY p.name
-                        """)
-                .param("end", end)
-                .query(DebtorRow.class)
-                .list();
+                        """).param("end", end).query(DebtorRow.class).list();
         for (var row : rows) {
             w.row(row.name(), row.balanceRupees());
         }
@@ -297,10 +279,7 @@ public class AuditorPackService {
                         GROUP BY p.id, p.name
                         HAVING SUM(l.credit_rupees - l.debit_rupees) <> 0
                         ORDER BY p.name
-                        """)
-                .param("end", end)
-                .query(CreditorRow.class)
-                .list();
+                        """).param("end", end).query(CreditorRow.class).list();
         for (var row : rows) {
             w.row(row.name(), row.balanceRupees(), row.oldestBill());
         }
@@ -591,15 +570,12 @@ public class AuditorPackService {
     record AccountLedgerRow(long id, String code, String name, BigDecimal openingRupees) {}
 
     record LedgerLineRow(
-            LocalDate date,
-            String number,
-            String narration,
-            BigDecimal debitRupees,
-            BigDecimal creditRupees) {}
+            LocalDate date, String number, String narration, BigDecimal debitRupees, BigDecimal creditRupees) {}
 
     record DebtorRow(String name, BigDecimal balanceRupees) {}
 
-    record CreditorRow(String name, BigDecimal balanceRupees, @Nullable LocalDate oldestBill) {}
+    record CreditorRow(
+            String name, BigDecimal balanceRupees, @Nullable LocalDate oldestBill) {}
 
     record SalesRow(
             String type,

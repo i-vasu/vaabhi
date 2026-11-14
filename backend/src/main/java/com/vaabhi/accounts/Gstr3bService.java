@@ -79,7 +79,8 @@ public class Gstr3bService {
             if (sums[0].signum() == 0 && sums[1].signum() == 0) {
                 return;
             }
-            interState.add(new Gstr3bRow("3.2", place, Rupees.of(sums[0]), Rupees.of(sums[1]), Rupees.ZERO, Rupees.ZERO));
+            interState.add(
+                    new Gstr3bRow("3.2", place, Rupees.of(sums[0]), Rupees.of(sums[1]), Rupees.ZERO, Rupees.ZERO));
         });
 
         // 4(A)(5): input credit on supplier bills plus the GST inside Razorpay fees (an IGST).
