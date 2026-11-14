@@ -12840,7 +12840,7 @@
                         "type": "string",
                         "maxLength": 20,
                         "minLength": 0,
-                        "pattern": "^([A-Za-z0-9/_\\-]|\\{FY\\})*$"
+                        "pattern": "^[A-Za-z0-9/_\\-]*(?:\\{FY\\}[A-Za-z0-9/_\\-]*)*$"
                     },
                     "nextValue": {
                         "type": "integer",
@@ -12852,7 +12852,7 @@
                         "type": "string",
                         "maxLength": 20,
                         "minLength": 0,
-                        "pattern": "^([A-Za-z0-9/_\\-]|\\{FY\\})*$"
+                        "pattern": "^[A-Za-z0-9/_\\-]*(?:\\{FY\\}[A-Za-z0-9/_\\-]*)*$"
                     },
                     "pad": {
                         "type": "integer",
