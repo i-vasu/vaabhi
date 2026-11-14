@@ -131,7 +131,15 @@ export function ReelCarousel({ reels }: Readonly<{ reels: Reel[] }>) {
                 aria-pressed={!muted}
                 className="absolute bottom-3 right-3 grid size-10 place-items-center rounded-lg bg-black/45 text-white backdrop-blur-sm"
               >
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="20"
+                  height="20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  aria-hidden="true"
+                >
                   <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" strokeLinejoin="round" />
                   {muted ? (
                     <path d="m16 9.5 5 5m0-5-5 5" strokeLinecap="round" />

@@ -183,7 +183,7 @@ class MetaCatalogFeed {
             photos.stream().filter(p -> p.colourName() == null).forEach(chosen::add);
         }
         return chosen.stream()
-                .limit(1 + MAX_EXTRA_IMAGES)
+                .limit(1L + MAX_EXTRA_IMAGES)
                 .map(p -> properties.mediaUrl() + "/" + CatalogFeedImages.feedImageKey(p.storageKey()))
                 .toList();
     }
