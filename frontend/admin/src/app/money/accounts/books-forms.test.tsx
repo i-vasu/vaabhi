@@ -328,7 +328,9 @@ describe("books forms", () => {
     expect(mocks.purchases.createBill).not.toHaveBeenCalled();
   });
 
-  it("saves changes to a saved bill", async () => {
+  it("saves changes to a bill the books do not hold yet", async () => {
+    // A posted bill is read-only; one not yet in the books still opens as the form.
+    mocks.purchases.bill.mockResolvedValue({ ...bill, posted: false });
     search = new URLSearchParams({ id: "9" });
     render(<BillPage />);
     fireEvent.click(await screen.findByRole("button", { name: "Save bill" }));
