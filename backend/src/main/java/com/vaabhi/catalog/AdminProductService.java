@@ -11,6 +11,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,11 +27,17 @@ public class AdminProductService {
     private final AdminProductStore store;
     private final FacetCatalog facetCatalog;
     private final CategoryService categoryService;
+    private final ApplicationEventPublisher events;
 
-    AdminProductService(AdminProductStore store, FacetCatalog facetCatalog, CategoryService categoryService) {
+    AdminProductService(
+            AdminProductStore store,
+            FacetCatalog facetCatalog,
+            CategoryService categoryService,
+            ApplicationEventPublisher events) {
         this.store = store;
         this.facetCatalog = facetCatalog;
         this.categoryService = categoryService;
+        this.events = events;
     }
 
     @Transactional(readOnly = true)
@@ -90,6 +97,7 @@ public class AdminProductService {
         if (store.find(id).map(AdminProduct::status).orElseThrow() == ProductStatus.PUBLISHED) {
             requirePublishable(id);
         }
+        events.publishEvent(new CatalogChanged(id));
         return load(id);
     }
 
@@ -101,6 +109,7 @@ public class AdminProductService {
         if (!store.setStatus(id, status)) {
             throw notFound(id);
         }
+        events.publishEvent(new CatalogChanged(id));
         return load(id);
     }
 

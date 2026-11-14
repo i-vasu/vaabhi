@@ -12,19 +12,18 @@ import javax.imageio.ImageWriteParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
- * Meta catalogues (Instagram Shopping, WhatsApp) take JPEG photos, but the shop stores WebP renditions. Every few
- * minutes this copies the largest rendition of each published product's photos to {@code <key>/feed.jpg}, a few at
+ * Meta catalogues (Instagram Shopping, WhatsApp) take JPEG photos, but the shop stores WebP renditions. Every minute
+ * this copies the largest rendition of each published product's photos to {@code <key>/feed.jpg}, a few at
  * a time so the small VPS is never busy for long. The feed only lists photos whose copy is done.
  */
 @Component
 class CatalogFeedImages {
 
     private static final Logger log = LoggerFactory.getLogger(CatalogFeedImages.class);
-    private static final int BATCH = 10;
+    static final int BATCH = 10;
     private static final float QUALITY = 0.88f;
 
     private final JdbcClient jdbc;
@@ -39,10 +38,10 @@ class CatalogFeedImages {
         return key + "/feed.jpg";
     }
 
-    @Scheduled(initialDelayString = "PT2M", fixedDelayString = "PT5M")
-    void copyPending() {
+    /** Copies up to {@link #BATCH} pending photos; returns how many were pending. Run by {@link MetaCatalogSync}. */
+    int copyPending() {
         if (!storage.configured()) {
-            return;
+            return 0;
         }
         record Pending(long id, String storageKey) {}
         var pending = jdbc.sql("""
@@ -65,6 +64,7 @@ class CatalogFeedImages {
                 log.warn("Could not make the catalogue JPEG for photo {}: {}", media.id(), e.getMessage());
             }
         }
+        return pending.size();
     }
 
     static byte[] toJpeg(byte[] image) throws IOException {
